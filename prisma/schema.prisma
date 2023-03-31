@@ -1,0 +1,36 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                   Int      @id @default(autoincrement())
+  registeredAt         DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  isAdmin              Boolean
+  osuUserId            Int      @unique
+  osuUsername          String   @unique @db.VarChar(16)
+  isRestricted         Boolean
+  globalRank           Int
+  badgeCount           Int
+  discordUserId        String   @unique @db.VarChar(19)
+  discordUsername      String   @db.VarChar(32)
+  discordDiscriminator Int
+  osuAccessToken       String
+  osuRefreshToken      String
+  discordAccesstoken   String
+  discordRefreshToken  String
+  country              Country  @relation(fields: [countryId], references: [id])
+  countryId            Int
+}
+
+model Country {
+  id    Int    @id @default(autoincrement())
+  users User[]
+  name  String @db.VarChar(35)
+  code  String @db.Char(2)
+}
