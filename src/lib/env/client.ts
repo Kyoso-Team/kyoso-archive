@@ -1,15 +1,29 @@
 import { z } from 'zod';
-import { PUBLIC_SUPER_USER } from '$env/static/public';
+import {
+  PUBLIC_SUPER_USER,
+  PUBLIC_OSU_CLIENT_ID,
+  PUBLIC_OSU_REDIRECT_URI,
+  PUBLIC_DISCORD_CLIENT_ID,
+  PUBLIC_DISCORD_REDIRECT_URI
+} from '$env/static/public';
 
 export const clientEnvSchema = z.object({
-  PUBLIC_SUPER_USER: z.boolean()
+  PUBLIC_SUPER_USER: z.boolean(),
+  PUBLIC_OSU_CLIENT_ID: z.number().int(),
+  PUBLIC_OSU_REDIRECT_URI: z.string(),
+  PUBLIC_DISCORD_CLIENT_ID: z.string(),
+  PUBLIC_DISCORD_REDIRECT_URI: z.string()
 });
 
 export const clientEnv = {
-  PUBLIC_SUPER_USER: PUBLIC_SUPER_USER.toLocaleLowerCase() === 'true'
+  PUBLIC_SUPER_USER: PUBLIC_SUPER_USER.toLocaleLowerCase() === 'true',
+  PUBLIC_OSU_CLIENT_ID: Number(PUBLIC_OSU_CLIENT_ID),
+  PUBLIC_OSU_REDIRECT_URI,
+  PUBLIC_DISCORD_CLIENT_ID,
+  PUBLIC_DISCORD_REDIRECT_URI
 };
 
-export default function env() {
+function env() {
   let parsed = clientEnvSchema.safeParse(clientEnv);
 
   if (!parsed.success) {
@@ -19,3 +33,5 @@ export default function env() {
 
   return parsed.data;
 }
+
+export default env();

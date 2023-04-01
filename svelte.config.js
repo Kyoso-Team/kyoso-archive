@@ -7,7 +7,10 @@ const config = {
   kit: {
     adapter: adapter(),
     alias: {
-      $prisma: `${process.cwd()}/src/lib/prisma`
+      $prisma: `${process.cwd()}/src/lib/prisma`,
+      $trpc: `${process.cwd()}/src/lib/trpc`,
+      $stores: `${process.cwd()}/src/lib/stores`,
+      $types: `${process.cwd()}/src/lib/types`
     }
   }
 };

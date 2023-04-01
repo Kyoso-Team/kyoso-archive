@@ -24,7 +24,8 @@ module.exports = {
     'prefer-const': 'off',
     '@typescript-eslint/no-inferrable-types': 'off',
     'quote-props': ['warn', 'consistent'],
-    '@typescript-eslint/no-unused-vars': 'off'
+    '@typescript-eslint/no-unused-vars': 'off',
+    'unused-export-let': 'off'
   },
   parserOptions: {
     sourceType: 'module',
