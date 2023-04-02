@@ -5,10 +5,8 @@
   import { setInitialClassState } from '@skeletonlabs/skeleton';
   import { AppShell, AppBar, Avatar } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
-  import { trpc } from '$trpc/client';
-  import { page } from '$app/stores';
-  import type { LayoutServerData } from './$types';
   import { goto } from '$app/navigation';
+  import type { LayoutServerData } from './$types';
 
   export let data: LayoutServerData;
   let showUserMenu = false;
@@ -27,9 +25,8 @@
     }
   ];
 
-  async function onLogout() {
-    await trpc($page).auth.logout.query();
-    goto('/');
+  async function onLogoutClick() {
+    goto('/auth/logout');
   }
 
   function onUserAvatarClick() {
@@ -76,7 +73,7 @@
                       class="btn justify-start py-1 hover:variant-soft-primary">Settings</a
                     >
                     <button
-                      on:click={onLogout}
+                      on:click={onLogoutClick}
                       class="btn justify-start py-1 hover:variant-soft-primary">Logout</button
                     >
                   </nav>

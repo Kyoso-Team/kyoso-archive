@@ -1,4 +1,4 @@
-import { router, type Router } from '$trpc/router';
+import { router } from '$trpc/router';
 import { createContext } from '$trpc/context';
 import type { RequestEvent } from '@sveltejs/kit';
 
