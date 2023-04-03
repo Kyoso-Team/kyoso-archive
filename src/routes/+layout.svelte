@@ -25,7 +25,7 @@
     }
   ];
 
-  async function onLogoutClick() {
+  function onLogoutClick() {
     goto('/auth/logout');
   }
 

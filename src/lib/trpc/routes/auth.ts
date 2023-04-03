@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Auth as OsuAuth, Client, type Token, type UserExtended } from 'osu-web.js';
 import { signJWT, verifyJWT } from '$lib/jwt';
 import { TRPCError } from '@trpc/server';
+import { customAlphabet } from 'nanoid';
 import type { TokenRequestResult, User } from 'discord-oauth2';
 import type { Prisma } from '@prisma/client';
 import type { SessionUser } from '$types';
@@ -44,7 +45,7 @@ function getData(
     is_restricted: boolean;
   },
   discordProfile: User
-): Prisma.UserCreateInput {
+): Omit<Prisma.UserCreateInput, 'apiKey'> {
   return {
     osuAccessToken: osuToken.access_token,
     osuRefreshToken: osuToken.refresh_token,
@@ -143,10 +144,14 @@ export const authRouter = t.router({
 
     let [osuProfile, discordProfile] = await getProfiles(osuToken, discordToken);
     let data = getData(osuToken, discordToken, osuProfile, discordProfile);
+    let apiKey = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 24)();
 
     let user = await tryCatch(async () => {
       return await prisma.user.upsert({
-        create: data,
+        create: {
+          ... data,
+          apiKey
+        },
         where: {
           osuUserId: osuProfile.id
         },

@@ -8,22 +8,36 @@ generator client {
 }
 
 model User {
-  id                   Int      @id @default(autoincrement())
-  registeredAt         DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                   Int           @id @default(autoincrement())
+  registeredAt         DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
   isAdmin              Boolean
-  osuUserId            Int      @unique
-  osuUsername          String   @unique @db.VarChar(16)
+  osuUserId            Int           @unique
+  osuUsername          String        @unique @db.VarChar(16)
   isRestricted         Boolean
-  discordUserId        String   @unique @db.VarChar(19)
-  discordUsername      String   @db.VarChar(32)
-  discordDiscriminator Int
+  discordUserId        String        @unique @db.VarChar(19)
+  discordUsername      String        @db.VarChar(32)
+  discordDiscriminator Int           @db.SmallInt
+  apiKey               String        @db.Char(24)
+  freeServicesLeft   Int           @default(3) @db.SmallInt
+  // Auth
   osuAccessToken       String
   osuRefreshToken      String
   discordAccesstoken   String
   discordRefreshToken  String
-  country              Country  @relation(fields: [countryId], references: [id])
+  // Settings
+  theme                UserTheme     @default(Dark)
+  showDiscordTag       Boolean       @default(true)
+  // Relations
+  country              Country       @relation(fields: [countryId], references: [id])
   countryId            Int
+  asStaffMember        StaffMember[]
+  purchases            Purchase[]
+}
+
+enum UserTheme {
+  Light
+  Dark
 }
 
 model Country {
@@ -31,4 +45,164 @@ model Country {
   users User[]
   name  String @db.VarChar(35)
   code  String @unique @db.Char(2)
+}
+
+model Purchase {
+  id              Int                 @id @default(autoincrement())
+  purchasedAt     DateTime            @default(now())
+  costInCents     Int                 @db.SmallInt
+  services        TournamentService[]
+  purchasedBy     User                @relation(fields: [purchasedById], references: [id], onDelete: Cascade)
+  purchasedById   Int
+  forTournament   Tournament?         @relation(fields: [forTournamentId], references: [id])
+  forTournamentId Int?
+}
+
+model Tournament {
+  id                 Int                 @id @default(autoincrement())
+  name               String              @unique @db.VarChar(50)
+  acronym            String              @db.VarChar(8)
+  lowerRankRange     Int
+  upperRankRange     Int
+  playerRegsOpenOn   DateTime?
+  playerRegsCloseOn  DateTime?
+  staffRegsOpenOn    DateTime?
+  staffRegsCloseOn   DateTime?
+  useBWS             Boolean
+  // Links
+  forumPostId        Int?
+  discordInviteId    String?             @db.VarChar(12)
+  mainSheetId        String?             @db.VarChar(45)
+  twitchChannelName  String?             @db.VarChar(25)
+  youtubeChannelId   String?             @db.VarChar(25)
+  donationLink       String?
+  websiteLink        String?
+  // Ref settings
+  pickTimerLength    Int                 @default(120)
+  doublePickAllowed  Boolean             @default(false)
+  doubleBanAllowed   Boolean             @default(false)
+  rollRules          String?
+  freeModRules       String?
+  warmupRules        String?
+  lateProcedures     String?
+  banOrder           String              @db.VarChar(6)
+  // Relations
+  solo               SoloTournament?     @relation("soloTournament")
+  team               TeamTournament?     @relation("teamTournament")
+  staffAllowedToPlay StaffRole[]         @relation("staffAllowedToPlay")
+  staffRoles         StaffRole[]         @relation("staffRoles")
+  staffMembers       StaffMember[]
+  inPurchases        Purchase[]
+  services           TournamentService[]
+}
+
+enum TournamentService {
+  Admin
+  Mappooling
+  Referee
+  Stats
+  Pickems
+}
+
+enum StageFormat {
+  Groups
+  Swiss
+  Qualifiers
+  SingleElim   @map("Single Elimination")
+  DoubleElim   @map("Double Elimination")
+  BattleRoyale @map("Battle Royale")
+}
+
+model SoloTournament {
+  id           Int        @id @default(autoincrement())
+  tournament   Tournament @relation("soloTournament", fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId Int        @unique
+}
+
+model TeamTournament {
+  id           Int        @id @default(autoincrement())
+  tournament   Tournament @relation("teamTournament", fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId Int        @unique
+  teamSize     Int        @db.SmallInt
+  teamPlaySize Int        @db.SmallInt
+}
+
+model StaffRole {
+  id                   Int               @id @default(autoincrement())
+  name                 String            @db.VarChar(25)
+  color                StaffColor        @default(Slate)
+  permissions          StaffPermission[]
+  tournament           Tournament        @relation("staffRoles", fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId         Int
+  canPlayInTourament   Tournament?       @relation("staffAllowedToPlay", fields: [canPlayInTouramentId], references: [id], onDelete: Cascade)
+  canPlayInTouramentId Int?
+  staffMembers         StaffMember[]
+
+  @@unique([name, tournamentId])
+}
+
+enum StaffPermission {
+  // Tournament
+  MutateTournament
+  DeleteTournament
+  // Staff
+  ViewStaffMembers
+  MutateStaffMembers
+  DeleteStaffMembers
+  // Regs.
+  ViewRegs
+  MutateRegs
+  DeleteRegs
+  // Mappool structure
+  ViewPoolStructure
+  MutatePoolStructure
+  // Suggest maps
+  ViewPoolSuggestions
+  MutatePoolSuggestions
+  // Pool maps
+  ViewPooledMaps
+  DeletePooledMaps
+  // Playtest (provide replays and feedback)
+  ViewMapsToPlaytest
+  MutateMapsToPlaytest // Can replay and provide feedback
+  DeleteMapReplay
+  // Matches
+  ViewMatches
+  MutateMatches
+  DeleteMatches
+  RefMatches
+  CommentateMatches
+  StreamMatches
+  // Stats
+  ViewStats
+  CalcStats
+  DeleteScores
+}
+
+enum StaffColor {
+  Slate
+  Gray
+  Red
+  Orange
+  Yellow
+  Lime
+  Green
+  Emerald
+  Cyan
+  Blue
+  Indigo
+  Purple
+  Fuchsia
+  Pink
+}
+
+model StaffMember {
+  id           Int         @id @default(autoincrement())
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int
+  tournament   Tournament  @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId Int
+  roles        StaffRole[]
+
+  @@unique([userId, tournamentId])
 }
