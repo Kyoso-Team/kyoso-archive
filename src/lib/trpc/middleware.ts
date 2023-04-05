@@ -9,7 +9,7 @@ function getStoredUserHelper(ctx: Context) {
   if (!ctx.cookies.get('session')) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
-      message: 'User isn\'t logged in'
+      message: "User isn't logged in"
     });
   }
 
@@ -24,7 +24,7 @@ export const getStoredUser = t.middleware(({ ctx, next }) => {
   });
 });
 
-export const getUser = t.middleware(async({ ctx, next }) => {
+export const getUser = t.middleware(async ({ ctx, next }) => {
   let storedUser = getStoredUserHelper(ctx);
   let user = await prisma.user.findUniqueOrThrow({
     where: {
@@ -37,7 +37,7 @@ export const getUser = t.middleware(async({ ctx, next }) => {
       osuUsername: true,
       discordUserId: true,
       discordDiscriminator: true,
-      freeComponentsLeft: true,
+      freeServicesLeft: true,
       osuAccessToken: true
     }
   });

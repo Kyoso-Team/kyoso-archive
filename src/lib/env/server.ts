@@ -4,8 +4,7 @@ import {
   JWT_SECRET,
   OSU_CLIENT_SECRET,
   DISCORD_CLIENT_SECRET,
-  ADMIN_BY_DEFAULT,
-  STRIPE_API_KEY
+  ADMIN_BY_DEFAULT
 } from '$env/static/private';
 import { clientEnvSchema, clientEnv } from './client';
 
@@ -15,8 +14,7 @@ const serverEnvSchema = z
     JWT_SECRET: z.string(),
     OSU_CLIENT_SECRET: z.string(),
     DISCORD_CLIENT_SECRET: z.string(),
-    ADMIN_BY_DEFAULT: z.array(z.number().int()),
-    STRIPE_API_KEY: z.string()
+    ADMIN_BY_DEFAULT: z.array(z.number().int())
   })
   .merge(clientEnvSchema);
 
@@ -26,8 +24,7 @@ const serverEnv = {
   JWT_SECRET,
   OSU_CLIENT_SECRET,
   DISCORD_CLIENT_SECRET,
-  ADMIN_BY_DEFAULT: (JSON.parse(ADMIN_BY_DEFAULT) as string[]).map((id) => Number(id)),
-  STRIPE_API_KEY
+  ADMIN_BY_DEFAULT: (JSON.parse(ADMIN_BY_DEFAULT) as string[]).map((id) => Number(id))
 };
 
 function env() {

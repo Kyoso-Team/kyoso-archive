@@ -6,6 +6,8 @@
   import { AppShell, AppBar, Avatar } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
   import { goto } from '$app/navigation';
+  import { form } from '$stores';
+  import { Form } from '$components';
   import type { LayoutServerData } from './$types';
 
   export let data: LayoutServerData;
@@ -87,5 +89,12 @@
       </svelte:fragment>
     </AppBar>
   </svelte:fragment>
+  {#if $form}
+    <div class="fixed inset-0 z-20 h-screen w-screen bg-surface-backdrop-token">
+      {#if $form}
+        <Form />
+      {/if}
+    </div>
+  {/if}
   <slot />
 </AppShell>

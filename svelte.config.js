@@ -10,7 +10,8 @@ const config = {
       $prisma: `${process.cwd()}/src/lib/prisma`,
       $trpc: `${process.cwd()}/src/lib/trpc`,
       $stores: `${process.cwd()}/src/lib/stores`,
-      $types: `${process.cwd()}/src/lib/types`
+      $types: `${process.cwd()}/src/lib/types`,
+      $components: `${process.cwd()}/src/components`
     }
   }
 };
