@@ -9,7 +9,7 @@ generator client {
 
 model Image {
   id                   Int           @id @default(autoincrement())
-  name                 String        @unique
+  name                 String
   mime_type            String
   last_modified        BigInt
   size                 Int

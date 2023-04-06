@@ -37,8 +37,17 @@ export const getUser = t.middleware(async({ ctx, next }) => {
       osuUsername: true,
       discordUserId: true,
       discordDiscriminator: true,
-      freeComponentsLeft: true,
-      osuAccessToken: true
+      osuAccessToken: true,
+      asStaffMember: {
+        select: {
+          tournamentId: true,
+          roles: {
+            select: {
+              permissions: true
+            }
+          }
+        }
+      }
     }
   });
 
