@@ -13,7 +13,7 @@
     Upload an image. ANY image.
     <input type="file" name="file" accept="image/*" on:change={handleImageUpload} />
   </label>
-  <input type="hidden" name="procedure" value="banner" />
+  <input type="hidden" name="uploadType" value="tournamentLogo" />
   <input type="hidden" name="targetType" value="tournament" />
   <input type="hidden" name="targetId" value="1" />
   <button>Submit</button>
