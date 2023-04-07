@@ -19,11 +19,18 @@
   const navLinks = [
     {
       href: 'dashboard',
-      label: 'Dashboard'
+      label: 'Dashboard',
+      admin: false
     },
     {
       href: 'tournaments',
-      label: 'Tournaments'
+      label: 'Tournaments',
+      admin: false
+    },
+    {
+      href: 'upload',
+      label: 'Upload',
+      admin: true
     }
   ];
 
@@ -44,8 +51,10 @@
     <AppBar padding="p-3">
       <svelte:fragment slot="lead">
         <nav class="flex gap-2">
-          {#each navLinks as { href, label }}
-            <a href={`/${href}`} class="btn hover:variant-soft-primary">{label}</a>
+          {#each navLinks as { href, label, admin }}
+            {#if (!admin) || (admin && data.user && data.user.isAdmin)}
+              <a href={`/${href}`} class="btn hover:variant-soft-primary">{label}</a>
+            {/if}
           {/each}
         </nav>
       </svelte:fragment>
