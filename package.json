@@ -9,7 +9,7 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "prettier --plugin-search-dir . --check . && eslint .",
-    "format": "prettier --plugin-search-dir . --write .",
+    "fmt": "prettier --plugin-search-dir . --write .",
     "db:push": "npx prisma db push"
   },
   "devDependencies": {
@@ -17,7 +17,9 @@
     "@skeletonlabs/skeleton": "^1.0.0",
     "@sveltejs/adapter-node": "^1.2.3",
     "@sveltejs/kit": "^1.5.0",
+    "@tailwindcss/forms": "^0.5.3",
     "@types/jsonwebtoken": "^9.0.1",
+    "@types/lodash.isequal": "^4.5.6",
     "@types/node": "^18.15.7",
     "@typescript-eslint/eslint-plugin": "^5.45.0",
     "@typescript-eslint/parser": "^5.45.0",
@@ -44,6 +46,7 @@
     "discord-oauth2": "^2.11.0",
     "dotenv": "^16.0.3",
     "jsonwebtoken": "^9.0.0",
+    "lodash.isequal": "^4.5.0",
     "nanoid": "^4.0.2",
     "osu-web.js": "^1.2.2",
     "stripe": "^11.17.0",

@@ -144,12 +144,15 @@ export const authRouter = t.router({
 
     let [osuProfile, discordProfile] = await getProfiles(osuToken, discordToken);
     let data = getData(osuToken, discordToken, osuProfile, discordProfile);
-    let apiKey = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 24)();
+    let apiKey = customAlphabet(
+      '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+      24
+    )();
 
     let user = await tryCatch(async () => {
       return await prisma.user.upsert({
         create: {
-          ... data,
+          ...data,
           apiKey
         },
         where: {
