@@ -4,6 +4,9 @@ import {
   JWT_SECRET,
   OSU_CLIENT_SECRET,
   DISCORD_CLIENT_SECRET,
+  STORAGE_ENDPOINT,
+  STORAGE_ZONE,
+  STORAGE_PASSWORD,
   ADMIN_BY_DEFAULT
 } from '$env/static/private';
 import { clientEnvSchema, clientEnv } from './client';
@@ -14,6 +17,9 @@ const serverEnvSchema = z
     JWT_SECRET: z.string(),
     OSU_CLIENT_SECRET: z.string(),
     DISCORD_CLIENT_SECRET: z.string(),
+    STORAGE_ENDPOINT: z.string(),
+    STORAGE_ZONE: z.string(),
+    STORAGE_PASSWORD: z.string(),
     ADMIN_BY_DEFAULT: z.array(z.number().int())
   })
   .merge(clientEnvSchema);
@@ -24,6 +30,9 @@ const serverEnv = {
   JWT_SECRET,
   OSU_CLIENT_SECRET,
   DISCORD_CLIENT_SECRET,
+  STORAGE_ENDPOINT,
+  STORAGE_ZONE,
+  STORAGE_PASSWORD,
   ADMIN_BY_DEFAULT: (JSON.parse(ADMIN_BY_DEFAULT) as string[]).map((id) => Number(id))
 };
 

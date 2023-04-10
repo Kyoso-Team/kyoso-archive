@@ -7,15 +7,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Image {
-  id                   Int           @id @default(autoincrement())
-  name                 String
-  mime_type            String
-  last_modified        BigInt
-  size                 Int
-  data                 Bytes
-}
-
 model User {
   id                   Int           @id @default(autoincrement())
   registeredAt         DateTime      @default(now())

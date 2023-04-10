@@ -1,21 +1,24 @@
-import prisma from '$prisma';
-import { t, tryCatch } from '$trpc';
+import { t } from '$trpc';
 import { getUploadInfo, getUser } from '$trpc/middleware';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import env from '$lib/env/server';
 
-export const imagesRouter = t.router({
+export const uploadRouter = t.router({
   obtain: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
-    let id = input.replace(/[^0-9.]/g, "")
-    if (isNaN(+id)) {
-      return null
-    }
-    
-    return await prisma.image.findFirst({
-      where: {
-        id: +id
+    let upload = await fetch(`${env.STORAGE_ENDPOINT}/${env.STORAGE_ZONE}/${input}`, {
+      method: "GET",
+      headers: {
+        accept: "*/*",
+        AccessKey: env.STORAGE_PASSWORD
       }
     })
+
+    if (!upload.ok) {
+      return null
+    } else {
+      return await upload.blob()
+    }
   }),
 
   
@@ -54,22 +57,23 @@ export const imagesRouter = t.router({
     }
   })
   .mutation(async ({ ctx }) => {
-    let image = await tryCatch(async () => {
-      let img = ctx.uploadInfo.img
-      let arrayBuffer = await img.arrayBuffer()
-      let buffer = Buffer.from(arrayBuffer)
+    let info = ctx.uploadInfo
+    let upload = await fetch(`${env.STORAGE_ENDPOINT}/${env.STORAGE_ZONE}/${info.uploadType}_${info.targetId}/${info.upload.name}`, {
+      method: "PUT",
+      headers: {
+        AccessKey: env.STORAGE_PASSWORD,
+        "content-type": "application/octet-stream",
+      },
+      body: ctx.uploadInfo.upload
+    })
 
-      return await prisma.image.create({
-        data: {
-          name: img.name,
-          mime_type: img.type,
-          last_modified: img.lastModified,
-          size: img.size,
-          data: buffer
-        }
-      })
-    }, "Can't upload an image")
-
-    return image
+    if (!upload.ok) {
+      return null
+    } else {
+      return {
+        url: `/uploads/${info.uploadType}_${info.targetId}/${info.upload.name}`,
+        file: ctx.uploadInfo.upload
+      }
+    }
   })
 })
