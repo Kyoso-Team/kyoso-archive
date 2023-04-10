@@ -1,2 +1,295 @@
 <script lang="ts">
+  import { form, paypal, error } from '$stores';
+  import { Stepper, Step, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
+  import { format } from '$lib/utils';
+  import { services } from '$lib/constants';
+  import { trpc } from '$trpc/client';
+  import { page } from '$app/stores';
+  import { goto } from '$app/navigation';
+  import type { PageServerData } from './$types';
+  import type { TournamentFormData, TournamentType } from '$types';
+  import type { TournamentService } from '@prisma/client';
+  import type { PayPalButtonsComponent } from '@paypal/paypal-js';
+
+  export let data: PageServerData;
+  let createTournament: {
+    showStepper: boolean;
+    isFree: boolean;
+    tournament?: TournamentFormData;
+    services: TournamentService[];
+  } = {
+    services: [],
+    showStepper: false,
+    isFree: false
+  };
+  let selectedServices: TournamentService[] = [];
+  let paypalBtnsContainer: HTMLElement | null = null;
+  let btns: PayPalButtonsComponent | undefined;
+
+  function showStepper() {
+    createTournament.showStepper = true;
+    createTournament = { ...createTournament };
+  }
+
+  function hideStepper() {
+    createTournament.showStepper = false;
+    createTournament = { ...createTournament };
+  }
+
+  function onFillForm() {
+    hideStepper();
+
+    form.create<TournamentFormData>({
+      title: 'Create Tournament',
+      fields: ({ field }) => [
+        field('Name', 'name', 'string', {
+          validation: (z) => z.max(50)
+        }),
+        field('Acronym', 'acronym', 'string', {
+          validation: (z) => z.max(8)
+        }),
+        field('Is it open rank?', 'isOpenRank', 'boolean'),
+        field('Lower rank range limit', 'lowerRankRange', 'number', {
+          validation: (z) => z.int().gte(1),
+          disableIf: (tournament) => tournament.isOpenRank
+        }),
+        field('Upper rank range limit', 'upperRankRange', 'number', {
+          validation: (z) => z.int().gte(1),
+          disableIf: (tournament) => tournament.isOpenRank
+        }),
+        field('Type', 'type', 'string', {
+          fromValues: {
+            values: (): TournamentType[] => ['Teams', 'Solo']
+          }
+        }),
+        field('Max. team size', 'teamSize', 'number', {
+          validation: (z) => z.int().gte(1).lte(8),
+          disableIf: (tournament) => tournament.type === 'Solo'
+        }),
+        field('Players allowed to play per beatmap', 'teamPlaySize', 'number', {
+          validation: (z) => z.int().gte(1).lte(8),
+          disableIf: (tournament) => tournament.type === 'Solo'
+        }),
+        field('Use BWS formula?', 'useBWS', 'boolean')
+      ],
+      onSubmit: (tournament) => {
+        createTournament.tournament = tournament;
+        showStepper();
+      },
+      onClose: showStepper,
+      defaultValue: createTournament.tournament
+    });
+  }
+
+  async function closeBtns() {
+    await btns?.close();
+  }
+
+  async function onExit() {
+    await closeBtns();
+    hideStepper();
+
+    createTournament.tournament = undefined;
+    selectedServices = [];
+    createTournament = { ...createTournament };
+  }
+
+  async function onComplete() {
+    if (!createTournament.tournament) return;
+
+    let tournament = await trpc($page).tournaments.createFreeTournament.mutate(
+      mapTournament(createTournament.tournament, createTournament.services)
+    );
+
+    goto(`/tournament/${tournament.id}`);
+  }
+
+  function mapTournament(tournament: TournamentFormData, services: TournamentService[]) {
+    return {
+      ...tournament,
+      services,
+      rankRange: tournament.isOpenRank
+        ? 'open rank'
+        : ({
+            lower: tournament.lowerRankRange || 1,
+            upper: tournament.upperRankRange || 10000
+          } as
+            | 'open rank'
+            | {
+                lower: number;
+                upper: number;
+              }),
+      teamPlaySize: tournament.teamPlaySize || 2,
+      teamSize: tournament.teamSize || 3
+    };
+  }
+
+  $: {
+    createTournament.services = selectedServices;
+    createTournament.isFree = data.user.freeServicesLeft - selectedServices.length >= 0;
+    createTournament = { ...createTournament };
+  }
+
+  $: {
+    if ($paypal?.Buttons && paypalBtnsContainer) {
+      btns = $paypal.Buttons({
+        createOrder: async () => {
+          return await trpc($page).tournaments.checkoutNewTournament.mutate({
+            services: createTournament.services,
+            type: createTournament.tournament?.type
+          });
+        },
+        onApprove: async ({ orderID }, actions) => {
+          await actions.order?.capture();
+          if (!createTournament.tournament) return;
+
+          let created = await trpc($page).tournaments.createTournament.mutate({
+            orderId: orderID,
+            tournament: mapTournament(createTournament.tournament, createTournament.services)
+          });
+
+          goto(`/tournament/${created.id}`);
+        },
+        onError: (err) => {
+          error.set(err, $error);
+        }
+      });
+
+      btns.render(paypalBtnsContainer);
+    }
+  }
 </script>
+
+{#if createTournament.showStepper}
+  <div
+    class="fixed inset-0 z-20 flex h-screen w-screen items-center justify-center p-4 bg-surface-backdrop-token"
+  >
+    <div class="card relative min-w-[19rem] p-6">
+      <button
+        on:click={onExit}
+        class="btn variant-filled-primary absolute top-6 right-6 flex gap-1 px-3 py-1"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 1024 1024">
+          <path
+            fill="black"
+            d="M195.2 195.2a64 64 0 0 1 90.496 0L512 421.504L738.304 195.2a64 64 0 0 1 90.496 90.496L602.496 512L828.8 738.304a64 64 0 0 1-90.496 90.496L512 602.496L285.696 828.8a64 64 0 0 1-90.496-90.496L421.504 512L195.2 285.696a64 64 0 0 1 0-90.496z"
+          />
+        </svg> Close
+      </button>
+      <Stepper
+        active="variant-filled-secondary"
+        buttonCompleteLabel="Create"
+        regionHeader="w-[calc(100%-6.5rem)]"
+        on:complete={onComplete}
+      >
+        <Step locked={!createTournament.tournament}>
+          <svelte:fragment slot="header">Tournament Info</svelte:fragment>
+          <p class="text-justify">
+            Click the button below to input necessary information to create the tournament.
+          </p>
+          {#if createTournament.tournament}
+            <div
+              class="mx-auto flex w-72 flex-col-reverse rounded-[4px] bg-surface-900 p-4 sm:grid sm:w-[34rem] sm:grid-cols-[14.5rem_auto]"
+            >
+              <div class="flex flex-col text-sm">
+                <div>
+                  <b>Rank Range:</b>
+                  {createTournament.tournament.isOpenRank
+                    ? 'Open Rank'
+                    : `${format.rank(
+                        createTournament.tournament.lowerRankRange || 0
+                      )} - ${format.rank(createTournament.tournament.upperRankRange || 0)}`}
+                </div>
+                <div>
+                  <b>Format:</b>
+                  {createTournament.tournament.type === 'Solo'
+                    ? '1v1'
+                    : `${createTournament.tournament.teamPlaySize}v${createTournament.tournament.teamPlaySize} - Team Size ${createTournament.tournament.teamSize}`}
+                </div>
+                <div>
+                  <b>BWS?:</b>
+                  {createTournament.tournament.useBWS ? 'Yes' : 'No'}
+                </div>
+              </div>
+              <header class="mb-2 block text-center sm:mb-0 sm:text-right">
+                <h2>{createTournament.tournament.acronym}</h2>
+                {createTournament.tournament.name}
+              </header>
+            </div>
+          {/if}
+          <button class="btn variant-filled-primary" on:click={onFillForm}>
+            {createTournament.tournament ? 'Edit' : 'Fill'} Form
+          </button>
+        </Step>
+        <Step locked={createTournament.services.length < 1}>
+          <svelte:fragment slot="header">Services</svelte:fragment>
+          <p class="text-justify">Select the services you'd like for your tournament.</p>
+          <div class="rounded-[4px] bg-surface-900 p-2">
+            <ListBox active="variant-filled-primary" multiple>
+              {#each Object.keys(services) as service}
+                <ListBoxItem
+                  name="tournament-services"
+                  value={service}
+                  bind:group={selectedServices}
+                >
+                  <svelte:fragment slot="lead">
+                    {service}
+                  </svelte:fragment>
+                  <svelte:fragment slot="trail">
+                    {format.price(
+                      services[service][
+                        createTournament.tournament?.type === 'Teams' ? 'teamsPrice' : 'soloPrice'
+                      ]
+                    )}
+                  </svelte:fragment>
+                </ListBoxItem>
+              {/each}
+            </ListBox>
+          </div>
+          <h4>
+            Total Cost: {format.price(
+              selectedServices.reduce((total, service) => {
+                return (
+                  total +
+                  services[service][
+                    createTournament.tournament?.type === 'Teams' ? 'teamsPrice' : 'soloPrice'
+                  ]
+                );
+              }, 0)
+            )}
+          </h4>
+          {#if data.user.freeServicesLeft > 0}
+            <span class="block max-w-xs text-justify text-sm"
+              ><b>Note:</b> As a new user, you've been given the ability to add 3 services for free.{data
+                .user.freeServicesLeft === 3
+                ? ''
+                : `You currently have ${data.user.freeServicesLeft} service${
+                    data.user.freeServicesLeft === 1 ? '' : 's'
+                  } left.`}</span
+            >
+          {/if}
+        </Step>
+        <Step
+          on:back={closeBtns}
+          buttonComplete={createTournament.isFree ? 'variant-filled-primary' : 'hidden'}
+        >
+          <svelte:fragment slot="header">Checkout</svelte:fragment>
+          {#if data.user.freeServicesLeft > 0}
+            <p class="max-w-[19rem] text-justify">
+              You're about to use {Math.min(
+                createTournament.services.length,
+                data.user.freeServicesLeft
+              )} out of your {data.user.freeServicesLeft} free services left.
+            </p>
+          {/if}
+          {#if createTournament.isFree}
+            <p>You can create this tournament for free!</p>
+          {:else}
+            <div class="rounded-[4px] bg-surface-900 p-4 pb-0" bind:this={paypalBtnsContainer} />
+          {/if}
+        </Step>
+      </Stepper>
+    </div>
+  </div>
+{/if}
+<button class="btn variant-filled-primary" on:click={showStepper}> Create Tournament </button>

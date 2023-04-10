@@ -19,7 +19,7 @@ model User {
   discordUsername      String        @db.VarChar(32)
   discordDiscriminator Int           @db.SmallInt
   apiKey               String        @db.Char(24)
-  freeServicesLeft   Int           @default(3) @db.SmallInt
+  freeServicesLeft     Int           @default(3) @db.SmallInt
   // Auth
   osuAccessToken       String
   osuRefreshToken      String
@@ -50,7 +50,8 @@ model Country {
 model Purchase {
   id              Int                 @id @default(autoincrement())
   purchasedAt     DateTime            @default(now())
-  costInCents     Int                 @db.SmallInt
+  cost            Int                 @db.SmallInt
+  paypalOrderId   String              @db.VarChar(20)
   services        TournamentService[]
   purchasedBy     User                @relation(fields: [purchasedById], references: [id], onDelete: Cascade)
   purchasedById   Int
@@ -69,6 +70,7 @@ model Tournament {
   staffRegsOpenOn    DateTime?
   staffRegsCloseOn   DateTime?
   useBWS             Boolean
+  services           TournamentService[]
   // Links
   forumPostId        Int?
   discordInviteId    String?             @db.VarChar(12)
@@ -85,7 +87,7 @@ model Tournament {
   freeModRules       String?
   warmupRules        String?
   lateProcedures     String?
-  banOrder           String              @db.VarChar(6)
+  banOrder           BanOrder            @default(ABABAB)
   // Relations
   solo               SoloTournament?     @relation("soloTournament")
   team               TeamTournament?     @relation("teamTournament")
@@ -93,7 +95,11 @@ model Tournament {
   staffRoles         StaffRole[]         @relation("staffRoles")
   staffMembers       StaffMember[]
   inPurchases        Purchase[]
-  services           TournamentService[]
+}
+
+enum BanOrder {
+  ABABAB
+  ABBAAB
 }
 
 enum TournamentService {
@@ -142,9 +148,15 @@ model StaffRole {
 }
 
 enum StaffPermission {
+  // Prefixes:
+  // View: Get data
+  // Mutate: Create and update data
+  // Delete: Delete data
+
+  // Host can do everything regardless of other permissions, can also delete the tournament. Only one user can have this permission
+  Host
   // Tournament
   MutateTournament
-  DeleteTournament
   // Staff
   ViewStaffMembers
   MutateStaffMembers
@@ -159,13 +171,14 @@ enum StaffPermission {
   // Suggest maps
   ViewPoolSuggestions
   MutatePoolSuggestions
+  DeletePoolSuggestions
   // Pool maps
   ViewPooledMaps
   DeletePooledMaps
   // Playtest (provide replays and feedback)
   ViewMapsToPlaytest
   MutateMapsToPlaytest // Can replay and provide feedback
-  DeleteMapReplay
+  DeleteMapsToPlaytest
   // Matches
   ViewMatches
   MutateMatches
@@ -175,8 +188,8 @@ enum StaffPermission {
   StreamMatches
   // Stats
   ViewStats
-  CalcStats
-  DeleteScores
+  MutateStats // Can calculate stats
+  DeleteStats
 }
 
 enum StaffColor {

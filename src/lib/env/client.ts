@@ -4,15 +4,17 @@ import {
   PUBLIC_OSU_CLIENT_ID,
   PUBLIC_OSU_REDIRECT_URI,
   PUBLIC_DISCORD_CLIENT_ID,
-  PUBLIC_DISCORD_REDIRECT_URI
+  PUBLIC_DISCORD_REDIRECT_URI,
+  PUBLIC_PAYPAL_CLIENT_ID
 } from '$env/static/public';
 
 export const clientEnvSchema = z.object({
   PUBLIC_SUPER_USER: z.boolean(),
   PUBLIC_OSU_CLIENT_ID: z.number().int(),
-  PUBLIC_OSU_REDIRECT_URI: z.string(),
-  PUBLIC_DISCORD_CLIENT_ID: z.string(),
-  PUBLIC_DISCORD_REDIRECT_URI: z.string()
+  PUBLIC_OSU_REDIRECT_URI: z.string().nonempty(),
+  PUBLIC_DISCORD_CLIENT_ID: z.string().nonempty(),
+  PUBLIC_DISCORD_REDIRECT_URI: z.string().nonempty(),
+  PUBLIC_PAYPAL_CLIENT_ID: z.string().nonempty()
 });
 
 export const clientEnv = {
@@ -20,7 +22,8 @@ export const clientEnv = {
   PUBLIC_OSU_CLIENT_ID: Number(PUBLIC_OSU_CLIENT_ID),
   PUBLIC_OSU_REDIRECT_URI,
   PUBLIC_DISCORD_CLIENT_ID,
-  PUBLIC_DISCORD_REDIRECT_URI
+  PUBLIC_DISCORD_REDIRECT_URI,
+  PUBLIC_PAYPAL_CLIENT_ID
 };
 
 function env() {

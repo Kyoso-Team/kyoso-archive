@@ -1,25 +1,33 @@
 <script lang="ts">
   import isEqual from 'lodash.isequal';
   import { form } from '$stores';
+  import { focusTrap } from '@skeletonlabs/skeleton';
   import { Input, InputSelect } from '$components';
 
   let disabled = false;
 
   function onClose() {
+    if ($form?.onClose) {
+      $form.onClose();
+    }
+
     form.destroy();
   }
 
   function onSubmit() {
     if (!$form) return;
     $form.onSubmit($form.currentValue);
+    onClose();
   }
 
   $: {
     if ($form) {
       let hasErrors = !!$form.fields.find(({ errorCount }) => errorCount > 0);
       let isEmptyObject = Object.keys($form.currentValue).length === 0;
-      let requiredFieldIsUndefined = !!$form.fields.find(({ optional, mapToKey }) => {
-        return !optional ? $form?.currentValue?.[mapToKey] === undefined : false;
+      let requiredFieldIsUndefined = !!$form.fields.find(({ optional, mapToKey, disableIf }) => {
+        return !optional && $form?.currentValue && !disableIf?.($form.currentValue)
+          ? $form?.currentValue?.[mapToKey] === undefined
+          : false;
       });
       let isUnmodified = isEqual($form.currentValue, $form.defaultValue);
 
@@ -31,6 +39,7 @@
 {#if $form}
   <form
     on:submit|preventDefault={onSubmit}
+    use:focusTrap={true}
     class="h-screen max-h-screen w-[28rem] overflow-y-scroll bg-surface-800 p-6"
   >
     <header>

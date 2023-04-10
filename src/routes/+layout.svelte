@@ -2,20 +2,24 @@
   import '../theme.css';
   import '@skeletonlabs/skeleton/styles/all.css';
   import env from '$lib/env/client';
+  import { loadScript } from '@paypal/paypal-js';
   import { setInitialClassState } from '@skeletonlabs/skeleton';
   import { AppShell, AppBar, Avatar } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
   import { goto } from '$app/navigation';
-  import { form } from '$stores';
+  import { form, paypal } from '$stores';
   import { Form } from '$components';
+  import { onMount } from 'svelte';
   import type { LayoutServerData } from './$types';
 
   export let data: LayoutServerData;
   let showUserMenu = false;
+
   const authUrl = buildUrl.authRequest(env.PUBLIC_OSU_CLIENT_ID, env.PUBLIC_OSU_REDIRECT_URI, [
     'identify',
     'public'
   ]);
+
   const navLinks = [
     {
       href: 'dashboard',
@@ -26,6 +30,20 @@
       label: 'Tournaments'
     }
   ];
+
+  onMount(async () => {
+    try {
+      let paypalScript = await loadScript({
+        'client-id': env.PUBLIC_PAYPAL_CLIENT_ID,
+        'currency': 'USD'
+      });
+
+      paypal.set(paypalScript);
+    } catch (err) {
+      console.error('An error ocurred while loading the PayPal SDK script');
+      console.error(err);
+    }
+  });
 
   function onLogoutClick() {
     goto('/auth/logout');
@@ -91,9 +109,7 @@
   </svelte:fragment>
   {#if $form}
     <div class="fixed inset-0 z-20 h-screen w-screen bg-surface-backdrop-token">
-      {#if $form}
-        <Form />
-      {/if}
+      <Form />
     </div>
   {/if}
   <slot />
