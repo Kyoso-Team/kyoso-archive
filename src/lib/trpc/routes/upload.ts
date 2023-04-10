@@ -43,20 +43,14 @@ export const uploadRouter = t.router({
       }
     }
 
-    /**
-     * With how things are currently, if you're not allowed to upload,
-     * you get an ugly 500 internal error, might wanna change that somehow
-    */
-    if (!allowed) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Not allowed to upload for the given reason"
-      })
-    } else {
-      return next()
-    }
+   return next({
+      ctx: {
+        allowed
+      }
+    })
   })
   .mutation(async ({ ctx }) => {
+    if (!ctx.allowed) {return false}
     let info = ctx.uploadInfo
     let upload = await fetch(`${env.STORAGE_ENDPOINT}/${env.STORAGE_ZONE}/${info.uploadType}_${info.targetId}/${info.upload.name}`, {
       method: "PUT",
@@ -64,16 +58,49 @@ export const uploadRouter = t.router({
         AccessKey: env.STORAGE_PASSWORD,
         "content-type": "application/octet-stream",
       },
-      body: ctx.uploadInfo.upload
+      body: info.upload
     })
 
     if (!upload.ok) {
       return null
     } else {
+      removeOldFiles(`${env.STORAGE_ENDPOINT}/${env.STORAGE_ZONE}/${info.uploadType}_${info.targetId}/`, info.upload.name)
       return {
         url: `/uploads/${info.uploadType}_${info.targetId}/${info.upload.name}`,
-        file: ctx.uploadInfo.upload
+        file: info.upload
       }
     }
   })
 })
+
+/**
+ * When a user uploads a file, it may render some previously uploaded file outdated or meaningless
+ * To not store files for no reason, we delete those files!
+ * It is done through that function for syncronisation reasons
+ * (there's no need to wait for the removal to be done to send back the file info to the uploader)
+ */
+async function removeOldFiles(fetchUrl: string, newerFileName: string) {
+  let list_response = await fetch(fetchUrl, {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      AccessKey: env.STORAGE_PASSWORD
+    }
+  })
+  let list = await list_response.json()
+
+  for (let i = 0; i < list.length; i++) {
+    if (list[i]["ObjectName"] !== newerFileName) {
+      let deletion = await fetch(`${fetchUrl}${list[i]["ObjectName"]}`, {
+        method: "DELETE",
+        headers: {
+          AccessKey: env.STORAGE_PASSWORD
+        }
+      })
+      
+      if (!deletion.ok) {
+        console.error("Failed to delete a file from storage", deletion)
+      }
+    }
+  }
+}

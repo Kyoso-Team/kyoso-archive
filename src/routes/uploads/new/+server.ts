@@ -8,6 +8,8 @@ export const POST = (async (event) => {
 
   if (upload) {
     return new Response(upload.url)
+  } else if (upload === false) {
+    throw error(403, "You're not allowed to upload the file")
   } else {
     throw error(400, "Failed to upload the file")
   }
