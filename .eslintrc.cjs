@@ -9,14 +9,14 @@ module.exports = {
     'svelte3/typescript': () => require('typescript')
   },
   rules: {
-    quotes: [
+    'quotes': [
       'warn',
       'single',
       {
         avoidEscape: true
       }
     ],
-    semi: ['warn', 'always'],
+    'semi': ['warn', 'always'],
     'no-var': 'warn',
     'brace-style': ['warn', '1tbs'],
     'comma-dangle': ['warn', 'never'],

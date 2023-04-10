@@ -1,17 +1,21 @@
 import adapter from '@sveltejs/adapter-node';
 import { vitePreprocess } from '@sveltejs/kit/vite';
 
+const src = `${process.cwd()}/src/`;
+const lib = `${src}lib/`;
+
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
   preprocess: vitePreprocess(),
   kit: {
     adapter: adapter(),
     alias: {
-      $prisma: `${process.cwd()}/src/lib/prisma`,
-      $trpc: `${process.cwd()}/src/lib/trpc`,
-      $stores: `${process.cwd()}/src/lib/stores`,
-      $types: `${process.cwd()}/src/lib/types`,
-      $components: `${process.cwd()}/src/components`
+      $prisma: `${lib}prisma`,
+      $trpc: `${lib}trpc`,
+      $stores: `${lib}stores`,
+      $types: `${lib}types`,
+      $components: `${src}components`,
+      $paypal: `${lib}paypal`
     }
   }
 };

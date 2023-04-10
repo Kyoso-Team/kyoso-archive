@@ -12,20 +12,23 @@ function createForm() {
         defaultValue?: Record<string, unknown>;
         currentValue: Record<string, unknown>;
         onSubmit: (value: Record<string, unknown>) => void | Promise<void>;
+        onClose?: () => void | Promise<void>;
       }
     | undefined
-  >(undefined);
+  >();
 
   function create<T extends Record<string, unknown>>({
     title,
     fields,
     onSubmit,
     defaultValue,
-    description
+    description,
+    onClose
   }: {
     title: string;
     fields: (createField: { field: typeof field; asyncField: typeof asyncField }) => Field[];
     onSubmit: (value: T) => void | Promise<void>;
+    onClose?: () => void | Promise<void>;
     defaultValue?: T;
     description?: string;
   }) {
@@ -114,6 +117,7 @@ function createForm() {
       title,
       defaultValue,
       description,
+      onClose,
       currentValue: {},
       onSubmit: onSubmit as (value: Record<string, unknown>) => void | Promise<void>,
       fields: fields({

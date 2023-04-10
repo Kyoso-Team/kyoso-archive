@@ -59,3 +59,24 @@ export interface MapResult {
 export interface InputEvent extends Event {
   currentTarget: EventTarget & HTMLInputElement;
 }
+
+export type TournamentFormData = {
+  name: string;
+  acronym: string;
+  isOpenRank: boolean;
+  lowerRankRange?: number;
+  upperRankRange?: number;
+  useBWS: boolean;
+  type: TournamentType;
+  teamSize?: number;
+  teamPlaySize?: number;
+};
+
+export interface PayPalOrder {
+  id: string;
+  purchase_units: {
+    amount: {
+      value: string;
+    };
+  }[];
+}

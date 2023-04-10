@@ -8,6 +8,8 @@ export async function tryCatch<T>(cb: () => Promise<T> | T, messageOnError: stri
   try {
     return await cb();
   } catch (cause) {
+    console.error(cause);
+
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
       message: messageOnError,

@@ -1,6 +1,8 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@paypal/checkout-server-sdk': ^1.0.3
+  '@paypal/paypal-js': ^5.1.6
   '@prisma/client': ^4.12.0
   '@skeletonlabs/skeleton': ^1.0.0
   '@sveltejs/adapter-node': ^1.2.3
@@ -11,6 +13,7 @@ specifiers:
   '@types/jsonwebtoken': ^9.0.1
   '@types/lodash.isequal': ^4.5.6
   '@types/node': ^18.15.7
+  '@types/paypal__checkout-server-sdk': ^1.0.5
   '@typescript-eslint/eslint-plugin': ^5.45.0
   '@typescript-eslint/parser': ^5.45.0
   autoprefixer: ^10.4.14
@@ -39,6 +42,8 @@ specifiers:
   zod: ^3.21.4
 
 dependencies:
+  '@paypal/checkout-server-sdk': 1.0.3
+  '@paypal/paypal-js': 5.1.6
   '@trpc/client': 10.18.0_@trpc+server@10.18.0
   '@trpc/server': 10.18.0
   discord-oauth2: 2.11.0
@@ -60,6 +65,7 @@ devDependencies:
   '@types/jsonwebtoken': 9.0.1
   '@types/lodash.isequal': 4.5.6
   '@types/node': 18.15.8
+  '@types/paypal__checkout-server-sdk': 1.0.5
   '@typescript-eslint/eslint-plugin': 5.56.0_2hcjazgfnbtq42tcc73br2vup4
   '@typescript-eslint/parser': 5.56.0_j4766f7ecgqbon3u7zlxn5zszu
   autoprefixer: 10.4.14_postcss@8.4.21
@@ -349,6 +355,24 @@ packages:
       fastq: 1.15.0
     dev: true
 
+  /@paypal/checkout-server-sdk/1.0.3:
+    resolution: {integrity: sha512-UEdq8akEdMz0Vs4qoQFU2gMp8PpyE/HKyMwiZuK4vIWUKl8jfd1fWKjQN5cDFm9NkFUIp5U7h++rdMOVj9WMNA==}
+    engines: {node: '>=8'}
+    dependencies:
+      '@paypal/paypalhttp': 1.0.1
+    dev: false
+
+  /@paypal/paypal-js/5.1.6:
+    resolution: {integrity: sha512-1upF06pv0AUtTftRVSra44p8ibqGa3ruKLArvdhpZla25zcrND7R+nDUIMrJ0iteVYZowhujZStFs6NoruExfg==}
+    dependencies:
+      promise-polyfill: 8.3.0
+    dev: false
+
+  /@paypal/paypalhttp/1.0.1:
+    resolution: {integrity: sha512-DC7AHxTT7drF6dUi3YaFdPVuT15sIkpD5H2eHmdtFgxM4UanS1o1ZDfMhR9mpxd8o+X6pz2r+EZVRRq+n1cssQ==}
+    engines: {node: '>=4'}
+    dev: false
+
   /@polka/url/1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
 
@@ -546,6 +570,18 @@ packages:
 
   /@types/node/18.15.8:
     resolution: {integrity: sha512-kzGNJZ57XEH7RdckxZ7wfRjB9hgZABF+NLgR1B2zogUvV0gmK0/60VYA4yb4oKZckPiiJlmmfpdqTfCN0VRX+Q==}
+
+  /@types/paypal__checkout-server-sdk/1.0.5:
+    resolution: {integrity: sha512-pGpESvscnVi26tPOZGEXzr1PQXgNW8aaKtMSB2C8K41+4UW3kT28MCMLmKJkSkkNaJ4LHKEOzfun/c2ntC416g==}
+    dependencies:
+      '@types/paypal__paypalhttp': 1.0.0
+    dev: true
+
+  /@types/paypal__paypalhttp/1.0.0:
+    resolution: {integrity: sha512-JSrGEKWT+VnMNNkOFPYRcBdv/W5FuDP0ZDp9KxExZVEtX8xZTO4NFfkG9gkQ+g/RnEbVZnFwrQ04LH5HLio5Gw==}
+    dependencies:
+      '@types/node': 18.15.8
+    dev: true
 
   /@types/pug/2.0.6:
     resolution: {integrity: sha512-SnHmG9wN1UVmagJOnyo/qkk0Z7gejYxOYYmaAwr5u2yFYfsupN3sg10kyzN8Hep/2zbHxCnsumxOoRIRMBwKCg==}
@@ -1932,6 +1968,10 @@ packages:
     dependencies:
       '@prisma/engines': 4.12.0
     dev: true
+
+  /promise-polyfill/8.3.0:
+    resolution: {integrity: sha512-H5oELycFml5yto/atYqmjyigJoAo3+OXwolYiH7OfQuYlAqhxNvTfiNMbV9hsC6Yp83yE5r2KTVmtrG6R9i6Pg==}
+    dev: false
 
   /proxy-from-env/1.1.0:
     resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
