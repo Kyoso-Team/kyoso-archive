@@ -6,7 +6,7 @@ import env from '$lib/env/server';
 
 export const uploadRouter = t.router({
   obtain: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
-    let upload = await fetch(`${env.STORAGE_ENDPOINT}/${env.STORAGE_ZONE}/${input}`, {
+    let upload = await fetch(`${env.STORAGE_ENDPOINT}/${input}`, {
       method: "GET",
       headers: {
         accept: "*/*",
@@ -31,14 +31,14 @@ export const uploadRouter = t.router({
 
     if (ctx.user.isAdmin) {
       allowed = true
-    }
-
-    if (info.targetType === "tournament") {
-      let staffMember = ctx.user.asStaffMember.find((x) => x.tournamentId === info.targetId)
-
-      if (info.uploadType === "tournamentLogo") {
-        if (staffMember && staffMember.roles.find((r) => r.permissions.find((p) => p === "MutateTournament"))) {
-          allowed = true
+    } else {
+      if (info.targetType === "tournament") {
+        let staffMember = ctx.user.asStaffMember.find((staffed) => staffed.tournamentId === info.targetId)
+  
+        if (info.uploadType === "tournamentLogo") {
+          if (staffMember && staffMember.roles.find((role) => role.permissions.find((permission) => permission === "MutateTournament"))) {
+            allowed = true
+          }
         }
       }
     }
@@ -52,7 +52,7 @@ export const uploadRouter = t.router({
   .mutation(async ({ ctx }) => {
     if (!ctx.allowed) {return false}
     let info = ctx.uploadInfo
-    let upload = await fetch(`${env.STORAGE_ENDPOINT}/${env.STORAGE_ZONE}/${info.uploadType}_${info.targetId}/${info.upload.name}`, {
+    let upload = await fetch(`${env.STORAGE_ENDPOINT}/${info.uploadType}_${info.targetId}/${info.upload.name}`, {
       method: "PUT",
       headers: {
         AccessKey: env.STORAGE_PASSWORD,
@@ -64,7 +64,7 @@ export const uploadRouter = t.router({
     if (!upload.ok) {
       return null
     } else {
-      removeOldFiles(`${env.STORAGE_ENDPOINT}/${env.STORAGE_ZONE}/${info.uploadType}_${info.targetId}/`, info.upload.name)
+      removeOldFiles(`${env.STORAGE_ENDPOINT}/${info.uploadType}_${info.targetId}/`, info.upload.name)
       return {
         url: `/uploads/${info.uploadType}_${info.targetId}/${info.upload.name}`,
         file: info.upload
@@ -99,7 +99,7 @@ async function removeOldFiles(fetchUrl: string, newerFileName: string) {
       })
       
       if (!deletion.ok) {
-        console.error("Failed to delete a file from storage", deletion)
+        console.error("Failed to delete a file from storage", list[i], deletion)
       }
     }
   }

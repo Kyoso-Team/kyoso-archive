@@ -1,5 +1,7 @@
 <script lang="ts">
   let uploadedImage: string;
+  let form: HTMLFormElement;
+  let img: HTMLImageElement;
 
   function previewImageUpload(e: Event) {
     const image = (e.target as HTMLInputElement)?.files?.[0]
@@ -7,31 +9,18 @@
     uploadedImage = URL.createObjectURL(image)
   }
 
-  function uploadFile() {
-    var xhr = new XMLHttpRequest()
-    xhr.open("POST", "./uploads/new") 
-    xhr.onreadystatechange = () => {
-      if (xhr.readyState === 4) {
-        let attr = xhr.status < 300 ? "src" : "alt"
-        let div = document.getElementById("uploadedImage")
-        if (div) {
-          div.setAttribute(attr, xhr.responseText)
-        }
-      }
-    }
-    
-    let form = document.getElementById("upload") as HTMLFormElement
-    if (form) {
-      var formData = new FormData(form)
-      xhr.send(formData)
-      return true
-    }
+  async function uploadFile() {
+    let fileUpload = await fetch("./uploads/new", {
+      method: "POST",
+      body: new FormData(form)
+    })
 
-    return false
+    let attr = fileUpload.ok ? "src" : "alt"
+    img.setAttribute(attr, await fileUpload.text())
   }
 </script>
 
-<form id="upload" method="post" enctype="multipart/form-data" action="./uploads/new">
+<form id="upload" bind:this={form} on:submit|preventDefault={uploadFile}>
   <label>
     Upload an image. ANY image.
     <input type="file" name="file" accept="image/*" on:change={previewImageUpload} />
@@ -44,9 +33,8 @@
       <img src={uploadedImage} style="max-width: 50ch;" alt="" />
     </div>
   {/if}
+  <button>Submit</button>
 </form>
 
-<button on:click={uploadFile}>Submit</button>
-
 <!-- svelte-ignore a11y-img-redundant-alt -->
-<img id="uploadedImage" alt="The image should appear here once uploaded!"/>
+<img id="uploadedImage" bind:this={img} alt="The image should appear here once uploaded!"/>

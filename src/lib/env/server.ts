@@ -5,7 +5,6 @@ import {
   OSU_CLIENT_SECRET,
   DISCORD_CLIENT_SECRET,
   STORAGE_ENDPOINT,
-  STORAGE_ZONE,
   STORAGE_PASSWORD,
   PAYPAL_CLIENT_SECRET,
   ADMIN_BY_DEFAULT
@@ -19,7 +18,6 @@ const serverEnvSchema = z
     OSU_CLIENT_SECRET: z.string(),
     DISCORD_CLIENT_SECRET: z.string(),
     STORAGE_ENDPOINT: z.string(),
-    STORAGE_ZONE: z.string(),
     STORAGE_PASSWORD: z.string(),
     PAYPAL_CLIENT_SECRET: z.string().nonempty(),
     ADMIN_BY_DEFAULT: z.array(z.number().int())
@@ -33,7 +31,6 @@ const serverEnv = {
   OSU_CLIENT_SECRET,
   DISCORD_CLIENT_SECRET,
   STORAGE_ENDPOINT,
-  STORAGE_ZONE,
   STORAGE_PASSWORD,
   PAYPAL_CLIENT_SECRET,
   ADMIN_BY_DEFAULT: (JSON.parse(ADMIN_BY_DEFAULT) as string[]).map((id) => Number(id))
