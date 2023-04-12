@@ -7,9 +7,9 @@
 
   let page = {
     offset: 0,
-    limit: 3,
+    limit: Math.min(10, purchases.length),
     size: purchases.length,
-    amounts: [3, 10, 20, 40],
+    amounts: [Math.min(3, purchases.length), 10, 20, 40],
   }
 
   let sourceHeaders = ["ID", "PayPal ID", "Cost", "Services", "Purchaser (ID)", "Tournament (ID)", "Date"]

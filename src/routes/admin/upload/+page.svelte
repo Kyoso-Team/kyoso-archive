@@ -10,7 +10,7 @@
   }
 
   async function uploadFile() {
-    let fileUpload = await fetch("./uploads/new", {
+    let fileUpload = await fetch("/uploads/new", {
       method: "POST",
       body: new FormData(form)
     })
