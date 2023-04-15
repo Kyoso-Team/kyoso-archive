@@ -62,12 +62,12 @@ export const getUser = t.middleware(async ({ ctx, next }) => {
 
 export const getUploadInfo = t.middleware(async({ ctx, next }) => {
   let formData = await ctx.request.formData()
-  let img = formData.get("file")
+  let upload = formData.get("file")
   let uploadType = formData.get("uploadType")
   let targetType = formData.get("targetType")
   let targetId = formData.get("targetId")
 
-  if (!img || !(img as File).size) {
+  if (!upload || !(upload as File).size) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "No file is trying to be uploaded"
@@ -89,7 +89,7 @@ export const getUploadInfo = t.middleware(async({ ctx, next }) => {
   return next({
     ctx: {
       uploadInfo: {
-        img: img as File,
+        upload: upload as File,
         uploadType: uploadType as string,
         targetType: targetType as string,
         targetId: +targetId as number
