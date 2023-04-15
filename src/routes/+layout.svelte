@@ -14,6 +14,7 @@
 
   export let data: LayoutServerData;
   let showUserMenu = false;
+  let showAdminMenu = false;
 
   const authUrl = buildUrl.authRequest(env.PUBLIC_OSU_CLIENT_ID, env.PUBLIC_OSU_REDIRECT_URI, [
     'identify',
@@ -23,18 +24,22 @@
   const navLinks = [
     {
       href: 'dashboard',
-      label: 'Dashboard',
-      admin: false
+      label: 'Dashboard'
     },
     {
       href: 'tournaments',
-      label: 'Tournaments',
-      admin: false
+      label: 'Tournaments'
+    }
+  ];
+
+  const adminNavLinks = [
+    {
+      href: 'purchases',
+      label: 'Purchases'
     },
     {
       href: 'upload',
-      label: 'Upload',
-      admin: true
+      label: 'Upload'
     }
   ];
 
@@ -59,6 +64,10 @@
   function onUserAvatarClick() {
     showUserMenu = !showUserMenu;
   }
+
+  function switchAdminMenuDisplay() {
+    showAdminMenu = !showAdminMenu;
+  }
 </script>
 
 <svelte:head>
@@ -69,10 +78,26 @@
     <AppBar padding="p-3">
       <svelte:fragment slot="lead">
         <nav class="flex gap-2">
-          {#each navLinks as { href, label, admin }}
-            {#if (!admin) || (admin && data.user && data.user.isAdmin)}
-              <a href={`/${href}`} class="btn hover:variant-soft-primary">{label}</a>
-            {/if}
+          {#if (data.user && data.user.isAdmin)}
+            <div>
+              <button on:click={switchAdminMenuDisplay} class="btn hover:variant-soft-primary">Admin</button>
+              {#if showAdminMenu}
+                <div class="card absolute top-[5rem] left-4 w-52 py-2">
+                  <nav class="flex flex-col gap-1 px-2">
+                    {#each adminNavLinks as { href, label }}
+                      <a
+                        on:click={switchAdminMenuDisplay}
+                        href={`/admin/${href}`}
+                        class="btn justify-start py-1 hover:variant-soft-primary">{label}</a
+                      >
+                    {/each}
+                  </nav>
+                </div>
+              {/if}
+            </div>
+          {/if}
+          {#each navLinks as { href, label }}
+            <a href={`/${href}`} class="btn hover:variant-soft-primary">{label}</a>
           {/each}
         </nav>
       </svelte:fragment>
