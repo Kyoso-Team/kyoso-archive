@@ -1,7 +1,9 @@
 import prisma from '$prisma';
 import type { PageServerLoad } from './$types';
 
-export const load = (async (event) => {
+export const load = (async ({ parent }) => {
+  await parent() // check if user is admin before doing anything
+
   let purchases = prisma.purchase.findMany({
     orderBy: {
       purchasedAt: "desc"
