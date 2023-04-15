@@ -2,11 +2,11 @@ import prisma from '$prisma';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ parent }) => {
-  await parent() // check if user is admin before doing anything
+  await parent(); // check if user is admin before doing anything
 
   let purchases = prisma.purchase.findMany({
     orderBy: {
-      purchasedAt: "desc"
+      purchasedAt: 'desc'
     },
     select: {
       id: true,
@@ -27,8 +27,8 @@ export const load = (async ({ parent }) => {
         }
       }
     }
-  })
-  
+  });
+
   return {
     purchases
   };

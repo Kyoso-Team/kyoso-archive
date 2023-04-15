@@ -19,20 +19,23 @@ export function getStoredUser<T extends boolean>(
   return user as SessionUser;
 }
 
-export function mustHavePerms(staffMember: {
-  roles: {
-    permissions: StaffPermission[];
-  }[];
-}, necessaryPermissions: StaffPermission[] | StaffPermission) {
+export function mustHavePerms(
+  staffMember: {
+    roles: {
+      permissions: StaffPermission[];
+    }[];
+  },
+  necessaryPermissions: StaffPermission[] | StaffPermission
+) {
   let userPermissions: StaffPermission[] = [];
-  
+
   staffMember.roles.forEach((role) => {
-    userPermissions.push(... role.permissions);
+    userPermissions.push(...role.permissions);
   });
 
   userPermissions = removeDuplicates(userPermissions);
 
-  return (Array.isArray(necessaryPermissions))
+  return Array.isArray(necessaryPermissions)
     ? userPermissions.some((userPerm) => necessaryPermissions.includes(userPerm))
     : userPermissions.some((userPerm) => necessaryPermissions === userPerm);
 }

@@ -78,9 +78,11 @@
     <AppBar padding="p-3">
       <svelte:fragment slot="lead">
         <nav class="flex gap-2">
-          {#if (data.user && data.user.isAdmin)}
+          {#if data.user && data.user.isAdmin}
             <div>
-              <button on:click={switchAdminMenuDisplay} class="btn hover:variant-soft-primary">Admin</button>
+              <button on:click={switchAdminMenuDisplay} class="btn hover:variant-soft-primary"
+                >Admin</button
+              >
               {#if showAdminMenu}
                 <div class="card absolute top-[5rem] left-4 w-52 py-2">
                   <nav class="flex flex-col gap-1 px-2">

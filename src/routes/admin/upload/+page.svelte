@@ -4,19 +4,19 @@
   let img: HTMLImageElement;
 
   function previewImageUpload(e: Event) {
-    const image = (e.target as HTMLInputElement)?.files?.[0]
-    if (!image) return
-    uploadedImage = URL.createObjectURL(image)
+    const image = (e.target as HTMLInputElement)?.files?.[0];
+    if (!image) return;
+    uploadedImage = URL.createObjectURL(image);
   }
 
   async function uploadFile() {
-    let fileUpload = await fetch("/uploads/new", {
-      method: "POST",
+    let fileUpload = await fetch('/uploads/new', {
+      method: 'POST',
       body: new FormData(form)
-    })
+    });
 
-    let attr = fileUpload.ok ? "src" : "alt"
-    img.setAttribute(attr, await fileUpload.text())
+    let attr = fileUpload.ok ? 'src' : 'alt';
+    img.setAttribute(attr, await fileUpload.text());
   }
 </script>
 
@@ -37,4 +37,4 @@
 </form>
 
 <!-- svelte-ignore a11y-img-redundant-alt -->
-<img id="uploadedImage" bind:this={img} alt="The image should appear here once uploaded!"/>
+<img id="uploadedImage" bind:this={img} alt="The image should appear here once uploaded!" />

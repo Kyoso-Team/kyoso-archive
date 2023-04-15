@@ -60,29 +60,29 @@ export const getUser = t.middleware(async ({ ctx, next }) => {
   });
 });
 
-export const getUploadInfo = t.middleware(async({ ctx, next }) => {
-  let formData = await ctx.request.formData()
-  let upload = formData.get("file")
-  let uploadType = formData.get("uploadType")
-  let targetType = formData.get("targetType")
-  let targetId = formData.get("targetId")
+export const getUploadInfo = t.middleware(async ({ ctx, next }) => {
+  let formData = await ctx.request.formData();
+  let upload = formData.get('file');
+  let uploadType = formData.get('uploadType');
+  let targetType = formData.get('targetType');
+  let targetId = formData.get('targetId');
 
   if (!upload || !(upload as File).size) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "No file is trying to be uploaded"
+      code: 'BAD_REQUEST',
+      message: 'No file is trying to be uploaded'
     });
   }
   if (!uploadType || !targetType || !targetId) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Trying to upload without specifying why"
+      code: 'BAD_REQUEST',
+      message: 'Trying to upload without specifying why'
     });
   }
   if (isNaN(+targetId)) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "The ID of the target is not a number"
+      code: 'BAD_REQUEST',
+      message: 'The ID of the target is not a number'
     });
   }
 
@@ -95,14 +95,15 @@ export const getUploadInfo = t.middleware(async({ ctx, next }) => {
         targetId: +targetId as number
       }
     }
-  })
-})
-
+  });
+});
 
 export const getUserAsStaff = t.middleware(async ({ ctx, next, input }) => {
-  let parse = z.object({
-    tournamentId: z.number().int()
-  }).safeParse(input);
+  let parse = z
+    .object({
+      tournamentId: z.number().int()
+    })
+    .safeParse(input);
 
   if (!parse.success) {
     throw new TRPCError({
@@ -125,52 +126,45 @@ export const getUserAsStaff = t.middleware(async ({ ctx, next, input }) => {
     }
   });
 
-  let tournament = await tryCatch(
-    async () => {
-      return await prisma.tournament.findUniqueOrThrow({
-        where: {
-          id: parsed.tournamentId
-        },
-        select: {
-          id: true,
-          team: {
-            select: {
-              id: true
-            }
-          },
-          solo: {
-            select: {
-              id: true
-            }
-          }
-        }
-      });
-    },
-    `Couldn't find tournament with ID ${parse.data.tournamentId}.`
-  );
-
-
-  let staffMember = await tryCatch(
-    async () => {
-      return await prisma.staffMember.findUniqueOrThrow({
-        where: {
-          userId_tournamentId: {
-            userId: user.id,
-            tournamentId: tournament.id
+  let tournament = await tryCatch(async () => {
+    return await prisma.tournament.findUniqueOrThrow({
+      where: {
+        id: parsed.tournamentId
+      },
+      select: {
+        id: true,
+        team: {
+          select: {
+            id: true
           }
         },
-        select: {
-          id: true,
-          roles: {
-            select: {
-              permissions: true
-            }
+        solo: {
+          select: {
+            id: true
           }
         }
-      });
-    },
-    `Couldn't find Sstaff member with user ID ${user.id} in tournament with ID ${tournament.id}.`
-  );
+      }
+    });
+  }, `Couldn't find tournament with ID ${parse.data.tournamentId}.`);
+
+  let staffMember = await tryCatch(async () => {
+    return await prisma.staffMember.findUniqueOrThrow({
+      where: {
+        userId_tournamentId: {
+          userId: user.id,
+          tournamentId: tournament.id
+        }
+      },
+      select: {
+        id: true,
+        roles: {
+          select: {
+            permissions: true
+          }
+        }
+      }
+    });
+  }, `Couldn't find Sstaff member with user ID ${user.id} in tournament with ID ${tournament.id}.`);
 
   return next({
     ctx: {

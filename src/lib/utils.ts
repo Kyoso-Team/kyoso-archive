@@ -9,5 +9,5 @@ export const format = {
 };
 
 export function removeDuplicates<T>(arr: T[]) {
-  return [... new Set(arr)];
+  return [...new Set(arr)];
 }
