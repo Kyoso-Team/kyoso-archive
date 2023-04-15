@@ -47,7 +47,7 @@ export const imagesRouter = t.router({
     if (!allowed) {
       throw new TRPCError({
         code: "UNAUTHORIZED",
-        message: "Not allowed to upload for the given reason"
+        message: "Not allowed to upload for the given reason."
       })
     } else {
       return next()

@@ -76,11 +76,11 @@ async function getProfiles(osuToken: Token, discordToken: TokenRequestResult) {
   return await Promise.all([
     tryCatch(
       async () => await new Client(osuToken.access_token as string).users.getSelf(),
-      "Can't get osu! profile data"
+      "Can't get osu! profile data."
     ),
     tryCatch(
       async () => await discordAuth.getUser(discordToken.access_token as string),
-      "Can't get Discord profile data"
+      "Can't get Discord profile data."
     )
   ]);
 }
@@ -110,7 +110,7 @@ export const authRouter = t.router({
   handleOsuAuth: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
     let token = await tryCatch(
       async () => await osuAuth.requestToken(input),
-      "Can't get osu! OAuth token"
+      "Can't get osu! OAuth token."
     );
 
     ctx.cookies.set('osu_token', signJWT(token), cookiesOptions);
@@ -124,7 +124,7 @@ export const authRouter = t.router({
         scope,
         code: input
       });
-    }, "Can't get Discord OAuth token");
+    }, "Can't get Discord OAuth token.");
 
     ctx.cookies.set('discord_token', signJWT(token), cookiesOptions);
   }),
@@ -138,7 +138,7 @@ export const authRouter = t.router({
     if (!osuToken || !discordToken) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
-        message: 'Invalid login cookies'
+        message: 'Invalid login cookies.'
       });
     }
 
@@ -161,7 +161,7 @@ export const authRouter = t.router({
         update: data,
         select: userSelect
       });
-    }, "Can't create or update user");
+    }, "Can't create or update user.");
 
     let storedUser = getStoredUser(user);
     ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
@@ -177,7 +177,7 @@ export const authRouter = t.router({
 
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
-        message: 'Invalid user cookie'
+        message: 'Invalid user cookie.'
       });
     }
 
@@ -193,13 +193,13 @@ export const authRouter = t.router({
           discordRefreshToken: true
         }
       });
-    }, "Can't refresh user data");
+    }, "Can't refresh user data.");
 
     if (new Date().getTime() - new Date(storedUser.updatedAt).getTime() >= 86_400_000) {
       let [osuToken, discordToken] = await Promise.all([
         tryCatch(
           async () => await osuAuth.refreshToken(user.osuRefreshToken),
-          "Can't refresh osu! OAuth token"
+          "Can't refresh osu! OAuth token."
         ),
         tryCatch(async () => {
           return await discordAuth.tokenRequest({
@@ -208,7 +208,7 @@ export const authRouter = t.router({
             scope,
             refreshToken: user.discordRefreshToken
           });
-        }, "Can't refresh Discord OAuth token")
+        }, "Can't refresh Discord OAuth token.")
       ]);
       let [osuProfile, discordProfile] = await getProfiles(osuToken, discordToken);
       let data = getData(osuToken, discordToken, osuProfile, discordProfile);
@@ -221,7 +221,7 @@ export const authRouter = t.router({
           data,
           select: userSelect
         });
-      }, "Can't update user");
+      }, "Can't update user.");
 
       storedUser = getStoredUser(updatedUser);
     } else {

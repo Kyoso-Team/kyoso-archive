@@ -1,15 +1,16 @@
 import prisma from '$prisma';
 import { verifyJWT } from '$lib/jwt';
-import { t } from '$trpc';
+import { t, tryCatch } from '$trpc';
 import { TRPCError } from '@trpc/server';
 import type { SessionUser } from '$types';
 import type { Context } from '$trpc/context';
+import { z } from 'zod';
 
 function getStoredUserHelper(ctx: Context) {
   if (!ctx.cookies.get('session')) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
-      message: "User isn't logged in"
+      message: "User isn't logged in."
     });
   }
 
@@ -96,3 +97,86 @@ export const getUploadInfo = t.middleware(async({ ctx, next }) => {
     }
   })
 })
+
+
+export const getUserAsStaff = t.middleware(async ({ ctx, next, input }) => {
+  let parse = z.object({
+    tournamentId: z.number().int()
+  }).safeParse(input);
+
+  if (!parse.success) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: '"tournamentId" is undefined'
+    });
+  }
+
+  let parsed = parse.data;
+  let storedUser = getStoredUserHelper(ctx);
+
+  let user = await prisma.user.findUniqueOrThrow({
+    where: {
+      id: storedUser.id
+    },
+    select: {
+      id: true,
+      isAdmin: true,
+      osuUserId: true
+    }
+  });
+
+  let tournament = await tryCatch(
+    async () => {
+      return await prisma.tournament.findUniqueOrThrow({
+        where: {
+          id: parsed.tournamentId
+        },
+        select: {
+          id: true,
+          team: {
+            select: {
+              id: true
+            }
+          },
+          solo: {
+            select: {
+              id: true
+            }
+          }
+        }
+      });
+    },
+    `Couldn't find tournament with ID ${parse.data.tournamentId}.`
+  );
+
+
+  let staffMember = await tryCatch(
+    async () => {
+      return await prisma.staffMember.findUniqueOrThrow({
+        where: {
+          userId_tournamentId: {
+            userId: user.id,
+            tournamentId: tournament.id
+          }
+        },
+        select: {
+          id: true,
+          roles: {
+            select: {
+              permissions: true
+            }
+          }
+        }
+      });
+    },
+    `Couldn't find Sstaff member with user ID ${user.id} in tournament with ID ${tournament.id}.`
+  );
+
+  return next({
+    ctx: {
+      user,
+      tournament,
+      staffMember
+    }
+  });
+});
