@@ -72,17 +72,50 @@ function getData(
   };
 }
 
+function getOsuData(
+  osuToken: Token,
+  osuProfile: UserExtended & {
+    is_restricted: boolean;
+  }
+): Prisma.UserUpdateInput {
+  return {
+    osuAccessToken: osuToken.access_token,
+    osuRefreshToken: osuToken.refresh_token,
+    osuUserId: osuProfile.id,
+    osuUsername: osuProfile.username,
+    isRestricted: osuProfile.is_restricted,
+    isAdmin: env.ADMIN_BY_DEFAULT.includes(osuProfile.id),
+    country: {
+      connectOrCreate: {
+        create: {
+          code: osuProfile.country.code,
+          name: osuProfile.country.name
+        },
+        where: {
+          code: osuProfile.country.code
+        }
+      }
+    }
+  };
+}
+
+async function getOsuProfile(osuToken: Token) {
+  return await tryCatch(
+    async () => await new Client(osuToken.access_token as string).users.getSelf(),
+    "Can't get osu! profile data."
+  )
+}
+
+async function getDiscordProfile(discordToken: TokenRequestResult) {
+  return await tryCatch(
+    async () => await discordAuth.getUser(discordToken.access_token as string),
+    "Can't get Discord profile data."
+  )
+}
+
+// exists for convenience
 async function getProfiles(osuToken: Token, discordToken: TokenRequestResult) {
-  return await Promise.all([
-    tryCatch(
-      async () => await new Client(osuToken.access_token as string).users.getSelf(),
-      "Can't get osu! profile data."
-    ),
-    tryCatch(
-      async () => await discordAuth.getUser(discordToken.access_token as string),
-      "Can't get Discord profile data."
-    )
-  ]);
+  return await Promise.all([getOsuProfile(osuToken), getDiscordProfile(discordToken)]);
 }
 
 function getStoredUser<
@@ -112,9 +145,41 @@ export const authRouter = t.router({
       async () => await osuAuth.requestToken(input),
       "Can't get osu! OAuth token."
     );
+    
+    /**
+     * Get the osu! id of the user directly from the token
+     * The id can also be obtained by doing a request with that token,
+     * but the time we spend doing the request is time wasted if user is registering
+     */
+    let userId = 0
+    let accessToken = token.access_token
+    let tokenPayload = JSON.parse(Buffer.from(accessToken.substring(accessToken.indexOf(".") + 1, accessToken.lastIndexOf(".")), "base64").toString('ascii'))
+		if (tokenPayload.sub && tokenPayload.sub.length && !isNaN(+tokenPayload.sub)) {
+      userId = Number(tokenPayload.sub)
+    }
 
-    ctx.cookies.set('osu_token', signJWT(token), cookiesOptions);
-    return discordAuth.generateAuthUrl({ scope });
+    if (userId !== 0 && await prisma.user.findUnique({
+      where: {
+        osuUserId: userId
+      }
+    })) { // User is registered and logging in, skip discord as it must already be linked
+      let osuProfile = await getOsuProfile(token)
+      let data = getOsuData(token, osuProfile)
+      let user = await prisma.user.update({
+        where: {
+          osuUserId: osuProfile.id
+        },
+        data,
+        select: userSelect
+      })
+
+      let storedUser = getStoredUser(user);
+      ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
+      return "/"
+    } else { // User is currently registering, make them link their discord
+      ctx.cookies.set('osu_token', signJWT(token), cookiesOptions);
+      return discordAuth.generateAuthUrl({ scope });
+    }
   }),
   handleDiscordAuth: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
     let token = await tryCatch(async () => {
