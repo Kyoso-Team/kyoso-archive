@@ -1,0 +1,28 @@
+.document {
+  @apply max-w-2xl text-justify leading-relaxed;
+}
+
+.document h1 {
+  @apply pb-4;
+}
+
+.document h2 {
+  @apply pb-4 pt-8;
+}
+
+.document h3 {
+  @apply pb-2 pt-6;
+}
+
+.document p,
+ul {
+  @apply py-2;
+}
+
+.document ul {
+  @apply list-inside list-disc;
+}
+
+.content-center {
+  @apply flex justify-center p-10;
+}

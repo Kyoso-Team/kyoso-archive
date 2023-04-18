@@ -1,6 +1,7 @@
 <script lang="ts">
   import '../theme.css';
   import '@skeletonlabs/skeleton/styles/all.css';
+  import '../main.css';
   import env from '$lib/env/client';
   import { loadScript } from '@paypal/paypal-js';
   import { setInitialClassState } from '@skeletonlabs/skeleton';

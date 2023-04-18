@@ -56,7 +56,7 @@ function mapUrlParams(params: URLSearchParams, prefix: string, allStrings?: bool
   if (!allStrings) {
     params.forEach((value, key) => {
       if (!key.startsWith(prefix)) return;
-  
+
       if (!isNaN(Number(value)) && value !== '') {
         obj[key] = Number(value);
       } else if (value === 'true') {
@@ -72,7 +72,11 @@ function mapUrlParams(params: URLSearchParams, prefix: string, allStrings?: bool
   return obj;
 }
 
-export function getUrlParams<A extends AnyZodObject, B extends AnyZodObject>(url: URL, filtersSchema: A, sortSchema: B): {
+export function getUrlParams<A extends AnyZodObject, B extends AnyZodObject>(
+  url: URL,
+  filtersSchema: A,
+  sortSchema: B
+): {
   page: number;
   search?: string;
   filters: z.infer<A>;
@@ -82,17 +86,19 @@ export function getUrlParams<A extends AnyZodObject, B extends AnyZodObject>(url
   let page = params.get('page') || '';
   let search = params.get('search') || '';
 
-  return z.object({
-    page: z.number().default(1),
-    search: z.string().optional(),
-    filters: filtersSchema.partial(),
-    sort: sortSchema.partial()
-  }).parse({
-    page: page === '' ? 1 : Number(page) < 0 ? 1 : parseInt(page),
-    search: search === '' ? undefined : search,
-    filters: mapUrlParams(params, 'f.'),
-    sort: mapUrlParams(params, 's.', true)
-  });
+  return z
+    .object({
+      page: z.number().default(1),
+      search: z.string().optional(),
+      filters: filtersSchema.partial(),
+      sort: sortSchema.partial()
+    })
+    .parse({
+      page: page === '' ? 1 : Number(page) < 0 ? 1 : parseInt(page),
+      search: search === '' ? undefined : search,
+      filters: mapUrlParams(params, 'f.'),
+      sort: mapUrlParams(params, 's.', true)
+    });
 }
 
 export function paginate(page: number, elementsPerPage: number = 30) {

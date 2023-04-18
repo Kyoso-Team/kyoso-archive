@@ -6,36 +6,46 @@ import type { PageServerLoad } from './$types';
 
 export const load = (async ({ parent, url }) => {
   await parent();
-  let { sort, page, search } = getUrlParams(url, z.object({}), z.object({
-    purchasedAt: prismaSortSchema.default('desc')
-  }));
+  let { sort, page, search } = getUrlParams(
+    url,
+    z.object({}),
+    z.object({
+      purchasedAt: prismaSortSchema.default('desc')
+    })
+  );
 
   let containsSearch = {
     contains: search
   };
 
   let purchases = prisma.purchase.findMany({
-    ... paginate(page),
+    ...paginate(page),
     where: {
-      OR: [{
-        forTournament: {
-          name: containsSearch
+      OR: [
+        {
+          forTournament: {
+            name: containsSearch
+          }
+        },
+        {
+          forTournament: {
+            acronym: containsSearch
+          }
+        },
+        {
+          paypalOrderId: containsSearch
+        },
+        {
+          purchasedBy: {
+            osuUsername: containsSearch
+          }
+        },
+        {
+          purchasedBy: {
+            discordUsername: containsSearch
+          }
         }
-      }, {
-        forTournament: {
-          acronym: containsSearch
-        }
-      }, {
-        paypalOrderId: containsSearch
-      }, {
-        purchasedBy: {
-          osuUsername: containsSearch
-        }
-      }, {
-        purchasedBy: {
-          discordUsername: containsSearch
-        }
-      }]
+      ]
     },
     select: {
       id: true,
