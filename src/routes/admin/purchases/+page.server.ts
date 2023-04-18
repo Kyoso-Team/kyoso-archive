@@ -1,12 +1,41 @@
 import prisma from '$prisma';
+import { z } from 'zod';
+import { getUrlParams, paginate } from '$lib/server-utils';
+import { prismaSortSchema } from '$lib/schemas';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ parent }) => {
-  await parent(); // check if user is admin before doing anything
+export const load = (async ({ parent, url }) => {
+  await parent();
+  let { sort, page, search } = getUrlParams(url, z.object({}), z.object({
+    purchasedAt: prismaSortSchema.default('desc')
+  }));
+
+  let containsSearch = {
+    contains: search
+  };
 
   let purchases = prisma.purchase.findMany({
-    orderBy: {
-      purchasedAt: 'desc'
+    ... paginate(page),
+    where: {
+      OR: [{
+        forTournament: {
+          name: containsSearch
+        }
+      }, {
+        forTournament: {
+          acronym: containsSearch
+        }
+      }, {
+        paypalOrderId: containsSearch
+      }, {
+        purchasedBy: {
+          osuUsername: containsSearch
+        }
+      }, {
+        purchasedBy: {
+          discordUsername: containsSearch
+        }
+      }]
     },
     select: {
       id: true,
@@ -26,6 +55,9 @@ export const load = (async ({ parent }) => {
           name: true
         }
       }
+    },
+    orderBy: {
+      purchasedAt: sort.purchasedAt
     }
   });
 

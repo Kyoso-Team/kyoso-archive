@@ -1,3 +1,4 @@
-export { form } from './form';
-export { paypal } from './paypal';
-export { error } from './error';
+export * from './form';
+export * from './paypal';
+export * from './error';
+export * from './paginate';

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { PageServerData } from './$types';
   import { Paginator, Table } from '@skeletonlabs/skeleton';
+  import type { PageServerData } from './$types';
 
   export let data: PageServerData;
   let purchases = data.purchases;
