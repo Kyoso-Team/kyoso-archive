@@ -11,5 +11,8 @@ export const GET = (async (event) => {
   }
 
   let redirectUrl = await caller.auth.handleOsuAuth(code);
+  if (redirectUrl === "/") {
+    await caller.auth.updateUser()
+  }
   throw redirect(302, redirectUrl);
 }) satisfies RequestHandler;

@@ -72,33 +72,6 @@ function getData(
   };
 }
 
-function getOsuData(
-  osuToken: Token,
-  osuProfile: UserExtended & {
-    is_restricted: boolean;
-  }
-): Prisma.UserUpdateInput {
-  return {
-    osuAccessToken: osuToken.access_token,
-    osuRefreshToken: osuToken.refresh_token,
-    osuUserId: osuProfile.id,
-    osuUsername: osuProfile.username,
-    isRestricted: osuProfile.is_restricted,
-    isAdmin: env.ADMIN_BY_DEFAULT.includes(osuProfile.id),
-    country: {
-      connectOrCreate: {
-        create: {
-          code: osuProfile.country.code,
-          name: osuProfile.country.name
-        },
-        where: {
-          code: osuProfile.country.code
-        }
-      }
-    }
-  };
-}
-
 async function getOsuProfile(osuToken: Token) {
   return await tryCatch(
     async () => await new Client(osuToken.access_token as string).users.getSelf(),
@@ -106,6 +79,10 @@ async function getOsuProfile(osuToken: Token) {
   )
 }
 
+/** 
+ * *may* be used for the process of changing discord account
+ * could move it and `getOsuProfile` to `getProfiles` if it's not the case
+ */ 
 async function getDiscordProfile(discordToken: TokenRequestResult) {
   return await tryCatch(
     async () => await discordAuth.getUser(discordToken.access_token as string),
@@ -158,21 +135,13 @@ export const authRouter = t.router({
       userId = Number(tokenPayload.sub)
     }
 
-    if (userId !== 0 && await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: {
         osuUserId: userId
       }
-    })) { // User is registered and logging in, skip discord as it must already be linked
-      let osuProfile = await getOsuProfile(token)
-      let data = getOsuData(token, osuProfile)
-      let user = await prisma.user.update({
-        where: {
-          osuUserId: osuProfile.id
-        },
-        data,
-        select: userSelect
-      })
+    })
 
+    if (userId !== 0 && user) { // User is registered and logging in, skip discord by simply running `updateUser`
       let storedUser = getStoredUser(user);
       ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
       return "/"
