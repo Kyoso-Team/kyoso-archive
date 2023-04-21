@@ -9,9 +9,10 @@
 	$: visibleDiscord = user.showDiscordTag
 
 	async function changeVisibility() {
-		await fetch('/user/settings/discord-visibility', {
+		await fetch('/user/settings', {
 			method: 'POST',
 			body: JSON.stringify({
+				action: "discord-visibility",
 				visibleDiscord: !visibleDiscord
 			})
 		})
@@ -24,8 +25,11 @@
 			body: "Do you really want to change which Discord account is linked to Kyoso?",
 			response: async (r: Boolean) => {
 				if (r === true) {
-					let response = await fetch('/user/settings/discord-change', {
-						method: 'POST'
+					let response = await fetch('/user/settings', {
+						method: 'POST',
+						body: JSON.stringify({
+							action: "discord-change"
+						})
 					});
 					window.location.href = await response.text()
 				}

@@ -121,10 +121,12 @@
                   </section>
                   <nav class="mt-2 flex flex-col gap-1 px-2">
                     <a
+                      on:click={onUserAvatarClick}
                       href={`/user/${data.user.id}`}
                       class="btn justify-start py-1 hover:variant-soft-primary">Profile</a
                     >
                     <a
+                      on:click={onUserAvatarClick}
                       href="/user/settings"
                       class="btn justify-start py-1 hover:variant-soft-primary">Settings</a
                     >
