@@ -12,6 +12,7 @@ export const load = (async (event) => {
     select: {
       id: true,
       discordUserId: true,
+      showDiscordTag: true,
       apiKey: true
     }
   });

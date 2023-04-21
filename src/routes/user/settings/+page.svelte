@@ -5,6 +5,18 @@
   export let data: PageServerData;
 	let user = data.user
 
+	// Discord
+	$: visibleDiscord = user.showDiscordTag
+
+	async function changeVisibility() {
+		await fetch('/user/settings/discord-visibility', {
+			method: 'POST',
+			body: JSON.stringify({
+				visibleDiscord: !visibleDiscord
+			})
+		})
+	}
+
 	function confirmDiscordChange() {
 		modalStore.trigger({
 			type: "confirm",
@@ -12,13 +24,34 @@
 			body: "Do you really want to change which Discord account is linked to Kyoso?",
 			response: async (r: Boolean) => {
 				if (r === true) {
-					let response = await fetch('/user/settings/discord', {
+					let response = await fetch('/user/settings/discord-change', {
 						method: 'POST'
 					});
 					window.location.href = await response.text()
 				}
 			}
 		})
+	}
+
+	// Purchases
+	let head_purchases = ["Purchase Date", "Cost", "Services", "Tournament", "PayPal Order ID"]
+	let purchases = data.purchases.map((purch) => {
+		return [
+			purch.purchasedAt.toUTCString(),
+			`US$${purch.cost.toFixed(2)}`,
+			String(purch.services).replace(/,/g, ", "),
+			purch.forTournament ? purch.forTournament.name : "None",
+			purch.paypalOrderId
+		].map((x) => String(x))
+	})
+
+	// API key
+	let apiKeyInput: HTMLInputElement;
+  let apiReveal: HTMLButtonElement;
+
+	function revealApiKey() {
+		apiKeyInput.classList.remove("hidden")
+		apiReveal.classList.add("hidden")
 	}
 
 	function confirmKeyReset() {
@@ -33,26 +66,6 @@
 			}
 		})
 	}
-
-	let head_purchases = ["Purchase Date", "Cost", "Services", "Tournament", "PayPal Order ID"]
-	let purchases = data.purchases.map((purch) => {
-		return [
-			purch.purchasedAt.toUTCString(),
-			`US$${purch.cost.toFixed(2)}`,
-			String(purch.services).replace(/,/g, ", "),
-			purch.forTournament ? purch.forTournament.name : "None",
-			purch.paypalOrderId
-		].map((x) => String(x))
-	})
-	$: visibleDiscord = true
-
-	let apiKeyInput: HTMLInputElement;
-  let apiReveal: HTMLButtonElement;
-
-	function revealApiKey() {
-		apiKeyInput.classList.remove("hidden")
-		apiReveal.classList.add("hidden")
-	}
 </script>
 
 <Modal />
@@ -62,7 +75,9 @@
 			Discord
 		</h2>
 		<p>Should your Discord tag be publicly visible?</p>
-		<SlideToggle name="slider-label" active="bg-primary-500" bind:checked={visibleDiscord}>Your Discord Tag is {visibleDiscord ? "" : "NOT "}visible!</SlideToggle>
+		<SlideToggle bind:checked={visibleDiscord} on:click={changeVisibility} name="toggleVisibility" active="bg-primary-500">
+			Your Discord tag is {visibleDiscord ? "" : "NOT "}visible!
+		</SlideToggle>
 		<button on:click={confirmDiscordChange} class="btn variant-filled-error mt-4">CHANGE DISCORD ACCOUNT</button>
 	</section>
 	<section class="mb-4">
