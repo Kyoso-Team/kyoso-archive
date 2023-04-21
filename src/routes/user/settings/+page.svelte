@@ -10,9 +10,12 @@
 			type: "confirm",
 			title: "Please confirm!",
 			body: "Do you really want to change which Discord account is linked to Kyoso?",
-			response: (r: Boolean) => {
+			response: async (r: Boolean) => {
 				if (r === true) {
-					console.log("...change the discord account")
+					let response = await fetch('/user/settings/discord', {
+						method: 'POST'
+					});
+					window.location.href = await response.text()
 				}
 			}
 		})
