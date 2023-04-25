@@ -23,6 +23,6 @@ ul {
   @apply list-inside list-disc;
 }
 
-.content-center {
-  @apply flex justify-center p-10;
+.center-content {
+  @apply flex items-center p-10 flex-col;
 }

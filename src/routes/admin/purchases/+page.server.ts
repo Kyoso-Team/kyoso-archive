@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getUrlParams, paginate } from '$lib/server-utils';
 import { prismaSortSchema } from '$lib/schemas';
 import type { PageServerLoad } from './$types';
+import type { Prisma } from '@prisma/client';
 
 export const load = (async ({ parent, url }) => {
   await parent();
@@ -10,43 +11,46 @@ export const load = (async ({ parent, url }) => {
     url,
     z.object({}),
     z.object({
-      purchasedAt: prismaSortSchema.default('desc')
+      purchasedAt: prismaSortSchema
     })
   );
 
-  let containsSearch = {
-    contains: search
+  let containsSearch: Prisma.StringFilter = {
+    contains: search,
+    mode: 'insensitive'
+  };
+
+  let where: Prisma.PurchaseWhereInput = {
+    OR: [
+      {
+        forTournament: {
+          name: containsSearch
+        }
+      },
+      {
+        forTournament: {
+          acronym: containsSearch
+        }
+      },
+      {
+        paypalOrderId: containsSearch
+      },
+      {
+        purchasedBy: {
+          osuUsername: containsSearch
+        }
+      },
+      {
+        purchasedBy: {
+          discordUsername: containsSearch
+        }
+      }
+    ]
   };
 
   let purchases = prisma.purchase.findMany({
     ...paginate(page),
-    where: {
-      OR: [
-        {
-          forTournament: {
-            name: containsSearch
-          }
-        },
-        {
-          forTournament: {
-            acronym: containsSearch
-          }
-        },
-        {
-          paypalOrderId: containsSearch
-        },
-        {
-          purchasedBy: {
-            osuUsername: containsSearch
-          }
-        },
-        {
-          purchasedBy: {
-            discordUsername: containsSearch
-          }
-        }
-      ]
-    },
+    where,
     select: {
       id: true,
       purchasedAt: true,
@@ -56,22 +60,27 @@ export const load = (async ({ parent, url }) => {
       purchasedBy: {
         select: {
           id: true,
-          osuUsername: true
+          osuUsername: true,
+          osuUserId: true
         }
       },
       forTournament: {
         select: {
           id: true,
-          name: true
+          name: true,
+          acronym: true
         }
       }
     },
     orderBy: {
-      purchasedAt: sort.purchasedAt
+      purchasedAt: sort.purchasedAt || 'desc'
     }
   });
+  let purchaseCount = prisma.purchase.count({ where });
 
   return {
-    purchases
+    purchases,
+    purchaseCount,
+    page
   };
 }) satisfies PageServerLoad;

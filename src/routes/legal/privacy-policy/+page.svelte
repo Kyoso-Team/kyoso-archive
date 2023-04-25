@@ -3,7 +3,7 @@
   import { page } from '$app/stores';
 </script>
 
-<div class="content-center">
+<div class="center-content">
   <div class="document">
     <h1>Privacy Policy</h1>
     <p>

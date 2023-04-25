@@ -1,8 +1,9 @@
-import type { PageStore } from '$types';
 import { writable } from 'svelte/store';
+import { goto } from '$app/navigation';
+import type { PageStore, Sort } from '$types';
 
 function createPaginate() {
-  const { subscribe, set } = writable<{
+  const { subscribe } = writable<{
     page?: number;
     search?: string;
     filters: Record<string, string>;
@@ -13,62 +14,66 @@ function createPaginate() {
   });
 
   function setPage(pageStore: PageStore, page: number) {
-    pageStore.url.searchParams.set('page', page.toString());
+    if (typeof window === 'undefined') return;
+    
+    let url = pageStore.url;
+    url.searchParams.set('page', page.toString());
+
+    goto(url.search);
   }
 
-  function deletePage(pageStore: PageStore) {
-    pageStore.url.searchParams.delete('page');
-  }
+  function setSearch(pageStore: PageStore, searchQuery: string | undefined | null) {
+    if (typeof window === 'undefined') return;
+    let url = pageStore.url;
 
-  function setSearch(pageStore: PageStore, searchQuery: string) {
-    pageStore.url.searchParams.set('search', searchQuery);
-  }
+    if (searchQuery) {
+      url.searchParams.set('search', encodeURIComponent(searchQuery));
+    } else {
+      url.searchParams.delete('search');
+    }
 
-  function deleteSearch(pageStore: PageStore) {
-    pageStore.url.searchParams.delete('search');
+    goto(url.search);
   }
 
   function setFilter(
     pageStore: PageStore,
     filterName: string,
-    filterValue: string | number | boolean
+    filterValue: string | number | boolean | undefined | null
   ) {
-    let value =
-      typeof filterValue === 'boolean' ? (filterValue ? 'true' : 'false') : filterValue.toString();
-    pageStore.url.searchParams.set(`f.${filterName}`, value);
+    if (typeof window === 'undefined') return;
+    let url = pageStore.url;
+
+    if (filterValue) {
+      let value =
+        typeof filterValue === 'boolean' ? (filterValue ? 'true' : 'false') : filterValue.toString();
+  
+      url.searchParams.set(`f.${filterName}`, value);
+    } else {
+      url.searchParams.delete(`f.${filterName}`);
+    }
+
+    goto(url.search);
   }
 
-  function deleteFilter(pageStore: PageStore, filterName: string) {
-    pageStore.url.searchParams.delete(`f.${filterName}`);
-  }
+  function setSort(pageStore: PageStore, sortName: string, sortValue: Sort | null | undefined) {
+    if (typeof window === 'undefined') return;
+    let url = pageStore.url;
 
-  function setSort(pageStore: PageStore, sortName: string, sortValue: 'desc' | 'asc') {
-    pageStore.url.searchParams.set(`s.${sortName}`, sortValue);
-  }
+    if (sortValue) {
+      url.searchParams.set(`s.${sortName}`, sortValue);
+    } else {
+      url.searchParams.delete(`s.${sortName}`);
+    }
 
-  function deleteSort(pageStore: PageStore, sortName: string) {
-    pageStore.url.searchParams.delete(`f.${sortName}`);
+    goto(url.search);
   }
 
   return {
     subscribe,
-    set,
-    page: {
-      set: setPage,
-      destroy: deletePage
-    },
-    search: {
-      set: setSearch,
-      destroy: deleteSearch
-    },
-    filters: {
-      set: setFilter,
-      destroy: deleteFilter
-    },
-    sort: {
-      set: setSort,
-      destroy: deleteSort
-    }
+    setPage,
+    setSearch,
+    setFilter,
+    setSort
   };
 }
 

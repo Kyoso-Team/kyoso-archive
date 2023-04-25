@@ -53,21 +53,25 @@ export function isAllowed(isAllowed: boolean, action: string) {
 function mapUrlParams(params: URLSearchParams, prefix: string, allStrings?: boolean) {
   let obj: Record<string, unknown> = {};
 
-  if (!allStrings) {
-    params.forEach((value, key) => {
-      if (!key.startsWith(prefix)) return;
+  params.forEach((value, key) => {
+    if (!key.startsWith(prefix)) return;
+    let k = key.startsWith(prefix) ? key.replace(prefix, '') : key;
 
-      if (!isNaN(Number(value)) && value !== '') {
-        obj[key] = Number(value);
-      } else if (value === 'true') {
-        obj[key] = true;
-      } else if (value === 'false') {
-        obj[key] = false;
-      } else if (value !== '') {
-        obj[key] = value;
-      }
-    });
-  }
+    if (allStrings) {
+      obj[k] = value;
+      return;
+    }
+
+    if (!isNaN(Number(value)) && value !== '') {
+      obj[k] = Number(value);
+    } else if (value === 'true') {
+      obj[k] = true;
+    } else if (value === 'false') {
+      obj[k] = false;
+    } else if (value !== '') {
+      obj[k] = value;
+    }
+  });
 
   return obj;
 }
@@ -79,8 +83,8 @@ export function getUrlParams<A extends AnyZodObject, B extends AnyZodObject>(
 ): {
   page: number;
   search?: string;
-  filters: z.infer<A>;
-  sort: z.infer<B>;
+  filters: Partial<z.infer<A>>;
+  sort: Partial<z.infer<B>>;
 } {
   let params = url.searchParams;
   let page = params.get('page') || '';
@@ -95,7 +99,7 @@ export function getUrlParams<A extends AnyZodObject, B extends AnyZodObject>(
     })
     .parse({
       page: page === '' ? 1 : Number(page) < 0 ? 1 : parseInt(page),
-      search: search === '' ? undefined : search,
+      search: search === '' ? undefined : decodeURIComponent(search),
       filters: mapUrlParams(params, 'f.'),
       sort: mapUrlParams(params, 's.', true)
     });

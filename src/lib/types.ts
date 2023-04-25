@@ -3,6 +3,7 @@ import type { Page } from '@sveltejs/kit';
 
 export type FormInputType = 'string' | 'number' | 'boolean' | 'date' | 'id';
 export type TournamentType = 'Teams' | 'Solo';
+export type Sort = 'asc' | 'desc';
 
 export type AssignFieldType<
   T extends Record<string, unknown>,
