@@ -14,11 +14,11 @@ import { clientEnvSchema, clientEnv } from './client';
 const serverEnvSchema = z
   .object({
     NODE_ENV: z.union([z.literal('production'), z.literal('development')]),
-    JWT_SECRET: z.string(),
-    OSU_CLIENT_SECRET: z.string(),
-    DISCORD_CLIENT_SECRET: z.string(),
-    STORAGE_ENDPOINT: z.string(),
-    STORAGE_PASSWORD: z.string(),
+    JWT_SECRET: z.string().nonempty(),
+    OSU_CLIENT_SECRET: z.string().nonempty(),
+    DISCORD_CLIENT_SECRET: z.string().nonempty(),
+    STORAGE_ENDPOINT: z.string().nonempty(),
+    STORAGE_PASSWORD: z.string().nonempty(),
     PAYPAL_CLIENT_SECRET: z.string().nonempty(),
     ADMIN_BY_DEFAULT: z.array(z.number().int())
   })

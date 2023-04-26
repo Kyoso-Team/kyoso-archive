@@ -1,13 +1,56 @@
 import prisma from '$prisma';
+import { z } from 'zod';
+import { getUrlParams, paginate } from '$lib/server-utils';
+import { prismaSortSchema } from '$lib/schemas';
 import type { PageServerLoad } from './$types';
+import type { Prisma } from '@prisma/client';
 
-export const load = (async ({ parent }) => {
-  await parent(); // check if user is admin before doing anything
+export const load = (async ({ parent, url }) => {
+  await parent();
+  let { sort, page, search } = getUrlParams(
+    url,
+    z.object({}),
+    z.object({
+      purchasedAt: prismaSortSchema
+    })
+  );
+
+  let containsSearch: Prisma.StringFilter = {
+    contains: search,
+    mode: 'insensitive'
+  };
+
+  let where: Prisma.PurchaseWhereInput = {
+    OR: [
+      {
+        forTournament: {
+          name: containsSearch
+        }
+      },
+      {
+        forTournament: {
+          acronym: containsSearch
+        }
+      },
+      {
+        paypalOrderId: containsSearch
+      },
+      {
+        purchasedBy: {
+          osuUsername: containsSearch
+        }
+      },
+      {
+        purchasedBy: {
+          discordUsername: containsSearch
+        }
+      }
+    ]
+  };
 
   let purchases = prisma.purchase.findMany({
-    orderBy: {
-      purchasedAt: 'desc'
-    },
+    ...paginate(page),
+    where,
     select: {
       id: true,
       purchasedAt: true,
@@ -17,19 +60,27 @@ export const load = (async ({ parent }) => {
       purchasedBy: {
         select: {
           id: true,
-          osuUsername: true
+          osuUsername: true,
+          osuUserId: true
         }
       },
       forTournament: {
         select: {
           id: true,
-          name: true
+          name: true,
+          acronym: true
         }
       }
+    },
+    orderBy: {
+      purchasedAt: sort.purchasedAt || 'desc'
     }
   });
+  let purchaseCount = prisma.purchase.count({ where });
 
   return {
-    purchases
+    purchases,
+    purchaseCount,
+    page
   };
 }) satisfies PageServerLoad;

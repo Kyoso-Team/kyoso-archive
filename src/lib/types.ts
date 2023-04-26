@@ -1,7 +1,9 @@
 import type { ZodBoolean, ZodDate, ZodNumber, ZodString } from 'zod';
+import type { Page } from '@sveltejs/kit';
 
 export type FormInputType = 'string' | 'number' | 'boolean' | 'date' | 'id';
 export type TournamentType = 'Teams' | 'Solo';
+export type Sort = 'asc' | 'desc';
 
 export type AssignFieldType<
   T extends Record<string, unknown>,
@@ -26,6 +28,8 @@ export type AssignFieldType<
   : T[K] extends Date | object
   ? DateTime
   : Default;
+
+export type PageStore = Page<Record<string, string>, string | null>;
 
 export interface SessionUser {
   id: number;
