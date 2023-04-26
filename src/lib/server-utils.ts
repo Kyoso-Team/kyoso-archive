@@ -1,13 +1,13 @@
 import { z, ZodAny, ZodObject, type ZodAnyDef, type ZodRawShape } from 'zod';
 import { verifyJWT } from '$lib/jwt';
-import { redirect, type RequestEvent } from '@sveltejs/kit';
+import { redirect, type Cookies } from '@sveltejs/kit';
 import { TRPCError, type DeepPartial } from '@trpc/server';
 import { removeDuplicates } from './utils';
 import type { StaffPermission } from '@prisma/client';
 import type { SessionUser } from '$types';
 
 export function getStoredUser<T extends boolean>(
-  event: RequestEvent,
+  event: {cookies: Cookies},
   mustBeSignedIn: T
 ): T extends true ? SessionUser : SessionUser | undefined {
   let user = verifyJWT<SessionUser>(event.cookies.get('session'));

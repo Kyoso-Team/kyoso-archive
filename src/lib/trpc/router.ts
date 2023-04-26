@@ -1,11 +1,11 @@
-import { authRouter, tournamentRouter, uploadRouter, settingsRouter } from './routes';
+import { authRouter, tournamentRouter, uploadRouter, usersRouter } from './routes';
 import { t } from '$trpc';
 
 export const router = t.router({
   auth: authRouter,
   tournaments: tournamentRouter,
   uploads: uploadRouter,
-  settings: settingsRouter
+  users: usersRouter
 });
 
 export type Router = typeof router;

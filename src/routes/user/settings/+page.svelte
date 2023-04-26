@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { PageServerData } from './$types';
 	import { SlideToggle, Table, Modal, modalStore} from '@skeletonlabs/skeleton';
+	import { trpc } from '$trpc/client';
+	import { page } from '$app/stores';
 
   export let data: PageServerData;
 	let user = data.user
@@ -9,13 +11,7 @@
 	$: visibleDiscord = user.showDiscordTag
 
 	async function changeVisibility() {
-		await fetch('/user/settings', {
-			method: 'POST',
-			body: JSON.stringify({
-				action: "discord-visibility",
-				visibleDiscord: !visibleDiscord
-			})
-		})
+		await trpc($page).users.changeDiscordVisibility.query(!visibleDiscord)
 	}
 
 	function confirmDiscordChange() {
@@ -25,13 +21,7 @@
 			body: "Do you really want to change which Discord account is linked to Kyoso?",
 			response: async (r: Boolean) => {
 				if (r === true) {
-					let response = await fetch('/user/settings', {
-						method: 'POST',
-						body: JSON.stringify({
-							action: "discord-change"
-						})
-					});
-					window.location.href = await response.text()
+					window.location.href = await trpc($page).auth.generateDiscordAuthLink.query()
 				}
 			}
 		})
