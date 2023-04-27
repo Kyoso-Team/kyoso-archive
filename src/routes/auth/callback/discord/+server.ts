@@ -11,6 +11,12 @@ export const GET = (async (event) => {
   }
 
   await caller.auth.handleDiscordAuth(code);
-  await caller.auth.login();
-  throw redirect(302, '/');
+
+  if (event.cookies.get('session')) { // user is changing their discord account
+    await caller.auth.changeDiscord();
+    throw redirect(302, '/user/settings');
+  } else { // user is registering
+    await caller.auth.login();
+    throw redirect(302, '/');
+  }
 }) satisfies RequestHandler;

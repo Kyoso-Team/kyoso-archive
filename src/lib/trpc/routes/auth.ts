@@ -203,6 +203,35 @@ export const authRouter = t.router({
   logout: t.procedure.query(({ ctx }) => {
     ctx.cookies.delete('session', cookiesOptions);
   }),
+  changeDiscord: t.procedure.query(async ({ ctx }) => {
+    let storedUser = verifyJWT<SessionUser>(ctx.cookies.get('session'));
+    let discordToken = verifyJWT<TokenRequestResult>(ctx.cookies.get('discord_token'));
+    ctx.cookies.delete('discord_token', cookiesOptions);
+
+    if (!storedUser || !discordToken) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Invalid cookies.'
+      });
+    }
+
+    let discordProfile = await getDiscordProfile(discordToken);
+    let updatedUser = await prisma.user.update({
+      where: {
+        osuUserId: storedUser.osuUserId
+      },
+      data: {
+        discordAccesstoken: discordToken.access_token,
+        discordRefreshToken: discordToken.refresh_token,
+        discordUserId: discordProfile.id,
+        discordUsername: discordProfile.username,
+        discordDiscriminator: Number(discordProfile.discriminator)
+      }
+    });
+
+    storedUser = getStoredUser(updatedUser);
+    ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
+  }),
   updateUser: t.procedure.query(async ({ ctx }) => {
     let storedUser = verifyJWT<SessionUser>(ctx.cookies.get('session'));
 
@@ -267,5 +296,12 @@ export const authRouter = t.router({
 
     ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
     return storedUser;
+  }),
+  generateDiscordAuthLink: t.procedure.query(({ ctx }) => {
+    if (verifyJWT<SessionUser>(ctx.cookies.get('session'))) {
+      return discordAuth.generateAuthUrl({ scope });
+    } else {
+      return "/"
+    }
   })
 });
