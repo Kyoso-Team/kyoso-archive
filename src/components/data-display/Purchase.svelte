@@ -1,10 +1,13 @@
 <script lang="ts">
-  import { format } from '$lib/utils';
+  import { format, tooltip } from '$lib/utils';
   import { Avatar } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
+  import { popup } from '@skeletonlabs/skeleton';
+  import { Tooltip } from '$components';
   import type { TournamentService } from '@prisma/client';
 
   export let purchase: {
+    id: number;
     purchasedAt: Date;
     cost: number;
     paypalOrderId: string;
@@ -20,6 +23,8 @@
       acronym: string;
     } | null
   };
+
+  let tournamentNameTooltipTarget = `tournament-name-in-purchase-${purchase.id}`;
 </script>
 
 <div class="card bg-surface-backdrop-token p-4 w-64 md:w-96">
@@ -37,9 +42,27 @@
         <a href={buildUrl.user(purchase.purchasedBy.osuUserId)}>{purchase.purchasedBy.osuUsername}</a> made a purchase of {format.price(purchase.cost)} for
         {' '}
         {#if purchase.forTournament}
-          <a href={`/tournament/${purchase.forTournament.id}`} title={purchase.forTournament.name}>{purchase.forTournament.acronym}</a>
+          <a
+            href={`/tournament/${purchase.forTournament.id}`}
+            use:popup={tooltip(tournamentNameTooltipTarget)}
+          >{purchase.forTournament.acronym}</a>
+          <Tooltip
+            target={tournamentNameTooltipTarget}
+            label={purchase.forTournament.name}
+          />
+          <div class="text-xs text-center card variant-filled p-2 whitespace-nowrap" data-popup='tournament-name'>
+            {purchase.forTournament.name}
+            <div class="arrow variant-filled" />
+          </div>
         {:else}
-          <span class="text-primary-500" title="This tournament is deleted">???</span>
+          <span
+            class="text-primary-500"
+            use:popup={tooltip(tournamentNameTooltipTarget)}
+          >???</span>
+          <Tooltip
+            target={tournamentNameTooltipTarget}
+            label="This tournament is deleted"
+          />
         {/if}
         {' '}
         on {format.date(purchase.purchasedAt)}.

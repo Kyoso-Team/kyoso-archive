@@ -1,6 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@floating-ui/dom': ^1.2.7
   '@paypal/checkout-server-sdk': ^1.0.3
   '@paypal/paypal-js': ^5.1.6
   '@prisma/client': ^4.12.0
@@ -43,6 +44,7 @@ specifiers:
   zod: ^3.21.4
 
 dependencies:
+  '@floating-ui/dom': 1.2.7
   '@paypal/checkout-server-sdk': 1.0.3
   '@paypal/paypal-js': 5.1.6
   '@trpc/client': 10.18.0_@trpc+server@10.18.0
@@ -300,6 +302,16 @@ packages:
     resolution: {integrity: sha512-lxJ9R5ygVm8ZWgYdUweoq5ownDlJ4upvoWmO4eLxBYHdMo+vZ/Rx0EN6MbKWDJOSUGrqJy2Gt+Dyv/VKml0fjg==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
+
+  /@floating-ui/core/1.2.6:
+    resolution: {integrity: sha512-EvYTiXet5XqweYGClEmpu3BoxmsQ4hkj3QaYA6qEnigCWffTP3vNRwBReTdrwDwo7OoJ3wM8Uoe9Uk4n+d4hfg==}
+    dev: false
+
+  /@floating-ui/dom/1.2.7:
+    resolution: {integrity: sha512-DyqylONj1ZaBnzj+uBnVfzdjjCkFCL2aA9ESHLyUOGSqb03RpbLMImP1ekIQXYs4KLk9jAjJfZAU8hXfWSahEg==}
+    dependencies:
+      '@floating-ui/core': 1.2.6
+    dev: false
 
   /@humanwhocodes/config-array/0.11.8:
     resolution: {integrity: sha512-UybHIJzJnR5Qc/MsD9Kr+RpO2h+/P1GhOwdiLPXK5TWk5sgTdu88bTD9UP+CKbPPh5Rni1u0GjAdYQLemG8g+g==}

@@ -14,7 +14,12 @@
   import { form, paypal, error } from '$stores';
   import { Form, Error } from '$components';
   import { onMount } from 'svelte';
+  import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
+  import { storePopup } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
+
+  storeHighlightJs.set(hljs);
+  storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
   export let data: LayoutServerData;
   let showUserMenu = false;
@@ -49,7 +54,6 @@
 
   onMount(() => {
     loadPayPalScript();
-    storeHighlightJs.set(hljs);
   });
 
   async function loadPayPalScript() {

@@ -43,6 +43,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@floating-ui/dom": "^1.2.7",
     "@paypal/checkout-server-sdk": "^1.0.3",
     "@paypal/paypal-js": "^5.1.6",
     "@trpc/client": "^10.18.0",

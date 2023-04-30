@@ -1,3 +1,4 @@
+import type { PopupSettings } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
 
 export const format = {
@@ -38,4 +39,12 @@ export function removeDuplicates<T>(arr: T[]) {
 
 export function setSettingError<T extends string | number>(parsed: SafeParseReturnType<T, T>) {
   return !parsed.success ? parsed.error.issues[0].message : undefined;
+}
+
+export function tooltip(target: string): PopupSettings {
+  return {
+    target,
+    event: 'hover',
+    placement: 'top'
+  };
 }
