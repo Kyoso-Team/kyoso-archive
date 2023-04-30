@@ -1,7 +1,14 @@
 import { writable } from 'svelte/store';
 
+interface Error {
+  message: string;
+  type: 'string' | 'object';
+  action: 'refresh' | 'close';
+  canSubmitIssue: boolean;
+}
+
 function createError() {
-  const { subscribe, set } = writable<string | undefined>();
+  const { subscribe, set } = writable<Error | undefined>();
 
   function formatObject(obj: Record<string, unknown> | object, nestingLevel = 1) {
     let formatted = '{';
@@ -20,7 +27,7 @@ function createError() {
       } else if (typeof value === 'object') {
         formattedValue = formatObject(value, nestingLevel + 1);
       } else {
-        formattedValue = `'${value}'`;
+        formattedValue = `"${value}"`;
       }
 
       formatted += `\n${' '.repeat(nestingLevel * 2)}${key}: ${formattedValue}`;
@@ -30,11 +37,16 @@ function createError() {
     return formatted;
   }
 
-  function setError(err: unknown, currentError?: string) {
+  function setError(currentError: Error | undefined, err: unknown, action: 'refresh' | 'close', canSubmitIssue: boolean = true) {
     if (currentError) return;
 
     let error = err as Record<string, unknown> | string;
-    set(typeof error === 'string' ? error : formatObject(error));
+    set({
+      message: typeof error === 'string' ? error : formatObject(error),
+      type: typeof error === 'string' ? 'string' : 'object',
+      canSubmitIssue,
+      action
+    });
   }
 
   function removeError() {

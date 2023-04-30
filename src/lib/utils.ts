@@ -1,3 +1,5 @@
+import type { SafeParseReturnType } from 'zod';
+
 export const format = {
   rank: (n: number) => `#${new Intl.NumberFormat('us-US').format(n)}`,
   price: (n: number) => {
@@ -32,4 +34,8 @@ export const format = {
 
 export function removeDuplicates<T>(arr: T[]) {
   return [...new Set(arr)];
+}
+
+export function setSettingError<T extends string | number>(parsed: SafeParseReturnType<T, T>) {
+  return !parsed.success ? parsed.error.issues[0].message : undefined;
 }

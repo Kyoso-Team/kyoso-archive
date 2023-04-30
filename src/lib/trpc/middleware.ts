@@ -98,12 +98,12 @@ export const getUploadInfo = t.middleware(async ({ ctx, next }) => {
   });
 });
 
-export const getUserAsStaff = t.middleware(async ({ ctx, next, input }) => {
+export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
   let parse = z
     .object({
       tournamentId: z.number().int()
     })
-    .safeParse(input);
+    .safeParse(rawInput);
 
   if (!parse.success) {
     throw new TRPCError({

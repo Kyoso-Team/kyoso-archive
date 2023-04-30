@@ -151,7 +151,7 @@
           goto(`/tournament/${created.id}`);
         },
         onError: (err) => {
-          error.set(err, $error);
+          error.set($error, err, 'refresh');
         }
       });
 

@@ -236,6 +236,7 @@ export const tournamentRouter = t.router({
     .use(getUserAsStaff)
     .input(
       z.object({
+        tournamentId: z.number().int(),
         where: whereIdSchema,
         data: z
           .object({

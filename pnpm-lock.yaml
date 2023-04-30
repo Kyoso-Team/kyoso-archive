@@ -22,6 +22,7 @@ specifiers:
   eslint: ^8.28.0
   eslint-config-prettier: ^8.5.0
   eslint-plugin-svelte3: ^4.0.0
+  highlight.js: ^11.8.0
   jsonwebtoken: ^9.0.0
   lodash.isequal: ^4.5.0
   nanoid: ^4.0.2
@@ -48,6 +49,7 @@ dependencies:
   '@trpc/server': 10.18.0
   discord-oauth2: 2.11.0
   dotenv: 16.0.3
+  highlight.js: 11.8.0
   jsonwebtoken: 9.0.0
   lodash.isequal: 4.5.0
   nanoid: 4.0.2
@@ -1432,6 +1434,11 @@ packages:
     engines: {node: '>= 0.4.0'}
     dependencies:
       function-bind: 1.1.1
+
+  /highlight.js/11.8.0:
+    resolution: {integrity: sha512-MedQhoqVdr0U6SSnWPzfiadUcDHfN/Wzq25AkXiQv9oiOO/sG0S7XkvpFIqWBl9Yq1UYyYOOVORs5UW2XlPyzg==}
+    engines: {node: '>=12.0.0'}
+    dev: false
 
   /ignore/5.2.4:
     resolution: {integrity: sha512-MAb38BcSbH0eHNBxn7ql2NH/kX33OkB3lZ1BNdh7ENeRChHTYsTvWrMubiIAMNS2llXEEgZ1MUOBtXChP3kaFQ==}

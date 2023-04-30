@@ -2,14 +2,17 @@
   import '../theme.css';
   import '@skeletonlabs/skeleton/styles/all.css';
   import '../main.css';
+  import 'highlight.js/styles/atom-one-dark.css';
   import env from '$lib/env/client';
+  import hljs from 'highlight.js';
+  import { storeHighlightJs } from '@skeletonlabs/skeleton';
   import { loadScript } from '@paypal/paypal-js';
   import { setInitialClassState } from '@skeletonlabs/skeleton';
   import { AppShell, AppBar, Avatar } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
   import { goto } from '$app/navigation';
-  import { form, paypal } from '$stores';
-  import { Form } from '$components';
+  import { form, paypal, error } from '$stores';
+  import { Form, Error } from '$components';
   import { onMount } from 'svelte';
   import type { LayoutServerData } from './$types';
 
@@ -44,7 +47,12 @@
     }
   ];
 
-  onMount(async () => {
+  onMount(() => {
+    loadPayPalScript();
+    storeHighlightJs.set(hljs);
+  });
+
+  async function loadPayPalScript() {
     try {
       let paypalScript = await loadScript({
         'client-id': env.PUBLIC_PAYPAL_CLIENT_ID,
@@ -56,7 +64,7 @@
       console.error('An error ocurred while loading the PayPal SDK script');
       console.error(err);
     }
-  });
+  }
 
   function onLogoutClick() {
     goto('/auth/logout');
@@ -147,6 +155,11 @@
   {#if $form}
     <div class="fixed inset-0 z-20 h-screen w-screen bg-surface-backdrop-token">
       <Form />
+    </div>
+  {/if}
+  {#if $error}
+    <div class="fixed inset-0 z-30 h-screen w-screen bg-surface-backdrop-token flex justify-center items-center">
+      <Error />
     </div>
   {/if}
   <slot />

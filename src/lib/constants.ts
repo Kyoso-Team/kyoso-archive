@@ -28,3 +28,5 @@ export const services: Record<
     teamsPrice: 2
   }
 };
+
+export const tournamentSettingsList = ['General', 'Dates', 'Links', 'Referee', 'Stats'];
