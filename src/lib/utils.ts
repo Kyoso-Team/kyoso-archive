@@ -37,7 +37,7 @@ export function removeDuplicates<T>(arr: T[]) {
   return [...new Set(arr)];
 }
 
-export function setSettingError<T extends string | number>(parsed: SafeParseReturnType<T, T>) {
+export function setSettingError<T extends string | number | null | undefined | Date>(parsed: SafeParseReturnType<T, T>) {
   return !parsed.success ? parsed.error.issues[0].message : undefined;
 }
 
@@ -47,4 +47,35 @@ export function tooltip(target: string): PopupSettings {
     event: 'hover',
     placement: 'top'
   };
+}
+
+export function trimStringValues<T extends Record<string, unknown>>(obj: T): T {
+  let newObj: Record<string, unknown> = {};
+
+  Object.entries(obj).forEach(([key, value]) => {
+    if (typeof value !== 'string') {
+      newObj[key] = value;
+      return;
+    }
+
+    newObj[key] = value.trim();
+  });
+
+  return newObj as T;
+}
+
+function fillDateDigits(n: number) {
+  return n < 10 ? `0${n}` : n.toString();
+}
+
+export function dateToHtmlInput(date: Date) {
+  let year = date.getFullYear();
+  let month = fillDateDigits(date.getMonth() + 1);
+  let day = fillDateDigits(date.getDate());
+
+  let hour = fillDateDigits(date.getHours());
+  let minute = fillDateDigits(date.getMinutes());
+  let second = fillDateDigits(date.getSeconds());
+
+  return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
 }

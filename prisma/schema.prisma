@@ -81,6 +81,7 @@ model Tournament {
   websiteLink        String?
   // Ref settings
   pickTimerLength    Int                 @default(120)
+  startTimerLength   Int                 @default(10)
   doublePickAllowed  Boolean             @default(false)
   doubleBanAllowed   Boolean             @default(false)
   rollRules          String?
