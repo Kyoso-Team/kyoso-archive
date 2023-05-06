@@ -10,18 +10,25 @@
 
   export let data: PageServerData;
 
-  let originalObj = { ... data } as NullPartial<PageServerData, true, 'banOrder'>;
-  let currentObj = { ... originalObj };
+  let originalObj = { ...data } as NullPartial<PageServerData, true, 'banOrder'>;
+  let currentObj = { ...originalObj };
   let errors: Partial<Record<'pickTime' | 'startTime', string>> = {};
 
   $: {
-    let num = z.number({
-      required_error: 'This field is required'
-    }).int().gte(1);
+    let num = z
+      .number({
+        required_error: 'This field is required'
+      })
+      .int()
+      .gte(1);
 
-    let pickTime = num.safeParse(typeof currentObj.pickTimerLength === 'number' ? currentObj.pickTimerLength : undefined),
-      startTime = num.safeParse(typeof currentObj.startTimerLength === 'number' ? currentObj.startTimerLength : undefined);
-    
+    let pickTime = num.safeParse(
+        typeof currentObj.pickTimerLength === 'number' ? currentObj.pickTimerLength : undefined
+      ),
+      startTime = num.safeParse(
+        typeof currentObj.startTimerLength === 'number' ? currentObj.startTimerLength : undefined
+      );
+
     errors = {
       pickTime: setSettingError(pickTime),
       startTime: setSettingError(startTime)
@@ -37,7 +44,7 @@
     let { startTimerLength, pickTimerLength } = currentObj;
 
     if (!startTimerLength || !pickTimerLength) return;
-    
+
     try {
       await trpc($page).tournaments.updateTournament.mutate({
         tournamentId: data.id,
@@ -45,14 +52,14 @@
           id: data.id
         },
         data: {
-          ... currentObj,
+          ...currentObj,
           startTimerLength,
           pickTimerLength
         }
       });
 
       originalObj = currentObj;
-    } catch(err) {
+    } catch (err) {
       console.error(err);
       error.set($error, err, 'close', true);
     }
@@ -100,21 +107,8 @@
       values={['ABABAB', 'ABBAAB']}
       bind:value={currentObj.banOrder}
     />
-    <Setting
-      label="Roll rules"
-      type="text"
-      bind:value={currentObj.rollRules}
-    />
-    <Setting
-      label="Warmup rules"
-      type="text"
-      bind:value={currentObj.warmupRules}
-    />
-    <Setting
-      label="Late procedures"
-      type="text"
-      final
-      bind:value={currentObj.lateProcedures}
-    />
+    <Setting label="Roll rules" type="text" bind:value={currentObj.rollRules} />
+    <Setting label="Warmup rules" type="text" bind:value={currentObj.warmupRules} />
+    <Setting label="Late procedures" type="text" final bind:value={currentObj.lateProcedures} />
   </Settings>
 </div>

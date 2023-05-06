@@ -85,10 +85,16 @@ export interface PayPalOrder {
   }[];
 }
 
-export type NullPartial<T extends Record<string | number | symbol, unknown>, IgnoreBooleans extends boolean = false, Except extends string = ''> = {
+export type NullPartial<
+  T extends Record<string | number | symbol, unknown>,
+  IgnoreBooleans extends boolean = false,
+  Except extends string = ''
+> = {
   [K in keyof T]: K extends Except
     ? T[K]
     : IgnoreBooleans extends true
-      ? (T[K] extends boolean | (boolean | undefined) ? T[K] : T[K] | null)
-      : T[K] | null;
-}
+    ? T[K] extends boolean | (boolean | undefined)
+      ? T[K]
+      : T[K] | null
+    : T[K] | null;
+};

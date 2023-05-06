@@ -10,8 +10,8 @@
 
   export let data: PageServerData;
 
-  let originalObj = { ... data } as NullPartial<PageServerData, true>;
-  let currentObj = { ... originalObj };
+  let originalObj = { ...data } as NullPartial<PageServerData, true>;
+  let currentObj = { ...originalObj };
   let isOpenRank = currentObj.lowerRankRange === -1;
   let lowerRankRange = currentObj.lowerRankRange === -1 ? 1 : currentObj.lowerRankRange;
   let upperRankRange = currentObj.upperRankRange === -1 ? 10000 : currentObj.upperRankRange;
@@ -20,7 +20,7 @@
   $: {
     currentObj.lowerRankRange = isOpenRank ? -1 : lowerRankRange;
     currentObj.upperRankRange = isOpenRank ? -1 : upperRankRange;
-    currentObj = { ... currentObj };
+    currentObj = { ...currentObj };
   }
 
   function onUndo() {
@@ -35,26 +35,26 @@
 
     try {
       let isNameUnique = await trpc($page).validation.isTournamentNameUnique.query(name);
-  
+
       if (!isNameUnique) {
         error.set($error, 'Tournament name is already taken.', 'close', false);
         return;
       }
-  
+
       await trpc($page).tournaments.updateTournament.mutate({
         tournamentId: data.id,
         where: {
           id: data.id
         },
         data: {
-          ... currentObj,
+          ...currentObj,
           name,
           acronym
         }
       });
 
       originalObj = currentObj;
-    } catch(err) {
+    } catch (err) {
       console.error(err);
       error.set($error, err, 'close', true);
     }
@@ -67,21 +67,27 @@
 
     let num = z.number(required).int();
 
-    let name = z.string(required).max(50).safeParse(currentObj.name || undefined),
-      acronym = z.string(required).max(8).safeParse(currentObj.acronym || undefined),
+    let name = z
+        .string(required)
+        .max(50)
+        .safeParse(currentObj.name || undefined),
+      acronym = z
+        .string(required)
+        .max(8)
+        .safeParse(currentObj.acronym || undefined),
       lowerRankRange = (
         isOpenRank
           ? num
           : num.lt(currentObj.upperRankRange || 1, {
-            message: 'Input must be less than the upper rank range limit'
-          })
+              message: 'Input must be less than the upper rank range limit'
+            })
       ).safeParse(currentObj.lowerRankRange || undefined),
       upperRankRange = (
         isOpenRank
           ? num
           : num.gt(currentObj.lowerRankRange || 10000, {
-            message: 'Input must be greater than the lower rank range limit'
-          })
+              message: 'Input must be greater than the lower rank range limit'
+            })
       ).safeParse(currentObj.upperRankRange || undefined);
 
     errors = {
@@ -116,11 +122,7 @@
       error={errors.acronym}
       bind:value={currentObj.acronym}
     />
-    <Setting
-      label="Is open rank?"
-      type="boolean"
-      bind:value={isOpenRank}
-    />
+    <Setting label="Is open rank?" type="boolean" bind:value={isOpenRank} />
     <Setting
       label="Lower rank range limit"
       type="number"
@@ -135,11 +137,6 @@
       disabled={isOpenRank}
       bind:value={upperRankRange}
     />
-    <Setting
-      label="Use BWS formula?"
-      type="boolean"
-      final
-      bind:value={currentObj.useBWS}
-    />
+    <Setting label="Use BWS formula?" type="boolean" final bind:value={currentObj.useBWS} />
   </Settings>
 </div>

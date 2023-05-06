@@ -49,20 +49,20 @@
   justify="justify-center"
 >
   {#each settings as setting, i}
-    <Tab
-      name="settings"
-      value={i}
-      bind:group={currentTab}
-    >{setting}</Tab>
+    <Tab name="settings" value={i} bind:group={currentTab}>{setting}</Tab>
   {/each}
   <svelte:fragment slot="panel">
     <slot name="header" />
     <div class="card w-80 sm:w-[32rem]">
       <slot />
     </div>
-    <div class="flex justify-end gap-2 mt-4">
-      <button class="btn variant-ringed-primary" disabled={btnsDisabled} on:click={onUndoChanges}>Undo Changes</button>
-      <button class="btn variant-filled-primary" disabled={btnsDisabled} on:click={onUpdate}>Update</button>
+    <div class="mt-4 flex justify-end gap-2">
+      <button class="btn variant-ringed-primary" disabled={btnsDisabled} on:click={onUndoChanges}
+        >Undo Changes</button
+      >
+      <button class="btn variant-filled-primary" disabled={btnsDisabled} on:click={onUpdate}
+        >Update</button
+      >
     </div>
   </svelte:fragment>
 </TabGroup>

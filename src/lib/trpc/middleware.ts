@@ -132,17 +132,7 @@ export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
         id: parsed.tournamentId
       },
       select: {
-        id: true,
-        team: {
-          select: {
-            id: true
-          }
-        },
-        solo: {
-          select: {
-            id: true
-          }
-        }
+        id: true
       }
     });
   }, `Couldn't find tournament with ID ${parse.data.tournamentId}.`);

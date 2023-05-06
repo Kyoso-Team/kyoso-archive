@@ -8,7 +8,7 @@ import type { SessionUser } from '$types';
 import type { URL } from 'url';
 
 export function getStoredUser<T extends boolean>(
-  event: {cookies: Cookies},
+  event: { cookies: Cookies },
   mustBeSignedIn: T
 ): T extends true ? SessionUser : SessionUser | undefined {
   let user = verifyJWT<SessionUser>(event.cookies.get('session'));

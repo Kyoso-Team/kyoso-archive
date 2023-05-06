@@ -18,6 +18,6 @@ export const load = (async ({ parent }) => {
 
   return {
     id: tournamentId,
-    ... tournament
+    ...tournament
   };
 }) satisfies PageServerLoad;

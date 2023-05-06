@@ -7,7 +7,7 @@ export const services: Record<
     teamsPrice: number;
   }
 > = {
-  Admin: {
+  Registrations: {
     soloPrice: 3,
     teamsPrice: 3.5
   },

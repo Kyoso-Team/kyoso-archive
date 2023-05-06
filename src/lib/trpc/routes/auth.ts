@@ -76,18 +76,18 @@ async function getOsuProfile(osuToken: Token) {
   return await tryCatch(
     async () => await new Client(osuToken.access_token as string).users.getSelf(),
     "Can't get osu! profile data."
-  )
+  );
 }
 
-/** 
+/**
  * *may* be used for the process of changing discord account
  * could move it and `getOsuProfile` to `getProfiles` if it's not the case
- */ 
+ */
 async function getDiscordProfile(discordToken: TokenRequestResult) {
   return await tryCatch(
     async () => await discordAuth.getUser(discordToken.access_token as string),
     "Can't get Discord profile data."
-  )
+  );
 }
 
 // exists for convenience
@@ -122,30 +122,37 @@ export const authRouter = t.router({
       async () => await osuAuth.requestToken(input),
       "Can't get osu! OAuth token."
     );
-    
+
     /**
      * Get the osu! id of the user directly from the token
      * The id can also be obtained by doing a request with that token,
      * but the time we spend doing the request is time wasted if user is registering
      */
-    let userId = 0
-    let accessToken = token.access_token
-    let tokenPayload = JSON.parse(Buffer.from(accessToken.substring(accessToken.indexOf(".") + 1, accessToken.lastIndexOf(".")), "base64").toString('ascii'))
-		if (tokenPayload.sub && tokenPayload.sub.length && !isNaN(+tokenPayload.sub)) {
-      userId = Number(tokenPayload.sub)
+    let userId = 0;
+    let accessToken = token.access_token;
+    let tokenPayload = JSON.parse(
+      Buffer.from(
+        accessToken.substring(accessToken.indexOf('.') + 1, accessToken.lastIndexOf('.')),
+        'base64'
+      ).toString('ascii')
+    );
+    if (tokenPayload.sub && tokenPayload.sub.length && !isNaN(+tokenPayload.sub)) {
+      userId = Number(tokenPayload.sub);
     }
 
     let user = await prisma.user.findUnique({
       where: {
         osuUserId: userId
       }
-    })
+    });
 
-    if (userId !== 0 && user) { // User is registered and logging in, skip discord by simply running `updateUser`
+    if (userId !== 0 && user) {
+      // User is registered and logging in, skip discord by simply running `updateUser`
       let storedUser = getStoredUser(user);
       ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
-      return "/"
-    } else { // User is currently registering, make them link their discord
+      return '/';
+    } else {
+      // User is currently registering, make them link their discord
       ctx.cookies.set('osu_token', signJWT(token), cookiesOptions);
       return discordAuth.generateAuthUrl({ scope });
     }
@@ -301,7 +308,7 @@ export const authRouter = t.router({
     if (verifyJWT<SessionUser>(ctx.cookies.get('session'))) {
       return discordAuth.generateAuthUrl({ scope });
     } else {
-      return "/"
+      return '/';
     }
   })
 });

@@ -164,7 +164,9 @@
     </div>
   {/if}
   {#if $error}
-    <div class="fixed inset-0 z-30 h-screen w-screen bg-surface-backdrop-token flex justify-center items-center">
+    <div
+      class="fixed inset-0 z-30 flex h-screen w-screen items-center justify-center bg-surface-backdrop-token"
+    >
       <Error />
     </div>
   {/if}

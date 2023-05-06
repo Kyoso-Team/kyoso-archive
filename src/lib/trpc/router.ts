@@ -1,4 +1,10 @@
-import { authRouter, tournamentRouter, uploadRouter, validationRouter, usersRouter } from './routes';
+import {
+  authRouter,
+  tournamentRouter,
+  uploadRouter,
+  validationRouter,
+  usersRouter
+} from './routes';
 import { t } from '$trpc';
 
 export const router = t.router({

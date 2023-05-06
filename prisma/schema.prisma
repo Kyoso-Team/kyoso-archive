@@ -101,7 +101,7 @@ model Tournament {
   teamPlaySize          Int                    @default(1) @db.SmallInt
   hasBanner             Boolean                @default(false)
   useBWS                Boolean
-  rules                 String // BBCode
+  rules                 String? // BBCode
   type                  TournamentType
   services              TournamentService[]
   // Links
@@ -145,6 +145,7 @@ model Tournament {
 
 enum TournamentType {
   Teams
+  Draft
   Solo
 }
 

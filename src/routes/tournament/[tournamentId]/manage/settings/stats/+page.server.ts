@@ -8,13 +8,11 @@ export const load = (async ({ parent }) => {
     where: {
       id: tournamentId
     },
-    select: {
-      
-    }
+    select: {}
   });
 
   return {
     id: tournamentId,
-    ... tournament
+    ...tournament
   };
 }) satisfies PageServerLoad;

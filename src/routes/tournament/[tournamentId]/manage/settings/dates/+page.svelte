@@ -10,24 +10,32 @@
 
   export let data: PageServerData;
 
-  let originalObj = { ... data } as NullPartial<PageServerData, true, 'banOrder'>;
-  let currentObj = { ... originalObj };
+  let originalObj = { ...data } as NullPartial<PageServerData, true, 'banOrder'>;
+  let currentObj = { ...originalObj };
   let errors: Partial<Record<Exclude<keyof PageServerData, 'id'>, string>> = {};
 
   $: {
     let playerOpen = (
-      currentObj.playerRegsCloseOn ? z.date().max(currentObj.playerRegsCloseOn) : z.date()
-    ).nullish().safeParse(currentObj.playerRegsOpenOn),
+        currentObj.playerRegsCloseOn ? z.date().max(currentObj.playerRegsCloseOn) : z.date()
+      )
+        .nullish()
+        .safeParse(currentObj.playerRegsOpenOn),
       playerClose = (
         currentObj.playerRegsOpenOn ? z.date().min(currentObj.playerRegsOpenOn) : z.date()
-      ).nullish().safeParse(currentObj.playerRegsCloseOn),
+      )
+        .nullish()
+        .safeParse(currentObj.playerRegsCloseOn),
       staffOpen = (
         currentObj.staffRegsCloseOn ? z.date().max(currentObj.staffRegsCloseOn) : z.date()
-      ).nullish().safeParse(currentObj.staffRegsOpenOn),
+      )
+        .nullish()
+        .safeParse(currentObj.staffRegsOpenOn),
       staffClose = (
         currentObj.staffRegsOpenOn ? z.date().min(currentObj.staffRegsOpenOn) : z.date()
-      ).nullish().safeParse(currentObj.staffRegsCloseOn);
-    
+      )
+        .nullish()
+        .safeParse(currentObj.staffRegsCloseOn);
+
     errors = {
       playerRegsOpenOn: setSettingError(playerOpen),
       playerRegsCloseOn: setSettingError(playerClose),
@@ -51,7 +59,7 @@
       });
 
       originalObj = currentObj;
-    } catch(err) {
+    } catch (err) {
       console.error(err);
       error.set($error, err, 'close', true);
     }

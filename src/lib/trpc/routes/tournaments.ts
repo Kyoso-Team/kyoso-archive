@@ -12,7 +12,7 @@ import { isAllowed, mustHavePerms } from '$lib/server-utils';
 import { whereIdSchema } from '$lib/schemas';
 
 const servicesSchema = z
-  .array(z.enum(['Admin', 'Mappooling', 'Referee', 'Stats', 'Pickems']))
+  .array(z.enum(['Registrations', 'Mappooling', 'Referee', 'Stats', 'Pickems']))
   .min(1);
 const rankRangeSchema = z.union([
   z.literal('open rank'),
@@ -24,7 +24,7 @@ const rankRangeSchema = z.union([
 const tournamentSchema = z.object({
   name: z.string(),
   acronym: z.string(),
-  type: z.union([z.literal('Teams'), z.literal('Solo')]),
+  type: z.union([z.literal('Teams'), z.literal('Solo'), z.literal('Draft')]),
   rankRange: rankRangeSchema,
   useBWS: z.boolean(),
   services: servicesSchema,
@@ -50,23 +50,11 @@ async function createTournament(
           acronym,
           useBWS,
           services,
+          type,
           lowerRankRange: rankRange === 'open rank' ? -1 : rankRange.lower,
           upperRankRange: rankRange === 'open rank' ? -1 : rankRange.upper,
-          team:
-            type === 'Teams'
-              ? {
-                  create: {
-                    teamPlaySize,
-                    teamSize
-                  }
-                }
-              : undefined,
-          solo:
-            type === 'Solo'
-              ? {
-                  create: {}
-                }
-              : undefined,
+          teamSize: type === 'Teams' ? teamSize : 1,
+          teamPlaySize: type === 'Teams' ? teamPlaySize : 1,
           inPurchases: order
             ? {
                 create: {
@@ -334,16 +322,10 @@ export const tournamentRouter = t.router({
             warmupRules,
             websiteLink,
             youtubeChannelId,
+            teamPlaySize,
+            teamSize,
             lowerRankRange: rankRange === 'open rank' ? -1 : rankRange?.lower,
-            upperRankRange: rankRange === 'open rank' ? -1 : rankRange?.upper,
-            team: ctx.tournament.team
-              ? {
-                  update: {
-                    teamPlaySize,
-                    teamSize
-                  }
-                }
-              : undefined
+            upperRankRange: rankRange === 'open rank' ? -1 : rankRange?.upper
           }
         });
       }, `Can't update tournament with ID ${ctx.tournament.id}.`);

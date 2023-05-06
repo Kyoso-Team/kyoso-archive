@@ -37,7 +37,12 @@ function createError() {
     return formatted;
   }
 
-  function setError(currentError: Error | undefined, err: unknown, action: 'refresh' | 'close', canSubmitIssue: boolean = true) {
+  function setError(
+    currentError: Error | undefined,
+    err: unknown,
+    action: 'refresh' | 'close',
+    canSubmitIssue: boolean = true
+  ) {
     if (currentError) return;
 
     let error = err as Record<string, unknown> | string;

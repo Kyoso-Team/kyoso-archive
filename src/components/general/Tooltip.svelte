@@ -3,7 +3,10 @@
   export let label: string;
 </script>
 
-<div class="text-xs text-center card variant-filled px-2 py-1 whitespace-nowrap" data-popup={target}>
+<div
+  class="card variant-filled whitespace-nowrap px-2 py-1 text-center text-xs"
+  data-popup={target}
+>
   {label}
   <div class="arrow variant-filled" />
 </div>

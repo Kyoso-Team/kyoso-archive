@@ -16,21 +16,17 @@
 
 {#if $error}
   <div class="card variant-filled-error w-80 sm:w-[32rem]">
-    <header class="card-header font-bold text-2xl">Error</header>
+    <header class="card-header text-2xl font-bold">Error</header>
     <section class="m-4">
       {#if $error.type === 'string'}
-       {$error.message}
+        {$error.message}
       {:else}
         <div class="max-h-52 overflow-y-scroll">
-          <CodeBlock
-            language="json"
-            background='bg-surface-800'
-            code={$error.message}
-          />
+          <CodeBlock language="json" background="bg-surface-800" code={$error.message} />
         </div>
       {/if}
       {#if $error.canSubmitIssue}
-        <span class="block mt-4">If this error persists, feel free to submit an issue.</span>
+        <span class="mt-4 block">If this error persists, feel free to submit an issue.</span>
       {/if}
     </section>
     <footer class="card-footer flex">
@@ -40,7 +36,7 @@
           <button class="btn variant-filled-surface">Submit Issue</button>
         </div>
       {/if}
-      <div class="flex justify-end w-full">
+      <div class="flex w-full justify-end">
         {#if $error.action === 'refresh'}
           <button class="btn variant-filled-surface" on:click={onRefresh}>Refresh</button>
         {:else}

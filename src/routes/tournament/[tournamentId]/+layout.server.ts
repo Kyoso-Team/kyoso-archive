@@ -6,7 +6,7 @@ export const load = (async ({ parent, params }) => {
   let tournamentId = z.number().int().parse(Number(params.tournamentId));
 
   return {
-    ... parentData,
+    ...parentData,
     tournamentId
   };
 }) satisfies LayoutServerLoad;

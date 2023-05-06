@@ -15,7 +15,7 @@ function createPaginate() {
 
   function setPage(pageStore: PageStore, page: number) {
     if (typeof window === 'undefined') return;
-    
+
     let url = pageStore.url;
     url.searchParams.set('page', page.toString());
 
@@ -45,8 +45,12 @@ function createPaginate() {
 
     if (filterValue) {
       let value =
-        typeof filterValue === 'boolean' ? (filterValue ? 'true' : 'false') : filterValue.toString();
-  
+        typeof filterValue === 'boolean'
+          ? filterValue
+            ? 'true'
+            : 'false'
+          : filterValue.toString();
+
       url.searchParams.set(`f.${filterName}`, value);
     } else {
       url.searchParams.delete(`f.${filterName}`);
