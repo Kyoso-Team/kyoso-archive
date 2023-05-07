@@ -1,3 +1,7 @@
+html, body {
+  @apply h-full overflow-hidden;
+}
+
 .document {
   @apply max-w-2xl text-justify leading-relaxed;
 }

@@ -8,7 +8,8 @@ import { services } from '$lib/constants';
 import type { PayPalOrder } from '$types';
 import type { AmountBreakdown } from '@paypal/checkout-server-sdk/lib/payments/lib';
 import { TRPCError } from '@trpc/server';
-import { isAllowed, mustHavePerms } from '$lib/server-utils';
+import { isAllowed } from '$lib/server-utils';
+import { hasPerms } from '$lib/utils';
 import { whereIdSchema } from '$lib/schemas';
 
 const servicesSchema = z
@@ -260,7 +261,7 @@ export const tournamentRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || mustHavePerms(ctx.staffMember, 'MutateTournament'),
+        ctx.user.isAdmin || hasPerms(ctx.staffMember, 'MutateTournament'),
         `update tournament with ID ${ctx.tournament.id}.`
       );
 
@@ -335,7 +336,7 @@ export const tournamentRouter = t.router({
     .input(whereIdSchema)
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || mustHavePerms(ctx.staffMember, 'Host'),
+        ctx.user.isAdmin || hasPerms(ctx.staffMember, 'Host'),
         `delete tournament with ID ${ctx.tournament.id}.`
       );
 

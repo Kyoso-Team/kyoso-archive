@@ -4,7 +4,8 @@
   import { setSettingError } from '$lib/utils';
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
-  import { error } from '$stores';
+  import { error, sidebar } from '$stores';
+  import { onMount } from 'svelte';
   import type { NullPartial } from '$types';
   import type { PageServerData } from './$types';
 
@@ -12,7 +13,11 @@
 
   let originalObj = { ...data } as NullPartial<PageServerData, true, 'banOrder'>;
   let currentObj = { ...originalObj };
-  let errors: Partial<Record<Exclude<keyof PageServerData, 'id'>, string>> = {};
+  let errors: Partial<Record<Exclude<keyof PageServerData, 'id' | 'goPublicOn' | 'concludesOn'>, string>> = {};
+
+  onMount(() => {
+    sidebar.setSelected('Settings', 'Settings', 'Dates');
+  });
 
   $: {
     let playerOpen = (
@@ -67,16 +72,20 @@
 </script>
 
 <div class="center-content">
-  <h1 class="pb-4">Settings</h1>
+  <h1>Dates</h1>
   <Settings
-    tournamentId={data.id}
-    tab={1}
     on:undo={onUndo}
     on:update={onUpdate}
     {currentObj}
     {originalObj}
     {errors}
   >
+    <Setting label="Make information public on" type="date" bind:value={currentObj.goPublicOn} />
+    <Setting
+      label="Conclude tournament on"
+      type="date"
+      bind:value={currentObj.concludesOn}
+    />
     <Setting
       label="Open player registrations on"
       type="date"

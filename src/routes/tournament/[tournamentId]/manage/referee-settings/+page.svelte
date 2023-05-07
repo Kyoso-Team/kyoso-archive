@@ -4,7 +4,8 @@
   import { setSettingError, trimStringValues } from '$lib/utils';
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
-  import { error } from '$stores';
+  import { error, sidebar } from '$stores';
+  import { onMount } from 'svelte';
   import type { NullPartial } from '$types';
   import type { PageServerData } from './$types';
 
@@ -13,6 +14,10 @@
   let originalObj = { ...data } as NullPartial<PageServerData, true, 'banOrder'>;
   let currentObj = { ...originalObj };
   let errors: Partial<Record<'pickTime' | 'startTime', string>> = {};
+
+  onMount(() => {
+    sidebar.setSelected('Settings', 'Settings', 'Referee');
+  });
 
   $: {
     let num = z
@@ -67,10 +72,8 @@
 </script>
 
 <div class="center-content">
-  <h1 class="pb-4">Settings</h1>
+  <h1>Referee Settings</h1>
   <Settings
-    tournamentId={data.id}
-    tab={3}
     on:undo={onUndo}
     on:update={onUpdate}
     {currentObj}
@@ -100,6 +103,29 @@
       label="Are double bans allowed?"
       type="boolean"
       bind:value={currentObj.doubleBanAllowed}
+    />
+    <Setting
+      label="Always force NoFail?"
+      type="boolean"
+      bind:value={currentObj.alwaysForceNoFail}
+    />
+    <Setting
+      label="Win condition"
+      type="select"
+      values={[{
+        label: 'Highest score',
+        value: 'Score'
+      }, {
+        label: 'Highest accuracy',
+        value: 'Accuracy'
+      }, {
+        label: 'Highest combo',
+        value: 'Combo'
+      }, {
+        label: 'Lowest miss count',
+        value: 'Misses'
+      }]}
+      bind:value={currentObj.winCondition}
     />
     <Setting
       label="Ban order"

@@ -2,22 +2,24 @@ import prisma from '$prisma';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ parent }) => {
-  let { tournamentId } = await parent();
+  let data = await parent();
 
-  let tournament = await prisma.tournament.findUnique({
+  let tournament = await prisma.tournament.findUniqueOrThrow({
     where: {
-      id: tournamentId
+      id: data.tournament.id
     },
     select: {
       playerRegsOpenOn: true,
       playerRegsCloseOn: true,
       staffRegsOpenOn: true,
-      staffRegsCloseOn: true
+      staffRegsCloseOn: true,
+      goPublicOn: true,
+      concludesOn: true
     }
   });
 
   return {
-    id: tournamentId,
+    id: data.tournament.id,
     ...tournament
   };
 }) satisfies PageServerLoad;

@@ -2,8 +2,6 @@ import { z, type AnyZodObject } from 'zod';
 import { verifyJWT } from '$lib/jwt';
 import { redirect, type Cookies } from '@sveltejs/kit';
 import { TRPCError } from '@trpc/server';
-import { removeDuplicates } from './utils';
-import type { StaffPermission } from '@prisma/client';
 import type { SessionUser } from '$types';
 import type { URL } from 'url';
 
@@ -18,27 +16,6 @@ export function getStoredUser<T extends boolean>(
   }
 
   return user as SessionUser;
-}
-
-export function mustHavePerms(
-  staffMember: {
-    roles: {
-      permissions: StaffPermission[];
-    }[];
-  },
-  necessaryPermissions: StaffPermission[] | StaffPermission
-) {
-  let userPermissions: StaffPermission[] = [];
-
-  staffMember.roles.forEach((role) => {
-    userPermissions.push(...role.permissions);
-  });
-
-  userPermissions = removeDuplicates(userPermissions);
-
-  return Array.isArray(necessaryPermissions)
-    ? userPermissions.some((userPerm) => necessaryPermissions.includes(userPerm))
-    : userPermissions.some((userPerm) => necessaryPermissions === userPerm);
 }
 
 export function isAllowed(isAllowed: boolean, action: string) {

@@ -4,7 +4,8 @@
   import { setSettingError, trimStringValues } from '$lib/utils';
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
-  import { error } from '$stores';
+  import { error, sidebar } from '$stores';
+  import { onMount } from 'svelte';
   import type { PageServerData } from './$types';
   import type { NullPartial } from '$types';
 
@@ -16,6 +17,10 @@
   let lowerRankRange = currentObj.lowerRankRange === -1 ? 1 : currentObj.lowerRankRange;
   let upperRankRange = currentObj.upperRankRange === -1 ? 10000 : currentObj.upperRankRange;
   let errors: Partial<Record<Exclude<keyof PageServerData, 'useBWS' | 'id'>, string>> = {};
+
+  onMount(() => {
+    sidebar.setSelected('Settings', 'Settings', 'General');
+  });
 
   $: {
     currentObj.lowerRankRange = isOpenRank ? -1 : lowerRankRange;
@@ -100,10 +105,8 @@
 </script>
 
 <div class="center-content">
-  <h1 class="pb-4">Settings</h1>
+  <h1>Settings</h1>
   <Settings
-    tournamentId={data.id}
-    tab={0}
     on:undo={onUndo}
     on:update={onUpdate}
     {currentObj}

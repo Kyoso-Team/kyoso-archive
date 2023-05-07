@@ -1,3 +1,4 @@
+import type { StaffPermission } from '@prisma/client';
 import type { PopupSettings } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
 
@@ -94,4 +95,25 @@ export function dateToHtmlInput(date: Date) {
   let second = fillDateDigits(date.getSeconds());
 
   return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+}
+
+export function hasPerms(
+  staffMember: {
+    roles: {
+      permissions: StaffPermission[];
+    }[];
+  },
+  necessaryPermissions: StaffPermission[] | StaffPermission
+) {
+  let userPermissions: StaffPermission[] = [];
+
+  staffMember.roles.forEach((role) => {
+    userPermissions.push(...role.permissions);
+  });
+
+  userPermissions = removeDuplicates(userPermissions);
+
+  return Array.isArray(necessaryPermissions)
+    ? userPermissions.some((userPerm) => necessaryPermissions.includes(userPerm))
+    : userPermissions.some((userPerm) => necessaryPermissions === userPerm);
 }

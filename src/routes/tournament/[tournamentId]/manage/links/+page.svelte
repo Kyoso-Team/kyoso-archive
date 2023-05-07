@@ -4,7 +4,8 @@
   import { setSettingError, trimStringValues } from '$lib/utils';
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
-  import { error } from '$stores';
+  import { error, sidebar } from '$stores';
+  import { onMount } from 'svelte';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
@@ -15,8 +16,12 @@
   };
   let currentObj = { ...originalObj };
   let errors: Partial<
-    Record<'forum' | 'discord' | 'sheet' | 'twitch' | 'youtube' | 'donation' | 'website', string>
+    Record<'forum' | 'discord' | 'sheet' | 'twitch' | 'youtube' | 'twitter' | 'donation' | 'website', string>
   > = {};
+  
+  onMount(() => {
+    sidebar.setSelected('Settings', 'Settings', 'Links');
+  });
 
   $: {
     let {
@@ -27,6 +32,7 @@
       twitchChannelName,
       websiteLink,
       youtubeChannelId,
+      twitterHandle,
       id
     } = currentObj;
 
@@ -48,7 +54,10 @@
         : twitchChannelName,
       youtubeChannelId: youtubeChannelId?.startsWith('https')
         ? youtubeChannelId.replace('https://www.youtube.com/channel/', '')
-        : youtubeChannelId
+        : youtubeChannelId,
+      twitterHandle: twitterHandle?.startsWith('https')
+        ? twitterHandle.replace('https://twitter.com/', '')
+        : twitterHandle
     };
   }
 
@@ -63,6 +72,7 @@
       sheet = z.string().max(45).nullish().safeParse(currentObj.mainSheetId),
       twitch = z.string().max(25).nullish().safeParse(currentObj.twitchChannelName),
       youtube = z.string().max(25).nullish().safeParse(currentObj.youtubeChannelId),
+      twitter = z.string().max(15).nullish().safeParse(currentObj.twitterHandle),
       donation = z.string().url().nullish().safeParse(currentObj.donationLink),
       website = z.string().url().nullish().safeParse(currentObj.websiteLink);
 
@@ -72,6 +82,7 @@
       sheet: setSettingError(sheet),
       twitch: setSettingError(twitch),
       youtube: setSettingError(youtube),
+      twitter: setSettingError(twitter),
       donation: setSettingError(donation),
       website: setSettingError(website)
     };
@@ -110,10 +121,8 @@
 </script>
 
 <div class="center-content">
-  <h1 class="pb-4">Settings</h1>
+  <h1>Links</h1>
   <Settings
-    tournamentId={data.id}
-    tab={2}
     on:undo={onUndo}
     on:update={onUpdate}
     {currentObj}
@@ -121,9 +130,9 @@
     {errors}
   >
     <svelte:fragment slot="header">
-      <span class="mb-1 block text-sm"
-        ><strong>Note:</strong> Full links are supported as input.</span
-      >
+      <span class="mb-1 block text-sm text-center">
+        <strong>Note:</strong> Full links are supported as input.
+      </span>
     </svelte:fragment>
     <Setting
       label="Forum post ID"
@@ -164,6 +173,14 @@
       link={setLink(currentObj.youtubeChannelId, 'https://www.youtube.com/channel/')}
       isLink
       bind:value={currentObj.youtubeChannelId}
+    />
+    <Setting
+      label="Twitter handle"
+      type="string"
+      error={errors.twitter}
+      link={setLink(currentObj.twitterHandle, 'https://twitter.com/')}
+      isLink
+      bind:value={currentObj.twitterHandle}
     />
     <Setting
       label="Donation link"

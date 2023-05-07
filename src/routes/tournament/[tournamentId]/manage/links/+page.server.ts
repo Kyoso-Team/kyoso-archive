@@ -2,11 +2,11 @@ import prisma from '$prisma';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ parent }) => {
-  let { tournamentId } = await parent();
+  let data = await parent();
 
-  let tournament = await prisma.tournament.findUnique({
+  let tournament = await prisma.tournament.findUniqueOrThrow({
     where: {
-      id: tournamentId
+      id: data.tournament.id
     },
     select: {
       forumPostId: true,
@@ -15,12 +15,13 @@ export const load = (async ({ parent }) => {
       twitchChannelName: true,
       youtubeChannelId: true,
       donationLink: true,
-      websiteLink: true
+      websiteLink: true,
+      twitterHandle: true
     }
   });
 
   return {
-    id: tournamentId,
+    id: data.tournament.id,
     ...tournament
   };
 }) satisfies PageServerLoad;
