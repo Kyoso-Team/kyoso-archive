@@ -248,13 +248,13 @@
           </div>
           <h4>
             Total Cost: {format.price(
-              selectedServices.reduce((total, service) => {
-                return (
-                  total +
-                  services[service][
-                    createTournament.tournament?.type === 'Teams' ? 'teamsPrice' : 'soloPrice'
-                  ]
-                );
+              selectedServices.map((service) => services[service][
+                createTournament.tournament?.type === 'Teams' ? 'teamsPrice' : 'soloPrice'
+              ])
+              .sort((a, b) => b - a)
+              .reduce((total, price, index) => {
+                if (data.user.freeServicesLeft > 0 && index === 1) {total = 0}
+                return (index < data.user.freeServicesLeft ? total : total + price)
               }, 0)
             )}
           </h4>
@@ -263,7 +263,7 @@
               ><b>Note:</b> As a new user, you've been given the ability to add 3 services for free.{data
                 .user.freeServicesLeft === 3
                 ? ''
-                : `You currently have ${data.user.freeServicesLeft} service${
+                : ` You currently have ${data.user.freeServicesLeft} service${
                     data.user.freeServicesLeft === 1 ? '' : 's'
                   } left.`}</span
             >
