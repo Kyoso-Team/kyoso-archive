@@ -1,3 +1,4 @@
+import { modalStore } from '@skeletonlabs/skeleton';
 import type { StaffPermission } from '@prisma/client';
 import type { PopupSettings } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
@@ -45,6 +46,34 @@ export const format = {
     }
 
     return `${months[date.getMonth()]} ${dateStr}${cardinal}, ${date.getFullYear()}`;
+  }
+};
+
+export const modal = {
+  yesNo: (
+    title: string,
+    message: string,
+    onYes: () => void | Promise<void>,
+    onNo?: () => void | Promise<void>
+  ) => {
+
+    modalStore.trigger({
+      title,
+      type: 'confirm',
+      buttonTextCancel: 'No',
+      buttonTextConfirm: 'Yes',
+      body: message,
+      response: (resp: boolean) => {
+        if (resp) {
+          onYes();
+          return;
+        }
+
+        if (onNo) {
+          onNo();
+        }
+      }
+    });
   }
 };
 

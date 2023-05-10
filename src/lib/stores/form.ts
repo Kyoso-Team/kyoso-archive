@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { ZodOptional, z } from 'zod';
+import { ZodEffects, ZodOptional, z } from 'zod';
 import type { Field, FormInputType, MapResult, AssignFieldType } from '$types';
 import type { ZodString, ZodNumber, ZodBoolean, ZodDate, ZodAny } from 'zod';
 
@@ -50,8 +50,8 @@ function createForm() {
       >,
       options?: I extends 'string' | 'number'
         ? {
-            validation?: (z: Z) => Z | ZodOptional<Z>;
-            disableIf?: (currentValue: T) => boolean;
+            validation?: (z: Z) => Z | ZodOptional<Z> | ZodEffects<Z, unknown, unknown>;
+            disableIf?: (currentValue: Partial<T>) => boolean;
             optional?: boolean;
             fromValues?: {
               values: () => I extends 'string' ? string[] : number[];

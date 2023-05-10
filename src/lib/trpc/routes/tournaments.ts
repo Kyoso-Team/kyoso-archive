@@ -5,12 +5,12 @@ import { orders } from '@paypal/checkout-server-sdk';
 import { t, tryCatch } from '$trpc';
 import { getUser, getUserAsStaff } from '$trpc/middleware';
 import { services } from '$lib/constants';
-import type { PayPalOrder } from '$types';
-import type { AmountBreakdown } from '@paypal/checkout-server-sdk/lib/payments/lib';
 import { TRPCError } from '@trpc/server';
 import { isAllowed } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
 import { whereIdSchema } from '$lib/schemas';
+import type { PayPalOrder } from '$types';
+import type { AmountBreakdown } from '@paypal/checkout-server-sdk/lib/payments/lib';
 
 const servicesSchema = z
   .array(z.enum(['Registrations', 'Mappooling', 'Referee', 'Stats', 'Pickems']))
@@ -232,26 +232,32 @@ export const tournamentRouter = t.router({
             name: z.string().max(50),
             acronym: z.string().max(8),
             rankRange: rankRangeSchema,
-            playerRegsOpenOn: z.date().nullable(),
-            playerRegsCloseOn: z.date().nullable(),
-            staffRegsOpenOn: z.date().nullable(),
-            staffRegsCloseOn: z.date().nullable(),
+            goPublicOn: z.date().nullish(),
+            concludesOn: z.date().nullish(),
+            playerRegsOpenOn: z.date().nullish(),
+            playerRegsCloseOn: z.date().nullish(),
+            staffRegsOpenOn: z.date().nullish(),
+            staffRegsCloseOn: z.date().nullish(),
             useBWS: z.boolean(),
-            forumPostId: z.number().int().nullable(),
-            discordInviteId: z.string().max(12).nullable(),
-            mainSheetId: z.string().max(45).nullable(),
-            twitchChannelName: z.string().max(25).nullable(),
-            youtubeChannelId: z.string().max(25).nullable(),
-            donationLink: z.string().url().nullable(),
-            websiteLink: z.string().url().nullable(),
+            hasBanner: z.boolean(),
+            rules: z.string().nullish(),
+            forumPostId: z.number().int().nullish(),
+            discordInviteId: z.string().max(12).nullish(),
+            mainSheetId: z.string().max(45).nullish(),
+            twitchChannelName: z.string().max(25).nullish(),
+            youtubeChannelId: z.string().max(25).nullish(),
+            twitterHandle: z.string().max(15).nullish(),
+            donationLink: z.string().url().nullish(),
+            websiteLink: z.string().url().nullish(),
             startTimerLength: z.number().int().gte(1),
             pickTimerLength: z.number().int().gte(1),
             doublePickAllowed: z.boolean(),
             doubleBanAllowed: z.boolean(),
-            rollRules: z.string().nullable(),
-            freeModRules: z.string().nullable(),
-            warmupRules: z.string().nullable(),
-            lateProcedures: z.string().nullable(),
+            alwaysForceNoFail: z.boolean(),
+            rollRules: z.string().nullish(),
+            freeModRules: z.string().nullish(),
+            warmupRules: z.string().nullish(),
+            lateProcedures: z.string().nullish(),
             banOrder: z.union([z.literal('ABABAB'), z.literal('ABBAAB')]),
             teamSize: z.number().int(),
             teamPlaySize: z.number().int()
@@ -261,8 +267,8 @@ export const tournamentRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, 'MutateTournament'),
-        `update tournament with ID ${ctx.tournament.id}.`
+        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        `update tournament with ID ${ctx.tournament.id}`
       );
 
       if (Object.keys(input.data).length === 0) return;
@@ -293,7 +299,14 @@ export const tournamentRouter = t.router({
           useBWS,
           warmupRules,
           websiteLink,
-          youtubeChannelId
+          youtubeChannelId,
+          alwaysForceNoFail,
+          concludesOn,
+          goPublicOn,
+          hasBanner,
+          startTimerLength,
+          twitterHandle,
+          rules
         }
       } = input;
 
@@ -325,6 +338,13 @@ export const tournamentRouter = t.router({
             youtubeChannelId,
             teamPlaySize,
             teamSize,
+            alwaysForceNoFail,
+            concludesOn,
+            goPublicOn,
+            hasBanner,
+            startTimerLength,
+            twitterHandle,
+            rules,
             lowerRankRange: rankRange === 'open rank' ? -1 : rankRange?.lower,
             upperRankRange: rankRange === 'open rank' ? -1 : rankRange?.upper
           }
@@ -337,7 +357,7 @@ export const tournamentRouter = t.router({
     .mutation(async ({ ctx, input }) => {
       isAllowed(
         ctx.user.isAdmin || hasPerms(ctx.staffMember, 'Host'),
-        `delete tournament with ID ${ctx.tournament.id}.`
+        `delete tournament with ID ${ctx.tournament.id}`
       );
 
       await tryCatch(async () => {

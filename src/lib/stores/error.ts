@@ -5,6 +5,7 @@ interface Error {
   type: 'string' | 'object';
   action: 'refresh' | 'close';
   canSubmitIssue: boolean;
+  onClose?: () => void | Promise<void>;
 }
 
 function createError() {
@@ -41,7 +42,8 @@ function createError() {
     currentError: Error | undefined,
     err: unknown,
     action: 'refresh' | 'close',
-    canSubmitIssue: boolean = true
+    canSubmitIssue: boolean = true,
+    onClose?: () => void | Promise<void>
   ) {
     if (currentError) return;
 
@@ -50,7 +52,8 @@ function createError() {
       message: typeof error === 'string' ? error : formatObject(error),
       type: typeof error === 'string' ? 'string' : 'object',
       canSubmitIssue,
-      action
+      action,
+      onClose
     });
   }
 

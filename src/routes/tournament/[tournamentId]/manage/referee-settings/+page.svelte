@@ -16,7 +16,7 @@
   let errors: Partial<Record<'pickTime' | 'startTime', string>> = {};
 
   onMount(() => {
-    sidebar.setSelected('Settings', 'Settings', 'Referee');
+    sidebar.setSelected('Settings', 'Referee', 'General');
   });
 
   $: {

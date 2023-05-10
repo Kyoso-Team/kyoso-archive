@@ -1,5 +1,7 @@
-export { authRouter } from './auth';
-export { tournamentRouter } from './tournaments';
-export { uploadRouter } from './upload';
-export { validationRouter } from './validation';
-export { usersRouter } from './users';
+export * from './auth';
+export * from './tournaments';
+export * from './upload';
+export * from './validation';
+export * from './users';
+export * from './stages';
+export * from './rounds';

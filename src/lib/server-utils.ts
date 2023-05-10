@@ -22,7 +22,7 @@ export function isAllowed(isAllowed: boolean, action: string) {
   if (!isAllowed) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
-      message: `You're not allowed to ${action}`
+      message: `You're not allowed to ${action}.`
     });
   }
 }

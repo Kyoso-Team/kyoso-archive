@@ -22,17 +22,19 @@
       label: 'Links',
       path: `${basePath}links`
     }, {
-      label: 'Referee',
-      path: `${basePath}referee-settings`
-    }, {
-      label: 'Mod multipliers',
-      path: `${basePath}mod-multipliers`
-    }, {
       label: 'Stages',
       path: `${basePath}stages`
     }, {
       label: 'Prizes',
       path: `${basePath}prizes`
+    }]);
+
+    settings.setSubsection('Referee', [{
+      label: 'General',
+      path: `${basePath}referee-settings`
+    }, {
+      label: 'Mod Multipliers',
+      path: `${basePath}mod-multipliers`
     }, {
       label: 'Rules',
       path: `${basePath}rules`
@@ -40,7 +42,7 @@
   }
 
   if (hasPerms(data.staffMember, ['Host', 'ViewStaffMembers', 'ViewRegs'])) {
-    let regs = sidebar.setSection('Regs.', 'settings');
+    let regs = sidebar.setSection('Regs.', 'regs');
 
     if (hasPerms(data.staffMember, ['Host', 'ViewStaffMembers'])) {
       regs.setSubsection('Staff', [{
@@ -88,6 +90,28 @@
 
       regs.setSubsection('Player', links);
     }
+  }
+
+  if (hasPerms(data.staffMember, [
+    'Host',
+    'ViewPoolStructure',
+    'ViewPoolSuggestions',
+    'ViewPooledMaps',
+    'ViewMapsToPlaytest'
+  ])) {
+    let pooling = sidebar.setSection('Pooling', 'pooling');
+  }
+
+  if (hasPerms(data.staffMember, ['Host', 'ViewMatches'])) {
+    let referee = sidebar.setSection('Reffing.', 'referee');
+  }
+
+  if (hasPerms(data.staffMember, ['Host', 'ViewStats'])) {
+    let stats = sidebar.setSection('Stats. Calc.', 'stats calc');
+  }
+
+  if (hasPerms(data.staffMember, ['Host'])) {
+    let pickems = sidebar.setSection('Pickems', 'pickems');
   }
 
   onDestroy(() => {

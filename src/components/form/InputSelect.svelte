@@ -42,12 +42,14 @@
   <span class={`duration-200 ${disabled ? 'opacity-70' : ''}`}>
     {field ? field.label : ''}<span class="text-error-600">{field?.optional ? '' : '*'}</span>
   </span>
-  <div class="rounded-md bg-surface-700 p-2">
-    <ListBox active="variant-filled-primary" padding="px-4 py-1" hover="hover:variant-soft-primary">
+  <div class={`rounded-md bg-surface-700 p-2 duration-200 ${disabled ? 'opacity-70' : ''}`}>
+    <ListBox padding="px-4 py-1">
       {#each field?.values || [] as fieldValue}
         <ListBoxItem
           name={`${$form?.title.toLowerCase().replaceAll(' ', '-')} ${field?.mapToKey}`}
           value={fieldValue}
+          active={`duration-200 ${disabled ? '' : 'variant-filled-primary'}`}
+          hover={disabled ? '' : 'hover:variant-soft-primary'}
           bind:group={value}
         >
           {fieldValue.toString()}
