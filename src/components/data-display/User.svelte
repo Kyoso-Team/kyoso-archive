@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { Avatar, Modal, modalStore, popup } from '@skeletonlabs/skeleton';
+  import { Avatar, modalStore, popup, toastStore } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
   import type { PopupSettings } from '@skeletonlabs/skeleton';
+  import { page } from '$app/stores';
+  import { trpc } from '$trpc/client';
 
   export let data: {
     user: {
@@ -35,29 +37,18 @@
     isAdmin: Boolean,
     osuUsername: string
   }) {
-    if (user.isAdmin) {
-      modalStore.trigger({
-        type: 'confirm',
-        title: 'Removing an admin',
-        body: `Are you sure you want to <strong>REMOVE ${user.osuUsername}</strong> from admins?`,
-        response: (r: boolean) => {
-          if (r === true) {
-            console.log('...remove from admins');
-          }
+    let isAdmin = user.isAdmin
+    modalStore.trigger({
+      type: 'confirm',
+      title: `${isAdmin ? "Removing" : "Adding"} an admin`,
+      body: `Are you sure you want to <strong>${isAdmin ? "REMOVE" : "ADD"} ${user.osuUsername}</strong> ${isAdmin ? "from" : "to"} admins?`,
+      response: async (r: boolean) => {
+        if (r === true) {
+          let success = await trpc($page).users.changeAdminStatus.mutate({id: user.id, toAdmin: !isAdmin})
+          toastStore.trigger({message: success ? "Success!" : "Something went wrong..."});
         }
-      });
-    } else {
-      modalStore.trigger({
-        type: 'confirm',
-        title: 'Adding an admin',
-        body: `Are you sure you want to <strong>ADD ${user.osuUsername}</strong> to admins?`,
-        response: (r: boolean) => {
-          if (r === true) {
-            console.log('...add as an admin');
-          }
-        }
-      });
-    }
+      }
+    });
   }
 
   function deleteUser(user: {
@@ -69,16 +60,16 @@
       type: 'confirm',
       title: 'Deleting an user',
       body: `Are you definitely sure you want to <strong>COMPLETELY DELETE ${user.osuUsername}?</strong> There's no coming back from this!`,
-      response: (r: boolean) => {
+      response: async (r: boolean) => {
         if (r === true) {
-          console.log('...add as an admin');
+          let deletedUser = await trpc($page).users.deleteUser.mutate(user.id)
+          toastStore.trigger({message: `${deletedUser.osuUsername} has been successfully deleted!`});
         }
       }
     });
   }
 </script>
 
-<Modal />
 <div class="card w-64 p-4 bg-surface-backdrop-token">
   <div class="grid grid-cols-4 gap-0">
     <div class="row-span-2">

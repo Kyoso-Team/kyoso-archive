@@ -8,7 +8,7 @@
   import { storeHighlightJs } from '@skeletonlabs/skeleton';
   import { loadScript } from '@paypal/paypal-js';
   import { setInitialClassState } from '@skeletonlabs/skeleton';
-  import { AppShell, AppBar, Avatar } from '@skeletonlabs/skeleton';
+  import { AppShell, AppBar, Avatar, Modal, Toast } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
   import { goto } from '$app/navigation';
   import { form, paypal, error } from '$stores';
@@ -91,6 +91,8 @@
   {@html `<script>(${setInitialClassState.toString()})();</script>`}
 </svelte:head>
 <AppShell regionPage="relative" slotPageHeader="sticky top-0 z-10">
+  <Modal />
+  <Toast />
   <svelte:fragment slot="header">
     <AppBar padding="p-3">
       <svelte:fragment slot="lead">

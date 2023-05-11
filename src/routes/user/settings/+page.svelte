@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { PageServerData } from './$types';
-  import { SlideToggle, Table, Modal, modalStore } from '@skeletonlabs/skeleton';
+  import { SlideToggle, Table, modalStore } from '@skeletonlabs/skeleton';
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
 
@@ -11,7 +11,7 @@
   $: visibleDiscord = user.showDiscordTag;
 
   async function changeVisibility() {
-    await trpc($page).users.changeDiscordVisibility.query(!visibleDiscord);
+    await trpc($page).users.changeDiscordVisibility.mutate(!visibleDiscord);
   }
 
   function confirmDiscordChange() {
@@ -62,7 +62,6 @@
   }
 </script>
 
-<Modal />
 <div class="m-8 rounded-lg bg-surface-800 p-4">
   <section class="mb-4 inline-grid">
     <h2 class="mb-2">Discord</h2>
