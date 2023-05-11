@@ -101,7 +101,7 @@ model Tournament {
   teamPlaySize          Int                    @default(1) @db.SmallInt
   hasBanner             Boolean                @default(false)
   useBWS                Boolean
-  rules                 String? // BBCode
+  rules                 String? // Markdown
   type                  TournamentType
   services              TournamentService[]
   // Links
@@ -223,7 +223,8 @@ enum StageFormat {
 model Round {
   id                     Int                     @id @default(autoincrement())
   name                   String                  @db.VarChar(20)
-  targetStarRating       Float
+  order                  Int                     @db.SmallInt
+  targetStarRating       Float?
   mappoolState           MappoolState            @default(Private)
   publishSchedules       Boolean                 @default(false)
   publishStats           Boolean                 @default(false)
@@ -232,7 +233,7 @@ model Round {
   tournament             Tournament              @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId           Int
   standardRound          StandardRound?
-  qualfierRound          QualifierRound?
+  qualifierRound          QualifierRound?
   battleRoyaleRound      BattleRoyaleRound?
   modpools               Modpool[]
   suggestedMaps          SuggestedMap[]
@@ -263,7 +264,7 @@ model StandardRound {
 model QualifierRound {
   publishMpLinks  Boolean              @default(false)
   runCount        Int // How many times will the mappool be played
-  summarizeRunsAs QualifierRunsSummary
+  summarizeRunsAs QualifierRunsSummary @default(Average)
   round           Round                @relation(fields: [roundId], references: [id], onDelete: Cascade)
   roundId         Int                  @id @unique
 }

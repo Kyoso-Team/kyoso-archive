@@ -3,7 +3,9 @@ import {
   tournamentRouter,
   uploadRouter,
   validationRouter,
-  usersRouter
+  usersRouter,
+  stagesRouter,
+  roundsRouter
 } from './routes';
 import { t } from '$trpc';
 
@@ -12,7 +14,9 @@ export const router = t.router({
   tournaments: tournamentRouter,
   uploads: uploadRouter,
   validation: validationRouter,
-  users: usersRouter
+  users: usersRouter,
+  stages: stagesRouter,
+  rounds: roundsRouter
 });
 
 export type Router = typeof router;

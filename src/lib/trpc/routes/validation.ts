@@ -10,11 +10,34 @@ export const validationRouter = t.router({
           name: input
         },
         select: {
-          name: true
+          id: true
         }
       });
     }, "Can't get tournament to validate name uniqueness.");
 
     return !tournament;
+  }),
+  isRoundNameUniqueInTournament: t.procedure.input(
+    z.object({
+      name: z.string(),
+      tournamentId: z.number().int(),
+      roundId: z.number().int().optional()
+    })
+  ).query(async ({ input: { roundId, name, tournamentId } }) => {
+    let round = await tryCatch(async () => {
+      return await prisma.round.findUnique({
+        where: {
+          name_tournamentId: {
+            name,
+            tournamentId
+          }
+        },
+        select: {
+          id: true
+        }
+      });
+    }, "Can't get round to validate name uniqueness.");
+
+    return !round || (roundId && round.id === roundId);
   })
 });

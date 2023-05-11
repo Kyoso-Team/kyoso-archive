@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 
-type SectionIcon = 'settings';
+type SectionIcon = 'settings' | 'pooling' | 'referee' | 'stats calc' | 'pickems' | 'regs';
 
 function createSidebar() {
   const { subscribe, update, set } = writable<{

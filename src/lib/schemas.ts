@@ -5,3 +5,7 @@ export const whereIdSchema = z.object({
 });
 
 export const prismaSortSchema = z.union([z.literal('asc'), z.literal('desc')]);
+
+export const withTournamentSchema = z.object({
+  tournamentId: z.number().int()
+});

@@ -5,17 +5,14 @@
   import 'highlight.js/styles/atom-one-dark.css';
   import env from '$lib/env/client';
   import hljs from 'highlight.js';
-  import { storeHighlightJs } from '@skeletonlabs/skeleton';
   import { loadScript } from '@paypal/paypal-js';
-  import { setInitialClassState } from '@skeletonlabs/skeleton';
-  import { AppShell, AppBar, Avatar, Modal, Toast } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
   import { goto } from '$app/navigation';
   import { form, paypal, error } from '$stores';
   import { Form, Error, Sidebar } from '$components';
   import { onMount } from 'svelte';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-  import { storePopup } from '@skeletonlabs/skeleton';
+  import { setInitialClassState, AppShell, AppBar, Avatar, storeHighlightJs, storePopup, Modal, Toast } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
 
   storeHighlightJs.set(hljs);
@@ -167,6 +164,7 @@
   <svelte:fragment slot="sidebarLeft">
     <Sidebar />
   </svelte:fragment>
+  <Modal />
   {#if $form}
     <div class="fixed inset-0 z-20 h-screen w-screen bg-surface-backdrop-token">
       <Form />

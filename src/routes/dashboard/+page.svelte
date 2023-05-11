@@ -51,11 +51,11 @@
         field('Is it open rank?', 'isOpenRank', 'boolean'),
         field('Lower rank range limit', 'lowerRankRange', 'number', {
           validation: (z) => z.int().gte(1),
-          disableIf: (tournament) => tournament.isOpenRank
+          disableIf: (tournament) => !!tournament.isOpenRank
         }),
         field('Upper rank range limit', 'upperRankRange', 'number', {
           validation: (z) => z.int().gte(1),
-          disableIf: (tournament) => tournament.isOpenRank
+          disableIf: (tournament) => !!tournament.isOpenRank
         }),
         field('Type', 'type', 'string', {
           fromValues: {

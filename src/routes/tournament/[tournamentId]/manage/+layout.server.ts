@@ -30,8 +30,42 @@ export const load = (async ({ parent }) => {
     throw error(403, `You're not a staff member for tournament of ID ${tournament.id}.`);
   }
 
+  let { stages } = await prisma.tournament.findUniqueOrThrow({
+    where: {
+      id: tournament.id
+    },
+    select: {
+      stages: {
+        select: {
+          rounds: {
+            select: {
+              id: true,
+              name: true
+            },
+            orderBy: {
+              order: 'asc'
+            }
+          }
+        },
+        orderBy: {
+          order: 'asc'
+        }
+      }
+    }
+  });
+
+  let rounds: {
+    id: number;
+    name: string;
+  }[] = [];
+
+  stages.forEach((stage) => {
+    rounds.push(... stage.rounds);
+  });
+
   return {
     tournament,
-    staffMember
+    staffMember,
+    rounds
   };
 }) satisfies LayoutServerLoad;

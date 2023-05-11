@@ -30,7 +30,7 @@
   }
 </script>
 
-<div class="mt-6">
+<div class="mt-4">
   <slot name="header" />
   <div class="card w-80 sm:w-[32rem]">
     <slot />

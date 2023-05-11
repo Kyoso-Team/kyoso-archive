@@ -108,7 +108,7 @@ export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
   if (!parse.success) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: '"tournamentId" is undefined'
+      message: '"tournamentId" is invalid'
     });
   }
 

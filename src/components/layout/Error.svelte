@@ -10,6 +10,10 @@
   }
 
   function onClose() {
+    if ($error?.onClose) {
+      $error.onClose();
+    }
+
     error.destroy();
   }
 </script>
