@@ -43,6 +43,10 @@
 
   const adminNavLinks = [
     {
+      href: 'users',
+      label: 'Users'
+    },
+    {
       href: 'purchases',
       label: 'Purchases'
     },
