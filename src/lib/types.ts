@@ -4,6 +4,7 @@ import type { Page } from '@sveltejs/kit';
 export type FormInputType = 'string' | 'number' | 'boolean' | 'date' | 'id';
 export type TournamentType = 'Teams' | 'Solo';
 export type Sort = 'asc' | 'desc';
+export type FileType = 'png' | 'jpg' | 'jpeg' | 'webp' | 'gif' | 'osr' | 'osz';
 
 export type NullPartial<
   T extends Record<string | number | symbol, unknown>,

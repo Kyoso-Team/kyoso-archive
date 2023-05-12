@@ -27,6 +27,9 @@
     }, {
       label: 'Prizes',
       path: `${basePath}prizes`
+    }, {
+      label: 'Graphics',
+      path: `${basePath}graphics`
     }]);
 
     settings.setSubsection('Referee', [{
