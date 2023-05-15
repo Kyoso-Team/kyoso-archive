@@ -27,7 +27,7 @@
           />
         </svg>
       </div>
-      <input type="text" placeholder="Search..." bind:value={input} />
+      <input type="text" placeholder="Search..." bind:value={input} on:keydown={(event) => {if (event.key === "Enter") {search()}}} />
       <button class="variant-filled-primary" on:click={search}>Search</button>
     </div>
   </label>

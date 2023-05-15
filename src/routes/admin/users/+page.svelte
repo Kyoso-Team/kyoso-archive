@@ -1,8 +1,10 @@
 <script lang="ts">
+  import { modalStore, toastStore } from '@skeletonlabs/skeleton';
   import { paginate } from '$stores';
   import { SearchBar, Paginator, User } from '$components';
   import { page } from '$app/stores';
   import type { PageServerData } from './$types';
+  import { trpc } from '$trpc/client';
 
   export let data: PageServerData;
 
@@ -12,6 +14,43 @@
 
   function onPageChange({ detail }: CustomEvent<number>) {
     paginate.setPage($page, detail);
+  }
+
+  export function adminChange(user: {
+    id: number,
+    isAdmin: boolean,
+    osuUsername: string
+  }) {
+    let isAdmin = user.isAdmin
+    modalStore.trigger({
+      type: 'confirm',
+      title: `${isAdmin ? "Removing" : "Adding"} an admin`,
+      body: `Are you sure you want to <strong>${isAdmin ? "REMOVE" : "ADD"} ${user.osuUsername}</strong> ${isAdmin ? "from" : "to"} admins?`,
+      response: async (r: boolean) => {
+        if (r === true) {
+          let success = await trpc($page).users.changeAdminStatus.mutate({id: user.id, toAdmin: !isAdmin})
+          toastStore.trigger({message: success ? "Success!" : "Something went wrong..."});
+        }
+      }
+    });
+  }
+
+  export function deleteUser(user: {
+    id: number,
+    isAdmin: boolean,
+    osuUsername: string
+  }) {
+    modalStore.trigger({
+      type: 'confirm',
+      title: 'Deleting an user',
+      body: `Are you definitely sure you want to <strong>COMPLETELY DELETE ${user.osuUsername}?</strong> There's no coming back from this!`,
+      response: async (r: boolean) => {
+        if (r === true) {
+          let deletedUser = await trpc($page).users.deleteUser.mutate(user.id)
+          toastStore.trigger({message: `${deletedUser.osuUsername} has been successfully deleted!`});
+        }
+      }
+    });
   }
 </script>
 
@@ -46,7 +85,10 @@
                 user: user,
                 options: {
                   forceShowDiscord: true,
-                  managementOptions: true
+                  management: {
+                    adminChange,
+                    deleteUser
+                  }
                 }
               }}
             />
