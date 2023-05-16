@@ -10,7 +10,8 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "prettier --plugin-search-dir . --check . && eslint .",
     "fmt": "prettier --plugin-search-dir . --write .",
-    "db:push": "npx prisma db push",
+    "db:push": "pnpm dlx prisma db push",
+    "db:studio": "pnpm dlx prisma studio",
     "review": "pnpm fmt && pnpm lint && pnpm check"
   },
   "devDependencies": {
