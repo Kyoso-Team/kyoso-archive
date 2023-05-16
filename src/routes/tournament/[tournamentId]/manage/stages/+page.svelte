@@ -5,6 +5,7 @@
   import { onMount } from 'svelte';
   import { invalidateAll } from '$app/navigation';
   import { modal } from '$lib/utils';
+  import { MoveUpIcon, MoveDownIcon } from '$components';
   import type { StageFormat } from '@prisma/client';
   import type { PageServerData } from './$types';
 
@@ -453,9 +454,7 @@
                 class="btn btn-sm variant-ringed-primary p-1"
                 on:click={() => onMoveStageOrder(id, order, data.stages[i - 1].id, data.stages[i - 1].order)}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <path fill="white" d="M6.7 14.7q-.275-.275-.275-.7t.275-.7l4.6-4.6q.15-.15.325-.212T12 8.425q.2 0 .388.075t.312.2l4.6 4.6q.275.275.275.7t-.275.7q-.275.275-.7.275t-.7-.275L12 10.8l-3.9 3.9q-.275.275-.7.275t-.7-.275Z"/>
-                </svg>
+                <MoveUpIcon w={20} h={20} styles="fill-white" />
               </button>
             {/if}
             {#if i !== data.stages.length - 1}
@@ -463,9 +462,7 @@
                 class="btn btn-sm variant-ringed-primary p-1"
                 on:click={() => onMoveStageOrder(id, order, data.stages[i + 1].id, data.stages[i + 1].order)}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <path fill="white" d="M12 14.975q-.2 0-.388-.075t-.312-.2l-4.6-4.6q-.275-.275-.275-.7t.275-.7q.275-.275.7-.275t.7.275l3.9 3.9l3.9-3.9q.275-.275.7-.275t.7.275q.275.275.275.7t-.275.7l-4.6 4.6q-.15.15-.325.213t-.375.062Z"/>
-                </svg>
+                <MoveDownIcon w={20} h={20} styles="fill-white" />
               </button>
             {/if}
             {#if !isMainStage}
@@ -513,9 +510,7 @@
                         class="btn btn-sm variant-ringed-secondary p-1"
                         on:click={() => onMoveRoundOrder(round.id, round.order, rounds[j - 1].id, rounds[j - 1].order)}
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                          <path fill="white" d="M6.7 14.7q-.275-.275-.275-.7t.275-.7l4.6-4.6q.15-.15.325-.212T12 8.425q.2 0 .388.075t.312.2l4.6 4.6q.275.275.275.7t-.275.7q-.275.275-.7.275t-.7-.275L12 10.8l-3.9 3.9q-.275.275-.7.275t-.7-.275Z"/>
-                        </svg>
+                        <MoveUpIcon w={20} h={20} styles="fill-white" />
                       </button>
                     {/if}
                     {#if j !== rounds.length - 1}
@@ -523,9 +518,7 @@
                         class="btn btn-sm variant-ringed-secondary p-1"
                         on:click={() => onMoveRoundOrder(round.id, round.order, rounds[j + 1].id, rounds[j + 1].order)}
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                          <path fill="white" d="M12 14.975q-.2 0-.388-.075t-.312-.2l-4.6-4.6q-.275-.275-.275-.7t.275-.7q.275-.275.7-.275t.7.275l3.9 3.9l3.9-3.9q.275-.275.7-.275t.7.275q.275.275.275.7t-.275.7l-4.6 4.6q-.15.15-.325.213t-.375.062Z"/>
-                        </svg>
+                        <MoveDownIcon w={20} h={20} styles="fill-white" />
                       </button>
                     {/if}
                   </div>
