@@ -88,8 +88,6 @@
   {@html `<script>(${setInitialClassState.toString()})();</script>`}
 </svelte:head>
 <AppShell regionPage="relative" slotPageHeader="sticky top-0 z-10">
-  <Modal />
-  <Toast />
   <svelte:fragment slot="header">
     <AppBar padding="p-3">
       <svelte:fragment slot="lead">
@@ -165,6 +163,7 @@
     <Sidebar />
   </svelte:fragment>
   <Modal />
+  <Toast />
   {#if $form}
     <div class="fixed inset-0 z-20 h-screen w-screen bg-surface-backdrop-token">
       <Form />
