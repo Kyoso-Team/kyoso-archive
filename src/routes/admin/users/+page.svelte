@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { modalStore, toastStore } from '@skeletonlabs/skeleton';
+  import { modalStore, toastStore, popup } from '@skeletonlabs/skeleton';
   import { paginate } from '$stores';
   import { SearchBar, Paginator, User } from '$components';
   import { page } from '$app/stores';
-  import type { PageServerData } from './$types';
   import { trpc } from '$trpc/client';
+  import type { PageServerData } from './$types';
+  import type { PopupSettings } from '@skeletonlabs/skeleton';
 
   export let data: PageServerData;
 
@@ -52,11 +53,16 @@
       }
     });
   }
+
+  const popupUserManage: PopupSettings = {
+    event: 'click',
+    target: 'popupUserManage',
+    placement: 'bottom'
+  }
 </script>
 
 <div class="center-content">
   <SearchBar label="Search Users" on:search={onSearch} />
-  {#if Boolean($page.url.searchParams.get("search")?.length)}
     <div>
       <h2 class="pl-1 pb-1">Users</h2>
       <div class="card mb-2 flex min-w-[18.5rem] max-w-5xl flex-wrap justify-center gap-4 p-4">
@@ -80,22 +86,27 @@
           </div>
         {:else}
           {#each data.users as user}
-            <User
-              data={{
-                user: user,
-                options: {
-                  forceShowDiscord: true,
-                  management: {
-                    adminChange,
-                    deleteUser
+            <div>
+              <User
+                data={{
+                  user: user,
+                  options: {
+                    forceShowDiscord: true
                   }
-                }
-              }}
-            />
+                }}
+              />
+              <button class="mt-2 block mx-auto btn variant-filled-tertiary" use:popup={popupUserManage}>Manage User...</button>
+              <div class="card p-4 max-w-sm" data-popup="popupUserManage">
+                <div class="grid grid-cols-1 gap-2">
+                  <button class="btn variant-filled-error" on:click={() => {adminChange(user)}}>{user.isAdmin ? "Remove" : "Add"} Admin</button>
+                  <button class="btn variant-filled-error" on:click={() => {deleteUser(user)}}>Delete User</button>
+                </div>
+                <div class="arrow bg-surface-100-800-token" />
+              </div>
+            </div>
           {/each}
         {/if}
       </div>
       <Paginator count={data.userCount} page={data.page} on:change={onPageChange} />
     </div>
-  {/if}
 </div>

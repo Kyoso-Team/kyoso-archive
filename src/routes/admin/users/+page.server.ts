@@ -11,7 +11,7 @@ export const load = (async ({ parent, url }) => {
     url,
     z.object({}),
     z.object({
-      osuUsername: prismaSortSchema
+      registeredAt: prismaSortSchema
     })
   );
 
@@ -27,7 +27,7 @@ export const load = (async ({ parent, url }) => {
       },
       {
         discordUsername: containsSearch
-      },
+      }
     ]
   };
 
@@ -43,10 +43,15 @@ export const load = (async ({ parent, url }) => {
       discordUsername: true,
       discordDiscriminator: true,
       showDiscordTag: true,
-      country: true
+      country: {
+        select: {
+          name: true,
+          code: true
+        }
+      }
     },
     orderBy: {
-      osuUsername: sort.osuUsername || 'desc'
+      registeredAt: sort.registeredAt || 'desc'
     }
   });
   let userCount = prisma.user.count({ where });

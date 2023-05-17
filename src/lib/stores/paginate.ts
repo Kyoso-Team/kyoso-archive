@@ -32,7 +32,7 @@ function createPaginate() {
       url.searchParams.delete('search');
     }
 
-    goto(url.search, {keepFocus: true, invalidateAll: true});
+    goto(url.search || url.href, {keepFocus: true, invalidateAll: true});
   }
 
   function setFilter(
