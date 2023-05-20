@@ -12,8 +12,8 @@
   import { Form, Error, Sidebar } from '$components';
   import { onMount } from 'svelte';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-  import { setInitialClassState, AppShell, AppBar, Avatar, storeHighlightJs, storePopup, Modal, popup } from '@skeletonlabs/skeleton';
-  import type { PopupSettings } from '@skeletonlabs/skeleton'
+  import { setInitialClassState, AppShell, AppBar, Avatar, storeHighlightJs, storePopup, Modal, popup, Toast } from '@skeletonlabs/skeleton';
+  import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
 
   storeHighlightJs.set(hljs);
@@ -38,6 +38,10 @@
   ];
 
   const adminNavLinks = [
+    {
+      href: 'users',
+      label: 'Users'
+    },
     {
       href: 'purchases',
       label: 'Purchases'
@@ -147,6 +151,7 @@
     <Sidebar />
   </svelte:fragment>
   <Modal />
+  <Toast />
   {#if $form}
     <div class="fixed inset-0 z-20 h-screen w-screen bg-surface-backdrop-token">
       <Form />
