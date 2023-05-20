@@ -12,15 +12,14 @@
   import { Form, Error, Sidebar } from '$components';
   import { onMount } from 'svelte';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-  import { setInitialClassState, AppShell, AppBar, Avatar, storeHighlightJs, storePopup, Modal } from '@skeletonlabs/skeleton';
+  import { setInitialClassState, AppShell, AppBar, Avatar, storeHighlightJs, storePopup, Modal, popup } from '@skeletonlabs/skeleton';
+  import type { PopupSettings } from '@skeletonlabs/skeleton'
   import type { LayoutServerData } from './$types';
 
   storeHighlightJs.set(hljs);
   storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
   export let data: LayoutServerData;
-  let showUserMenu = false;
-  let showAdminMenu = false;
 
   const authUrl = buildUrl.authRequest(env.PUBLIC_OSU_CLIENT_ID, env.PUBLIC_OSU_REDIRECT_URI, [
     'identify',
@@ -49,6 +48,15 @@
     }
   ];
 
+  const navbarPopup: PopupSettings = {
+    event: 'click',
+    placement: 'bottom',
+    target: "",
+    middleware: {
+      offset: 24
+    }
+  };
+
   onMount(() => {
     loadPayPalScript();
   });
@@ -70,14 +78,6 @@
   function onLogoutClick() {
     goto('/auth/logout');
   }
-
-  function onUserAvatarClick() {
-    showUserMenu = !showUserMenu;
-  }
-
-  function switchAdminMenuDisplay() {
-    showAdminMenu = !showAdminMenu;
-  }
 </script>
 
 <svelte:head>
@@ -89,23 +89,16 @@
       <svelte:fragment slot="lead">
         <nav class="flex gap-2">
           {#if data.user && data.user.isAdmin}
-            <div>
-              <button on:click={switchAdminMenuDisplay} class="btn hover:variant-soft-primary"
-                >Admin</button
-              >
-              {#if showAdminMenu}
-                <div class="card absolute top-[5rem] left-4 w-52 py-2">
-                  <nav class="flex flex-col gap-1 px-2">
-                    {#each adminNavLinks as { href, label }}
-                      <a
-                        on:click={switchAdminMenuDisplay}
-                        href={`/admin/${href}`}
-                        class="btn justify-start py-1 hover:variant-soft-primary">{label}</a
-                      >
-                    {/each}
-                  </nav>
-                </div>
-              {/if}
+            <button class="btn hover:variant-soft-primary" use:popup={{...navbarPopup, target: "adminPopup"}}>Admin</button>
+            <div class="card absolute top-[5rem] left-4 w-52 py-2" data-popup="adminPopup">
+              <nav class="flex flex-col gap-1 px-2">
+                {#each adminNavLinks as { href, label }}
+                  <a
+                    href={`/admin/${href}`}
+                    class="btn justify-start py-1 hover:variant-soft-primary">{label}</a
+                  >
+                {/each}
+              </nav>
             </div>
           {/if}
           {#each navLinks as { href, label }}
@@ -116,37 +109,32 @@
       <svelte:fragment slot="trail">
         <div>
           {#if data.user}
-            <div>
+            <div use:popup={{...navbarPopup, target: "avatarPopup"}}>
               <Avatar
-                on:click={onUserAvatarClick}
                 src={buildUrl.userAvatar(data.user.osuUserId)}
                 width="w-10"
                 cursor="cursor-pointer"
               />
-              {#if showUserMenu}
-                <div class="card absolute top-[5rem] right-4 w-52 py-2">
-                  <section class="flex flex-col px-6">
-                    <div class="font-bold">{data.user.username}</div>
-                    <div class="text-sm">{data.user.discordTag}</div>
-                  </section>
-                  <nav class="mt-2 flex flex-col gap-1 px-2">
-                    <a
-                      on:click={onUserAvatarClick}
-                      href={`/user/${data.user.id}`}
-                      class="btn justify-start py-1 hover:variant-soft-primary">Profile</a
-                    >
-                    <a
-                      on:click={onUserAvatarClick}
-                      href="/user/settings"
-                      class="btn justify-start py-1 hover:variant-soft-primary">Settings</a
-                    >
-                    <button
-                      on:click={onLogoutClick}
-                      class="btn justify-start py-1 hover:variant-soft-primary">Logout</button
-                    >
-                  </nav>
-                </div>
-              {/if}
+            </div>
+            <div class="card absolute top-[5rem] right-4 w-52 py-2" data-popup="avatarPopup">
+              <section class="flex flex-col px-6">
+                <div class="font-bold">{data.user.username}</div>
+                <div class="text-sm">{data.user.discordTag}</div>
+              </section>
+              <nav class="mt-2 flex flex-col gap-1 px-2">
+                <a
+                  href={`/user/${data.user.id}`}
+                  class="btn justify-start py-1 hover:variant-soft-primary">Profile</a
+                >
+                <a
+                  href="/user/settings"
+                  class="btn justify-start py-1 hover:variant-soft-primary">Settings</a
+                >
+                <button
+                  on:click={onLogoutClick}
+                  class="btn justify-start py-1 hover:variant-soft-primary">Logout</button
+                >
+              </nav>
             </div>
           {:else}
             <a href={authUrl} class="btn variant-filled-primary">Login</a>
