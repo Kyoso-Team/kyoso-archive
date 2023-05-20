@@ -182,7 +182,7 @@ model Prize {
   cashMetric       CashMetric @default(Fixed)
   cashCurrency     String     @default("USD") @db.Char(3)
   items            String[]   @db.VarChar(25)
-  osuSupporter     Int        @db.SmallInt // In months
+  osuSupporter     Int?       @db.SmallInt // In months
   tournament       Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId     Int
   awardedToPlayers Player[]

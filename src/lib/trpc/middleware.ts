@@ -5,6 +5,7 @@ import { TRPCError } from '@trpc/server';
 import type { SessionUser } from '$types';
 import type { Context } from '$trpc/context';
 import { z } from 'zod';
+import type { BanOrder, TournamentService, TournamentType, WinCondition } from '@prisma/client';
 
 function getStoredUserHelper(ctx: Context) {
   if (!ctx.cookies.get('session')) {
@@ -113,6 +114,95 @@ export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
       user,
       tournament,
       staffMember
+    }
+  });
+});
+
+async function getTournamentHelper<T extends 'general' | 'dates' | 'ref'>(
+  input: unknown,
+  dataType: T
+) {
+  let parse = z
+    .object({
+      tournamentId: z.number().int()
+    })
+    .safeParse(input);
+  
+  if (!parse.success) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: '"tournamentId" is invalid'
+    });
+  }
+
+  let parsed = parse.data;
+
+  let tournament = await tryCatch(async () => {
+    return await prisma.tournament.findUniqueOrThrow({
+      where: {
+        id: parsed.tournamentId
+      },
+      select: dataType === 'general'
+        ? {
+          lowerRankRange: true,
+          upperRankRange: true,
+          teamSize: true,
+          teamPlaySize: true,
+          useBWS: true,
+          type: true,
+          services: true
+        } : dataType === 'dates'
+          ? {
+            goPublicOn: true,
+            concludesOn: true,
+            playerRegsOpenOn: true,
+            playerRegsCloseOn: true,
+            staffRegsOpenOn: true,
+            staffRegsCloseOn: true
+          } : {
+            doublePickAllowed: true,
+            doubleBanAllowed: true,
+            alwaysForceNoFail: true,
+            banOrder: true,
+            winCondition: true
+          }
+    });
+  }, `Couldn't find tournament with ID ${parse.data.tournamentId}.`);
+
+  return tournament as T extends 'general' ? {
+    lowerRankRange: number;
+    upperRankRange: number;
+    teamSize: number;
+    teamPlaySize: number;
+    useBWS: boolean;
+    type: TournamentType;
+    services: TournamentService[];
+  } : T extends 'dates' ? {
+    goPublicOn: Date | null;
+    concludesOn: Date | null;
+    playerRegsOpenOn: Date | null;
+    playerRegsCloseOn: Date | null;
+    staffRegsOpenOn: Date | null;
+    staffRegsCloseOn: Date | null;
+  } : {
+    doublePickAllowed: boolean;
+    doubleBanAllowed: boolean;
+    alwaysForceNoFail: boolean;
+    banOrder: BanOrder;
+    winCondition: WinCondition;
+  };
+}
+
+export const getTournamentGeneralSettings = getUserAsStaff.unstable_pipe(async ({ ctx, next, rawInput }) => {
+  let tournament = await getTournamentHelper(rawInput, 'general');
+
+  return next({
+    ctx: {
+      ... ctx,
+      tournament: {
+        ... tournament,
+        id: ctx.tournament.id
+      }
     }
   });
 });

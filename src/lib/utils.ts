@@ -57,6 +57,21 @@ export const format = {
     }
 
     return `${str}${nStr}`;
+  },
+  listArray: (arr: (string | number)[]) => {
+    let str = '';
+
+    if (arr.length > 1) {
+      str += `${arr[0]}`;
+
+      for (let i = 1; i < arr.length - 1; i++) {
+        str += `, ${arr[i]}`;
+      }
+
+      str += ` & ${arr[arr.length - 1]}`;
+    }
+
+    return str;
   }
 };
 
