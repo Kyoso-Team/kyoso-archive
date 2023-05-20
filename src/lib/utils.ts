@@ -46,6 +46,32 @@ export const format = {
     }
 
     return `${months[date.getMonth()]} ${dateStr}${cardinal}, ${date.getFullYear()}`;
+  },
+  digits: (n: number, digitCount: number) => {
+    let nStr = n.toString();
+    let missingDigits = digitCount - nStr.length ;
+    let str = '';
+    
+    for (let i = missingDigits; i > 0; i--) {
+      str += '0';
+    }
+
+    return `${str}${nStr}`;
+  },
+  listArray: (arr: (string | number)[]) => {
+    let str = '';
+
+    if (arr.length > 1) {
+      str += `${arr[0]}`;
+
+      for (let i = 1; i < arr.length - 1; i++) {
+        str += `, ${arr[i]}`;
+      }
+
+      str += ` & ${arr[arr.length - 1]}`;
+    }
+
+    return str;
   }
 };
 
@@ -75,6 +101,11 @@ export const modal = {
       }
     });
   }
+};
+
+export const byteUnit = {
+  kb: (value: number) => value * 1_000,
+  mb: (value: number) => value * 1_000_000
 };
 
 export function removeDuplicates<T>(arr: T[]) {

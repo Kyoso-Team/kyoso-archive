@@ -5,6 +5,7 @@ import { TRPCError } from '@trpc/server';
 import type { SessionUser } from '$types';
 import type { Context } from '$trpc/context';
 import { z } from 'zod';
+import type { BanOrder, TournamentService, TournamentType, WinCondition } from '@prisma/client';
 
 function getStoredUserHelper(ctx: Context) {
   if (!ctx.cookies.get('session')) {
@@ -39,61 +40,13 @@ export const getUser = t.middleware(async ({ ctx, next }) => {
       discordUserId: true,
       discordDiscriminator: true,
       freeServicesLeft: true,
-      osuAccessToken: true,
-      asStaffMember: {
-        select: {
-          tournamentId: true,
-          roles: {
-            select: {
-              permissions: true
-            }
-          }
-        }
-      }
+      osuAccessToken: true
     }
   });
 
   return next({
     ctx: {
       user
-    }
-  });
-});
-
-export const getUploadInfo = t.middleware(async ({ ctx, next }) => {
-  let formData = await ctx.request.formData();
-  let upload = formData.get('file');
-  let uploadType = formData.get('uploadType');
-  let targetType = formData.get('targetType');
-  let targetId = formData.get('targetId');
-
-  if (!upload || !(upload as File).size) {
-    throw new TRPCError({
-      code: 'BAD_REQUEST',
-      message: 'No file is trying to be uploaded'
-    });
-  }
-  if (!uploadType || !targetType || !targetId) {
-    throw new TRPCError({
-      code: 'BAD_REQUEST',
-      message: 'Trying to upload without specifying why'
-    });
-  }
-  if (isNaN(+targetId)) {
-    throw new TRPCError({
-      code: 'BAD_REQUEST',
-      message: 'The ID of the target is not a number'
-    });
-  }
-
-  return next({
-    ctx: {
-      uploadInfo: {
-        upload: upload as File,
-        uploadType: uploadType as string,
-        targetType: targetType as string,
-        targetId: +targetId as number
-      }
     }
   });
 });
@@ -154,13 +107,102 @@ export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
         }
       }
     });
-  }, `Couldn't find Sstaff member with user ID ${user.id} in tournament with ID ${tournament.id}.`);
+  }, `Couldn't find staff member with user ID ${user.id} in tournament with ID ${tournament.id}.`);
 
   return next({
     ctx: {
       user,
       tournament,
       staffMember
+    }
+  });
+});
+
+async function getTournamentHelper<T extends 'general' | 'dates' | 'ref'>(
+  input: unknown,
+  dataType: T
+) {
+  let parse = z
+    .object({
+      tournamentId: z.number().int()
+    })
+    .safeParse(input);
+  
+  if (!parse.success) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: '"tournamentId" is invalid'
+    });
+  }
+
+  let parsed = parse.data;
+
+  let tournament = await tryCatch(async () => {
+    return await prisma.tournament.findUniqueOrThrow({
+      where: {
+        id: parsed.tournamentId
+      },
+      select: dataType === 'general'
+        ? {
+          lowerRankRange: true,
+          upperRankRange: true,
+          teamSize: true,
+          teamPlaySize: true,
+          useBWS: true,
+          type: true,
+          services: true
+        } : dataType === 'dates'
+          ? {
+            goPublicOn: true,
+            concludesOn: true,
+            playerRegsOpenOn: true,
+            playerRegsCloseOn: true,
+            staffRegsOpenOn: true,
+            staffRegsCloseOn: true
+          } : {
+            doublePickAllowed: true,
+            doubleBanAllowed: true,
+            alwaysForceNoFail: true,
+            banOrder: true,
+            winCondition: true
+          }
+    });
+  }, `Couldn't find tournament with ID ${parse.data.tournamentId}.`);
+
+  return tournament as T extends 'general' ? {
+    lowerRankRange: number;
+    upperRankRange: number;
+    teamSize: number;
+    teamPlaySize: number;
+    useBWS: boolean;
+    type: TournamentType;
+    services: TournamentService[];
+  } : T extends 'dates' ? {
+    goPublicOn: Date | null;
+    concludesOn: Date | null;
+    playerRegsOpenOn: Date | null;
+    playerRegsCloseOn: Date | null;
+    staffRegsOpenOn: Date | null;
+    staffRegsCloseOn: Date | null;
+  } : {
+    doublePickAllowed: boolean;
+    doubleBanAllowed: boolean;
+    alwaysForceNoFail: boolean;
+    banOrder: BanOrder;
+    winCondition: WinCondition;
+  };
+}
+
+export const getTournamentGeneralSettings = getUserAsStaff.unstable_pipe(async ({ ctx, next, rawInput }) => {
+  let tournament = await getTournamentHelper(rawInput, 'general');
+
+  return next({
+    ctx: {
+      ... ctx,
+      tournament: {
+        ... tournament,
+        id: ctx.tournament.id
+      }
     }
   });
 });

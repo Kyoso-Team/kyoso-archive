@@ -1,7 +1,7 @@
 <script lang="ts">
   import { SlideToggle, popup } from '@skeletonlabs/skeleton';
   import { tooltip, dateToHtmlInput } from '$lib/utils';
-  import { Tooltip } from '$components';
+  import { Tooltip, LinkIcon } from '$components';
 
   export let value: string | number | boolean | undefined | null | Date;
   export let type: 'string' | 'text' | 'number' | 'boolean' | 'select' | 'date';
@@ -66,17 +66,7 @@
           use:popup={tooltip(linkTooltipTarget)}
           target={link ? '_blank' : undefined}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 256 256"
-            width="18"
-            height="18"
-            class="fill-primary-500"
-          >
-            <path
-              d="m87.5 151.52l64-64a12 12 0 0 1 17 17l-64 64a12 12 0 0 1-17-17Zm131-114a60.08 60.08 0 0 0-84.87 0l-30.12 30.09a12 12 0 0 0 17 17l30.07-30.06a36 36 0 0 1 50.93 50.92l-30.11 30.05a12 12 0 1 0 17 17l30.08-30.06a60.09 60.09 0 0 0-.03-84.91ZM135.52 171.4l-30.07 30.08a36 36 0 0 1-50.92-50.93l30.06-30.07a12 12 0 0 0-17-17l-30.04 30.1a60 60 0 0 0 84.88 84.87l30.06-30.07a12 12 0 0 0-17-17Z"
-            />
-          </svg>
+          <LinkIcon w={18} h={18} styles="fill-primary-500" />
         </a>
         <Tooltip label="Open in new tab" target={linkTooltipTarget} />
       {/if}

@@ -1,9 +1,8 @@
- import prisma from '$prisma';
+import prisma from '$prisma';
 import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
-import { getUser, getUserAsStaff } from '$trpc/middleware';
+import { getUserAsStaff } from '$trpc/middleware';
 import { whereIdSchema, withTournamentSchema } from '$lib/schemas';
-import { TRPCError } from '@trpc/server';
 import { isAllowed } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
 import type { Prisma } from '@prisma/client';
