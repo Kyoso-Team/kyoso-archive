@@ -7,7 +7,8 @@ import {
   STORAGE_ENDPOINT,
   STORAGE_PASSWORD,
   PAYPAL_CLIENT_SECRET,
-  ADMIN_BY_DEFAULT
+  ADMIN_BY_DEFAULT,
+  DATABASE_URL
 } from '$env/static/private';
 import { clientEnvSchema, clientEnv } from './client';
 
@@ -20,6 +21,7 @@ const serverEnvSchema = z
     STORAGE_ENDPOINT: z.string().nonempty(),
     STORAGE_PASSWORD: z.string().nonempty(),
     PAYPAL_CLIENT_SECRET: z.string().nonempty(),
+    DATABASE_URL: z.string().nonempty(),
     ADMIN_BY_DEFAULT: z.array(z.number().int())
   })
   .merge(clientEnvSchema);

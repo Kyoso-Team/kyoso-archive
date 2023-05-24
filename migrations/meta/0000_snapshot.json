@@ -1,0 +1,5133 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "id": "f542f4ba-952e-4f1d-b719-fa50623aeb1a",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "countries": {
+      "name": "countries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(35)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "code": {
+          "name": "code",
+          "type": "char(2)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "code_key": {
+          "name": "code_key",
+          "columns": [
+            "code"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "purchases": {
+      "name": "purchases",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "purchased_at": {
+          "name": "purchased_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "cost": {
+          "name": "cost",
+          "type": "numeric(4, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "paypal_order_id": {
+          "name": "paypal_order_id",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "services": {
+          "name": "services",
+          "type": "tournament_service[5]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": []
+        },
+        "purchased_by_id": {
+          "name": "purchased_by_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "for_tournament_id": {
+          "name": "for_tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "purchases_purchased_by_id_users_id_fk": {
+          "name": "purchases_purchased_by_id_users_id_fk",
+          "tableFrom": "purchases",
+          "tableTo": "users",
+          "columnsFrom": [
+            "purchased_by_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "purchases_for_tournament_id_tournaments_id_fk": {
+          "name": "purchases_for_tournament_id_tournaments_id_fk",
+          "tableFrom": "purchases",
+          "tableTo": "tournaments",
+          "columnsFrom": [
+            "for_tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "registered_at": {
+          "name": "registered_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_admin": {
+          "name": "is_admin",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "osu_user_id": {
+          "name": "osu_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "osu_username": {
+          "name": "osu_username",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_restricted": {
+          "name": "is_restricted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "discord_user_id": {
+          "name": "discord_user_id",
+          "type": "varchar(19)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "discord_username": {
+          "name": "discord_username",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "discord_discriminator": {
+          "name": "discord_discriminator",
+          "type": "char(4)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "api_key": {
+          "name": "api_key",
+          "type": "varchar(24)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "free_services_left": {
+          "name": "free_services_left",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 3
+        },
+        "osu_access_token": {
+          "name": "osu_access_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "osu_refresh_token": {
+          "name": "osu_refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "discord_access_token": {
+          "name": "discord_access_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "discord_refresh_token": {
+          "name": "discord_refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "theme": {
+          "name": "theme",
+          "type": "user_theme",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'dark'"
+        },
+        "show_discord_tag": {
+          "name": "show_discord_tag",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        },
+        "country_id": {
+          "name": "country_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "osu_user_id_key": {
+          "name": "osu_user_id_key",
+          "columns": [
+            "osu_user_id"
+          ],
+          "isUnique": true
+        },
+        "osu_username_key": {
+          "name": "osu_username_key",
+          "columns": [
+            "osu_username"
+          ],
+          "isUnique": true
+        },
+        "discord_username_key": {
+          "name": "discord_username_key",
+          "columns": [
+            "discord_user_id"
+          ],
+          "isUnique": true
+        },
+        "discord_username_discord_discriminator_key": {
+          "name": "discord_username_discord_discriminator_key",
+          "columns": [
+            "discord_username",
+            "discord_discriminator"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "users_country_id_countries_id_fk": {
+          "name": "users_country_id_countries_id_fk",
+          "tableFrom": "users",
+          "tableTo": "countries",
+          "columnsFrom": [
+            "country_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "battle_royale_rounds": {
+      "name": "battle_royale_rounds",
+      "schema": "",
+      "columns": {
+        "players_eliminated_per_map": {
+          "name": "players_eliminated_per_map",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "round_id": {
+          "name": "round_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "round_id_key": {
+          "name": "round_id_key",
+          "columns": [
+            "round_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "battle_royale_rounds_round_id_rounds_id_fk": {
+          "name": "battle_royale_rounds_round_id_rounds_id_fk",
+          "tableFrom": "battle_royale_rounds",
+          "tableTo": "rounds",
+          "columnsFrom": [
+            "round_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "prizes": {
+      "name": "prizes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "prize_type",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "positons": {
+          "name": "positons",
+          "type": "smallint[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": []
+        },
+        "trophy": {
+          "name": "trophy",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "medal": {
+          "name": "medal",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "badge": {
+          "name": "badge",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "banner": {
+          "name": "banner",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "additional_items": {
+          "name": "additional_items",
+          "type": "varchar(25)[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": []
+        },
+        "months_osu_supporter": {
+          "name": "months_osu_supporter",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "prizes_tournament_id_tournaments_id_fk": {
+          "name": "prizes_tournament_id_tournaments_id_fk",
+          "tableFrom": "prizes",
+          "tableTo": "tournaments",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "prize_cash": {
+      "name": "prize_cash",
+      "schema": "",
+      "columns": {
+        "value": {
+          "name": "value",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metric": {
+          "name": "metric",
+          "type": "cash_metric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "currency": {
+          "name": "currency",
+          "type": "char(3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "in_prize_id": {
+          "name": "in_prize_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "prize_cash_in_prize_id_prizes_id_fk": {
+          "name": "prize_cash_in_prize_id_prizes_id_fk",
+          "tableFrom": "prize_cash",
+          "tableTo": "prizes",
+          "columnsFrom": [
+            "in_prize_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "qualifier_rounds": {
+      "name": "qualifier_rounds",
+      "schema": "",
+      "columns": {
+        "publish_mp_links": {
+          "name": "publish_mp_links",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "run_count": {
+          "name": "run_count",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "summarize_runs_as": {
+          "name": "summarize_runs_as",
+          "type": "qualifier_runs_summary",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'average'"
+        },
+        "round_id": {
+          "name": "round_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "round_id_key": {
+          "name": "round_id_key",
+          "columns": [
+            "round_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "qualifier_rounds_round_id_rounds_id_fk": {
+          "name": "qualifier_rounds_round_id_rounds_id_fk",
+          "tableFrom": "qualifier_rounds",
+          "tableTo": "rounds",
+          "columnsFrom": [
+            "round_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "rounds": {
+      "name": "rounds",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order": {
+          "name": "order",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "target_star_rating": {
+          "name": "target_star_rating",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mappool_state": {
+          "name": "mappool_state",
+          "type": "mappool_state",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'private'"
+        },
+        "publish_schedules": {
+          "name": "publish_schedules",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "publish_stats": {
+          "name": "publish_stats",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "stage_id": {
+          "name": "stage_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "name_tournament_id_key": {
+          "name": "name_tournament_id_key",
+          "columns": [
+            "name",
+            "tournament_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "rounds_stage_id_stages_id_fk": {
+          "name": "rounds_stage_id_stages_id_fk",
+          "tableFrom": "rounds",
+          "tableTo": "stages",
+          "columnsFrom": [
+            "stage_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "rounds_tournament_id_tournaments_id_fk": {
+          "name": "rounds_tournament_id_tournaments_id_fk",
+          "tableFrom": "rounds",
+          "tableTo": "tournaments",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "stages": {
+      "name": "stages",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "format": {
+          "name": "format",
+          "type": "stage_format",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order": {
+          "name": "order",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_main_stage": {
+          "name": "is_main_stage",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "tournament_id_format_key": {
+          "name": "tournament_id_format_key",
+          "columns": [
+            "tournament_id",
+            "format"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "stages_tournament_id_tournaments_id_fk": {
+          "name": "stages_tournament_id_tournaments_id_fk",
+          "tableFrom": "stages",
+          "tableTo": "tournaments",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "standard_rounds": {
+      "name": "standard_rounds",
+      "schema": "",
+      "columns": {
+        "best_of": {
+          "name": "best_of",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ban_count": {
+          "name": "ban_count",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "round_id": {
+          "name": "round_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "round_id_key": {
+          "name": "round_id_key",
+          "columns": [
+            "round_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "standard_rounds_round_id_rounds_id_fk": {
+          "name": "standard_rounds_round_id_rounds_id_fk",
+          "tableFrom": "standard_rounds",
+          "tableTo": "rounds",
+          "columnsFrom": [
+            "round_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "tournaments": {
+      "name": "tournaments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "acronym": {
+          "name": "acronym",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lower_rank_range": {
+          "name": "lower_rank_range",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "upper_rank_range": {
+          "name": "upper_rank_range",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "go_public_on": {
+          "name": "go_public_on",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "concludes_on": {
+          "name": "concludes_on",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "player_regs_open_on": {
+          "name": "player_regs_open_on",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "player_regs_close_on": {
+          "name": "player_regs_close_on",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "staff_regs_open_on": {
+          "name": "staff_regs_open_on",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "staff_regs_close_on": {
+          "name": "staff_regs_close_on",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_size": {
+          "name": "team_size",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "team_play_size": {
+          "name": "team_play_size",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "has_banner": {
+          "name": "has_banner",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "use_bws": {
+          "name": "use_bws",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rules": {
+          "name": "rules",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "tournament_type",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "services": {
+          "name": "services",
+          "type": "tournament_service[5]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": []
+        },
+        "forum_post_id": {
+          "name": "forum_post_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "discord_invite_id": {
+          "name": "discord_invite_id",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "main_sheet_id": {
+          "name": "main_sheet_id",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "twitch_channel_name": {
+          "name": "twitch_channel_name",
+          "type": "varchar(25)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "youtube_channel_id": {
+          "name": "youtube_channel_id",
+          "type": "varchar(25)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "twitter_handle": {
+          "name": "twitter_handle",
+          "type": "varchar(15)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "donation_link": {
+          "name": "donation_link",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "website_link": {
+          "name": "website_link",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pick_timer_length": {
+          "name": "pick_timer_length",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 120
+        },
+        "start_timer_length": {
+          "name": "start_timer_length",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 10
+        },
+        "double_pick_allowed": {
+          "name": "double_pick_allowed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "double_ban_allowed": {
+          "name": "double_ban_allowed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "always_force_nofail": {
+          "name": "always_force_nofail",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "roll_rules": {
+          "name": "roll_rules",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "free_mod_rules": {
+          "name": "free_mod_rules",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "warmup_rules": {
+          "name": "warmup_rules",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "late_procedures": {
+          "name": "late_procedures",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ban_order": {
+          "name": "ban_order",
+          "type": "ban_oder",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'ABABAB'"
+        },
+        "win_condition": {
+          "name": "win_condition",
+          "type": "win_condition",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'score'"
+        }
+      },
+      "indexes": {
+        "name_key": {
+          "name": "name_key",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "join_team_requests": {
+      "name": "join_team_requests",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "requested_at": {
+          "name": "requested_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "status": {
+          "name": "status",
+          "type": "join_request_status",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "sent_by_id": {
+          "name": "sent_by_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "join_team_requests_sent_by_id_players_id_fk": {
+          "name": "join_team_requests_sent_by_id_players_id_fk",
+          "tableFrom": "join_team_requests",
+          "tableTo": "players",
+          "columnsFrom": [
+            "sent_by_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "players": {
+      "name": "players",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "registered_at": {
+          "name": "registered_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "availability": {
+          "name": "availability",
+          "type": "char(99)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "team_id": {
+          "name": "team_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prize_won_id": {
+          "name": "prize_won_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "user_id_tournament_id_key": {
+          "name": "user_id_tournament_id_key",
+          "columns": [
+            "user_id",
+            "tournament_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "players_tournament_id_tournaments_id_fk": {
+          "name": "players_tournament_id_tournaments_id_fk",
+          "tableFrom": "players",
+          "tableTo": "tournaments",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "players_user_id_users_id_fk": {
+          "name": "players_user_id_users_id_fk",
+          "tableFrom": "players",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "players_team_id_teams_id_fk": {
+          "name": "players_team_id_teams_id_fk",
+          "tableFrom": "players",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "players_prize_won_id_prizes_id_fk": {
+          "name": "players_prize_won_id_prizes_id_fk",
+          "tableFrom": "players",
+          "tableTo": "prizes",
+          "columnsFrom": [
+            "prize_won_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "staff_application_roles": {
+      "name": "staff_application_roles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(25)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "staff_application_id": {
+          "name": "staff_application_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "name_staff_application_id_key": {
+          "name": "name_staff_application_id_key",
+          "columns": [
+            "name",
+            "staff_application_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "staff_application_roles_staff_application_id_staff_applications_tournament_id_fk": {
+          "name": "staff_application_roles_staff_application_id_staff_applications_tournament_id_fk",
+          "tableFrom": "staff_application_roles",
+          "tableTo": "staff_applications",
+          "columnsFrom": [
+            "staff_application_id"
+          ],
+          "columnsTo": [
+            "tournament_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "staff_application_submissions": {
+      "name": "staff_application_submissions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "applying_for": {
+          "name": "applying_for",
+          "type": "varchar(25)[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": []
+        },
+        "status": {
+          "name": "status",
+          "type": "join_request_status",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "staffing_experience": {
+          "name": "staffing_experience",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "additional_comments": {
+          "name": "additional_comments",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "staff_application_id": {
+          "name": "staff_application_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "staff_application_submissions_staff_application_id_staff_applications_tournament_id_fk": {
+          "name": "staff_application_submissions_staff_application_id_staff_applications_tournament_id_fk",
+          "tableFrom": "staff_application_submissions",
+          "tableTo": "staff_applications",
+          "columnsFrom": [
+            "staff_application_id"
+          ],
+          "columnsTo": [
+            "tournament_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "staff_applications": {
+      "name": "staff_applications",
+      "schema": "",
+      "columns": {
+        "title": {
+          "name": "title",
+          "type": "varchar(75)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "staff_applications_tournament_id_tournaments_id_fk": {
+          "name": "staff_applications_tournament_id_tournaments_id_fk",
+          "tableFrom": "staff_applications",
+          "tableTo": "tournaments",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "staff_members": {
+      "name": "staff_members",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "user_id_tournament_id_key": {
+          "name": "user_id_tournament_id_key",
+          "columns": [
+            "user_id",
+            "tournament_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "staff_members_user_id_users_id_fk": {
+          "name": "staff_members_user_id_users_id_fk",
+          "tableFrom": "staff_members",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "staff_members_tournament_id_tournaments_id_fk": {
+          "name": "staff_members_tournament_id_tournaments_id_fk",
+          "tableFrom": "staff_members",
+          "tableTo": "tournaments",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "staff_roles": {
+      "name": "staff_roles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(25)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "color": {
+          "name": "color",
+          "type": "staff_color",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'slate'"
+        },
+        "permissions": {
+          "name": "permissions",
+          "type": "staff_permission[28]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": []
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "name_tournament_id_key": {
+          "name": "name_tournament_id_key",
+          "columns": [
+            "name",
+            "tournament_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "staff_roles_tournament_id_tournaments_id_fk": {
+          "name": "staff_roles_tournament_id_tournaments_id_fk",
+          "tableFrom": "staff_roles",
+          "tableTo": "tournaments",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "teams": {
+      "name": "teams",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "registered_at": {
+          "name": "registered_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invite_id": {
+          "name": "invite_id",
+          "type": "char(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "has_banner": {
+          "name": "has_banner",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "captain_id": {
+          "name": "captain_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prize_won_id": {
+          "name": "prize_won_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "invite_id_key": {
+          "name": "invite_id_key",
+          "columns": [
+            "invite_id"
+          ],
+          "isUnique": true
+        },
+        "captain_id_key": {
+          "name": "captain_id_key",
+          "columns": [
+            "captain_id"
+          ],
+          "isUnique": true
+        },
+        "name_tournament_id_key": {
+          "name": "name_tournament_id_key",
+          "columns": [
+            "name",
+            "tournament_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "teams_tournament_id_tournaments_id_fk": {
+          "name": "teams_tournament_id_tournaments_id_fk",
+          "tableFrom": "teams",
+          "tableTo": "tournaments",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "teams_captain_id_players_id_fk": {
+          "name": "teams_captain_id_players_id_fk",
+          "tableFrom": "teams",
+          "tableTo": "players",
+          "columnsFrom": [
+            "captain_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "teams_prize_won_id_prizes_id_fk": {
+          "name": "teams_prize_won_id_prizes_id_fk",
+          "tableFrom": "teams",
+          "tableTo": "prizes",
+          "columnsFrom": [
+            "prize_won_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "knockout_lobby_to_player": {
+      "name": "knockout_lobby_to_player",
+      "schema": "",
+      "columns": {
+        "knockout_lobby_id": {
+          "name": "knockout_lobby_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "knockout_lobby_to_player_knockout_lobby_id_knockout_lobbies_lobby_id_fk": {
+          "name": "knockout_lobby_to_player_knockout_lobby_id_knockout_lobbies_lobby_id_fk",
+          "tableFrom": "knockout_lobby_to_player",
+          "tableTo": "knockout_lobbies",
+          "columnsFrom": [
+            "knockout_lobby_id"
+          ],
+          "columnsTo": [
+            "lobby_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "knockout_lobby_to_player_player_id_players_id_fk": {
+          "name": "knockout_lobby_to_player_player_id_players_id_fk",
+          "tableFrom": "knockout_lobby_to_player",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "knockout_lobby_to_player_knockout_lobby_id_player_id": {
+          "name": "knockout_lobby_to_player_knockout_lobby_id_player_id",
+          "columns": [
+            "knockout_lobby_id",
+            "player_id"
+          ]
+        }
+      }
+    },
+    "knockout_lobby_to_team": {
+      "name": "knockout_lobby_to_team",
+      "schema": "",
+      "columns": {
+        "knockout_lobby_id": {
+          "name": "knockout_lobby_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "team_id": {
+          "name": "team_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "knockout_lobby_to_team_knockout_lobby_id_knockout_lobbies_lobby_id_fk": {
+          "name": "knockout_lobby_to_team_knockout_lobby_id_knockout_lobbies_lobby_id_fk",
+          "tableFrom": "knockout_lobby_to_team",
+          "tableTo": "knockout_lobbies",
+          "columnsFrom": [
+            "knockout_lobby_id"
+          ],
+          "columnsTo": [
+            "lobby_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "knockout_lobby_to_team_team_id_teams_id_fk": {
+          "name": "knockout_lobby_to_team_team_id_teams_id_fk",
+          "tableFrom": "knockout_lobby_to_team",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "knockout_lobby_to_team_knockout_lobby_id_team_id": {
+          "name": "knockout_lobby_to_team_knockout_lobby_id_team_id",
+          "columns": [
+            "knockout_lobby_id",
+            "team_id"
+          ]
+        }
+      }
+    },
+    "lobby_to_staff_member_as_commentator": {
+      "name": "lobby_to_staff_member_as_commentator",
+      "schema": "",
+      "columns": {
+        "lobby_id": {
+          "name": "lobby_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "staff_member_id": {
+          "name": "staff_member_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "lobby_to_staff_member_as_commentator_lobby_id_lobbies_id_fk": {
+          "name": "lobby_to_staff_member_as_commentator_lobby_id_lobbies_id_fk",
+          "tableFrom": "lobby_to_staff_member_as_commentator",
+          "tableTo": "lobbies",
+          "columnsFrom": [
+            "lobby_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "lobby_to_staff_member_as_commentator_staff_member_id_staff_members_id_fk": {
+          "name": "lobby_to_staff_member_as_commentator_staff_member_id_staff_members_id_fk",
+          "tableFrom": "lobby_to_staff_member_as_commentator",
+          "tableTo": "staff_members",
+          "columnsFrom": [
+            "staff_member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "lobby_to_staff_member_as_commentator_staff_member_id_lobby_id": {
+          "name": "lobby_to_staff_member_as_commentator_staff_member_id_lobby_id",
+          "columns": [
+            "staff_member_id",
+            "lobby_id"
+          ]
+        }
+      }
+    },
+    "lobby_to_staff_member_as_referee": {
+      "name": "lobby_to_staff_member_as_referee",
+      "schema": "",
+      "columns": {
+        "lobby_id": {
+          "name": "lobby_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "staff_member_id": {
+          "name": "staff_member_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "lobby_to_staff_member_as_referee_lobby_id_lobbies_id_fk": {
+          "name": "lobby_to_staff_member_as_referee_lobby_id_lobbies_id_fk",
+          "tableFrom": "lobby_to_staff_member_as_referee",
+          "tableTo": "lobbies",
+          "columnsFrom": [
+            "lobby_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "lobby_to_staff_member_as_referee_staff_member_id_staff_members_id_fk": {
+          "name": "lobby_to_staff_member_as_referee_staff_member_id_staff_members_id_fk",
+          "tableFrom": "lobby_to_staff_member_as_referee",
+          "tableTo": "staff_members",
+          "columnsFrom": [
+            "staff_member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "lobby_to_staff_member_as_referee_staff_member_id_lobby_id": {
+          "name": "lobby_to_staff_member_as_referee_staff_member_id_lobby_id",
+          "columns": [
+            "staff_member_id",
+            "lobby_id"
+          ]
+        }
+      }
+    },
+    "lobby_to_staff_member_as_streamer": {
+      "name": "lobby_to_staff_member_as_streamer",
+      "schema": "",
+      "columns": {
+        "lobby_id": {
+          "name": "lobby_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "staff_member_id": {
+          "name": "staff_member_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "lobby_to_staff_member_as_streamer_lobby_id_lobbies_id_fk": {
+          "name": "lobby_to_staff_member_as_streamer_lobby_id_lobbies_id_fk",
+          "tableFrom": "lobby_to_staff_member_as_streamer",
+          "tableTo": "lobbies",
+          "columnsFrom": [
+            "lobby_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "lobby_to_staff_member_as_streamer_staff_member_id_staff_members_id_fk": {
+          "name": "lobby_to_staff_member_as_streamer_staff_member_id_staff_members_id_fk",
+          "tableFrom": "lobby_to_staff_member_as_streamer",
+          "tableTo": "staff_members",
+          "columnsFrom": [
+            "staff_member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "lobby_to_staff_member_as_streamer_staff_member_id_lobby_id": {
+          "name": "lobby_to_staff_member_as_streamer_staff_member_id_lobby_id",
+          "columns": [
+            "staff_member_id",
+            "lobby_id"
+          ]
+        }
+      }
+    },
+    "played_knockout_map_to_player_as_knocked_out": {
+      "name": "played_knockout_map_to_player_as_knocked_out",
+      "schema": "",
+      "columns": {
+        "played_knockout_map_id": {
+          "name": "played_knockout_map_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "played_knockout_map_to_player_as_knocked_out_played_knockout_map_id_played_knockout_maps_id_fk": {
+          "name": "played_knockout_map_to_player_as_knocked_out_played_knockout_map_id_played_knockout_maps_id_fk",
+          "tableFrom": "played_knockout_map_to_player_as_knocked_out",
+          "tableTo": "played_knockout_maps",
+          "columnsFrom": [
+            "played_knockout_map_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "played_knockout_map_to_player_as_knocked_out_player_id_players_id_fk": {
+          "name": "played_knockout_map_to_player_as_knocked_out_player_id_players_id_fk",
+          "tableFrom": "played_knockout_map_to_player_as_knocked_out",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "played_knockout_map_to_player_as_knocked_out_played_knockout_map_id_player_id": {
+          "name": "played_knockout_map_to_player_as_knocked_out_played_knockout_map_id_player_id",
+          "columns": [
+            "played_knockout_map_id",
+            "player_id"
+          ]
+        }
+      }
+    },
+    "played_knockout_map_to_player_as_played": {
+      "name": "played_knockout_map_to_player_as_played",
+      "schema": "",
+      "columns": {
+        "played_knockout_map_id": {
+          "name": "played_knockout_map_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "played_knockout_map_to_player_as_played_played_knockout_map_id_played_knockout_maps_id_fk": {
+          "name": "played_knockout_map_to_player_as_played_played_knockout_map_id_played_knockout_maps_id_fk",
+          "tableFrom": "played_knockout_map_to_player_as_played",
+          "tableTo": "played_knockout_maps",
+          "columnsFrom": [
+            "played_knockout_map_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "played_knockout_map_to_player_as_played_player_id_players_id_fk": {
+          "name": "played_knockout_map_to_player_as_played_player_id_players_id_fk",
+          "tableFrom": "played_knockout_map_to_player_as_played",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "played_knockout_map_to_player_as_played_played_knockout_map_id_player_id": {
+          "name": "played_knockout_map_to_player_as_played_played_knockout_map_id_player_id",
+          "columns": [
+            "played_knockout_map_id",
+            "player_id"
+          ]
+        }
+      }
+    },
+    "played_knockout_map_to_team_as_knocked_out": {
+      "name": "played_knockout_map_to_team_as_knocked_out",
+      "schema": "",
+      "columns": {
+        "played_knockout_map_id": {
+          "name": "played_knockout_map_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "team_id": {
+          "name": "team_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "played_knockout_map_to_team_as_knocked_out_played_knockout_map_id_played_knockout_maps_id_fk": {
+          "name": "played_knockout_map_to_team_as_knocked_out_played_knockout_map_id_played_knockout_maps_id_fk",
+          "tableFrom": "played_knockout_map_to_team_as_knocked_out",
+          "tableTo": "played_knockout_maps",
+          "columnsFrom": [
+            "played_knockout_map_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "played_knockout_map_to_team_as_knocked_out_team_id_teams_id_fk": {
+          "name": "played_knockout_map_to_team_as_knocked_out_team_id_teams_id_fk",
+          "tableFrom": "played_knockout_map_to_team_as_knocked_out",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "played_knockout_map_to_team_as_knocked_out_played_knockout_map_id_team_id": {
+          "name": "played_knockout_map_to_team_as_knocked_out_played_knockout_map_id_team_id",
+          "columns": [
+            "played_knockout_map_id",
+            "team_id"
+          ]
+        }
+      }
+    },
+    "played_knockout_map_to_team_as_played": {
+      "name": "played_knockout_map_to_team_as_played",
+      "schema": "",
+      "columns": {
+        "played_knockout_map_id": {
+          "name": "played_knockout_map_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "team_id": {
+          "name": "team_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "played_knockout_map_to_team_as_played_played_knockout_map_id_played_knockout_maps_id_fk": {
+          "name": "played_knockout_map_to_team_as_played_played_knockout_map_id_played_knockout_maps_id_fk",
+          "tableFrom": "played_knockout_map_to_team_as_played",
+          "tableTo": "played_knockout_maps",
+          "columnsFrom": [
+            "played_knockout_map_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "played_knockout_map_to_team_as_played_team_id_teams_id_fk": {
+          "name": "played_knockout_map_to_team_as_played_team_id_teams_id_fk",
+          "tableFrom": "played_knockout_map_to_team_as_played",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "played_knockout_map_to_team_as_played_played_knockout_map_id_team_id": {
+          "name": "played_knockout_map_to_team_as_played_played_knockout_map_id_team_id",
+          "columns": [
+            "played_knockout_map_id",
+            "team_id"
+          ]
+        }
+      }
+    },
+    "played_qualifier_map_to_player": {
+      "name": "played_qualifier_map_to_player",
+      "schema": "",
+      "columns": {
+        "played_qualifier_map_id": {
+          "name": "played_qualifier_map_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "played_qualifier_map_to_player_played_qualifier_map_id_played_qualifier_maps_id_fk": {
+          "name": "played_qualifier_map_to_player_played_qualifier_map_id_played_qualifier_maps_id_fk",
+          "tableFrom": "played_qualifier_map_to_player",
+          "tableTo": "played_qualifier_maps",
+          "columnsFrom": [
+            "played_qualifier_map_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "played_qualifier_map_to_player_player_id_teams_id_fk": {
+          "name": "played_qualifier_map_to_player_player_id_teams_id_fk",
+          "tableFrom": "played_qualifier_map_to_player",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "played_qualifier_map_to_player_played_qualifier_map_id_player_id": {
+          "name": "played_qualifier_map_to_player_played_qualifier_map_id_player_id",
+          "columns": [
+            "played_qualifier_map_id",
+            "player_id"
+          ]
+        }
+      }
+    },
+    "played_qualifier_map_to_team": {
+      "name": "played_qualifier_map_to_team",
+      "schema": "",
+      "columns": {
+        "played_qualifier_map_id": {
+          "name": "played_qualifier_map_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "team_id": {
+          "name": "team_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "played_qualifier_map_to_team_played_qualifier_map_id_played_qualifier_maps_id_fk": {
+          "name": "played_qualifier_map_to_team_played_qualifier_map_id_played_qualifier_maps_id_fk",
+          "tableFrom": "played_qualifier_map_to_team",
+          "tableTo": "played_qualifier_maps",
+          "columnsFrom": [
+            "played_qualifier_map_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "played_qualifier_map_to_team_team_id_teams_id_fk": {
+          "name": "played_qualifier_map_to_team_team_id_teams_id_fk",
+          "tableFrom": "played_qualifier_map_to_team",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "played_qualifier_map_to_team_played_qualifier_map_id_team_id": {
+          "name": "played_qualifier_map_to_team_played_qualifier_map_id_team_id",
+          "columns": [
+            "played_qualifier_map_id",
+            "team_id"
+          ]
+        }
+      }
+    },
+    "qualifier_lobby_to_player": {
+      "name": "qualifier_lobby_to_player",
+      "schema": "",
+      "columns": {
+        "qualifier_lobby_id": {
+          "name": "qualifier_lobby_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "qualifier_lobby_to_player_qualifier_lobby_id_qualifier_lobbies_lobby_id_fk": {
+          "name": "qualifier_lobby_to_player_qualifier_lobby_id_qualifier_lobbies_lobby_id_fk",
+          "tableFrom": "qualifier_lobby_to_player",
+          "tableTo": "qualifier_lobbies",
+          "columnsFrom": [
+            "qualifier_lobby_id"
+          ],
+          "columnsTo": [
+            "lobby_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "qualifier_lobby_to_player_player_id_players_id_fk": {
+          "name": "qualifier_lobby_to_player_player_id_players_id_fk",
+          "tableFrom": "qualifier_lobby_to_player",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "qualifier_lobby_to_player_qualifier_lobby_id_player_id": {
+          "name": "qualifier_lobby_to_player_qualifier_lobby_id_player_id",
+          "columns": [
+            "qualifier_lobby_id",
+            "player_id"
+          ]
+        }
+      }
+    },
+    "qualifier_lobby_to_team": {
+      "name": "qualifier_lobby_to_team",
+      "schema": "",
+      "columns": {
+        "qualifier_lobby_id": {
+          "name": "qualifier_lobby_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "team_id": {
+          "name": "team_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "qualifier_lobby_to_team_qualifier_lobby_id_qualifier_lobbies_lobby_id_fk": {
+          "name": "qualifier_lobby_to_team_qualifier_lobby_id_qualifier_lobbies_lobby_id_fk",
+          "tableFrom": "qualifier_lobby_to_team",
+          "tableTo": "qualifier_lobbies",
+          "columnsFrom": [
+            "qualifier_lobby_id"
+          ],
+          "columnsTo": [
+            "lobby_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "qualifier_lobby_to_team_team_id_teams_id_fk": {
+          "name": "qualifier_lobby_to_team_team_id_teams_id_fk",
+          "tableFrom": "qualifier_lobby_to_team",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "qualifier_lobby_to_team_qualifier_lobby_id_team_id": {
+          "name": "qualifier_lobby_to_team_qualifier_lobby_id_team_id",
+          "columns": [
+            "qualifier_lobby_id",
+            "team_id"
+          ]
+        }
+      }
+    },
+    "staff_member_to_staff_role": {
+      "name": "staff_member_to_staff_role",
+      "schema": "",
+      "columns": {
+        "staff_member_id": {
+          "name": "staff_member_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "staff_role_id": {
+          "name": "staff_role_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "staff_member_to_staff_role_staff_member_id_staff_members_id_fk": {
+          "name": "staff_member_to_staff_role_staff_member_id_staff_members_id_fk",
+          "tableFrom": "staff_member_to_staff_role",
+          "tableTo": "staff_members",
+          "columnsFrom": [
+            "staff_member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "staff_member_to_staff_role_staff_role_id_staff_roles_id_fk": {
+          "name": "staff_member_to_staff_role_staff_role_id_staff_roles_id_fk",
+          "tableFrom": "staff_member_to_staff_role",
+          "tableTo": "staff_roles",
+          "columnsFrom": [
+            "staff_role_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "staff_member_to_staff_role_staff_member_id_staff_role_id": {
+          "name": "staff_member_to_staff_role_staff_member_id_staff_role_id",
+          "columns": [
+            "staff_member_id",
+            "staff_role_id"
+          ]
+        }
+      }
+    },
+    "beatmaps": {
+      "name": "beatmaps",
+      "schema": "",
+      "columns": {
+        "osu_beatmap_id": {
+          "name": "osu_beatmap_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "difficulty_name": {
+          "name": "difficulty_name",
+          "type": "varchar(75)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "max_combo": {
+          "name": "max_combo",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bpm": {
+          "name": "bpm",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "length": {
+          "name": "length",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "circle_size": {
+          "name": "circle_size",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "approach_rate": {
+          "name": "approach_rate",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "overall_difficulty": {
+          "name": "overall_difficulty",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "health_points": {
+          "name": "health_points",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "beatmapset_id": {
+          "name": "beatmapset_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "beatmaps_beatmapset_id_beatmapsets_osu_beatmapset_id_fk": {
+          "name": "beatmaps_beatmapset_id_beatmapsets_osu_beatmapset_id_fk",
+          "tableFrom": "beatmaps",
+          "tableTo": "beatmapsets",
+          "columnsFrom": [
+            "beatmapset_id"
+          ],
+          "columnsTo": [
+            "osu_beatmapset_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "beatmapsets": {
+      "name": "beatmapsets",
+      "schema": "",
+      "columns": {
+        "osu_beatmapset_id": {
+          "name": "osu_beatmapset_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "artist": {
+          "name": "artist",
+          "type": "varchar(70)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(180)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mapper_id": {
+          "name": "mapper_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "beatmapsets_mapper_id_mappers_osu_user_id_fk": {
+          "name": "beatmapsets_mapper_id_mappers_osu_user_id_fk",
+          "tableFrom": "beatmapsets",
+          "tableTo": "mappers",
+          "columnsFrom": [
+            "mapper_id"
+          ],
+          "columnsTo": [
+            "osu_user_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "mappers": {
+      "name": "mappers",
+      "schema": "",
+      "columns": {
+        "osu_user_id": {
+          "name": "osu_user_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "username": {
+          "name": "username",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "modpools": {
+      "name": "modpools",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "category": {
+          "name": "category",
+          "type": "varchar(3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mods": {
+          "name": "mods",
+          "type": "mod[4]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": []
+        },
+        "is_free_mod": {
+          "name": "is_free_mod",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order": {
+          "name": "order",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "map_count": {
+          "name": "map_count",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "round_id": {
+          "name": "round_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "round_id_category_key": {
+          "name": "round_id_category_key",
+          "columns": [
+            "round_id",
+            "category"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "modpools_round_id_rounds_id_fk": {
+          "name": "modpools_round_id_rounds_id_fk",
+          "tableFrom": "modpools",
+          "tableTo": "rounds",
+          "columnsFrom": [
+            "round_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "pooled_maps": {
+      "name": "pooled_maps",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "slot": {
+          "name": "slot",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "skillsets": {
+          "name": "skillsets",
+          "type": "skillset[3]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": []
+        },
+        "pooler_comment": {
+          "name": "pooler_comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "has_beatmap_file": {
+          "name": "has_beatmap_file",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "has_replay": {
+          "name": "has_replay",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "round_id": {
+          "name": "round_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "modpool_id": {
+          "name": "modpool_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "beatmap_id": {
+          "name": "beatmap_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "suggested_by_staff_member_id": {
+          "name": "suggested_by_staff_member_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pooled_by_staff_member_id": {
+          "name": "pooled_by_staff_member_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "modpool_id_beatmap_id_key": {
+          "name": "modpool_id_beatmap_id_key",
+          "columns": [
+            "modpool_id",
+            "beatmap_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "pooled_maps_tournament_id_tournaments_id_fk": {
+          "name": "pooled_maps_tournament_id_tournaments_id_fk",
+          "tableFrom": "pooled_maps",
+          "tableTo": "tournaments",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pooled_maps_round_id_rounds_id_fk": {
+          "name": "pooled_maps_round_id_rounds_id_fk",
+          "tableFrom": "pooled_maps",
+          "tableTo": "rounds",
+          "columnsFrom": [
+            "round_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pooled_maps_modpool_id_modpools_id_fk": {
+          "name": "pooled_maps_modpool_id_modpools_id_fk",
+          "tableFrom": "pooled_maps",
+          "tableTo": "modpools",
+          "columnsFrom": [
+            "modpool_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pooled_maps_beatmap_id_beatmaps_osu_beatmap_id_fk": {
+          "name": "pooled_maps_beatmap_id_beatmaps_osu_beatmap_id_fk",
+          "tableFrom": "pooled_maps",
+          "tableTo": "beatmaps",
+          "columnsFrom": [
+            "beatmap_id"
+          ],
+          "columnsTo": [
+            "osu_beatmap_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pooled_maps_suggested_by_staff_member_id_staff_members_id_fk": {
+          "name": "pooled_maps_suggested_by_staff_member_id_staff_members_id_fk",
+          "tableFrom": "pooled_maps",
+          "tableTo": "staff_members",
+          "columnsFrom": [
+            "suggested_by_staff_member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pooled_maps_pooled_by_staff_member_id_staff_members_id_fk": {
+          "name": "pooled_maps_pooled_by_staff_member_id_staff_members_id_fk",
+          "tableFrom": "pooled_maps",
+          "tableTo": "staff_members",
+          "columnsFrom": [
+            "pooled_by_staff_member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "pooled_map_ratings": {
+      "name": "pooled_map_ratings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "rating": {
+          "name": "rating",
+          "type": "numeric(3, 1)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "for_pooled_map_id": {
+          "name": "for_pooled_map_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "given_by_staff_member_id": {
+          "name": "given_by_staff_member_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pooled_map_ratings_for_pooled_map_id_pooled_maps_id_fk": {
+          "name": "pooled_map_ratings_for_pooled_map_id_pooled_maps_id_fk",
+          "tableFrom": "pooled_map_ratings",
+          "tableTo": "pooled_maps",
+          "columnsFrom": [
+            "for_pooled_map_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pooled_map_ratings_given_by_staff_member_id_staff_members_id_fk": {
+          "name": "pooled_map_ratings_given_by_staff_member_id_staff_members_id_fk",
+          "tableFrom": "pooled_map_ratings",
+          "tableTo": "staff_members",
+          "columnsFrom": [
+            "given_by_staff_member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "star_ratings": {
+      "name": "star_ratings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "mods": {
+          "name": "mods",
+          "type": "mod[4]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": []
+        },
+        "value": {
+          "name": "value",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "beatmap_id": {
+          "name": "beatmap_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "star_ratings_beatmap_id_beatmaps_osu_beatmap_id_fk": {
+          "name": "star_ratings_beatmap_id_beatmaps_osu_beatmap_id_fk",
+          "tableFrom": "star_ratings",
+          "tableTo": "beatmaps",
+          "columnsFrom": [
+            "beatmap_id"
+          ],
+          "columnsTo": [
+            "osu_beatmap_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "suggested_maps": {
+      "name": "suggested_maps",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "suggested_skillset": {
+          "name": "suggested_skillset",
+          "type": "skillset[3]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": []
+        },
+        "suggester_comment": {
+          "name": "suggester_comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "round_id": {
+          "name": "round_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "modpool_id": {
+          "name": "modpool_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "beatmap_id": {
+          "name": "beatmap_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "suggested_by_staff_member_id": {
+          "name": "suggested_by_staff_member_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "beatmap_id_modpool_id_key": {
+          "name": "beatmap_id_modpool_id_key",
+          "columns": [
+            "beatmap_id",
+            "modpool_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "suggested_maps_tournament_id_tournaments_id_fk": {
+          "name": "suggested_maps_tournament_id_tournaments_id_fk",
+          "tableFrom": "suggested_maps",
+          "tableTo": "tournaments",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "suggested_maps_round_id_rounds_id_fk": {
+          "name": "suggested_maps_round_id_rounds_id_fk",
+          "tableFrom": "suggested_maps",
+          "tableTo": "rounds",
+          "columnsFrom": [
+            "round_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "suggested_maps_modpool_id_modpools_id_fk": {
+          "name": "suggested_maps_modpool_id_modpools_id_fk",
+          "tableFrom": "suggested_maps",
+          "tableTo": "modpools",
+          "columnsFrom": [
+            "modpool_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "suggested_maps_beatmap_id_beatmaps_osu_beatmap_id_fk": {
+          "name": "suggested_maps_beatmap_id_beatmaps_osu_beatmap_id_fk",
+          "tableFrom": "suggested_maps",
+          "tableTo": "beatmaps",
+          "columnsFrom": [
+            "beatmap_id"
+          ],
+          "columnsTo": [
+            "osu_beatmap_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "suggested_maps_suggested_by_staff_member_id_staff_members_id_fk": {
+          "name": "suggested_maps_suggested_by_staff_member_id_staff_members_id_fk",
+          "tableFrom": "suggested_maps",
+          "tableTo": "staff_members",
+          "columnsFrom": [
+            "suggested_by_staff_member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "banned_maps": {
+      "name": "banned_maps",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "banned_by": {
+          "name": "banned_by",
+          "type": "opponent",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pooled_map_id": {
+          "name": "pooled_map_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "match_id": {
+          "name": "match_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "banned_maps_pooled_map_id_pooled_maps_id_fk": {
+          "name": "banned_maps_pooled_map_id_pooled_maps_id_fk",
+          "tableFrom": "banned_maps",
+          "tableTo": "pooled_maps",
+          "columnsFrom": [
+            "pooled_map_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "banned_maps_match_id_matches_lobby_id_fk": {
+          "name": "banned_maps_match_id_matches_lobby_id_fk",
+          "tableFrom": "banned_maps",
+          "tableTo": "matches",
+          "columnsFrom": [
+            "match_id"
+          ],
+          "columnsTo": [
+            "lobby_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "knockout_lobbies": {
+      "name": "knockout_lobbies",
+      "schema": "",
+      "columns": {
+        "lobby_id": {
+          "name": "lobby_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "knockout_lobbies_lobby_id_lobbies_id_fk": {
+          "name": "knockout_lobbies_lobby_id_lobbies_id_fk",
+          "tableFrom": "knockout_lobbies",
+          "tableTo": "lobbies",
+          "columnsFrom": [
+            "lobby_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "lobbies": {
+      "name": "lobbies",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "varchar(5)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "date": {
+          "name": "date",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "referee_notes": {
+          "name": "referee_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "osu_mp_ids": {
+          "name": "osu_mp_ids",
+          "type": "integer[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": []
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "round_id": {
+          "name": "round_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "local_id_tournament_id_key": {
+          "name": "local_id_tournament_id_key",
+          "columns": [
+            "local_id",
+            "tournament_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "lobbies_tournament_id_tournaments_id_fk": {
+          "name": "lobbies_tournament_id_tournaments_id_fk",
+          "tableFrom": "lobbies",
+          "tableTo": "tournaments",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "lobbies_round_id_rounds_id_fk": {
+          "name": "lobbies_round_id_rounds_id_fk",
+          "tableFrom": "lobbies",
+          "tableTo": "rounds",
+          "columnsFrom": [
+            "round_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "matches": {
+      "name": "matches",
+      "schema": "",
+      "columns": {
+        "roll_winner": {
+          "name": "roll_winner",
+          "type": "opponent",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ban_first": {
+          "name": "ban_first",
+          "type": "opponent",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pick_first": {
+          "name": "pick_first",
+          "type": "opponent",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "forfeit_from": {
+          "name": "forfeit_from",
+          "type": "opponent",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "winner": {
+          "name": "winner",
+          "type": "opponent",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lobby_id": {
+          "name": "lobby_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "player_1_id": {
+          "name": "player_1_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "player_2_id": {
+          "name": "player_2_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_1_id": {
+          "name": "team_1_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_2_id": {
+          "name": "team_2_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "matches_lobby_id_lobbies_id_fk": {
+          "name": "matches_lobby_id_lobbies_id_fk",
+          "tableFrom": "matches",
+          "tableTo": "lobbies",
+          "columnsFrom": [
+            "lobby_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "matches_player_1_id_players_id_fk": {
+          "name": "matches_player_1_id_players_id_fk",
+          "tableFrom": "matches",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_1_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "matches_player_2_id_players_id_fk": {
+          "name": "matches_player_2_id_players_id_fk",
+          "tableFrom": "matches",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_2_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "matches_team_1_id_teams_id_fk": {
+          "name": "matches_team_1_id_teams_id_fk",
+          "tableFrom": "matches",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "team_1_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "matches_team_2_id_teams_id_fk": {
+          "name": "matches_team_2_id_teams_id_fk",
+          "tableFrom": "matches",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "team_2_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "played_knockout_maps": {
+      "name": "played_knockout_maps",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "knockout_lobby_id": {
+          "name": "knockout_lobby_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pooled_map_id": {
+          "name": "pooled_map_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "played_knockout_maps_knockout_lobby_id_knockout_lobbies_lobby_id_fk": {
+          "name": "played_knockout_maps_knockout_lobby_id_knockout_lobbies_lobby_id_fk",
+          "tableFrom": "played_knockout_maps",
+          "tableTo": "knockout_lobbies",
+          "columnsFrom": [
+            "knockout_lobby_id"
+          ],
+          "columnsTo": [
+            "lobby_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "played_knockout_maps_pooled_map_id_pooled_maps_id_fk": {
+          "name": "played_knockout_maps_pooled_map_id_pooled_maps_id_fk",
+          "tableFrom": "played_knockout_maps",
+          "tableTo": "pooled_maps",
+          "columnsFrom": [
+            "pooled_map_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "played_maps": {
+      "name": "played_maps",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "winner": {
+          "name": "winner",
+          "type": "opponent",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "picked_by": {
+          "name": "picked_by",
+          "type": "opponent",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pooled_map_id": {
+          "name": "pooled_map_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "match_id": {
+          "name": "match_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "played_maps_pooled_map_id_pooled_maps_id_fk": {
+          "name": "played_maps_pooled_map_id_pooled_maps_id_fk",
+          "tableFrom": "played_maps",
+          "tableTo": "pooled_maps",
+          "columnsFrom": [
+            "pooled_map_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "played_maps_match_id_matches_lobby_id_fk": {
+          "name": "played_maps_match_id_matches_lobby_id_fk",
+          "tableFrom": "played_maps",
+          "tableTo": "matches",
+          "columnsFrom": [
+            "match_id"
+          ],
+          "columnsTo": [
+            "lobby_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "played_qualifier_maps": {
+      "name": "played_qualifier_maps",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "qualifier_lobby_id": {
+          "name": "qualifier_lobby_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pooled_map_id": {
+          "name": "pooled_map_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "played_qualifier_maps_qualifier_lobby_id_qualifier_lobbies_lobby_id_fk": {
+          "name": "played_qualifier_maps_qualifier_lobby_id_qualifier_lobbies_lobby_id_fk",
+          "tableFrom": "played_qualifier_maps",
+          "tableTo": "qualifier_lobbies",
+          "columnsFrom": [
+            "qualifier_lobby_id"
+          ],
+          "columnsTo": [
+            "lobby_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "played_qualifier_maps_pooled_map_id_pooled_maps_id_fk": {
+          "name": "played_qualifier_maps_pooled_map_id_pooled_maps_id_fk",
+          "tableFrom": "played_qualifier_maps",
+          "tableTo": "pooled_maps",
+          "columnsFrom": [
+            "pooled_map_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "potential_matches": {
+      "name": "potential_matches",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "varchar(5)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "date": {
+          "name": "date",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "match_id": {
+          "name": "match_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "player_1_id": {
+          "name": "player_1_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "player_2_id": {
+          "name": "player_2_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_1_id": {
+          "name": "team_1_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_2_id": {
+          "name": "team_2_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "potential_matches_match_id_matches_lobby_id_fk": {
+          "name": "potential_matches_match_id_matches_lobby_id_fk",
+          "tableFrom": "potential_matches",
+          "tableTo": "matches",
+          "columnsFrom": [
+            "match_id"
+          ],
+          "columnsTo": [
+            "lobby_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "potential_matches_tournament_id_tournaments_id_fk": {
+          "name": "potential_matches_tournament_id_tournaments_id_fk",
+          "tableFrom": "potential_matches",
+          "tableTo": "tournaments",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "potential_matches_player_1_id_players_id_fk": {
+          "name": "potential_matches_player_1_id_players_id_fk",
+          "tableFrom": "potential_matches",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_1_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "potential_matches_player_2_id_players_id_fk": {
+          "name": "potential_matches_player_2_id_players_id_fk",
+          "tableFrom": "potential_matches",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_2_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "potential_matches_team_1_id_teams_id_fk": {
+          "name": "potential_matches_team_1_id_teams_id_fk",
+          "tableFrom": "potential_matches",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "team_1_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "potential_matches_team_2_id_teams_id_fk": {
+          "name": "potential_matches_team_2_id_teams_id_fk",
+          "tableFrom": "potential_matches",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "team_2_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "qualifier_lobbies": {
+      "name": "qualifier_lobbies",
+      "schema": "",
+      "columns": {
+        "lobby_id": {
+          "name": "lobby_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "qualifier_lobbies_lobby_id_lobbies_id_fk": {
+          "name": "qualifier_lobbies_lobby_id_lobbies_id_fk",
+          "tableFrom": "qualifier_lobbies",
+          "tableTo": "lobbies",
+          "columnsFrom": [
+            "lobby_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "mod_multipliers": {
+      "name": "mod_multipliers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "mods": {
+          "name": "mods",
+          "type": "mod[4]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": []
+        },
+        "value": {
+          "name": "value",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "tournament_id_mods_key": {
+          "name": "tournament_id_mods_key",
+          "columns": [
+            "tournament_id",
+            "mods"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "mod_multipliers_tournament_id_tournaments_id_fk": {
+          "name": "mod_multipliers_tournament_id_tournaments_id_fk",
+          "tableFrom": "mod_multipliers",
+          "tableTo": "tournaments",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "player_scores": {
+      "name": "player_scores",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "score": {
+          "name": "score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "accuracy": {
+          "name": "accuracy",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "combo": {
+          "name": "combo",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "count_300": {
+          "name": "count_300",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "count_100": {
+          "name": "count_100",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "count_50": {
+          "name": "count_50",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "misses": {
+          "name": "misses",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "relative_score": {
+          "name": "relative_score",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "z_score": {
+          "name": "z_score",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "mods": {
+          "name": "mods",
+          "type": "mod[4]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": []
+        },
+        "on_pooled_map_id": {
+          "name": "on_pooled_map_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "round_id": {
+          "name": "round_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "team_score_id": {
+          "name": "team_score_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "player_scores_on_pooled_map_id_pooled_maps_id_fk": {
+          "name": "player_scores_on_pooled_map_id_pooled_maps_id_fk",
+          "tableFrom": "player_scores",
+          "tableTo": "pooled_maps",
+          "columnsFrom": [
+            "on_pooled_map_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_scores_round_id_rounds_id_fk": {
+          "name": "player_scores_round_id_rounds_id_fk",
+          "tableFrom": "player_scores",
+          "tableTo": "rounds",
+          "columnsFrom": [
+            "round_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_scores_team_score_id_team_scores_id_fk": {
+          "name": "player_scores_team_score_id_team_scores_id_fk",
+          "tableFrom": "player_scores",
+          "tableTo": "team_scores",
+          "columnsFrom": [
+            "team_score_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_scores_player_id_players_id_fk": {
+          "name": "player_scores_player_id_players_id_fk",
+          "tableFrom": "player_scores",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "team_scores": {
+      "name": "team_scores",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "on_pooled_map_id": {
+          "name": "on_pooled_map_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "round_id": {
+          "name": "round_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "team_id": {
+          "name": "team_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "team_scores_on_pooled_map_id_pooled_maps_id_fk": {
+          "name": "team_scores_on_pooled_map_id_pooled_maps_id_fk",
+          "tableFrom": "team_scores",
+          "tableTo": "pooled_maps",
+          "columnsFrom": [
+            "on_pooled_map_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "team_scores_round_id_rounds_id_fk": {
+          "name": "team_scores_round_id_rounds_id_fk",
+          "tableFrom": "team_scores",
+          "tableTo": "rounds",
+          "columnsFrom": [
+            "round_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "team_scores_team_id_teams_id_fk": {
+          "name": "team_scores_team_id_teams_id_fk",
+          "tableFrom": "team_scores",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "match_predictions": {
+      "name": "match_predictions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "predicted_winner": {
+          "name": "predicted_winner",
+          "type": "opponent",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "match_id": {
+          "name": "match_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "submission_id": {
+          "name": "submission_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "match_id_submission_id_key": {
+          "name": "match_id_submission_id_key",
+          "columns": [
+            "match_id",
+            "submission_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "match_predictions_match_id_matches_lobby_id_fk": {
+          "name": "match_predictions_match_id_matches_lobby_id_fk",
+          "tableFrom": "match_predictions",
+          "tableTo": "matches",
+          "columnsFrom": [
+            "match_id"
+          ],
+          "columnsTo": [
+            "lobby_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "match_predictions_submission_id_prediction_submissions_id_fk": {
+          "name": "match_predictions_submission_id_prediction_submissions_id_fk",
+          "tableFrom": "match_predictions",
+          "tableTo": "prediction_submissions",
+          "columnsFrom": [
+            "submission_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "pickem_users": {
+      "name": "pickem_users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "points": {
+          "name": "points",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prize_won_id": {
+          "name": "prize_won_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "user_id_tournament_id_key": {
+          "name": "user_id_tournament_id_key",
+          "columns": [
+            "user_id",
+            "tournament_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "pickem_users_user_id_users_id_fk": {
+          "name": "pickem_users_user_id_users_id_fk",
+          "tableFrom": "pickem_users",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pickem_users_tournament_id_tournaments_id_fk": {
+          "name": "pickem_users_tournament_id_tournaments_id_fk",
+          "tableFrom": "pickem_users",
+          "tableTo": "tournaments",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pickem_users_prize_won_id_prizes_id_fk": {
+          "name": "pickem_users_prize_won_id_prizes_id_fk",
+          "tableFrom": "pickem_users",
+          "tableTo": "prizes",
+          "columnsFrom": [
+            "prize_won_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "potential_match_predictions": {
+      "name": "potential_match_predictions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "predicted_winner": {
+          "name": "predicted_winner",
+          "type": "opponent",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "potential_match_id": {
+          "name": "potential_match_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "submission_id": {
+          "name": "submission_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "potential_match_id_submission_id_key": {
+          "name": "potential_match_id_submission_id_key",
+          "columns": [
+            "potential_match_id",
+            "submission_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "potential_match_predictions_potential_match_id_potential_matches_id_fk": {
+          "name": "potential_match_predictions_potential_match_id_potential_matches_id_fk",
+          "tableFrom": "potential_match_predictions",
+          "tableTo": "potential_matches",
+          "columnsFrom": [
+            "potential_match_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "potential_match_predictions_submission_id_prediction_submissions_id_fk": {
+          "name": "potential_match_predictions_submission_id_prediction_submissions_id_fk",
+          "tableFrom": "potential_match_predictions",
+          "tableTo": "prediction_submissions",
+          "columnsFrom": [
+            "submission_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "prediction_submissions": {
+      "name": "prediction_submissions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "round_id": {
+          "name": "round_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "submitted_by_pickem_user_id": {
+          "name": "submitted_by_pickem_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "round_id_submitted_by_pickem_user_id_key": {
+          "name": "round_id_submitted_by_pickem_user_id_key",
+          "columns": [
+            "round_id",
+            "submitted_by_pickem_user_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "prediction_submissions_tournament_id_tournaments_id_fk": {
+          "name": "prediction_submissions_tournament_id_tournaments_id_fk",
+          "tableFrom": "prediction_submissions",
+          "tableTo": "tournaments",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "prediction_submissions_round_id_rounds_id_fk": {
+          "name": "prediction_submissions_round_id_rounds_id_fk",
+          "tableFrom": "prediction_submissions",
+          "tableTo": "rounds",
+          "columnsFrom": [
+            "round_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "prediction_submissions_submitted_by_pickem_user_id_pickem_users_id_fk": {
+          "name": "prediction_submissions_submitted_by_pickem_user_id_pickem_users_id_fk",
+          "tableFrom": "prediction_submissions",
+          "tableTo": "pickem_users",
+          "columnsFrom": [
+            "submitted_by_pickem_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "qualifier_predictions": {
+      "name": "qualifier_predictions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "predicted_position": {
+          "name": "predicted_position",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "submission_id": {
+          "name": "submission_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_id": {
+          "name": "team_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "qualifier_predictions_submission_id_prediction_submissions_id_fk": {
+          "name": "qualifier_predictions_submission_id_prediction_submissions_id_fk",
+          "tableFrom": "qualifier_predictions",
+          "tableTo": "prediction_submissions",
+          "columnsFrom": [
+            "submission_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "qualifier_predictions_player_id_players_id_fk": {
+          "name": "qualifier_predictions_player_id_players_id_fk",
+          "tableFrom": "qualifier_predictions",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "qualifier_predictions_team_id_teams_id_fk": {
+          "name": "qualifier_predictions_team_id_teams_id_fk",
+          "tableFrom": "qualifier_predictions",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "granted_tournament_host_notifications": {
+      "name": "granted_tournament_host_notifications",
+      "schema": "",
+      "columns": {
+        "notification_id": {
+          "name": "notification_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "previous_host_id": {
+          "name": "previous_host_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "new_host_id": {
+          "name": "new_host_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "granted_tournament_host_notifications_notification_id_notifications_id_fk": {
+          "name": "granted_tournament_host_notifications_notification_id_notifications_id_fk",
+          "tableFrom": "granted_tournament_host_notifications",
+          "tableTo": "notifications",
+          "columnsFrom": [
+            "notification_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "granted_tournament_host_notifications_previous_host_id_users_id_fk": {
+          "name": "granted_tournament_host_notifications_previous_host_id_users_id_fk",
+          "tableFrom": "granted_tournament_host_notifications",
+          "tableTo": "users",
+          "columnsFrom": [
+            "previous_host_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "granted_tournament_host_notifications_new_host_id_users_id_fk": {
+          "name": "granted_tournament_host_notifications_new_host_id_users_id_fk",
+          "tableFrom": "granted_tournament_host_notifications",
+          "tableTo": "users",
+          "columnsFrom": [
+            "new_host_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "issue_notifications": {
+      "name": "issue_notifications",
+      "schema": "",
+      "columns": {
+        "notification_type": {
+          "name": "notification_type",
+          "type": "notification_issue_type",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notification_id": {
+          "name": "notification_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "issue_id": {
+          "name": "issue_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "issue_notifications_notification_id_notifications_id_fk": {
+          "name": "issue_notifications_notification_id_notifications_id_fk",
+          "tableFrom": "issue_notifications",
+          "tableTo": "notifications",
+          "columnsFrom": [
+            "notification_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "issue_notifications_issue_id_issues_id_fk": {
+          "name": "issue_notifications_issue_id_issues_id_fk",
+          "tableFrom": "issue_notifications",
+          "tableTo": "issues",
+          "columnsFrom": [
+            "issue_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "join_team_request_notifications": {
+      "name": "join_team_request_notifications",
+      "schema": "",
+      "columns": {
+        "notification_id": {
+          "name": "notification_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "request_id": {
+          "name": "request_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "join_team_request_notifications_notification_id_notifications_id_fk": {
+          "name": "join_team_request_notifications_notification_id_notifications_id_fk",
+          "tableFrom": "join_team_request_notifications",
+          "tableTo": "notifications",
+          "columnsFrom": [
+            "notification_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "join_team_request_notifications_request_id_join_team_requests_id_fk": {
+          "name": "join_team_request_notifications_request_id_join_team_requests_id_fk",
+          "tableFrom": "join_team_request_notifications",
+          "tableTo": "join_team_requests",
+          "columnsFrom": [
+            "request_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "new_staff_application_submission_notifications": {
+      "name": "new_staff_application_submission_notifications",
+      "schema": "",
+      "columns": {
+        "notification_id": {
+          "name": "notification_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "staff_application_submission_id": {
+          "name": "staff_application_submission_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "new_staff_application_submission_notifications_notification_id_notifications_id_fk": {
+          "name": "new_staff_application_submission_notifications_notification_id_notifications_id_fk",
+          "tableFrom": "new_staff_application_submission_notifications",
+          "tableTo": "notifications",
+          "columnsFrom": [
+            "notification_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "new_staff_application_submission_notifications_staff_application_submission_id_staff_application_submissions_id_fk": {
+          "name": "new_staff_application_submission_notifications_staff_application_submission_id_staff_application_submissions_id_fk",
+          "tableFrom": "new_staff_application_submission_notifications",
+          "tableTo": "staff_application_submissions",
+          "columnsFrom": [
+            "staff_application_submission_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "notifications": {
+      "name": "notifications",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "notified_at": {
+          "name": "notified_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "round_publication_notifications": {
+      "name": "round_publication_notifications",
+      "schema": "",
+      "columns": {
+        "publicized": {
+          "name": "publicized",
+          "type": "notification_round_publication_type",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notification_id": {
+          "name": "notification_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "round_id": {
+          "name": "round_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "round_publication_notifications_notification_id_notifications_id_fk": {
+          "name": "round_publication_notifications_notification_id_notifications_id_fk",
+          "tableFrom": "round_publication_notifications",
+          "tableTo": "notifications",
+          "columnsFrom": [
+            "notification_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "round_publication_notifications_round_id_rounds_id_fk": {
+          "name": "round_publication_notifications_round_id_rounds_id_fk",
+          "tableFrom": "round_publication_notifications",
+          "tableTo": "rounds",
+          "columnsFrom": [
+            "round_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "staff_change_notifications": {
+      "name": "staff_change_notifications",
+      "schema": "",
+      "columns": {
+        "action": {
+          "name": "action",
+          "type": "notification_staff_change_action",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "added_with_roles": {
+          "name": "added_with_roles",
+          "type": "varchar[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": []
+        },
+        "notification_id": {
+          "name": "notification_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "staff_change_notifications_notification_id_notifications_id_fk": {
+          "name": "staff_change_notifications_notification_id_notifications_id_fk",
+          "tableFrom": "staff_change_notifications",
+          "tableTo": "notifications",
+          "columnsFrom": [
+            "notification_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "staff_change_notifications_user_id_users_id_fk": {
+          "name": "staff_change_notifications_user_id_users_id_fk",
+          "tableFrom": "staff_change_notifications",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "team_change_notifications": {
+      "name": "team_change_notifications",
+      "schema": "",
+      "columns": {
+        "action": {
+          "name": "action",
+          "type": "notification_team_change_action",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notification_id": {
+          "name": "notification_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "team_id": {
+          "name": "team_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "affected_user_id": {
+          "name": "affected_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kicked_by_id": {
+          "name": "kicked_by_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "team_change_notifications_notification_id_notifications_id_fk": {
+          "name": "team_change_notifications_notification_id_notifications_id_fk",
+          "tableFrom": "team_change_notifications",
+          "tableTo": "notifications",
+          "columnsFrom": [
+            "notification_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "team_change_notifications_team_id_teams_id_fk": {
+          "name": "team_change_notifications_team_id_teams_id_fk",
+          "tableFrom": "team_change_notifications",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "team_change_notifications_affected_user_id_users_id_fk": {
+          "name": "team_change_notifications_affected_user_id_users_id_fk",
+          "tableFrom": "team_change_notifications",
+          "tableTo": "users",
+          "columnsFrom": [
+            "affected_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "team_change_notifications_kicked_by_id_users_id_fk": {
+          "name": "team_change_notifications_kicked_by_id_users_id_fk",
+          "tableFrom": "team_change_notifications",
+          "tableTo": "users",
+          "columnsFrom": [
+            "kicked_by_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "tournament_deleted_notifications": {
+      "name": "tournament_deleted_notifications",
+      "schema": "",
+      "columns": {
+        "tournament_name": {
+          "name": "tournament_name",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notification_id": {
+          "name": "notification_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "hosted_by_id": {
+          "name": "hosted_by_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tournament_deleted_notifications_notification_id_notifications_id_fk": {
+          "name": "tournament_deleted_notifications_notification_id_notifications_id_fk",
+          "tableFrom": "tournament_deleted_notifications",
+          "tableTo": "notifications",
+          "columnsFrom": [
+            "notification_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "tournament_deleted_notifications_hosted_by_id_users_id_fk": {
+          "name": "tournament_deleted_notifications_hosted_by_id_users_id_fk",
+          "tableFrom": "tournament_deleted_notifications",
+          "tableTo": "users",
+          "columnsFrom": [
+            "hosted_by_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "issues": {
+      "name": "issues",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "submitted_on": {
+          "name": "submitted_on",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(35)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "body": {
+          "name": "body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "issue_type",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image_count": {
+          "name": "image_count",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "can_contact": {
+          "name": "can_contact",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_resolved": {
+          "name": "is_resolved",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "submitted_by_id": {
+          "name": "submitted_by_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "issues_submitted_by_id_users_id_fk": {
+          "name": "issues_submitted_by_id_users_id_fk",
+          "tableFrom": "issues",
+          "tableTo": "users",
+          "columnsFrom": [
+            "submitted_by_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    }
+  },
+  "enums": {
+    "ban_oder": {
+      "name": "ban_oder",
+      "values": {
+        "ABABAB": "ABABAB",
+        "ABBAAB": "ABBAAB"
+      }
+    },
+    "cash_metric": {
+      "name": "cash_metric",
+      "values": {
+        "fixed": "fixed",
+        "percent": "percent"
+      }
+    },
+    "issue_type": {
+      "name": "issue_type",
+      "values": {
+        "security": "security",
+        "enhancement": "enhancement",
+        "new_feature": "new_feature",
+        "bug": "bug",
+        "user_behavior": "user_behavior"
+      }
+    },
+    "join_request_status": {
+      "name": "join_request_status",
+      "values": {
+        "pending": "pending",
+        "accepted": "accepted",
+        "rejected": "rejected"
+      }
+    },
+    "mappool_state": {
+      "name": "mappool_state",
+      "values": {
+        "private": "private",
+        "playtesting": "playtesting",
+        "public": "public"
+      }
+    },
+    "mod": {
+      "name": "mod",
+      "values": {
+        "ez": "ez",
+        "hd": "hd",
+        "hr": "hr",
+        "sd": "sd",
+        "dt": "dt",
+        "rx": "rx",
+        "ht": "ht",
+        "fl": "fl",
+        "pf": "pf"
+      }
+    },
+    "notification_issue_type": {
+      "name": "notification_issue_type",
+      "values": {
+        "submission": "submission",
+        "resolved": "resolved"
+      }
+    },
+    "notification_round_publication_type": {
+      "name": "notification_round_publication_type",
+      "values": {
+        "mappool": "mappool",
+        "schedules": "schedules",
+        "statistics": "statistics"
+      }
+    },
+    "notification_staff_change_action": {
+      "name": "notification_staff_change_action",
+      "values": {
+        "added": "added",
+        "removed": "removed"
+      }
+    },
+    "notification_team_change_action": {
+      "name": "notification_team_change_action",
+      "values": {
+        "joined": "joined",
+        "left": "left",
+        "kicked": "kicked"
+      }
+    },
+    "opponent": {
+      "name": "opponent",
+      "values": {
+        "opponent1": "opponent1",
+        "opponent2": "opponent2"
+      }
+    },
+    "prize_type": {
+      "name": "prize_type",
+      "values": {
+        "tournament": "tournament",
+        "pickems": "pickems"
+      }
+    },
+    "qualifier_runs_summary": {
+      "name": "qualifier_runs_summary",
+      "values": {
+        "average": "average",
+        "sum": "sum",
+        "best": "best"
+      }
+    },
+    "skillset": {
+      "name": "skillset",
+      "values": {
+        "consistency": "consistency",
+        "streams": "streams",
+        "tech": "tech",
+        "alt": "alt",
+        "speed": "speed",
+        "gimmick": "gimmick",
+        "rhythm": "rhythm",
+        "aim": "aim",
+        "awkward_aim": "awkward_aim",
+        "flow_aim": "flow_aim",
+        "reading": "reading",
+        "precision": "precision",
+        "stamina": "stamina",
+        "finger_control": "finger_control",
+        "jack_of_all_trades": "jack_of_all_trades"
+      }
+    },
+    "staff_color": {
+      "name": "staff_color",
+      "values": {
+        "slate": "slate",
+        "gray": "gray",
+        "red": "red",
+        "orange": "orange",
+        "yellow": "yellow",
+        "lime": "lime",
+        "green": "green",
+        "emerald": "emerald",
+        "cyan": "cyan",
+        "blue": "blue",
+        "indigo": "indigo",
+        "purple": "purple",
+        "fuchsia": "fuchsia",
+        "pink": "pink"
+      }
+    },
+    "staff_permission": {
+      "name": "staff_permission",
+      "values": {
+        "host": "host",
+        "mutate_tournament": "mutate_tournament",
+        "view_staff_members": "view_staff_members",
+        "mutate_staff_members": "mutate_staff_members",
+        "delete_staff_members": "delete_staff_members",
+        "view_player_regs": "view_player_regs",
+        "mutate_player_regs": "mutate_player_regs",
+        "delete_player_regs": "delete_player_regs",
+        "view_pool_structure": "view_pool_structure",
+        "mutate_pool_structure": "mutate_pool_structure",
+        "view_pool_suggestions": "view_pool_suggestions",
+        "mutate_pool_suggestions": "mutate_pool_suggestions",
+        "delete_pool_suggestions": "delete_pool_suggestions",
+        "view_pooled_maps": "view_pooled_maps",
+        "delete_pooled_maps": "delete_pooled_maps",
+        "view_maps_to_playtest": "view_maps_to_playtest",
+        "mutate_maps_to_playtest": "mutate_maps_to_playtest",
+        "delete_maps_to_playtest": "delete_maps_to_playtest",
+        "view_matches": "view_matches",
+        "mutate_matches": "mutate_matches",
+        "delete_matches": "delete_matches",
+        "ref_matches": "ref_matches",
+        "commentate_matches": "commentate_matches",
+        "stream_matches": "stream_matches",
+        "view_stats": "view_stats",
+        "mutate_stats": "mutate_stats",
+        "delete_stats": "delete_stats",
+        "can_play": "can_play"
+      }
+    },
+    "stage_format": {
+      "name": "stage_format",
+      "values": {
+        "groups": "groups",
+        "swiss": "swiss",
+        "qualifiers": "qualifiers",
+        "single_elim": "single_elim",
+        "double_elim": "double_elim",
+        "battle_royale": "battle_royale"
+      }
+    },
+    "tournament_service": {
+      "name": "tournament_service",
+      "values": {
+        "registrations": "registrations",
+        "mappooling": "mappooling",
+        "referee": "referee",
+        "stats": "stats",
+        "pickems": "pickems"
+      }
+    },
+    "tournament_type": {
+      "name": "tournament_type",
+      "values": {
+        "teams": "teams",
+        "draft": "draft",
+        "solo": "solo"
+      }
+    },
+    "user_theme": {
+      "name": "user_theme",
+      "values": {
+        "light": "light",
+        "dark": "dark"
+      }
+    },
+    "win_condition": {
+      "name": "win_condition",
+      "values": {
+        "score": "score",
+        "accuracy": "accuracy",
+        "combo": "combo",
+        "misses": "misses"
+      }
+    }
+  },
+  "schemas": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1684957168257,
+      "tag": "0000_amazing_daimon_hellstrom",
+      "breakpoints": false
+    }
+  ]
+}

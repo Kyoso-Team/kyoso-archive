@@ -170,23 +170,24 @@ enum TournamentService {
 }
 
 model Prize {
-  id               Int        @id @default(autoincrement())
-  type             PrizeType
-  positions        Int[]      @db.SmallInt // A single element array for a single place. Example: 1st, 2nd, 3rd place
+  id                   Int          @id @default(autoincrement())
+  type                 PrizeType
+  positions            Int[]        @db.SmallInt // A single element array for a single place. Example: 1st, 2nd, 3rd place
   // A range of positions in case of multiple placements sharing the same prize. Example: Top 4-6
-  trophy           Boolean // Physical trophy
-  medal            Boolean // Physical medal
-  badge            Boolean
-  banner           Boolean
-  cash             Float      @default(0)
-  cashMetric       CashMetric @default(Fixed)
-  cashCurrency     String     @default("USD") @db.Char(3)
-  items            String[]   @db.VarChar(25)
-  osuSupporter     Int?       @db.SmallInt // In months
-  tournament       Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  tournamentId     Int
-  awardedToPlayers Player[]
-  awardedToTeams   Team[]
+  trophy               Boolean // Physical trophy
+  medal                Boolean // Physical medal
+  badge                Boolean
+  banner               Boolean
+  cash                 Float        @default(0)
+  cashMetric           CashMetric   @default(Fixed)
+  cashCurrency         String       @default("USD") @db.Char(3)
+  items                String[]     @db.VarChar(25)
+  osuSupporter         Int?         @db.SmallInt // In months
+  tournament           Tournament   @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId         Int
+  awardedToPlayers     Player[]
+  awardedToPickemUsers PickemUser[]
+  awardedToTeams       Team[]
 }
 
 enum PrizeType {
@@ -233,7 +234,7 @@ model Round {
   tournament             Tournament              @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId           Int
   standardRound          StandardRound?
-  qualifierRound          QualifierRound?
+  qualifierRound         QualifierRound?
   battleRoyaleRound      BattleRoyaleRound?
   modpools               Modpool[]
   suggestedMaps          SuggestedMap[]
@@ -369,11 +370,11 @@ enum StaffColor {
 
 model StaffMember {
   id                    Int               @id @default(autoincrement())
-  roles                 StaffRole[]
   user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId                Int
   tournament            Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId          Int
+  roles                 StaffRole[]
   suggestedMaps         SuggestedMap[]
   pooledMapsSuggested   PooledMap[]       @relation("suggestedBy")
   pooledMaps            PooledMap[]       @relation("pooledBy")
@@ -501,6 +502,7 @@ model Modpool {
   id            Int            @id @default(autoincrement())
   category      String         @db.VarChar(3) // "NM", "HD", "TB", etc.
   mods          Mod[]
+  isFreeMod     Boolean
   order         Int            @db.SmallInt // The order in which the modpools should be presented. Example: NM (1) should go before HD (2)
   mapCount      Int            @db.SmallInt
   round         Round          @relation(fields: [roundId], references: [id], onDelete: Cascade)
@@ -508,7 +510,6 @@ model Modpool {
   suggestedMaps SuggestedMap[]
   pooledMaps    PooledMap[]
 
-  @@unique([roundId, mods])
   @@unique([roundId, category])
 }
 
@@ -756,10 +757,10 @@ model PlayedQualMap {
   id                Int        @id @default(autoincrement())
   qualLobby         QualLobby  @relation(fields: [qualLobbyId], references: [lobbyId], onDelete: Cascade)
   qualLobbyId       Int
-  teamsThatPlayed   Team[]
-  playersThatPlayed Player[]
   pooledMap         PooledMap? @relation(fields: [pooledMapId], references: [id])
   pooledMapId       Int?
+  teamsThatPlayed   Team[]
+  playersThatPlayed Player[]
 }
 
 // Battle royale
@@ -775,12 +776,12 @@ model PlayedKnockoutMap {
   id                Int           @id @default(autoincrement())
   knockoutLobby     KnockoutLobby @relation(fields: [knockoutLobbyId], references: [lobbyId], onDelete: Cascade)
   knockoutLobbyId   Int
+  pooledMap         PooledMap?    @relation(fields: [pooledMapId], references: [id])
+  pooledMapId       Int?
   teamsThatPlayed   Team[]        @relation("playedTeams")
   knockedOutTeams   Team[]        @relation("knockedOutTeams")
   playersThatPlayed Player[]      @relation("playedPlayers")
   knockedOutPlayers Player[]      @relation("knockedOutPlayers")
-  pooledMap         PooledMap?    @relation(fields: [pooledMapId], references: [id])
-  pooledMapId       Int?
 }
 
 //   _____  _          _
@@ -854,6 +855,8 @@ model PickemUser {
   userId       Int
   tournament   Tournament             @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId Int
+  prizeWon     Prize?                 @relation(fields: [prizeWonId], references: [id])
+  prizeWonId   Int?
   submissions  PredictionSubmission[]
 
   @@unique([userId, tournamentId])

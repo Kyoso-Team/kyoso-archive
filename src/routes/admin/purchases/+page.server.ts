@@ -1,4 +1,7 @@
 import prisma from '$prisma';
+import db from '$db';
+import { asc, desc, or, eq, sql } from 'drizzle-orm';
+import { dbPurchase, dbUser, dbTournament } from '$db/schema';
 import { z } from 'zod';
 import { getUrlParams, paginate } from '$lib/server-utils';
 import { prismaSortSchema } from '$lib/schemas';
@@ -77,6 +80,37 @@ export const load = (async ({ parent, url }) => {
     }
   });
   let purchaseCount = prisma.purchase.count({ where });
+
+  // let resp = await db.query.dbPurchase.findMany({
+  //   where: search ? or(
+  //     eq(dbPurchase.payPalOrderId, search),
+  //     sql`to_tsvector('simple', ${dbUser.osuUsername} ${dbUser.discordUsername} ${dbTournament.name} ${dbTournament.acronym}) @@ to_tsquery('simple', '${search}')`
+  //   ) : undefined,
+  //   columns: {
+  //     id: true,
+  //     purchasedAt: true,
+  //     cost: true,
+  //     payPalOrderId: true,
+  //     services: true
+  //   },
+  //   with: {
+  //     purchasedBy: {
+  //       columns: {
+  //         id: true,
+  //         osuUsername: true,
+  //         osuUserId: true
+  //       }
+  //     },
+  //     forTournament: {
+  //       columns: {
+  //         id: true,
+  //         name: true,
+  //         acronym: true
+  //       }
+  //     }
+  //   },
+  //   orderBy: sort.purchasedAt === 'asc' ? asc(dbPurchase.purchasedAt) : desc(dbPurchase.purchasedAt)
+  // });
 
   return {
     purchases,

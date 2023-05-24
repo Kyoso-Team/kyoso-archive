@@ -7,7 +7,7 @@ Repository for the Kyoso website.
 - [pnpm](https://pnpm.io): Package manager
 - [SvelteKit](https://kit.svelte.dev): Full-stack framework
 - [Zod](https://zod.dev): Validation library
-- [Prisma](https://www.prisma.io): ORM for the database
+- [Drizzle](https://orm.drizzle.team): ORM for the database
 - [PostgreSQL](https://www.postgresql.org): The database itself
 - [tRPC](https://trpc.io): Backend / API
 - [Taiwind](https://tailwindcss.com): Styling
@@ -28,6 +28,6 @@ Scripts present in the package.json file. Each script must be prepended with `pn
 - `check` & `check:watch`: Updates svelte routes with correct type definitions, either with or without watch mode.
 - `lint`: Code linting.
 - `fmt`: Code formatting.
-- `db:push`: Push Prisma schema to the database and generate the client for it.
-- `db:studio`: Opens UI to view and manage the database's data.
+- `db:generate`: Generate a new migration file. Must be used after making changes to the schema (`src/lib/db/schema` folder).
+- `db:migrate`: Apply generated migrations.
 - `review`: Runs `fmt`, `lint` and `check`, one after the other.
