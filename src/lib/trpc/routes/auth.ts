@@ -117,13 +117,13 @@ function getStoredUser<
   };
 }
 
-function invalidateCookies(cookies: Cookies): never {
+function invalidateCookies(cookies: Cookies, error?: string): never {
   cookies.delete('session', cookiesOptions);
   cookies.delete('osu_token', cookiesOptions);
 
   throw new TRPCError({
     code: 'INTERNAL_SERVER_ERROR',
-    message: 'Invalid cookies.'
+    message: error || 'Invalid cookies.'
   });
 }
 
@@ -240,6 +240,7 @@ export const authRouter = t.router({
       ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
       return "/user/settings"
     } else { // User is logging in and went through osu auth stuff
+      ctx.cookies.delete('osu_token', cookiesOptions);
       ctx.cookies.set("session", await login(osuToken, discordToken), cookiesOptions)
       return "/"
     }
@@ -253,58 +254,62 @@ export const authRouter = t.router({
       invalidateCookies(ctx.cookies)
     }
 
-    let user = await tryCatch(async () => {
-      return await prisma.user.findUniqueOrThrow({
-        where: {
-          id: storedUser?.id
-        },
-        select: {
-          id: true,
-          isAdmin: true,
-          osuRefreshToken: true,
-          discordRefreshToken: true
-        }
-      });
-    }, "Can't refresh user data.");
-
-    if (new Date().getTime() - new Date(storedUser.updatedAt).getTime() >= 86_400_000) {
-      let [osuToken, discordToken] = await Promise.all([
-        tryCatch(
-          async () => await osuAuth.refreshToken(user.osuRefreshToken),
-          "Can't refresh osu! OAuth token."
-        ),
-        tryCatch(async () => {
-          return await discordAuth.tokenRequest({
-            ...discordAuthParams,
-            grantType: 'refresh_token',
-            scope,
-            refreshToken: user.discordRefreshToken
-          });
-        }, "Can't refresh Discord OAuth token.")
-      ]);
-      let [osuProfile, discordProfile] = await getProfiles(osuToken, discordToken);
-      let data = getData(osuToken, discordToken, osuProfile, discordProfile);
-
-      let updatedUser = await tryCatch(async () => {
-        return await prisma.user.update({
+    try {
+      let user = await tryCatch(async () => {
+        return await prisma.user.findUniqueOrThrow({
           where: {
-            id: user.id
+            id: storedUser?.id
           },
-          data,
-          select: userSelect
+          select: {
+            id: true,
+            isAdmin: true,
+            osuRefreshToken: true,
+            discordRefreshToken: true
+          }
         });
-      }, "Can't update user.");
-
-      storedUser = getStoredUser(updatedUser);
-    } else {
-      storedUser = {
-        ...storedUser,
-        isAdmin: user.isAdmin
-      };
+      }, "Can't refresh user data.");
+  
+      if (new Date().getTime() - new Date(storedUser.updatedAt).getTime() >= 86_400_000) {
+        let [osuToken, discordToken] = await Promise.all([
+          tryCatch(
+            async () => await osuAuth.refreshToken(user.osuRefreshToken),
+            "Can't refresh osu! OAuth token."
+          ),
+          tryCatch(async () => {
+            return await discordAuth.tokenRequest({
+              ...discordAuthParams,
+              grantType: 'refresh_token',
+              scope,
+              refreshToken: user.discordRefreshToken
+            });
+          }, "Can't refresh Discord OAuth token.")
+        ]);
+        let [osuProfile, discordProfile] = await getProfiles(osuToken, discordToken);
+        let data = getData(osuToken, discordToken, osuProfile, discordProfile);
+  
+        let updatedUser = await tryCatch(async () => {
+          return await prisma.user.update({
+            where: {
+              id: user.id
+            },
+            data,
+            select: userSelect
+          });
+        }, "Can't update user.");
+  
+        storedUser = getStoredUser(updatedUser);
+      } else {
+        storedUser = {
+          ...storedUser,
+          isAdmin: user.isAdmin
+        };
+      }
+  
+      ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
+      return storedUser;
+    } catch(e: any) {
+      invalidateCookies(ctx.cookies, e.message)
     }
-
-    ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
-    return storedUser;
   }),
   generateDiscordAuthLink: t.procedure.query(({ ctx }) => {
     if (verifyJWT<SessionUser>(ctx.cookies.get('session'))) {
