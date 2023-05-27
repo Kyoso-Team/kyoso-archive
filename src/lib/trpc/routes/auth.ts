@@ -10,6 +10,7 @@ import { customAlphabet } from 'nanoid';
 import type { TokenRequestResult, User } from 'discord-oauth2';
 import type { Prisma } from '@prisma/client';
 import type { SessionUser } from '$types';
+import type { Cookies } from '@sveltejs/kit';
 
 const osuAuth = new OsuAuth(
   env.PUBLIC_OSU_CLIENT_ID,
@@ -116,9 +117,45 @@ function getStoredUser<
   };
 }
 
+function invalidateCookies(cookies: Cookies): never {
+  cookies.delete('session', cookiesOptions);
+  cookies.delete('osu_token', cookiesOptions);
+
+  throw new TRPCError({
+    code: 'INTERNAL_SERVER_ERROR',
+    message: 'Invalid cookies.'
+  });
+}
+
+async function login(osuToken: Token, discordToken: TokenRequestResult): Promise<string> {
+  let [osuProfile, discordProfile] = await getProfiles(osuToken, discordToken);
+  let data = getData(osuToken, discordToken, osuProfile, discordProfile);
+  let apiKey = customAlphabet(
+    '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+    24
+  )();
+
+  let user = await tryCatch(async () => {
+    return await prisma.user.upsert({
+      create: {
+        ...data,
+        apiKey
+      },
+      where: {
+        osuUserId: osuProfile.id
+      },
+      update: data,
+      select: userSelect
+    });
+  }, "Can't create or update user.");
+
+  let storedUser = getStoredUser(user);
+  return signJWT(storedUser)
+}
+
 export const authRouter = t.router({
   handleOsuAuth: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
-    let token = await tryCatch(
+    let osuToken = await tryCatch(
       async () => await osuAuth.requestToken(input),
       "Can't get osu! OAuth token."
     );
@@ -129,7 +166,7 @@ export const authRouter = t.router({
      * but the time we spend doing the request is time wasted if user is registering
      */
     let userId = 0;
-    let accessToken = token.access_token;
+    let accessToken = osuToken.access_token;
     let tokenPayload = JSON.parse(
       Buffer.from(
         accessToken.substring(accessToken.indexOf('.') + 1, accessToken.lastIndexOf('.')),
@@ -143,22 +180,33 @@ export const authRouter = t.router({
     let user = await prisma.user.findUnique({
       where: {
         osuUserId: userId
+      },
+      select: {
+        discordRefreshToken: true
       }
     });
 
-    if (userId !== 0 && user) {
-      // User is registered and logging in, skip discord by simply running `updateUser`
-      let storedUser = getStoredUser(user);
-      ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
-      return '/';
-    } else {
-      // User is currently registering, make them link their discord
-      ctx.cookies.set('osu_token', signJWT(token), cookiesOptions);
+    try { // Avoid prompting user for discord auth if possible
+      if (!user) {
+        throw new Error("User does not exist yet")
+      }
+
+      let discordToken = await discordAuth.tokenRequest({
+        ...discordAuthParams,
+        grantType: 'refresh_token',
+        scope,
+        refreshToken: user.discordRefreshToken
+      });
+
+      ctx.cookies.set("session", await login(osuToken, discordToken), cookiesOptions)
+      return "/"
+    } catch { // Prompt user for discord auth
+      ctx.cookies.set('osu_token', signJWT(osuToken), cookiesOptions);
       return discordAuth.generateAuthUrl({ scope });
     }
   }),
   handleDiscordAuth: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
-    let token = await tryCatch(async () => {
+    let discordToken = await tryCatch(async () => {
       return await discordAuth.tokenRequest({
         ...discordAuthParams,
         grantType: 'authorization_code',
@@ -167,88 +215,42 @@ export const authRouter = t.router({
       });
     }, "Can't get Discord OAuth token.");
 
-    ctx.cookies.set('discord_token', signJWT(token), cookiesOptions);
-  }),
-  login: t.procedure.query(async ({ ctx }) => {
     let osuToken = verifyJWT<Token>(ctx.cookies.get('osu_token'));
-    let discordToken = verifyJWT<TokenRequestResult>(ctx.cookies.get('discord_token'));
+    if (!osuToken) { // User may be changing their discord account
+      let storedUser = verifyJWT<SessionUser>(ctx.cookies.get('session'));
+      if (!storedUser) {
+        invalidateCookies(ctx.cookies)
+      }
 
-    ctx.cookies.delete('osu_token', cookiesOptions);
-    ctx.cookies.delete('discord_token', cookiesOptions);
-
-    if (!osuToken || !discordToken) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Invalid login cookies.'
-      });
-    }
-
-    let [osuProfile, discordProfile] = await getProfiles(osuToken, discordToken);
-    let data = getData(osuToken, discordToken, osuProfile, discordProfile);
-    let apiKey = customAlphabet(
-      '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-      24
-    )();
-
-    let user = await tryCatch(async () => {
-      return await prisma.user.upsert({
-        create: {
-          ...data,
-          apiKey
-        },
+      let discordProfile = await getDiscordProfile(discordToken);
+      let updatedUser = await prisma.user.update({
         where: {
-          osuUserId: osuProfile.id
+          osuUserId: storedUser.osuUserId
         },
-        update: data,
-        select: userSelect
+        data: {
+          discordAccesstoken: discordToken.access_token,
+          discordRefreshToken: discordToken.refresh_token,
+          discordUserId: discordProfile.id,
+          discordUsername: discordProfile.username,
+          discordDiscriminator: Number(discordProfile.discriminator)
+        }
       });
-    }, "Can't create or update user.");
 
-    let storedUser = getStoredUser(user);
-    ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
+      storedUser = getStoredUser(updatedUser);
+      ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
+      return "/user/settings"
+    } else { // User is logging in and went through osu auth stuff
+      ctx.cookies.set("session", await login(osuToken, discordToken), cookiesOptions)
+      return "/"
+    }
   }),
   logout: t.procedure.query(({ ctx }) => {
     ctx.cookies.delete('session', cookiesOptions);
   }),
-  changeDiscord: t.procedure.query(async ({ ctx }) => {
-    let storedUser = verifyJWT<SessionUser>(ctx.cookies.get('session'));
-    let discordToken = verifyJWT<TokenRequestResult>(ctx.cookies.get('discord_token'));
-    ctx.cookies.delete('discord_token', cookiesOptions);
-
-    if (!storedUser || !discordToken) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Invalid cookies.'
-      });
-    }
-
-    let discordProfile = await getDiscordProfile(discordToken);
-    let updatedUser = await prisma.user.update({
-      where: {
-        osuUserId: storedUser.osuUserId
-      },
-      data: {
-        discordAccesstoken: discordToken.access_token,
-        discordRefreshToken: discordToken.refresh_token,
-        discordUserId: discordProfile.id,
-        discordUsername: discordProfile.username,
-        discordDiscriminator: Number(discordProfile.discriminator)
-      }
-    });
-
-    storedUser = getStoredUser(updatedUser);
-    ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
-  }),
   updateUser: t.procedure.query(async ({ ctx }) => {
     let storedUser = verifyJWT<SessionUser>(ctx.cookies.get('session'));
-
     if (!storedUser) {
-      ctx.cookies.delete('session', cookiesOptions);
-
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Invalid user cookie.'
-      });
+      invalidateCookies(ctx.cookies)
     }
 
     let user = await tryCatch(async () => {
