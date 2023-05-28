@@ -25,8 +25,8 @@ model User {
   isRestricted                Boolean
   discordUserId               String                       @unique @db.VarChar(19)
   discordUsername             String                       @db.VarChar(32)
-  discordDiscriminator        Int                          @db.SmallInt
-  apiKey                      String                       @db.Char(24)
+  discordDiscriminator        String                       @db.Char(4)
+  apiKey                      String                       @unique @db.Char(24)
   freeServicesLeft            Int                          @default(3) @db.SmallInt
   // Auth
   osuAccessToken              String
