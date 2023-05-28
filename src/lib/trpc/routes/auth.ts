@@ -188,7 +188,10 @@ export const authRouter = t.router({
 
     try { // Avoid prompting user for discord auth if possible
       if (!user) {
-        throw new Error("User does not exist yet")
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "User does not exist yet."
+        })
       }
 
       let discordToken = await discordAuth.tokenRequest({
@@ -200,9 +203,18 @@ export const authRouter = t.router({
 
       ctx.cookies.set("session", await login(osuToken, discordToken), cookiesOptions)
       return "/"
-    } catch { // Prompt user for discord auth
-      ctx.cookies.set('osu_token', signJWT(osuToken), cookiesOptions);
-      return discordAuth.generateAuthUrl({ scope });
+    } catch(e: any) {
+      if (e?.message === "User does not exist yet." || e?.response?.error === "invalid_grant") {
+        // Prompt user for discord auth
+        ctx.cookies.set('osu_token', signJWT(osuToken), cookiesOptions);
+        return discordAuth.generateAuthUrl({ scope });
+      } else { // Something actually went wrong, throw error
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to authenticate user.",
+          cause: e
+        })
+      }
     }
   }),
   handleDiscordAuth: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
