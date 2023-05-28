@@ -11,7 +11,7 @@
   $: visibleDiscord = user.showDiscordTag;
 
   async function changeVisibility() {
-    await trpc($page).users.changeDiscordVisibility.query(!visibleDiscord);
+    await trpc($page).users.changeDiscordVisibility.mutate(!visibleDiscord);
   }
 
   function confirmDiscordChange() {

@@ -19,7 +19,7 @@ function createPaginate() {
     let url = pageStore.url;
     url.searchParams.set('page', page.toString());
 
-    goto(url.search);
+    goto(url.search, {keepFocus: true, invalidateAll: true});
   }
 
   function setSearch(pageStore: PageStore, searchQuery: string | undefined | null) {
@@ -32,7 +32,7 @@ function createPaginate() {
       url.searchParams.delete('search');
     }
 
-    goto(url.search);
+    goto(url.search || url.href, {keepFocus: true, invalidateAll: true});
   }
 
   function setFilter(
@@ -56,7 +56,7 @@ function createPaginate() {
       url.searchParams.delete(`f.${filterName}`);
     }
 
-    goto(url.search);
+    goto(url.search, {keepFocus: true, invalidateAll: true});
   }
 
   function setSort(pageStore: PageStore, sortName: string, sortValue: Sort | null | undefined) {
@@ -69,7 +69,7 @@ function createPaginate() {
       url.searchParams.delete(`s.${sortName}`);
     }
 
-    goto(url.search);
+    goto(url.search, {keepFocus: true, invalidateAll: true});
   }
 
   return {

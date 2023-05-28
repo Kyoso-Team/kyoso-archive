@@ -76,7 +76,7 @@ export function getUrlParams<A extends AnyZodObject, B extends AnyZodObject>(
     })
     .parse({
       page: page === '' ? 1 : Number(page) < 0 ? 1 : parseInt(page),
-      search: search === '' ? undefined : decodeURIComponent(search),
+      search: search === '' ? '' : decodeURIComponent(search),
       filters: mapUrlParams(params, 'f.'),
       sort: mapUrlParams(params, 's.', true)
     });
