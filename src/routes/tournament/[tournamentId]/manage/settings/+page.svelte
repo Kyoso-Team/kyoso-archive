@@ -106,13 +106,7 @@
 
 <div class="center-content">
   <h1>Settings</h1>
-  <Settings
-    on:undo={onUndo}
-    on:update={onUpdate}
-    {currentObj}
-    {originalObj}
-    {errors}
-  >
+  <Settings on:undo={onUndo} on:update={onUpdate} {currentObj} {originalObj} {errors}>
     <Setting
       label="Tournament name"
       type="string"

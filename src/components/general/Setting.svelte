@@ -6,10 +6,13 @@
   export let value: string | number | boolean | undefined | null | Date;
   export let type: 'string' | 'text' | 'number' | 'boolean' | 'select' | 'date';
   export let label: string;
-  export let values: (string | {
-    label: string;
-    value: string;
-  })[] = [];
+  export let values: (
+    | string
+    | {
+        label: string;
+        value: string;
+      }
+  )[] = [];
   export let error: string | undefined = undefined;
   export let final: boolean = false;
   export let disabled: boolean = false;
@@ -46,7 +49,7 @@
             {#if typeof selectable === 'string'}
               <option value={selectable}>{selectable}</option>
             {:else}
-            <option value={selectable.value}>{selectable.label}</option>
+              <option value={selectable.value}>{selectable.label}</option>
             {/if}
           {/each}
         </select>

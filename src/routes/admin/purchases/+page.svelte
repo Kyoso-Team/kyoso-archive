@@ -1,7 +1,14 @@
 <script lang="ts">
   import { RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
   import { paginate } from '$stores';
-  import { SearchBar, Paginator, Purchase, AscendingIcon, DescendingIcon, NoSearchResultsIcon } from '$components';
+  import {
+    SearchBar,
+    Paginator,
+    Purchase,
+    AscendingIcon,
+    DescendingIcon,
+    NoSearchResultsIcon
+  } from '$components';
   import { page } from '$app/stores';
   import type { PageServerData } from './$types';
   import type { Sort } from '$types';

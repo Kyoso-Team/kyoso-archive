@@ -49,9 +49,9 @@ export const format = {
   },
   digits: (n: number, digitCount: number) => {
     let nStr = n.toString();
-    let missingDigits = digitCount - nStr.length ;
+    let missingDigits = digitCount - nStr.length;
     let str = '';
-    
+
     for (let i = missingDigits; i > 0; i--) {
       str += '0';
     }
@@ -82,7 +82,6 @@ export const modal = {
     onYes: () => void | Promise<void>,
     onNo?: () => void | Promise<void>
   ) => {
-
     modalStore.trigger({
       title,
       type: 'confirm',

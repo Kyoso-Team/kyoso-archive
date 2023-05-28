@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { PageServerData } from './$types';
-  import { SlideToggle, Table, Modal, modalStore } from '@skeletonlabs/skeleton';
+  import { SlideToggle, Table, modalStore } from '@skeletonlabs/skeleton';
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
 

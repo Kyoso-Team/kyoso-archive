@@ -246,26 +246,32 @@
             Total Cost: {#if selectedServices.length && data.user.freeServicesLeft > 0}
               <s class="text-sm text-slate-300">
                 {format.price(
-                    selectedServices.reduce((total, service) => {
-                      return (
-                        total +
-                        services[service][
-                          createTournament.tournament?.type === 'Teams' ? 'teamsPrice' : 'soloPrice'
-                        ]
-                      );
-                    }, 0)
-                  )}
-                </s>
+                  selectedServices.reduce((total, service) => {
+                    return (
+                      total +
+                      services[service][
+                        createTournament.tournament?.type === 'Teams' ? 'teamsPrice' : 'soloPrice'
+                      ]
+                    );
+                  }, 0)
+                )}
+              </s>
             {/if}
             {format.price(
-              selectedServices.map((service) => services[service][
-                createTournament.tournament?.type === 'Teams' ? 'teamsPrice' : 'soloPrice'
-              ])
-              .sort((a, b) => b - a)
-              .reduce((total, price, index) => {
-                if (data.user.freeServicesLeft > 0 && index === 1) {total = 0}
-                return (index < data.user.freeServicesLeft ? total : total + price)
-              }, 0)
+              selectedServices
+                .map(
+                  (service) =>
+                    services[service][
+                      createTournament.tournament?.type === 'Teams' ? 'teamsPrice' : 'soloPrice'
+                    ]
+                )
+                .sort((a, b) => b - a)
+                .reduce((total, price, index) => {
+                  if (data.user.freeServicesLeft > 0 && index === 1) {
+                    total = 0;
+                  }
+                  return index < data.user.freeServicesLeft ? total : total + price;
+                }, 0)
             )}
           </h4>
           {#if data.user.freeServicesLeft > 0}

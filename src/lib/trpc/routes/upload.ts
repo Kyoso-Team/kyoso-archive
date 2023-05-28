@@ -10,10 +10,7 @@ import { withTournamentSchema } from '$lib/schemas';
 import { Blob } from 'buffer';
 import type { FileType } from '$types';
 
-const proceduresSchema = z.union([
-  z.literal('tournamentBanner'),
-  z.literal('tournamentLogo')
-]);
+const proceduresSchema = z.union([z.literal('tournamentBanner'), z.literal('tournamentLogo')]);
 
 const fileSchema = z.custom<File>((value) => value instanceof File);
 
@@ -21,29 +18,31 @@ async function upload(folderName: string, fileName: string, file: File) {
   let splitName = file.name.split('.');
   let extension = splitName[splitName.length - 1];
 
-  await tryCatch(
-    async () => {
-      await fetch(`${env.STORAGE_ENDPOINT}/${folderName}/${fileName}.${extension}`, {
-        method: 'PUT',
-        headers: {
-          'AccessKey': env.STORAGE_PASSWORD,
-          'content-type': 'application/octet-stream'
-        },
-        body: file
-      });
-    },
-    'Couldn\'t upload file to this endpoint.'
-  );
+  await tryCatch(async () => {
+    await fetch(`${env.STORAGE_ENDPOINT}/${folderName}/${fileName}.${extension}`, {
+      method: 'PUT',
+      headers: {
+        'AccessKey': env.STORAGE_PASSWORD,
+        'content-type': 'application/octet-stream'
+      },
+      body: file
+    });
+  }, "Couldn't upload file to this endpoint.");
 }
 
-function validateFile(file: File, validations: {
-  maxSize?: number;
-  types?: FileType[];
-}) {
+function validateFile(
+  file: File,
+  validations: {
+    maxSize?: number;
+    types?: FileType[];
+  }
+) {
   if (validations.maxSize && file.size > validations.maxSize) {
     throw new TRPCError({
       code: 'PAYLOAD_TOO_LARGE',
-      message: `File is too big. Limit for this endpoint is of ${new Intl.NumberFormat('us-US').format(file.size)} bytes.`
+      message: `File is too big. Limit for this endpoint is of ${new Intl.NumberFormat(
+        'us-US'
+      ).format(file.size)} bytes.`
     });
   }
 
@@ -89,7 +88,7 @@ export const uploadRouter = t.router({
 
     try {
       input = typeof input === 'string' && input ? JSON.parse(input) : input;
-    } catch(err) {
+    } catch (err) {
       console.error(`Attempted to parse input but failed. Input received: "${input}"`);
     }
 
@@ -99,7 +98,7 @@ export const uploadRouter = t.router({
       procedureName: procedure.data
     };
   }),
-  obtain: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
+  obtain: t.procedure.input(z.string()).query(async ({ input }) => {
     let upload = await fetch(`${env.STORAGE_ENDPOINT}/${input}`, {
       method: 'GET',
       headers: {

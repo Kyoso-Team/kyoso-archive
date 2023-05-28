@@ -12,8 +12,18 @@
   import { Form, Error, Sidebar } from '$components';
   import { onMount } from 'svelte';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-  import { setInitialClassState, AppShell, AppBar, Avatar, storeHighlightJs, storePopup, Modal, popup } from '@skeletonlabs/skeleton';
-  import type { PopupSettings } from '@skeletonlabs/skeleton'
+  import {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setInitialClassState,
+    AppShell,
+    AppBar,
+    Avatar,
+    storeHighlightJs,
+    storePopup,
+    Modal,
+    popup
+  } from '@skeletonlabs/skeleton';
+  import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
 
   storeHighlightJs.set(hljs);
@@ -51,7 +61,7 @@
   const navbarPopup: PopupSettings = {
     event: 'click',
     placement: 'bottom',
-    target: "",
+    target: '',
     middleware: {
       offset: 24
     }
@@ -89,7 +99,10 @@
       <svelte:fragment slot="lead">
         <nav class="flex gap-2">
           {#if data.user && data.user.isAdmin}
-            <button class="btn hover:variant-soft-primary" use:popup={{...navbarPopup, target: "adminPopup"}}>Admin</button>
+            <button
+              class="btn hover:variant-soft-primary"
+              use:popup={{ ...navbarPopup, target: 'adminPopup' }}>Admin</button
+            >
             <div class="card absolute top-[5rem] left-4 w-52 py-2" data-popup="adminPopup">
               <nav class="flex flex-col gap-1 px-2">
                 {#each adminNavLinks as { href, label }}
@@ -109,7 +122,7 @@
       <svelte:fragment slot="trail">
         <div>
           {#if data.user}
-            <div use:popup={{...navbarPopup, target: "avatarPopup"}}>
+            <div use:popup={{ ...navbarPopup, target: 'avatarPopup' }}>
               <Avatar
                 src={buildUrl.userAvatar(data.user.osuUserId)}
                 width="w-10"
@@ -126,9 +139,8 @@
                   href={`/user/${data.user.id}`}
                   class="btn justify-start py-1 hover:variant-soft-primary">Profile</a
                 >
-                <a
-                  href="/user/settings"
-                  class="btn justify-start py-1 hover:variant-soft-primary">Settings</a
+                <a href="/user/settings" class="btn justify-start py-1 hover:variant-soft-primary"
+                  >Settings</a
                 >
                 <button
                   on:click={onLogoutClick}

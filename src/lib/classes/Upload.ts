@@ -17,10 +17,8 @@ export class Upload {
       body: this.formData
     });
   }
-  
-  public async tournamentBanner(input: {
-    tournamentId: number;
-  }) {
+
+  public async tournamentBanner(input: { tournamentId: number }) {
     await this.uploadFile('tournamentBanner', input);
   }
 }
