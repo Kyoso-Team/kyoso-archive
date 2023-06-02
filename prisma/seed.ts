@@ -38,6 +38,15 @@ const r = {
   },
   number: (min: number, max: number = min) => {
     return Math.floor(Math.random() * (max + 1 - min) + min);
+  },
+  array: (arr: any[], amount?: number) => {
+    let x = arr.length
+    for (let i = 0; amount ? arr.length === amount : i < x; i++) {
+      if (r.boolean() && arr.length > 1) {
+        arr.splice(r.number(0, arr.length - 1), 1)
+      }
+    }
+    return arr
   }
 };
 
@@ -118,6 +127,86 @@ async function seedUsers(): Promise<'done'> {
   return 'done';
 }
 
+async function seedTournaments(): Promise<'done'> {
+  for (let i = 0; i < 15; i++) {
+    let type = r.array(['Teams', 'Solo', 'Draft'], 1)[0]
+    let rankRange: 'open rank' | {lower: number, upper: number} = r.boolean() ? 'open rank' : {
+      lower: r.number(1, 500000),
+      upper: r.number(1, 500000)
+    }
+  
+    await prisma.tournament.create({
+      data: {
+        name: r.string(5, 50),
+        acronym: r.string(1, 8),
+        useBWS: r.boolean(),
+        services: r.array(['Registrations', 'Mappooling', 'Referee', 'Stats', 'Pickems']),
+        type,
+        lowerRankRange: rankRange === 'open rank' ? -1 : rankRange.lower,
+        upperRankRange: rankRange === 'open rank' ? -1 : rankRange.upper,
+        teamSize: type === 'Teams' ? r.number(1, 8) : 1,
+        teamPlaySize: type === 'Teams' ? r.number(1, 4) : 1,
+        inPurchases: undefined
+      },
+      select: {
+        id: true
+      }
+    });
+  }
+
+  return 'done'
+}
+
+async function seedStaffMembers(): Promise<'done'> {
+  let tournaments = await prisma.tournament.findMany({
+    select: {
+      id: true
+    }
+  })
+  let users = await prisma.user.findMany({
+    select: {
+      id: true
+    }
+  })
+
+  for (let i = 0; i < tournaments.length; i++) {
+    let staffMembers: {id: number}[] = []
+    for (let e = 0; e < users.length; e++) {
+      if (r.boolean()) {
+        staffMembers.push(await prisma.staffMember.create({
+          data: {
+            userId: users[e].id,
+            tournamentId: tournaments[i].id
+          },
+          select: {
+            id: true
+          }
+        }));
+      }
+    }
+
+    for (let e = 0; e < 10; e++) {
+      await prisma.staffRole.create({
+        data: {
+          name: `${e}_${r.string(1, 23)}`,
+          color: 'Blue',
+          permissions: r.array([
+            "MutateTournament", "MutateStaffMembers", "MutateRegs", 
+            "MutatePoolStructure", "MutatePoolSuggestions", "MutateMapsToPlaytest",
+            "MutateMatches", "MutateStats", "CanPlay"
+          ]),
+          tournamentId: tournaments[i].id,
+          staffMembers: {
+            connect: staffMembers.filter(() => r.boolean())
+          }
+        },
+      })
+    }
+  }
+
+  return 'done'
+}
+
 async function main() {
   // Deletes all rows in the database (https://dba.stackexchange.com/questions/154061/delete-all-data-in-postgres-database)
   await prisma.$queryRaw`
@@ -139,6 +228,12 @@ async function main() {
 
   console.log('Users: ');
   console.log(await seedUsers());
+
+  console.log('Tournaments: ');
+  console.log(await seedTournaments());
+
+  console.log('Staff of tournaments: ');
+  console.log(await seedStaffMembers());
 }
 
 main()
