@@ -10,27 +10,32 @@
     StatsIcon
   } from '$components';
 
+  let group: number | undefined;
+  let currentTile: number = 0;
   let selectedSection = sidebar.selectedSection;
 </script>
 
 {#if $sidebar}
   <div class="grid h-full grid-cols-[auto_auto] fill-white">
-    <AppRail selected={sidebar.selectedSection} background="bg-surface-50-900-token">
+    <AppRail background="bg-surface-50-900-token">
       {#each Array.from($sidebar.sections.entries()) as [label, { icon }]}
-        <AppRailTile value={label} {label}>
-          {#if icon === 'settings'}
-            <SettingsIcon w={30} h={30} />
-          {:else if icon === 'pickems'}
-            <PickemsIcon w={42} h={30} />
-          {:else if icon === 'pooling'}
-            <PoolingIcon w={30} h={30} />
-          {:else if icon === 'referee'}
-            <RefereeIcon w={38} h={32} />
-          {:else if icon === 'regs'}
-            <RegistrationsIcon w={35} h={32} />
-          {:else}
-            <StatsIcon w={30} h={30} />
-          {/if}
+        <AppRailTile value={label} name={`section-${label}`} regionLead="flex items-center flex-col" bind:group={currentTile}>
+          <svelte:fragment slot="lead">
+            {#if icon === 'settings'}
+              <SettingsIcon w={30} h={30} />
+            {:else if icon === 'pickems'}
+              <PickemsIcon w={42} h={30} />
+            {:else if icon === 'pooling'}
+              <PoolingIcon w={30} h={30} />
+            {:else if icon === 'referee'}
+              <RefereeIcon w={38} h={32} />
+            {:else if icon === 'regs'}
+              <RegistrationsIcon w={35} h={32} />
+            {:else}
+              <StatsIcon w={30} h={30} />
+            {/if}
+            <span class="text-sm block mt-1">{label}</span>
+          </svelte:fragment>
         </AppRailTile>
       {/each}
     </AppRail>

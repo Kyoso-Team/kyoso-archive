@@ -8,8 +8,8 @@
   import { loadScript } from '@paypal/paypal-js';
   import { buildUrl } from 'osu-web.js';
   import { goto } from '$app/navigation';
-  import { form, paypal, error } from '$stores';
-  import { Form, Error, Sidebar } from '$components';
+  import { form, paypal, error, upload } from '$stores';
+  import { Form, Error, Sidebar, Upload } from '$components';
   import { onMount } from 'svelte';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
   import {
@@ -168,6 +168,11 @@
   {#if $form}
     <div class="fixed inset-0 z-20 h-screen w-screen bg-surface-backdrop-token">
       <Form />
+    </div>
+  {/if}
+  {#if $upload}
+    <div class="fixed inset-0 z-20 h-screen w-screen items-center justify-center flex bg-surface-backdrop-token">
+      <Upload />
     </div>
   {/if}
   {#if $error}

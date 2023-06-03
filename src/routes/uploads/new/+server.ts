@@ -1,6 +1,6 @@
 import { getCaller } from '$trpc/caller';
 import { error } from '@sveltejs/kit';
-import type { TRPCError } from '@trpc/server';
+import { TRPCError } from '@trpc/server';
 import type { RequestHandler } from './$types';
 
 export const POST = (async (event) => {
@@ -12,11 +12,16 @@ export const POST = (async (event) => {
     let procedure = (caller.uploads.upload as Record<string, (input: unknown) => Promise<void>>)[
       procedureName
     ];
+
     await procedure({
       ...(typeof input === 'object' ? input : {}),
       file
     });
   } catch (err) {
+    if (err instanceof TRPCError && err.code === 'PAYLOAD_TOO_LARGE') {
+      return new Response(err.message);
+    }
+
     throw error(500, err as TRPCError);
   }
 

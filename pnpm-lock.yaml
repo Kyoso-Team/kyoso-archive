@@ -5,7 +5,7 @@ specifiers:
   '@paypal/checkout-server-sdk': ^1.0.3
   '@paypal/paypal-js': ^5.1.6
   '@prisma/client': ^4.14.0
-  '@skeletonlabs/skeleton': ^1.5.1
+  '@skeletonlabs/skeleton': ^1.6.2
   '@sveltejs/adapter-node': ^1.2.3
   '@sveltejs/kit': ^1.16.3
   '@tailwindcss/forms': ^0.5.3
@@ -67,7 +67,7 @@ dependencies:
 
 devDependencies:
   '@prisma/client': 4.14.0_prisma@4.14.0
-  '@skeletonlabs/skeleton': 1.5.1
+  '@skeletonlabs/skeleton': 1.6.2
   '@sveltejs/adapter-node': 1.2.3_@sveltejs+kit@1.16.3
   '@sveltejs/kit': 1.16.3_svelte@3.57.0+vite@4.2.1
   '@tailwindcss/forms': 0.5.3_tailwindcss@3.2.7
@@ -479,11 +479,11 @@ packages:
       picomatch: 2.3.1
       rollup: 3.20.2
 
-  /@skeletonlabs/skeleton/1.5.1:
-    resolution: {integrity: sha512-b5D6vyUgE69XRbe9D3ImqJZHIRzEKwIa4HQik6LckjzgrfgUmTSeZXRdZeCuEVNI+6hdDcgTx4Brg9/8phcEeg==}
+  /@skeletonlabs/skeleton/1.6.2:
+    resolution: {integrity: sha512-Xp+gCAgxEfzwa6lUzeFHhIiTzPe7wKAWZJzo0UnNJfgMCuJy4Txu2bDXz6ZCyu9+B6+i8lShFPxPuENqTfP14w==}
     dependencies:
       esm-env: 1.0.0
-      svelte: 3.59.1
+      svelte: 3.58.0
     dev: true
 
   /@sveltejs/adapter-node/1.2.3_@sveltejs+kit@1.16.3:
@@ -2472,8 +2472,8 @@ packages:
     resolution: {integrity: sha512-WMXEvF+RtAaclw0t3bPDTUe19pplMlfyKDsixbHQYgCWi9+O9VN0kXU1OppzrB9gPAvz4NALuoca2LfW2bOjTQ==}
     engines: {node: '>= 8'}
 
-  /svelte/3.59.1:
-    resolution: {integrity: sha512-pKj8fEBmqf6mq3/NfrB9SLtcJcUvjYSWyePlfCqN9gujLB25RitWK8PvFzlwim6hD/We35KbPlRteuA6rnPGcQ==}
+  /svelte/3.58.0:
+    resolution: {integrity: sha512-brIBNNB76mXFmU/Kerm4wFnkskBbluBDCjx/8TcpYRb298Yh2dztS2kQ6bhtjMcvUhd5ynClfwpz5h2gnzdQ1A==}
     engines: {node: '>= 8'}
     dev: true
 

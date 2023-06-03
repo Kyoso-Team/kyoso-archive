@@ -1,4 +1,5 @@
 import sharp from 'sharp';
+import prisma from '$prisma';
 import env from '$lib/env/server';
 import { t, tryCatch } from '$trpc';
 import { z } from 'zod';
@@ -18,16 +19,23 @@ async function upload(folderName: string, fileName: string, file: File) {
   let splitName = file.name.split('.');
   let extension = splitName[splitName.length - 1];
 
-  await tryCatch(async () => {
-    await fetch(`${env.STORAGE_ENDPOINT}/${folderName}/${fileName}.${extension}`, {
-      method: 'PUT',
-      headers: {
-        'AccessKey': env.STORAGE_PASSWORD,
-        'content-type': 'application/octet-stream'
-      },
-      body: file
-    });
-  }, "Couldn't upload file to this endpoint.");
+  await fetch(`${env.STORAGE_ENDPOINT}/${folderName}/${fileName}.${extension}`, {
+    method: 'PUT',
+    headers: {
+      'AccessKey': env.STORAGE_PASSWORD,
+      'content-type': 'application/octet-stream'
+    },
+    body: file
+  });
+}
+
+async function destroy(folderName: string, fileName: string) {
+  await fetch(`${env.STORAGE_ENDPOINT}/${folderName}/${fileName}`, {
+    method: 'DELETE',
+    headers: {
+      'AccessKey': env.STORAGE_PASSWORD
+    }
+  });
 }
 
 function validateFile(
@@ -42,7 +50,7 @@ function validateFile(
       code: 'PAYLOAD_TOO_LARGE',
       message: `File is too big. Limit for this endpoint is of ${new Intl.NumberFormat(
         'us-US'
-      ).format(file.size)} bytes.`
+      ).format(validations.maxSize)} bytes.`
     });
   }
 
@@ -158,8 +166,139 @@ export const uploadRouter = t.router({
           .toBuffer();
         let thumbImg = bufferToFile(thumbImgBuffer, 'thumb.jpeg');
 
-        await upload('tournament-banners', `${fileName}-full`, fullImg);
-        await upload('tournament-banners', `${fileName}-thumb`, thumbImg);
+        await tryCatch(
+          async () => {
+            await upload('tournament-banners', `${fileName}-full`, fullImg);
+            await upload('tournament-banners', `${fileName}-thumb`, thumbImg);
+
+            await prisma.tournament.update({
+              where: {
+                id: tournamentId
+              },
+              data: {
+                hasBanner: true
+              }
+            });
+          },
+          `Can't upload banner for tournament with ID ${tournamentId}.`
+        );
+      }),
+    tournamentLogo: t.procedure
+      .use(getUser)
+      .use(getUserAsStaff)
+      .input(
+        withTournamentSchema.extend({
+          file: fileSchema
+        })
+      )
+      .mutation(async ({ ctx, input: { tournamentId, file } }) => {
+        isAllowed(
+          ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+          `upload the logo for tournament of ID ${tournamentId}`
+        );
+
+        validateFile(file, {
+          maxSize: byteUnit.mb(25),
+          types: ['gif', 'jpeg', 'jpg', 'png', 'png', 'webp']
+        });
+
+        let buffer = await file.arrayBuffer();
+        let fileName = format.digits(tournamentId, 5);
+
+        let fullImgBuffer = await sharp(buffer)
+          .resize({
+            width: 800,
+            height: 800
+          })
+          .jpeg({
+            quality: 100
+          })
+          .toBuffer();
+        let fullImg = bufferToFile(fullImgBuffer, 'full.jpeg');
+
+        let thumbImgBuffer = await sharp(buffer)
+          .resize({
+            width: 250,
+            height: 250
+          })
+          .jpeg({
+            quality: 100
+          })
+          .toBuffer();
+        let thumbImg = bufferToFile(thumbImgBuffer, 'icon.jpeg');
+
+        await tryCatch(
+          async () => {
+            await upload('tournament-logos', `${fileName}-full`, fullImg);
+            await upload('tournament-logos', `${fileName}-icon`, thumbImg);
+
+            await prisma.tournament.update({
+              where: {
+                id: tournamentId
+              },
+              data: {
+                hasLogo: true
+              }
+            });
+          },
+          `Can't upload logo for tournament with ID ${tournamentId}.`
+        );
+      })
+  }),
+  delete: t.router({
+    tournamentBanner: t.procedure
+      .use(getUser)
+      .use(getUserAsStaff)
+      .input(withTournamentSchema)
+      .mutation(async ({ ctx, input: { tournamentId } }) => {
+        isAllowed(
+          ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+          `delete the banner for tournament of ID ${tournamentId}`
+        );
+
+        await tryCatch(
+          async () => {
+            await destroy('tournament-banners', `${format.digits(tournamentId, 5)}-full.jpeg`);
+            await destroy('tournament-banners', `${format.digits(tournamentId, 5)}-thumb.jpeg`);
+
+            await prisma.tournament.update({
+              where: {
+                id: tournamentId
+              },
+              data: {
+                hasBanner: false
+              }
+            });
+          },
+          `Can't delete banner for tournament with ID ${tournamentId}.`
+        );
+      }),
+    tournamentLogo: t.procedure
+      .use(getUser)
+      .use(getUserAsStaff)
+      .input(withTournamentSchema)
+      .mutation(async ({ ctx, input: { tournamentId } }) => {
+        isAllowed(
+          ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+          `delete the logo for tournament of ID ${tournamentId}`
+        );
+
+        await tryCatch(
+          async () => {
+            await destroy('tournament-logos', `${format.digits(tournamentId, 5)}-full.jpeg`);
+            await destroy('tournament-logos', `${format.digits(tournamentId, 5)}-icon.jpeg`);
+
+            await prisma.tournament.update({
+              where: {
+                id: tournamentId
+              },
+              data: {
+                hasLogo: false
+              }
+            });
+          },
+          `Can't delete logo for tournament with ID ${tournamentId}.`
+        );
       })
   })
 });

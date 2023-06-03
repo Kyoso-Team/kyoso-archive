@@ -51,7 +51,7 @@ function getData(
     osuRefreshToken: osuToken.refresh_token,
     discordAccesstoken: discordToken.access_token,
     discordRefreshToken: discordToken.refresh_token,
-    discordDiscriminator: Number(discordProfile.discriminator),
+    discordDiscriminator: discordProfile.discriminator,
     discordUserId: discordProfile.id,
     discordUsername: discordProfile.username,
     osuUserId: osuProfile.id,
@@ -101,7 +101,7 @@ function getStoredUser<
     osuUserId: number;
     osuUsername: string;
     discordUsername: string;
-    discordDiscriminator: number;
+    discordDiscriminator: string;
     isAdmin: boolean;
     updatedAt: Date;
   }
@@ -232,7 +232,7 @@ export const authRouter = t.router({
         discordRefreshToken: discordToken.refresh_token,
         discordUserId: discordProfile.id,
         discordUsername: discordProfile.username,
-        discordDiscriminator: Number(discordProfile.discriminator)
+        discordDiscriminator: discordProfile.discriminator
       }
     });
 

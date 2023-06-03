@@ -2,6 +2,7 @@ import { modalStore } from '@skeletonlabs/skeleton';
 import type { StaffPermission } from '@prisma/client';
 import type { PopupSettings } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
+import type { PageStore } from '$types';
 
 export const format = {
   rank: (n: number) => `#${new Intl.NumberFormat('us-US').format(n)}`,
@@ -175,4 +176,8 @@ export function hasPerms(
   return Array.isArray(necessaryPermissions)
     ? userPermissions.some((userPerm) => necessaryPermissions.includes(userPerm))
     : userPermissions.some((userPerm) => necessaryPermissions === userPerm);
+}
+
+export function getFileUrl(page: PageStore, path: string) {
+  return `${page.url.origin}/uploads/${path}`;
 }
