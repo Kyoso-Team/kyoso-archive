@@ -1,3 +1,4 @@
+<!-- NEEDS UPDATE -->
 <script lang="ts">
   import { sidebar } from '$stores';
   import { AppRail, AppRailTile } from '@skeletonlabs/skeleton';

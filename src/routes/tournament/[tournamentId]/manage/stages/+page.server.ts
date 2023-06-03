@@ -1,45 +1,44 @@
 import prisma from '$prisma';
+import { hasPerms } from '$lib/utils';
+import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ parent }) => {
   let data = await parent();
 
-  let { stages } = await prisma.tournament.findUniqueOrThrow({
+  if (!hasPerms(data.staffMember, ['Host', 'MutateTournament'])) {
+    throw error(401, `You lack the necessary permissions to manage the stages for tournament of ID ${data.tournament.id}.`);
+  }
+
+  let stages = await prisma.stage.findMany({
     where: {
       id: data.tournament.id
     },
     select: {
-      stages: {
+      id: true,
+      format: true,
+      isMainStage: true,
+      order: true,
+      rounds: {
         select: {
           id: true,
-          format: true,
-          isMainStage: true,
+          name: true,
           order: true,
-          rounds: {
+          standardRound: {
             select: {
-              id: true,
-              name: true,
-              order: true,
-              standardRound: {
-                select: {
-                  bestOf: true,
-                  banCount: true
-                }
-              },
-              battleRoyaleRound: {
-                select: {
-                  playersEliminatedPerMap: true
-                }
-              },
-              qualifierRound: {
-                select: {
-                  runCount: true,
-                  summarizeRunsAs: true
-                }
-              }
-            },
-            orderBy: {
-              order: 'asc'
+              bestOf: true,
+              banCount: true
+            }
+          },
+          battleRoyaleRound: {
+            select: {
+              playersEliminatedPerMap: true
+            }
+          },
+          qualifierRound: {
+            select: {
+              runCount: true,
+              summarizeRunsAs: true
             }
           }
         },
@@ -47,11 +46,14 @@ export const load = (async ({ parent }) => {
           order: 'asc'
         }
       }
+    },
+    orderBy: {
+      order: 'asc'
     }
-  });
+  })
 
   return {
+    stages,
     id: data.tournament.id,
-    stages
   };
 }) satisfies PageServerLoad;

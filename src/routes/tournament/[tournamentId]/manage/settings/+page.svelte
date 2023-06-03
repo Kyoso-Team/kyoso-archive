@@ -134,6 +134,13 @@
       disabled={isOpenRank}
       bind:value={upperRankRange}
     />
+    {#if data.type !== 'Solo'}
+      <Setting
+        label="Let teams upload banners?"
+        type="boolean"
+        bind:value={currentObj.useTeamBanners}
+      />
+    {/if}
     <Setting label="Use BWS formula?" type="boolean" final bind:value={currentObj.useBWS} />
   </Settings>
 </div>
