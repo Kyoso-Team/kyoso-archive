@@ -12,7 +12,7 @@ export const load = (async ({ parent }) => {
 
   let stages = await prisma.stage.findMany({
     where: {
-      id: data.tournament.id
+      tournamentId: data.tournament.id
     },
     select: {
       id: true,
@@ -50,10 +50,10 @@ export const load = (async ({ parent }) => {
     orderBy: {
       order: 'asc'
     }
-  })
+  });
 
   return {
     stages,
-    id: data.tournament.id,
+    id: data.tournament.id
   };
 }) satisfies PageServerLoad;

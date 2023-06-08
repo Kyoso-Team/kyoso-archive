@@ -32,9 +32,13 @@ export type AssignFieldType<
   ? Str
   : T[K] extends string | undefined
   ? Str
+  : T[K] extends string[]
+  ? Str
   : T[K] extends number
   ? Num
   : T[K] extends number | undefined
+  ? Num
+  : T[K] extends number[]
   ? Num
   : T[K] extends boolean
   ? Bool
@@ -45,6 +49,7 @@ export type AssignFieldType<
   : Default;
 
 export type PageStore = Page<Record<string, string>, string | null>;
+export type ParseInt<T> = T extends `${infer N extends number}` ? N : never;
 
 export interface SessionUser {
   id: number;
@@ -63,8 +68,13 @@ export interface Field {
   validation?: ZodString | ZodNumber | ZodBoolean | ZodDate;
   disableIf?: (currentValue: Record<string, unknown>) => boolean;
   multipleValues?: boolean;
-  values: string[] | number[];
-  selectMultiple?: boolean;
+  values: {
+    value: string | number;
+    label: string;
+  }[];
+  selectMultiple?: boolean | {
+    atLeast: number;
+  };
   onSearch?: () => Promise<Record<string, unknown>>;
   mapResult?: MapResult;
   errorCount: number;

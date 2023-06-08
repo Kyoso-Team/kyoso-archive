@@ -7,17 +7,22 @@ export const load = (async ({ parent }) => {
   let data = await parent();
 
   if (!hasPerms(data.staffMember, ['Host', 'MutateTournament'])) {
-    throw error(401, `You lack the necessary permissions to manage mod multipliers for tournament of ID ${data.tournament.id}.`);
+    throw error(401, `You lack the necessary permissions to manage the mod multipliers for tournament of ID ${data.tournament.id}.`);
   }
 
   let modMultipliers = await prisma.modMultiplier.findMany({
     where: {
-      id: data.tournament.id
+      tournamentId: data.tournament.id
+    },
+    select: {
+      id: true,
+      mods: true,
+      value: true
     }
   });
 
   return {
     modMultipliers,
-    id: data.tournament.id,
+    id: data.tournament.id
   };
 }) satisfies PageServerLoad;

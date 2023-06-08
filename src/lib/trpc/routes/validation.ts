@@ -1,6 +1,7 @@
 import prisma from '$prisma';
 import { t, tryCatch } from '$trpc';
 import { z } from 'zod';
+import { withTournamentSchema, modSchema } from '$lib/schemas';
 
 export const validationRouter = t.router({
   isTournamentNameUnique: t.procedure.input(z.string()).query(async ({ input }) => {
@@ -19,9 +20,8 @@ export const validationRouter = t.router({
   }),
   isRoundNameUniqueInTournament: t.procedure
     .input(
-      z.object({
+      withTournamentSchema.extend({
         name: z.string(),
-        tournamentId: z.number().int(),
         roundId: z.number().int().optional()
       })
     )
@@ -40,6 +40,30 @@ export const validationRouter = t.router({
         });
       }, "Can't get round to validate name uniqueness.");
 
-      return !round || (roundId && round.id === roundId);
+      return !round || (!!roundId && round.id === roundId);
+    }),
+  areModsUniqueInTournament: t.procedure
+  .input(
+    withTournamentSchema.extend({
+      mods: z.array(modSchema),
+      multiplierId: z.number().int().optional()
     })
+  )
+  .query(async ({ input: { tournamentId, mods, multiplierId } }) => {
+    let multiplier = await tryCatch(async () => {
+      return await prisma.modMultiplier.findUnique({
+        where: {
+          tournamentId_mods: {
+            mods,
+            tournamentId
+          }
+        },
+        select: {
+          id: true
+        }
+      });
+    }, "Can't get mod multiplier to validate mods uniqueness.");
+
+    return !multiplier || (!!multiplierId && multiplier.id === multiplierId);
+  })
 });

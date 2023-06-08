@@ -14,6 +14,7 @@ import MoveDownIcon from './MoveDown.svelte';
 import CloseIcon from './Close.svelte';
 import LoadingIcon from './Loading.svelte';
 import CheckIcon from './Check.svelte';
+import EditIcon from './Edit.svelte';
 
 export {
   SettingsIcon,
@@ -31,5 +32,6 @@ export {
   MoveDownIcon,
   CloseIcon,
   LoadingIcon,
-  CheckIcon
+  CheckIcon,
+  EditIcon
 };

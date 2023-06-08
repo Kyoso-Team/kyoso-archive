@@ -6,17 +6,9 @@
   import { invalidateAll } from '$app/navigation';
   import { modal } from '$lib/utils';
   import { MoveUpIcon, MoveDownIcon } from '$components';
-  import type { StageFormat } from '@prisma/client';
+  import type { StageFormat, QualifierRunsSummary } from '@prisma/client';
   import type { PageServerData } from './$types';
 
-  type Format =
-    | 'Groups'
-    | 'Swiss'
-    | 'Qualifiers'
-    | 'Single Elimination'
-    | 'Double Elimination'
-    | 'Battle Royale';
-  type RunsSummary = 'Sum of scores' | 'Average of scores' | 'Best score between runs';
   type BattleRoyaleDefault = {
     name: string;
     playersEliminatedPerMap: number;
@@ -24,7 +16,7 @@
   type QualifierDefault = {
     name: string;
     runCount: number;
-    summarizeRunsAs?: RunsSummary | 'Best' | 'Average' | 'Sum';
+    summarizeRunsAs?: QualifierRunsSummary;
   };
   type StandardDefault = {
     name: string;
@@ -37,16 +29,6 @@
   onMount(() => {
     sidebar.setSelected('Settings', 'Settings', 'Stages');
   });
-
-  function mapFormat(format: Format): StageFormat {
-    return format === 'Double Elimination'
-      ? 'DoubleElim'
-      : format === 'Single Elimination'
-      ? 'SingleElim'
-      : format === 'Battle Royale'
-      ? 'BattleRoyale'
-      : format;
-  }
 
   function mapReadableFormat(format: StageFormat) {
     switch (format) {
@@ -65,25 +47,25 @@
 
   function onCreateStage() {
     form.create<{
-      format: Format;
+      format: StageFormat;
     }>({
       title: 'Create Stage',
-      fields: ({ field }) => [
+      fields: ({ field, select }) => [
         field('Format', 'format', 'string', {
           fromValues: {
-            values: (): Format[] => {
-              let formats: Format[] = [
-                'Groups',
-                'Qualifiers',
-                'Swiss',
-                'Single Elimination',
-                'Double Elimination',
-                'Battle Royale'
+            values: () => {
+              let value = select<StageFormat>();
+              let formats = [
+                value('Groups'),
+                value('Qualifiers'),
+                value('Swiss'),
+                value('SingleElim', 'Single Elimination'),
+                value('DoubleElim', 'Double Elimination'),
+                value('BattleRoyale', 'Battle Royale')
               ];
 
               return formats.filter((format) => {
-                let format1: StageFormat = mapFormat(format);
-                return !data.stages.some(({ format }) => format1 === format);
+                return !data.stages.some((stage) => format.value === stage.format);
               });
             }
           }
@@ -94,7 +76,7 @@
           await trpc($page).stages.createStage.mutate({
             tournamentId: data.id,
             data: {
-              format: mapFormat(format)
+              format
             }
           });
 
@@ -273,19 +255,9 @@
     roundId?: number
   ) {
     form.create<QualifierDefault>({
-      defaultValue: defaultValue
-        ? {
-            ...defaultValue,
-            summarizeRunsAs:
-              defaultValue.summarizeRunsAs === 'Average'
-                ? 'Average of scores'
-                : defaultValue.summarizeRunsAs === 'Best'
-                ? 'Best score between runs'
-                : 'Sum of scores'
-          }
-        : undefined,
+      defaultValue,
       title: `${operation[0].toUpperCase()}${operation.substring(1)} Round`,
-      fields: ({ field }) => [
+      fields: ({ field, select }) => [
         field('Name', 'name', 'string', {
           validation: (z) => z.max(20)
         }),
@@ -295,11 +267,16 @@
         field('Summarize runs by', 'summarizeRunsAs', 'string', {
           optional: true,
           fromValues: {
-            values: (): RunsSummary[] => [
-              'Average of scores',
-              'Sum of scores',
-              'Best score between runs'
-            ]
+            values: () => {
+              let value = select<QualifierRunsSummary>();
+              let runs = [
+                value('Average', 'Average of scores'),
+                value('Sum', 'Sum of scores'),
+                value('Best', 'Best score between runs')
+              ];
+
+              return runs;
+            }
           },
           disableIf: ({ runCount }) => !runCount || runCount <= 1
         })
@@ -326,18 +303,11 @@
             return;
           }
 
-          let summary = round.summarizeRunsAs;
           let input = {
             tournamentId: data.id,
             data: {
               ...round,
-              stageId,
-              summarizeRunsAs:
-                summary === 'Best score between runs'
-                  ? 'Best'
-                  : summary === 'Sum of scores'
-                  ? 'Sum'
-                  : ('Average' as 'Best' | 'Sum' | 'Average')
+              stageId
             }
           };
 
@@ -345,7 +315,7 @@
             await trpc($page).rounds.createQualifierRound.mutate(input);
           } else {
             if (!roundId) {
-              throw new Error('"roundId" in update operation is undefined');
+              throw new Error('"roundId" in update operation is undefined.');
             }
 
             await trpc($page).rounds.updateQualifierRound.mutate({

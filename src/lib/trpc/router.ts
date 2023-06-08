@@ -5,7 +5,8 @@ import {
   validationRouter,
   usersRouter,
   stagesRouter,
-  roundsRouter
+  roundsRouter,
+  modMultipliersRouter
 } from './routes';
 import { t } from '$trpc';
 
@@ -16,7 +17,8 @@ export const router = t.router({
   validation: validationRouter,
   users: usersRouter,
   stages: stagesRouter,
-  rounds: roundsRouter
+  rounds: roundsRouter,
+  modMultipliers: modMultipliersRouter
 });
 
 export type Router = typeof router;

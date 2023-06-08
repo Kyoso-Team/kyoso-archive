@@ -184,13 +184,11 @@ model Prize {
   medal            Boolean // Physical medal
   badge            Boolean
   banner           Boolean
-  cash             Float      @default(0)
-  cashMetric       CashMetric @default(Fixed)
-  cashCurrency     String     @default("USD") @db.Char(3)
   items            String[]   @db.VarChar(25)
-  osuSupporter     Int?       @db.SmallInt // In months
+  osuSupporter     Int       @db.SmallInt @default(0) // In months
   tournament       Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId     Int
+  cash             CashPrize?
   awardedToPlayers Player[]
   awardedToTeams   Team[]
 }
@@ -198,6 +196,14 @@ model Prize {
 enum PrizeType {
   Tournament
   Pickems
+}
+
+model CashPrize {
+  value     Float
+  metric    CashMetric
+  currency  String     @db.Char(3)
+  inPrize   Prize      @relation(fields: [inPrizeId], references: [id], onDelete: Cascade)
+  inPrizeId Int        @id @unique
 }
 
 enum CashMetric {
@@ -513,6 +519,8 @@ model Modpool {
   id            Int            @id @default(autoincrement())
   category      String         @db.VarChar(3) // "NM", "HD", "TB", etc.
   mods          Mod[]
+  isFreeMod     Boolean        @default(false)
+  isTieBreaker  Boolean        @default(false)
   order         Int            @db.SmallInt // The order in which the modpools should be presented. Example: NM (1) should go before HD (2)
   mapCount      Int            @db.SmallInt
   round         Round          @relation(fields: [roundId], references: [id], onDelete: Cascade)

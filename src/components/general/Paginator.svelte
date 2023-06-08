@@ -4,10 +4,10 @@
   const dispatcher = createEventDispatcher<{
     change: number;
   }>();
-  let arrowStyles = 'btn btn-sm variant-filled-primary';
   export let page = 1;
   export let elementsPerPage = 30;
   export let count: number;
+  let arrowStyles = 'btn btn-sm variant-filled-primary';
   let first = 0;
   let last = 0;
 
