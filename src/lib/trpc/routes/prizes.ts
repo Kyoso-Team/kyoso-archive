@@ -15,13 +15,13 @@ const prizeMutationSchema = z.object({
   banner: z.boolean().default(false),
   cash: z
     .object({
-      amount: z.number(),
+      value: z.number(),
       metric: z.union([z.literal('Fixed'), z.literal('Percent')]).default('Fixed'),
       currency: z.string().length(3)
     })
     .optional(),
   items: z.array(z.string().max(25)).default([]),
-  osuSupporter: z.number().int().nullish()
+  osuSupporter: z.number().int().default(0)
 });
 
 export const prizesRouter = t.router({
@@ -55,9 +55,13 @@ export const prizesRouter = t.router({
             items,
             osuSupporter,
             tournamentId,
-            cash: cash?.amount,
-            cashMetric: cash?.metric,
-            cashCurrency: cash?.currency
+            cash: (cash) ? {
+              create: {
+                currency: cash.currency,
+                metric: cash.metric,
+                value: cash.value
+              }
+            } : undefined
           }
         });
       }, "Can't create prize.");
@@ -95,9 +99,13 @@ export const prizesRouter = t.router({
             items,
             osuSupporter,
             tournamentId,
-            cash: cash?.amount,
-            cashMetric: cash?.metric,
-            cashCurrency: cash?.currency
+            cash: {
+              update: {
+                currency: cash?.currency,
+                metric: cash?.metric,
+                value: cash?.value
+              }
+            }
           }
         });
       }, `Can't update prize of ID ${where.id}.`);
