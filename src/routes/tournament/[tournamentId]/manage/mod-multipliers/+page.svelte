@@ -161,7 +161,7 @@
           {/if}
           <span>&#215;</span>
           <span>{multiplier.value.toString()}</span>
-          <Dropdown name={`manage-multiplier-${multiplier.id}`} styles="absolute -top-[2px] right-2 px-2">
+          <Dropdown name={`manage-multiplier-${multiplier.id}`} styles="absolute -top-[2px] right-2">
             <button class="btn btn-sm variant-filled" on:click={() => onUpdateMultiplier(multiplier)}>Update</button>
             <button class="btn btn-sm variant-filled-error" on:click={() => onDeleteMultiplier(multiplier)}>Delete</button>
           </Dropdown>

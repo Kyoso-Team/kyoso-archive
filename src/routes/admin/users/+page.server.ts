@@ -27,6 +27,12 @@ export const load = (async ({ parent, url }) => {
       },
       {
         discordUsername: containsSearch
+      },
+      {
+        osuUserId: (!isNaN(search as unknown as number)) ? Number(search) : undefined
+      },
+      {
+        discordUserId: search
       }
     ]
   };

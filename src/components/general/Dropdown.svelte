@@ -13,7 +13,7 @@
   };
 </script>
 
-<button class={`mt-2 block mx-auto btn btn-sm variant-filled ${styles}`.trim()} use:popup={menuPopup}>
+<button class={`mt-2 block mx-auto btn btn-sm variant-filled px-2 ${styles}`.trim()} use:popup={menuPopup}>
   <slot name="btn">
     <EditIcon w={15} h={15} styles="fill-black" />
   </slot>
