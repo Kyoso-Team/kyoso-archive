@@ -1,4 +1,3 @@
-<!-- NEEDS UPDATE -->
 <script lang="ts">
   import { sidebar } from '$stores';
   import { AppRail, AppRailTile } from '@skeletonlabs/skeleton';
@@ -11,9 +10,13 @@
     StatsIcon
   } from '$components';
 
-  let group: number | undefined;
-  let currentTile: number = 0;
-  let selectedSection = sidebar.selectedSection;
+  let currentTile = '';
+
+  $: {
+    if (currentTile === '') {
+      currentTile = Array.from($sidebar?.sections.entries() || [])?.[0]?.[0] || '';
+    }
+  }
 </script>
 
 {#if $sidebar}
@@ -43,8 +46,8 @@
     <nav
       class="flex h-full w-64 flex-col gap-y-6 border-l border-r border-surface-500/50 p-4 bg-surface-50-900-token"
     >
-      {#if $selectedSection}
-        {#each Array.from($sidebar.sections.get($selectedSection)?.subsections || []) as [subsectionLabel, links], i}
+      {#if currentTile}
+        {#each Array.from($sidebar.sections.get(currentTile)?.subsections || []) as [subsectionLabel, links], i}
           <div class="flex flex-col gap-y-1">
             <span class="block px-4 pb-2 font-bold text-primary-500"
               >{subsectionLabel.toUpperCase()}</span
@@ -53,7 +56,7 @@
               <a href={path} class="!no-underline">
                 <span
                   class={`block rounded-full px-4 py-2 ${
-                    $sidebar.selectedLink?.inSection === $selectedSection &&
+                    $sidebar.selectedLink?.inSection === currentTile &&
                     $sidebar.selectedLink?.inSubsection === subsectionLabel &&
                     $sidebar.selectedLink?.label === label
                       ? 'variant-filled-primary'
@@ -62,7 +65,7 @@
                 >
               </a>
             {/each}
-            {#if i !== Array.from($sidebar.sections.get($selectedSection)?.subsections || []).length - 1}
+            {#if i !== Array.from($sidebar.sections.get(currentTile)?.subsections || []).length - 1}
               <div class="mt-4 border-t border-surface-500/50" />
             {/if}
           </div>

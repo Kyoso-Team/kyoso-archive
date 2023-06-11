@@ -12,45 +12,47 @@
   if (hasPerms(data.staffMember, ['Host', 'MutateTournament'])) {
     let settings = sidebar.setSection('Settings', 'settings');
 
+    let settingsPath = `${basePath}settings/`;
     settings.setSubsection('Settings', [
       {
         label: 'General',
-        path: `${basePath}settings`
+        path: `${settingsPath}general`
       },
       {
         label: 'Dates',
-        path: `${basePath}dates`
+        path: `${settingsPath}dates`
       },
       {
         label: 'Links',
-        path: `${basePath}links`
+        path: `${settingsPath}links`
       },
       {
         label: 'Stages',
-        path: `${basePath}stages`
+        path: `${settingsPath}stages`
       },
       {
         label: 'Prizes',
-        path: `${basePath}prizes`
+        path: `${settingsPath}prizes`
       },
       {
         label: 'Graphics',
-        path: `${basePath}graphics`
+        path: `${settingsPath}graphics`
       }
     ]);
 
+    let refSettingsPath = `${basePath}referee-settings/`;
     settings.setSubsection('Referee', [
       {
         label: 'General',
-        path: `${basePath}referee-settings`
+        path: `${refSettingsPath}general`
       },
       {
         label: 'Mod Multipliers',
-        path: `${basePath}mod-multipliers`
+        path: `${refSettingsPath}mod-multipliers`
       },
       {
         label: 'Rules',
-        path: `${basePath}rules`
+        path: `${refSettingsPath}rules`
       }
     ]);
   }
@@ -59,14 +61,19 @@
     let regs = sidebar.setSection('Regs.', 'regs');
 
     if (hasPerms(data.staffMember, ['Host', 'ViewStaffMembers'])) {
+      let staffPath = `${basePath}staff/`;
       regs.setSubsection('Staff', [
         {
-          label: 'Staff Team',
-          path: `${basePath}staff-team`
+          label: 'Team',
+          path: `${staffPath}team`
         },
         {
-          label: 'Staff Apps.',
-          path: `${basePath}staff-applications`
+          label: 'Roles',
+          path: `${staffPath}roles`
+        },
+        {
+          label: 'Applications',
+          path: `${staffPath}staff-applications`
         }
       ]);
     }
