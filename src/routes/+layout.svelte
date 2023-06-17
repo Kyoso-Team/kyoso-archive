@@ -8,11 +8,22 @@
   import { loadScript } from '@paypal/paypal-js';
   import { buildUrl } from 'osu-web.js';
   import { goto } from '$app/navigation';
-  import { form, paypal, error } from '$stores';
-  import { Form, Error, Sidebar } from '$components';
+  import { form, paypal, error, upload } from '$stores';
+  import { Form, Error, Sidebar, Upload } from '$components';
   import { onMount } from 'svelte';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-  import { setInitialClassState, AppShell, AppBar, Avatar, storeHighlightJs, storePopup, Modal, popup, Toast } from '@skeletonlabs/skeleton';
+  import {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setInitialClassState,
+    AppShell,
+    AppBar,
+    Avatar,
+    storeHighlightJs,
+    storePopup,
+    Modal,
+    popup,
+    Toast
+  } from '@skeletonlabs/skeleton';
   import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
 
@@ -55,7 +66,7 @@
   const navbarPopup: PopupSettings = {
     event: 'click',
     placement: 'bottom',
-    target: "",
+    target: '',
     middleware: {
       offset: 24
     }
@@ -93,7 +104,10 @@
       <svelte:fragment slot="lead">
         <nav class="flex gap-2">
           {#if data.user && data.user.isAdmin}
-            <button class="btn hover:variant-soft-primary" use:popup={{...navbarPopup, target: "adminPopup"}}>Admin</button>
+            <button
+              class="btn hover:variant-soft-primary"
+              use:popup={{ ...navbarPopup, target: 'adminPopup' }}>Admin</button
+            >
             <div class="card absolute top-[5rem] left-4 w-52 py-2" data-popup="adminPopup">
               <nav class="flex flex-col gap-1 px-2">
                 {#each adminNavLinks as { href, label }}
@@ -113,7 +127,7 @@
       <svelte:fragment slot="trail">
         <div>
           {#if data.user}
-            <div use:popup={{...navbarPopup, target: "avatarPopup"}}>
+            <div use:popup={{ ...navbarPopup, target: 'avatarPopup' }}>
               <Avatar
                 src={buildUrl.userAvatar(data.user.osuUserId)}
                 width="w-10"
@@ -130,9 +144,8 @@
                   href={`/user/${data.user.id}`}
                   class="btn justify-start py-1 hover:variant-soft-primary">Profile</a
                 >
-                <a
-                  href="/user/settings"
-                  class="btn justify-start py-1 hover:variant-soft-primary">Settings</a
+                <a href="/user/settings" class="btn justify-start py-1 hover:variant-soft-primary"
+                  >Settings</a
                 >
                 <button
                   on:click={onLogoutClick}
@@ -155,6 +168,11 @@
   {#if $form}
     <div class="fixed inset-0 z-20 h-screen w-screen bg-surface-backdrop-token">
       <Form />
+    </div>
+  {/if}
+  {#if $upload}
+    <div class="fixed inset-0 z-20 h-screen w-screen items-center justify-center flex bg-surface-backdrop-token">
+      <Upload />
     </div>
   {/if}
   {#if $error}

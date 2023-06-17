@@ -26,7 +26,11 @@ function createForm() {
     onClose
   }: {
     title: string;
-    fields: (createField: { field: typeof field; asyncField: typeof asyncField }) => Field[];
+    fields: (createField: {
+      field: typeof field;
+      asyncField: typeof asyncField
+      select: typeof select;
+    }) => Field[];
     onSubmit: (value: T) => void | Promise<void>;
     onClose?: () => void | Promise<void>;
     defaultValue?: T;
@@ -54,8 +58,13 @@ function createForm() {
             disableIf?: (currentValue: Partial<T>) => boolean;
             optional?: boolean;
             fromValues?: {
-              values: () => I extends 'string' ? string[] : number[];
-              selectMultiple?: boolean;
+              values: () => {
+                value: string | number;
+                label: string;
+              }[];
+              selectMultiple?: boolean | {
+                atLeast: number;
+              };
             };
           }
         : undefined
@@ -113,6 +122,13 @@ function createForm() {
       };
     }
 
+    function select<V extends string | number>() {
+      return (value: V, label?: string) => ({
+        value,
+        label: label || value.toString()
+      });
+    }
+
     set({
       title,
       defaultValue,
@@ -122,7 +138,8 @@ function createForm() {
       onSubmit: onSubmit as (value: Record<string, unknown>) => void | Promise<void>,
       fields: fields({
         field,
-        asyncField
+        asyncField,
+        select
       })
     });
   }

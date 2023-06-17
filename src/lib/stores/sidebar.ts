@@ -3,21 +3,30 @@ import { writable } from 'svelte/store';
 type SectionIcon = 'settings' | 'pooling' | 'referee' | 'stats calc' | 'pickems' | 'regs';
 
 function createSidebar() {
-  const { subscribe, update, set } = writable<{
-    show: boolean;
-    selectedLink?: {
-      inSection: string;
-      inSubsection: string;
-      label: string;
-    };
-    sections: Map<string, {
-      icon: SectionIcon;
-      subsections: Map<string, {
-        label: string;
-        path: string;
-      }[]>;
-    }>;
-  } | undefined>();
+  const { subscribe, update, set } = writable<
+    | {
+        show: boolean;
+        selectedLink?: {
+          inSection: string;
+          inSubsection: string;
+          label: string;
+        };
+        sections: Map<
+          string,
+          {
+            icon: SectionIcon;
+            subsections: Map<
+              string,
+              {
+                label: string;
+                path: string;
+              }[]
+            >;
+          }
+        >;
+      }
+    | undefined
+  >();
   const selectedSection = writable<string | undefined>();
 
   function create() {
@@ -60,14 +69,17 @@ function createSidebar() {
 
       return Object.assign(sidebar);
     });
-  
-    function setSubsection(label: string, links: {
-      label: string;
-      path: string;
-    }[]) {
+
+    function setSubsection(
+      label: string,
+      links: {
+        label: string;
+        path: string;
+      }[]
+    ) {
       update((sidebar) => {
         if (!sidebar) return sidebar;
-  
+
         let section = sidebar.sections.get(sectionLabel);
         if (!section) return;
 

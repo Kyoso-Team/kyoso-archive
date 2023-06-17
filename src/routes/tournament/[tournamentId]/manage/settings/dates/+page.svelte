@@ -13,7 +13,9 @@
 
   let originalObj = { ...data } as NullPartial<PageServerData, true, 'banOrder'>;
   let currentObj = { ...originalObj };
-  let errors: Partial<Record<Exclude<keyof PageServerData, 'id' | 'goPublicOn' | 'concludesOn'>, string>> = {};
+  let errors: Partial<
+    Record<Exclude<keyof PageServerData, 'id' | 'goPublicOn' | 'concludesOn'>, string>
+  > = {};
 
   onMount(() => {
     sidebar.setSelected('Settings', 'Settings', 'Dates');
@@ -73,19 +75,9 @@
 
 <div class="center-content">
   <h1>Dates</h1>
-  <Settings
-    on:undo={onUndo}
-    on:update={onUpdate}
-    {currentObj}
-    {originalObj}
-    {errors}
-  >
+  <Settings on:undo={onUndo} on:update={onUpdate} {currentObj} {originalObj} {errors}>
     <Setting label="Make information public on" type="date" bind:value={currentObj.goPublicOn} />
-    <Setting
-      label="Conclude tournament on"
-      type="date"
-      bind:value={currentObj.concludesOn}
-    />
+    <Setting label="Conclude tournament on" type="date" bind:value={currentObj.concludesOn} />
     <Setting
       label="Open player registrations on"
       type="date"

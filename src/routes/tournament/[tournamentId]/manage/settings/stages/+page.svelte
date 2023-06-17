@@ -6,11 +6,9 @@
   import { invalidateAll } from '$app/navigation';
   import { modal } from '$lib/utils';
   import { MoveUpIcon, MoveDownIcon } from '$components';
-  import type { StageFormat } from '@prisma/client';
+  import type { StageFormat, QualifierRunsSummary } from '@prisma/client';
   import type { PageServerData } from './$types';
 
-  type Format = 'Groups' | 'Swiss' | 'Qualifiers' | 'Single Elimination' | 'Double Elimination' | 'Battle Royale';
-  type RunsSummary = 'Sum of scores' | 'Average of scores' | 'Best score between runs';
   type BattleRoyaleDefault = {
     name: string;
     playersEliminatedPerMap: number;
@@ -18,32 +16,22 @@
   type QualifierDefault = {
     name: string;
     runCount: number;
-    summarizeRunsAs?: RunsSummary | 'Best' | 'Average' | 'Sum';
+    summarizeRunsAs?: QualifierRunsSummary;
   };
   type StandardDefault = {
     name: string;
     bestOf: number;
     banCount: number;
   };
-  
+
   export let data: PageServerData;
 
   onMount(() => {
     sidebar.setSelected('Settings', 'Settings', 'Stages');
   });
 
-  function mapFormat(format: Format): StageFormat {
-    return format === 'Double Elimination'
-      ? 'DoubleElim'
-      : format === 'Single Elimination'
-        ? 'SingleElim'
-        : format === 'Battle Royale'
-          ? 'BattleRoyale'
-          : format;
-  }
-
   function mapReadableFormat(format: StageFormat) {
-    switch(format) {
+    switch (format) {
       case 'BattleRoyale':
         return 'Battle Royale';
       case 'DoubleElim':
@@ -59,18 +47,25 @@
 
   function onCreateStage() {
     form.create<{
-      format: Format;
+      format: StageFormat;
     }>({
       title: 'Create Stage',
-      fields: ({ field }) => [
+      fields: ({ field, select }) => [
         field('Format', 'format', 'string', {
           fromValues: {
-            values: (): Format[] => {
-              let formats: Format[] = ['Groups', 'Qualifiers', 'Swiss', 'Single Elimination', 'Double Elimination', 'Battle Royale'];
-              
+            values: () => {
+              let value = select<StageFormat>();
+              let formats = [
+                value('Groups'),
+                value('Qualifiers'),
+                value('Swiss'),
+                value('SingleElim', 'Single Elimination'),
+                value('DoubleElim', 'Double Elimination'),
+                value('BattleRoyale', 'Battle Royale')
+              ];
+
               return formats.filter((format) => {
-                let format1: StageFormat = mapFormat(format);
-                return !data.stages.some(({ format }) => format1 === format);
+                return !data.stages.some((stage) => format.value === stage.format);
               });
             }
           }
@@ -81,12 +76,12 @@
           await trpc($page).stages.createStage.mutate({
             tournamentId: data.id,
             data: {
-              format: mapFormat(format)
+              format
             }
           });
 
           await invalidateAll();
-        } catch(err) {
+        } catch (err) {
           console.error(err);
           error.set($error, err, 'close');
         }
@@ -102,13 +97,18 @@
       });
 
       await invalidateAll();
-    } catch(err) {
+    } catch (err) {
       console.error(err);
       error.set($error, err, 'close');
     }
   }
 
-  async function onMoveStageOrder(stage1Id: number, stage1Order: number, stage2Id: number, stage2Order: number) {
+  async function onMoveStageOrder(
+    stage1Id: number,
+    stage1Order: number,
+    stage2Id: number,
+    stage2Order: number
+  ) {
     try {
       await trpc($page).stages.swapOrder.mutate({
         tournamentId: data.id,
@@ -123,7 +123,7 @@
       });
 
       await invalidateAll();
-    } catch(err) {
+    } catch (err) {
       console.error(err);
       error.set($error, err, 'close');
     }
@@ -132,7 +132,9 @@
   function onDeleteStage(stageId: number, format: StageFormat) {
     modal.yesNo(
       'Confirm Stage Deletion',
-      `Are you sure you want to delete the ${mapReadableFormat(format).toLowerCase()} stage from this tournament? This will delete all of its created rounds and therefore, their mappools, schedules, statistics, etc.`,
+      `Are you sure you want to delete the ${mapReadableFormat(
+        format
+      ).toLowerCase()} stage from this tournament? This will delete all of its created rounds and therefore, their mappools, schedules, statistics, etc.`,
       async () => {
         try {
           await trpc($page).stages.deleteStage.mutate({
@@ -143,7 +145,7 @@
           });
 
           await invalidateAll();
-        } catch(err) {
+        } catch (err) {
           console.error(err);
           error.set($error, err, 'close');
         }
@@ -175,7 +177,12 @@
     }
   }
 
-  function mutateBattleRoyaleRound(stageId: number, operation: 'create' | 'update', defaultValue?: BattleRoyaleDefault, roundId?: number) {
+  function mutateBattleRoyaleRound(
+    stageId: number,
+    operation: 'create' | 'update',
+    defaultValue?: BattleRoyaleDefault,
+    roundId?: number
+  ) {
     form.create<BattleRoyaleDefault>({
       defaultValue,
       title: `${operation[0].toUpperCase()}${operation.substring(1)} Round`,
@@ -194,19 +201,25 @@
             tournamentId: data.id,
             roundId
           });
-  
+
           if (!isRoundNameUnique) {
-            error.set($error, `${round.name} already exists in this tournament.`, 'close', false, () => {
-              mutateBattleRoyaleRound(stageId, operation, round, roundId);
-            });
-  
+            error.set(
+              $error,
+              `${round.name} already exists in this tournament.`,
+              'close',
+              false,
+              () => {
+                mutateBattleRoyaleRound(stageId, operation, round, roundId);
+              }
+            );
+
             return;
           }
 
           let input = {
             tournamentId: data.id,
             data: {
-              ... round,
+              ...round,
               stageId
             }
           };
@@ -219,7 +232,7 @@
             }
 
             await trpc($page).rounds.updateBattleRoyaleRound.mutate({
-              ... input,
+              ...input,
               where: {
                 id: roundId
               }
@@ -227,7 +240,7 @@
           }
 
           await invalidateAll();
-        } catch(err) {
+        } catch (err) {
           console.error(err);
           error.set($error, err, 'close');
         }
@@ -235,18 +248,16 @@
     });
   }
 
-  function mutateQualifierRound(stageId: number, operation: 'create' | 'update', defaultValue?: QualifierDefault, roundId?: number) {
+  function mutateQualifierRound(
+    stageId: number,
+    operation: 'create' | 'update',
+    defaultValue?: QualifierDefault,
+    roundId?: number
+  ) {
     form.create<QualifierDefault>({
-      defaultValue: (defaultValue) ? {
-        ... defaultValue,
-        summarizeRunsAs: defaultValue.summarizeRunsAs === 'Average'
-          ? 'Average of scores'
-          : defaultValue.summarizeRunsAs === 'Best'
-            ? 'Best score between runs'
-            : 'Sum of scores'
-      } : undefined,
+      defaultValue,
       title: `${operation[0].toUpperCase()}${operation.substring(1)} Round`,
-      fields: ({ field }) => [
+      fields: ({ field, select }) => [
         field('Name', 'name', 'string', {
           validation: (z) => z.max(20)
         }),
@@ -256,7 +267,16 @@
         field('Summarize runs by', 'summarizeRunsAs', 'string', {
           optional: true,
           fromValues: {
-            values: (): RunsSummary[] => ['Average of scores', 'Sum of scores', 'Best score between runs']
+            values: () => {
+              let value = select<QualifierRunsSummary>();
+              let runs = [
+                value('Average', 'Average of scores'),
+                value('Sum', 'Sum of scores'),
+                value('Best', 'Best score between runs')
+              ];
+
+              return runs;
+            }
           },
           disableIf: ({ runCount }) => !runCount || runCount <= 1
         })
@@ -268,26 +288,26 @@
             tournamentId: data.id,
             roundId
           });
-  
+
           if (!isRoundNameUnique) {
-            error.set($error, `${round.name} already exists in this tournament.`, 'close', false, () => {
-              mutateQualifierRound(stageId, operation, round, roundId);
-            });
-  
+            error.set(
+              $error,
+              `${round.name} already exists in this tournament.`,
+              'close',
+              false,
+              () => {
+                mutateQualifierRound(stageId, operation, round, roundId);
+              }
+            );
+
             return;
           }
-  
-          let summary = round.summarizeRunsAs;
+
           let input = {
             tournamentId: data.id,
             data: {
-              ... round,
-              stageId,
-              summarizeRunsAs: summary === 'Best score between runs'
-                ? 'Best'
-                : summary === 'Sum of scores'
-                  ? 'Sum'
-                  : 'Average' as 'Best' | 'Sum' | 'Average'
+              ...round,
+              stageId
             }
           };
 
@@ -295,11 +315,11 @@
             await trpc($page).rounds.createQualifierRound.mutate(input);
           } else {
             if (!roundId) {
-              throw new Error('"roundId" in update operation is undefined');
+              throw new Error('"roundId" in update operation is undefined.');
             }
 
             await trpc($page).rounds.updateQualifierRound.mutate({
-              ... input,
+              ...input,
               where: {
                 id: roundId
               }
@@ -307,7 +327,7 @@
           }
 
           await invalidateAll();
-        } catch(err) {
+        } catch (err) {
           console.error(err);
           error.set($error, err, 'close');
         }
@@ -315,7 +335,12 @@
     });
   }
 
-  function mutateStandardRound(stageId: number, operation: 'create' | 'update', defaultValue?: StandardDefault, roundId?: number) {
+  function mutateStandardRound(
+    stageId: number,
+    operation: 'create' | 'update',
+    defaultValue?: StandardDefault,
+    roundId?: number
+  ) {
     form.create<StandardDefault>({
       defaultValue,
       title: `${operation[0].toUpperCase()}${operation.substring(1)} Round`,
@@ -324,10 +349,11 @@
           validation: (z) => z.max(20)
         }),
         field('Best of', 'bestOf', 'number', {
-          validation: (z) => z.int().gte(1).refine(
-            (n: number) => n % 2 !== 0,
-            'Input must be odd'
-          )
+          validation: (z) =>
+            z
+              .int()
+              .gte(1)
+              .refine((n: number) => n % 2 !== 0, 'Input must be odd')
         }),
         field('Number of bans', 'banCount', 'number', {
           validation: (z) => z.int().gte(0)
@@ -340,19 +366,25 @@
             tournamentId: data.id,
             roundId
           });
-  
+
           if (!isRoundNameUnique) {
-            error.set($error, `${round.name} already exists in this tournament.`, 'close', false, () => {
-              mutateStandardRound(stageId, operation, round, roundId);
-            });
-  
+            error.set(
+              $error,
+              `${round.name} already exists in this tournament.`,
+              'close',
+              false,
+              () => {
+                mutateStandardRound(stageId, operation, round, roundId);
+              }
+            );
+
             return;
           }
 
           let input = {
             tournamentId: data.id,
             data: {
-              ... round,
+              ...round,
               stageId
             }
           };
@@ -365,7 +397,7 @@
             }
 
             await trpc($page).rounds.updateStandardRound.mutate({
-              ... input,
+              ...input,
               where: {
                 id: roundId
               }
@@ -373,7 +405,7 @@
           }
 
           await invalidateAll();
-        } catch(err) {
+        } catch (err) {
           console.error(err);
           error.set($error, err, 'close');
         }
@@ -381,7 +413,12 @@
     });
   }
 
-  async function onMoveRoundOrder(round1Id: number, round1Order: number, round2Id: number, round2Order: number) {
+  async function onMoveRoundOrder(
+    round1Id: number,
+    round1Order: number,
+    round2Id: number,
+    round2Order: number
+  ) {
     try {
       await trpc($page).rounds.swapOrder.mutate({
         tournamentId: data.id,
@@ -396,7 +433,7 @@
       });
 
       await invalidateAll();
-    } catch(err) {
+    } catch (err) {
       console.error(err);
       error.set($error, err, 'close');
     }
@@ -416,7 +453,7 @@
           });
 
           await invalidateAll();
-        } catch(err) {
+        } catch (err) {
           console.error(err);
           error.set($error, err, 'close');
         }
@@ -431,28 +468,29 @@
     <button
       class="btn variant-filled-primary"
       disabled={data.stages.length === 5}
-      on:click={onCreateStage}
-    >Create Stage</button>
+      on:click={onCreateStage}>Create Stage</button
+    >
   </div>
-  <div class="flex flex-wrap flex-col justify-center gap-4">
+  <div class="flex flex-col flex-wrap justify-center gap-4">
     {#if data.stages.length === 0}
       <p>No stages have been created</p>
     {:else}
       {#each data.stages as { rounds, format, isMainStage, order, id }, i}
-        <div class="relative card p-4 w-80 sm:w-[32rem]">
+        <div class="card relative w-80 p-4 sm:w-[32rem]">
           <div class="flex items-center">
-            <span class="font-bold text-xl">
+            <span class="text-xl font-bold">
               {mapReadableFormat(format)}
             </span>
             {#if isMainStage}
               <span class="badge variant-filled-primary ml-2">Main Stage</span>
             {/if}
           </div>
-          <div class="absolute top-4 right-4 gap-x-2 flex">
+          <div class="absolute top-4 right-4 flex gap-x-2">
             {#if i !== 0}
               <button
                 class="btn btn-sm variant-ringed-primary p-1"
-                on:click={() => onMoveStageOrder(id, order, data.stages[i - 1].id, data.stages[i - 1].order)}
+                on:click={() =>
+                  onMoveStageOrder(id, order, data.stages[i - 1].id, data.stages[i - 1].order)}
               >
                 <MoveUpIcon w={20} h={20} styles="fill-white" />
               </button>
@@ -460,33 +498,41 @@
             {#if i !== data.stages.length - 1}
               <button
                 class="btn btn-sm variant-ringed-primary p-1"
-                on:click={() => onMoveStageOrder(id, order, data.stages[i + 1].id, data.stages[i + 1].order)}
+                on:click={() =>
+                  onMoveStageOrder(id, order, data.stages[i + 1].id, data.stages[i + 1].order)}
               >
                 <MoveDownIcon w={20} h={20} styles="fill-white" />
               </button>
             {/if}
             {#if !isMainStage}
-              <button
-                class="btn btn-sm variant-ringed-primary"
-                on:click={() => onMakeMain(id)}
-              >Make Main</button>
+              <button class="btn btn-sm variant-ringed-primary" on:click={() => onMakeMain(id)}
+                >Make Main</button
+              >
             {/if}
           </div>
-          <div class={`card bg-surface-backdrop-token mt-4 ${rounds.length === 0 ? '' : 'px-4 py-2 flex flex-wrap flex-col'}`}>
+          <div
+            class={`card mt-4 bg-surface-backdrop-token ${
+              rounds.length === 0 ? '' : 'flex flex-col flex-wrap px-4 py-2'
+            }`}
+          >
             {#if rounds.length === 0}
-              <p class="text-center py-4">No rounds have been created</p>
+              <p class="py-4 text-center">No rounds have been created</p>
             {:else}
               {#each rounds as round, j}
-                <div class={`py-2 relative flex flex-wrap items-center${j === rounds.length - 1 ? '' : ' border-b border-surface-500/50'}`}>
+                <div
+                  class={`relative flex flex-wrap py-2 items-center${
+                    j === rounds.length - 1 ? '' : ' border-b border-surface-500/50'
+                  }`}
+                >
                   <div class="w-full">
-                    <span class="font-bold text-xl pr-6">{round.name}</span>
+                    <span class="pr-6 text-xl font-bold">{round.name}</span>
                     {#if round.battleRoyaleRound}
                       <span class="badge variant-filled">
                         {round.battleRoyaleRound.playersEliminatedPerMap} Elim. / Map
                       </span>
                     {:else if round.qualifierRound}
                       <span class="badge variant-filled mr-1">
-                        {round.qualifierRound.runCount} 
+                        {round.qualifierRound.runCount}
                         Run{round.qualifierRound.runCount > 1 ? 's' : ''}
                       </span>
                       {#if round.qualifierRound.runCount > 1}
@@ -499,16 +545,25 @@
                         Best of {round.standardRound.bestOf}
                       </span>
                       <span class="badge variant-filled">
-                        {round.standardRound.banCount > 0 ? round.standardRound.banCount : 'No'} 
-                        {round.standardRound.banCount > 0 ? 'B' : 'b'}an{round.standardRound.banCount === 1 ? '' : 's'}
+                        {round.standardRound.banCount > 0 ? round.standardRound.banCount : 'No'}
+                        {round.standardRound.banCount > 0 ? 'B' : 'b'}an{round.standardRound
+                          .banCount === 1
+                          ? ''
+                          : 's'}
                       </span>
                     {/if}
                   </div>
-                  <div class="flex gap-x-2 absolute top-2 right-2">
+                  <div class="absolute top-2 right-2 flex gap-x-2">
                     {#if j !== 0}
                       <button
                         class="btn btn-sm variant-ringed-secondary p-1"
-                        on:click={() => onMoveRoundOrder(round.id, round.order, rounds[j - 1].id, rounds[j - 1].order)}
+                        on:click={() =>
+                          onMoveRoundOrder(
+                            round.id,
+                            round.order,
+                            rounds[j - 1].id,
+                            rounds[j - 1].order
+                          )}
                       >
                         <MoveUpIcon w={20} h={20} styles="fill-white" />
                       </button>
@@ -516,43 +571,50 @@
                     {#if j !== rounds.length - 1}
                       <button
                         class="btn btn-sm variant-ringed-secondary p-1"
-                        on:click={() => onMoveRoundOrder(round.id, round.order, rounds[j + 1].id, rounds[j + 1].order)}
+                        on:click={() =>
+                          onMoveRoundOrder(
+                            round.id,
+                            round.order,
+                            rounds[j + 1].id,
+                            rounds[j + 1].order
+                          )}
                       >
                         <MoveDownIcon w={20} h={20} styles="fill-white" />
                       </button>
                     {/if}
                   </div>
-                  <div class="flex gap-x-2 mt-2">
+                  <div class="mt-2 flex gap-x-2">
                     <button
                       class="btn btn-sm variant-filled-secondary"
-                      on:click={() => updateRound(format, round.id, {
-                        name: round.name,
-                        ... round.standardRound,
-                        ... round.qualifierRound,
-                        ... round.battleRoyaleRound
-                      })}
-                    >Update Round</button>
+                      on:click={() =>
+                        updateRound(format, round.id, {
+                          name: round.name,
+                          ...round.standardRound,
+                          ...round.qualifierRound,
+                          ...round.battleRoyaleRound
+                        })}>Update Round</button
+                    >
                     <button
                       class="btn btn-sm variant-filled-error"
-                      on:click={() => onDeleteRound(round.id, round.name)}
-                    >Delete Round</button>
+                      on:click={() => onDeleteRound(round.id, round.name)}>Delete Round</button
+                    >
                   </div>
                 </div>
               {/each}
             {/if}
           </div>
-          <div class="grid grid-cols-[50%_50%] mt-4">
+          <div class="mt-4 grid grid-cols-[50%_50%]">
             <div>
               <button
                 class="btn btn-sm variant-filled-primary"
-                on:click={() => createRound(id, format)}
-              >Create Round</button>
+                on:click={() => createRound(id, format)}>Create Round</button
+              >
             </div>
             <div class="flex justify-end">
               <button
                 class="btn btn-sm variant-filled-error"
-                on:click={() => onDeleteStage(id, format)}
-              >Delete Stage</button>
+                on:click={() => onDeleteStage(id, format)}>Delete Stage</button
+              >
             </div>
           </div>
         </div>

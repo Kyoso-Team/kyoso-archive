@@ -1,7 +1,9 @@
+import colors from 'tailwindcss/colors';
 import { modalStore } from '@skeletonlabs/skeleton';
-import type { StaffPermission } from '@prisma/client';
+import type { Mod, StaffPermission } from '@prisma/client';
 import type { PopupSettings } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
+import type { PageStore, ParseInt } from '$types';
 
 export const format = {
   rank: (n: number) => `#${new Intl.NumberFormat('us-US').format(n)}`,
@@ -49,9 +51,9 @@ export const format = {
   },
   digits: (n: number, digitCount: number) => {
     let nStr = n.toString();
-    let missingDigits = digitCount - nStr.length ;
+    let missingDigits = digitCount - nStr.length;
     let str = '';
-    
+
     for (let i = missingDigits; i > 0; i--) {
       str += '0';
     }
@@ -82,7 +84,6 @@ export const modal = {
     onYes: () => void | Promise<void>,
     onNo?: () => void | Promise<void>
   ) => {
-
     modalStore.trigger({
       title,
       type: 'confirm',
@@ -176,4 +177,56 @@ export function hasPerms(
   return Array.isArray(necessaryPermissions)
     ? userPermissions.some((userPerm) => necessaryPermissions.includes(userPerm))
     : userPermissions.some((userPerm) => necessaryPermissions === userPerm);
+}
+
+export function getFileUrl(page: PageStore, path: string) {
+  return `${page.url.origin}/uploads/${path}`;
+}
+
+export function colorByMod(mod: Mod | 'NM' | 'FM' | 'TB', value: ParseInt<keyof typeof colors['neutral']>) {
+  let color: Record<keyof typeof colors['neutral'], string> | undefined;
+
+  switch(mod) {
+    case 'DT':
+      color = colors.violet;
+      break;
+    case 'EZ':
+      color = colors.green;
+      break;
+    case 'FL':
+      color = colors.zinc;
+      break;
+    case 'FM':
+      color = colors.fuchsia;
+      break;
+    case 'HD':
+      color = colors.yellow;
+      break;
+    case 'HR':
+      color = colors.red;
+      break;
+    case 'HT':
+      color = colors.rose;
+      break;
+    case 'NM':
+      color = colors.blue;
+      break;
+    case 'PF':
+      color = colors.emerald;
+      break;
+    case 'RX':
+      color = colors.cyan;
+      break;
+    case 'SD':
+      color = colors.indigo;
+      break;
+    case 'TB':
+      color = colors.orange;
+      break;
+    default:
+      color = colors.neutral;
+      break;
+  }
+
+  return color[value];
 }

@@ -73,13 +73,7 @@
 
 <div class="center-content">
   <h1>Referee Settings</h1>
-  <Settings
-    on:undo={onUndo}
-    on:update={onUpdate}
-    {currentObj}
-    {originalObj}
-    {errors}
-  >
+  <Settings on:undo={onUndo} on:update={onUpdate} {currentObj} {originalObj} {errors}>
     <Setting
       label="Start timer length"
       type="number"
@@ -112,19 +106,24 @@
     <Setting
       label="Win condition"
       type="select"
-      values={[{
-        label: 'Highest score',
-        value: 'Score'
-      }, {
-        label: 'Highest accuracy',
-        value: 'Accuracy'
-      }, {
-        label: 'Highest combo',
-        value: 'Combo'
-      }, {
-        label: 'Lowest miss count',
-        value: 'Misses'
-      }]}
+      values={[
+        {
+          label: 'Highest score',
+          value: 'Score'
+        },
+        {
+          label: 'Highest accuracy',
+          value: 'Accuracy'
+        },
+        {
+          label: 'Highest combo',
+          value: 'Combo'
+        },
+        {
+          label: 'Lowest miss count',
+          value: 'Misses'
+        }
+      ]}
       bind:value={currentObj.winCondition}
     />
     <Setting

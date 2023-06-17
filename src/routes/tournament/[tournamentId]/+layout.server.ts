@@ -22,7 +22,6 @@ export const load = (async ({ parent, params }) => {
     throw error(404, `Couldn't find tournament with ID ${tournamentId}.`);
   }
 
-
   return {
     ...data,
     tournament

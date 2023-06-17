@@ -12,5 +12,26 @@ import NoSearchResultsIcon from './NoSearchResults.svelte';
 import MoveUpIcon from './MoveUp.svelte';
 import MoveDownIcon from './MoveDown.svelte';
 import CloseIcon from './Close.svelte';
+import LoadingIcon from './Loading.svelte';
+import CheckIcon from './Check.svelte';
+import EditIcon from './Edit.svelte';
 
-export { SettingsIcon, PickemsIcon, PoolingIcon, RefereeIcon, RegistrationsIcon, StatsIcon, LinkIcon, SearchIcon, AscendingIcon, DescendingIcon, NoSearchResultsIcon, MoveUpIcon, MoveDownIcon, CloseIcon };
+export {
+  SettingsIcon,
+  PickemsIcon,
+  PoolingIcon,
+  RefereeIcon,
+  RegistrationsIcon,
+  StatsIcon,
+  LinkIcon,
+  SearchIcon,
+  AscendingIcon,
+  DescendingIcon,
+  NoSearchResultsIcon,
+  MoveUpIcon,
+  MoveDownIcon,
+  CloseIcon,
+  LoadingIcon,
+  CheckIcon,
+  EditIcon
+};

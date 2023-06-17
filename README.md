@@ -13,6 +13,7 @@ Repository for the Kyoso website.
 - [Taiwind](https://tailwindcss.com): Styling
 - [Skeleton](https://www.skeleton.dev): UI library
 - [Paypal](https://developer.paypal.com): Payment processing
+- [Bunny](https://bunny.net): File storage
 
 ## Getting Started
 

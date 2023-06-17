@@ -72,6 +72,7 @@
     {#if type === 'number'}
       <input
         type="number"
+        step="any"
         class={`input ${errors.length > 0 ? 'input-error' : ''}`}
         {disabled}
         bind:value

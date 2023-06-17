@@ -16,9 +16,12 @@
   };
   let currentObj = { ...originalObj };
   let errors: Partial<
-    Record<'forum' | 'discord' | 'sheet' | 'twitch' | 'youtube' | 'twitter' | 'donation' | 'website', string>
+    Record<
+      'forum' | 'discord' | 'sheet' | 'twitch' | 'youtube' | 'twitter' | 'donation' | 'website',
+      string
+    >
   > = {};
-  
+
   onMount(() => {
     sidebar.setSelected('Settings', 'Settings', 'Links');
   });
@@ -122,15 +125,9 @@
 
 <div class="center-content">
   <h1>Links</h1>
-  <Settings
-    on:undo={onUndo}
-    on:update={onUpdate}
-    {currentObj}
-    {originalObj}
-    {errors}
-  >
+  <Settings on:undo={onUndo} on:update={onUpdate} {currentObj} {originalObj} {errors}>
     <svelte:fragment slot="header">
-      <span class="mb-1 block text-sm text-center">
+      <span class="mb-1 block text-center text-sm">
         <strong>Note:</strong> Full links are supported as input.
       </span>
     </svelte:fragment>

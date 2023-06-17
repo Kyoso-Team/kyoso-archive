@@ -1,6 +1,7 @@
 import prisma from '$prisma';
 import { t, tryCatch } from '$trpc';
 import { z } from 'zod';
+import { withTournamentSchema, modSchema } from '$lib/schemas';
 
 export const validationRouter = t.router({
   isTournamentNameUnique: t.procedure.input(z.string()).query(async ({ input }) => {
@@ -17,18 +18,43 @@ export const validationRouter = t.router({
 
     return !tournament;
   }),
-  isRoundNameUniqueInTournament: t.procedure.input(
-    z.object({
-      name: z.string(),
-      tournamentId: z.number().int(),
-      roundId: z.number().int().optional()
+  isRoundNameUniqueInTournament: t.procedure
+    .input(
+      withTournamentSchema.extend({
+        name: z.string(),
+        roundId: z.number().int().optional()
+      })
+    )
+    .query(async ({ input: { roundId, name, tournamentId } }) => {
+      let round = await tryCatch(async () => {
+        return await prisma.round.findUnique({
+          where: {
+            name_tournamentId: {
+              name,
+              tournamentId
+            }
+          },
+          select: {
+            id: true
+          }
+        });
+      }, "Can't get round to validate name uniqueness.");
+
+      return !round || (!!roundId && round.id === roundId);
+    }),
+  areModsUniqueInTournament: t.procedure
+  .input(
+    withTournamentSchema.extend({
+      mods: z.array(modSchema),
+      multiplierId: z.number().int().optional()
     })
-  ).query(async ({ input: { roundId, name, tournamentId } }) => {
-    let round = await tryCatch(async () => {
-      return await prisma.round.findUnique({
+  )
+  .query(async ({ input: { tournamentId, mods, multiplierId } }) => {
+    let multiplier = await tryCatch(async () => {
+      return await prisma.modMultiplier.findUnique({
         where: {
-          name_tournamentId: {
-            name,
+          tournamentId_mods: {
+            mods,
             tournamentId
           }
         },
@@ -36,8 +62,8 @@ export const validationRouter = t.router({
           id: true
         }
       });
-    }, "Can't get round to validate name uniqueness.");
+    }, "Can't get mod multiplier to validate mods uniqueness.");
 
-    return !round || (roundId && round.id === roundId);
+    return !multiplier || (!!multiplierId && multiplier.id === multiplierId);
   })
 });

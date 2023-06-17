@@ -7,17 +7,19 @@ import type { User as DiscordUser } from 'discord-oauth2';
 
 config();
 
-let env = z.object({
-  osuClientId: z.number(),
-  osuClientSecret: z.string(),
-  osuRedirectUri: z.string(),
-  discordBotToken: z.string()
-}).parse({
-  osuClientId: Number(process.env.PUBLIC_OSU_CLIENT_ID),
-  osuClientSecret: process.env.OSU_CLIENT_SECRET,
-  osuRedirectUri: process.env.PUBLIC_OSU_REDIRECT_URI,
-  discordBotToken: process.env.DISCORD_BOT_TOKEN
-});
+let env = z
+  .object({
+    osuClientId: z.number(),
+    osuClientSecret: z.string(),
+    osuRedirectUri: z.string(),
+    discordBotToken: z.string()
+  })
+  .parse({
+    osuClientId: Number(process.env.PUBLIC_OSU_CLIENT_ID),
+    osuClientSecret: process.env.OSU_CLIENT_SECRET,
+    osuRedirectUri: process.env.PUBLIC_OSU_REDIRECT_URI,
+    discordBotToken: process.env.DISCORD_BOT_TOKEN
+  });
 
 const prisma = new PrismaClient();
 
@@ -40,13 +42,13 @@ const r = {
     return Math.floor(Math.random() * (max + 1 - min) + min);
   },
   array: (arr: any[], amount?: number) => {
-    let x = arr.length
+    let x = arr.length;
     for (let i = 0; amount ? arr.length === amount : i < x; i++) {
       if (r.boolean() && arr.length > 1) {
-        arr.splice(r.number(0, arr.length - 1), 1)
+        arr.splice(r.number(0, arr.length - 1), 1);
       }
     }
-    return arr
+    return arr;
   }
 };
 
@@ -77,64 +79,68 @@ async function seedUsers(): Promise<'done'> {
     id(12455868, '345003515594276865'),
     id(16060432, '345670350773813250')
   ];
-  
-  await Promise.all(ids.map(async (id) => {
-    let osu = await osuClient.users.getUser(id.osu, {
-      query: {
-        key: 'id'
-      },
-      urlParams: {
-        mode: 'osu'
-      }
-    });
 
-    let discordResp = await fetch(`https://discord.com/api/users/${id.discord}`, {
-      headers: {
-        Authorization: `Bot ${env.discordBotToken}`
-      }
-    });
-    let discord = await discordResp.json() as DiscordUser;
+  await Promise.all(
+    ids.map(async (id) => {
+      let osu = await osuClient.users.getUser(id.osu, {
+        query: {
+          key: 'id'
+        },
+        urlParams: {
+          mode: 'osu'
+        }
+      });
 
-    await prisma.user.create({
-      data: {
-        apiKey: r.string(24),
-        discordAccesstoken: r.string(64),
-        discordRefreshToken: r.string(64),
-        osuAccessToken: r.string(64),
-        osuRefreshToken: r.string(64),
-        isAdmin: r.boolean(),
-        isRestricted: r.boolean(),
-        osuUserId: osu.id,
-        osuUsername: osu.username,
-        discordUserId: discord.id,
-        discordUsername: discord.username,
-        discordDiscriminator: discord.discriminator,
-        country: {
-          connectOrCreate: {
-            create: {
-              code: osu.country.code,
-              name: osu.country.name
-            },
-            where: {
-              code: osu.country.code
+      let discordResp = await fetch(`https://discord.com/api/users/${id.discord}`, {
+        headers: {
+          Authorization: `Bot ${env.discordBotToken}`
+        }
+      });
+      let discord = (await discordResp.json()) as DiscordUser;
+
+      await prisma.user.create({
+        data: {
+          apiKey: r.string(24),
+          discordAccesstoken: r.string(64),
+          discordRefreshToken: r.string(64),
+          osuAccessToken: r.string(64),
+          osuRefreshToken: r.string(64),
+          isAdmin: r.boolean(),
+          isRestricted: r.boolean(),
+          osuUserId: osu.id,
+          osuUsername: osu.username,
+          discordUserId: discord.id,
+          discordUsername: discord.username,
+          discordDiscriminator: discord.discriminator,
+          country: {
+            connectOrCreate: {
+              create: {
+                code: osu.country.code,
+                name: osu.country.name
+              },
+              where: {
+                code: osu.country.code
+              }
             }
           }
         }
-      }
-    });
-  }));
+      });
+    })
+  );
 
   return 'done';
 }
 
 async function seedTournaments(): Promise<'done'> {
   for (let i = 0; i < 15; i++) {
-    let type = r.array(['Teams', 'Solo', 'Draft'], 1)[0]
-    let rankRange: 'open rank' | {lower: number, upper: number} = r.boolean() ? 'open rank' : {
-      lower: r.number(1, 500000),
-      upper: r.number(1, 500000)
-    }
-  
+    let type = r.array(['Teams', 'Solo', 'Draft'], 1)[0];
+    let rankRange: 'open rank' | { lower: number; upper: number } = r.boolean()
+      ? 'open rank'
+      : {
+          lower: r.number(1, 500000),
+          upper: r.number(1, 500000)
+        };
+
     await prisma.tournament.create({
       data: {
         name: r.string(5, 50),
@@ -154,7 +160,7 @@ async function seedTournaments(): Promise<'done'> {
     });
   }
 
-  return 'done'
+  return 'done';
 }
 
 async function seedStaffMembers(): Promise<'done'> {
@@ -162,26 +168,28 @@ async function seedStaffMembers(): Promise<'done'> {
     select: {
       id: true
     }
-  })
+  });
   let users = await prisma.user.findMany({
     select: {
       id: true
     }
-  })
+  });
 
   for (let i = 0; i < tournaments.length; i++) {
-    let staffMembers: {id: number}[] = []
+    let staffMembers: { id: number }[] = [];
     for (let e = 0; e < users.length; e++) {
       if (r.boolean()) {
-        staffMembers.push(await prisma.staffMember.create({
-          data: {
-            userId: users[e].id,
-            tournamentId: tournaments[i].id
-          },
-          select: {
-            id: true
-          }
-        }));
+        staffMembers.push(
+          await prisma.staffMember.create({
+            data: {
+              userId: users[e].id,
+              tournamentId: tournaments[i].id
+            },
+            select: {
+              id: true
+            }
+          })
+        );
       }
     }
 
@@ -191,20 +199,26 @@ async function seedStaffMembers(): Promise<'done'> {
           name: `${e}_${r.string(1, 23)}`,
           color: 'Blue',
           permissions: r.array([
-            "MutateTournament", "MutateStaffMembers", "MutateRegs", 
-            "MutatePoolStructure", "MutatePoolSuggestions", "MutateMapsToPlaytest",
-            "MutateMatches", "MutateStats", "CanPlay"
+            'MutateTournament',
+            'MutateStaffMembers',
+            'MutateRegs',
+            'MutatePoolStructure',
+            'MutatePoolSuggestions',
+            'MutateMapsToPlaytest',
+            'MutateMatches',
+            'MutateStats',
+            'CanPlay'
           ]),
           tournamentId: tournaments[i].id,
           staffMembers: {
             connect: staffMembers.filter(() => r.boolean())
           }
-        },
-      })
+        }
+      });
     }
   }
 
-  return 'done'
+  return 'done';
 }
 
 async function main() {
@@ -224,7 +238,6 @@ async function main() {
     END;
     $$
   `;
-
 
   console.log('Users: ');
   console.log(await seedUsers());

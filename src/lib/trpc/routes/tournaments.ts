@@ -239,7 +239,7 @@ export const tournamentRouter = t.router({
             staffRegsOpenOn: z.date().nullish(),
             staffRegsCloseOn: z.date().nullish(),
             useBWS: z.boolean(),
-            hasBanner: z.boolean(),
+            useTeamBanners: z.boolean(),
             rules: z.string().nullish(),
             forumPostId: z.number().int().nullish(),
             discordInviteId: z.string().max(12).nullish(),
@@ -303,10 +303,10 @@ export const tournamentRouter = t.router({
           alwaysForceNoFail,
           concludesOn,
           goPublicOn,
-          hasBanner,
           startTimerLength,
           twitterHandle,
-          rules
+          rules,
+          useTeamBanners
         }
       } = input;
 
@@ -341,10 +341,10 @@ export const tournamentRouter = t.router({
             alwaysForceNoFail,
             concludesOn,
             goPublicOn,
-            hasBanner,
             startTimerLength,
             twitterHandle,
             rules,
+            useTeamBanners,
             lowerRankRange: rankRange === 'open rank' ? -1 : rankRange?.lower,
             upperRankRange: rankRange === 'open rank' ? -1 : rankRange?.upper
           }

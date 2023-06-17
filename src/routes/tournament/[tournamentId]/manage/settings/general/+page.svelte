@@ -106,13 +106,7 @@
 
 <div class="center-content">
   <h1>Settings</h1>
-  <Settings
-    on:undo={onUndo}
-    on:update={onUpdate}
-    {currentObj}
-    {originalObj}
-    {errors}
-  >
+  <Settings on:undo={onUndo} on:update={onUpdate} {currentObj} {originalObj} {errors}>
     <Setting
       label="Tournament name"
       type="string"
@@ -140,6 +134,13 @@
       disabled={isOpenRank}
       bind:value={upperRankRange}
     />
+    {#if data.type !== 'Solo'}
+      <Setting
+        label="Let teams upload banners?"
+        type="boolean"
+        bind:value={currentObj.useTeamBanners}
+      />
+    {/if}
     <Setting label="Use BWS formula?" type="boolean" final bind:value={currentObj.useBWS} />
   </Settings>
 </div>
