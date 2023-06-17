@@ -89,6 +89,7 @@ model Purchase {
 
 model Tournament {
   id                    Int                          @id @default(autoincrement())
+  createdAt             DateTime                     @default(now())
   name                  String                       @unique @db.VarChar(50)
   acronym               String                       @db.VarChar(8)
   lowerRankRange        Int
@@ -185,7 +186,7 @@ model Prize {
   badge            Boolean
   banner           Boolean
   items            String[]   @db.VarChar(25)
-  osuSupporter     Int       @db.SmallInt @default(0) // In months
+  osuSupporter     Int        @default(0) @db.SmallInt // In months
   tournament       Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId     Int
   cash             CashPrize?
@@ -306,6 +307,7 @@ model BattleRoyaleRound {
 model StaffRole {
   id           Int               @id @default(autoincrement())
   name         String            @db.VarChar(25)
+  order        Int               @db.SmallInt
   color        StaffColor        @default(Slate)
   permissions  StaffPermission[]
   tournament   Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
@@ -402,11 +404,11 @@ model StaffApplication {
   tournamentId Int                  @unique
   title        String
   description  String?
-  lookinFor    StaffAppRoles[]
+  lookinFor    StaffAppRole[]
   submissions  StaffAppSubmission[]
 }
 
-model StaffAppRoles {
+model StaffAppRole {
   id                 Int              @id @default(autoincrement())
   role               String           @db.VarChar(25)
   description        String?
