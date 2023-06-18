@@ -87,6 +87,7 @@ async function createTournament(
           name: 'Host',
           color: 'Red',
           permissions: ['Host'],
+          order: 1,
           tournamentId: tournament.id,
           staffMembers: {
             connect: {
