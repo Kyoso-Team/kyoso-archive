@@ -27,7 +27,7 @@ model User {
   discordUserId               String                       @unique @db.VarChar(19)
   discordUsername             String                       @db.VarChar(32)
   discordDiscriminator        String                       @db.Char(4)
-  apiKey                      String                       @db.Char(24)
+  apiKey                      String                       @unique @db.Char(24)
   freeServicesLeft            Int                          @default(3) @db.SmallInt
   // Auth
   osuAccessToken              String
