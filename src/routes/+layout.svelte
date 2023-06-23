@@ -100,9 +100,12 @@
 </svelte:head>
 <AppShell regionPage="relative" slotPageHeader="sticky top-0 z-10">
   <svelte:fragment slot="header">
-    <AppBar padding="p-3">
+    <AppBar padding="py-3 px-6">
       <svelte:fragment slot="lead">
-        <nav class="flex gap-2">
+        <nav class="flex gap-2 items-center">
+          <a href="/">
+            <img src="./logo-hybrid.svg" alt="logo-hybrid" class="h-7 mr-4" />
+          </a>
           {#if data.user && data.user.isAdmin}
             <button
               class="btn hover:variant-soft-primary"
