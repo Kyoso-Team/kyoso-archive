@@ -104,6 +104,15 @@ export const modal = {
   }
 };
 
+export const buildLink = {
+  forumPost: (forumPostId: number) => `https://osu.ppy.sh/community/forums/topics/${forumPostId}`,
+  discord: (discordInviteId: string) => `https://discord.gg/${discordInviteId}`,
+  spreadsheet: (spreadsheetId: string) => `https://docs.google.com/spreadsheets/d/${spreadsheetId}`,
+  twitch: (twitchChannelName: string) => `https://www.twitch.tv/${twitchChannelName}`,
+  youtube: (youtubeChannelId: string) => `https://www.youtube.com/channel/${youtubeChannelId}`,
+  twitter: (twitterHandle: string) => `https://twitter.com/${twitterHandle}`
+};
+
 export const byteUnit = {
   kb: (value: number) => value * 1_000,
   mb: (value: number) => value * 1_000_000
