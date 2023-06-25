@@ -32,3 +32,72 @@ Scripts present in the package.json file. Each script must be prepended with `pn
 - `db:push`: Push Prisma schema to the database and generate the client for it.
 - `db:studio`: Opens UI to view and manage the database's data.
 - `review`: Runs `fmt`, `lint` and `check`, one after the other.
+
+
+## Component Structure
+
+Structure to follow when writing Svelte components or pages.
+
+```svelte
+<script lang="ts">
+  // Default imports
+  // Destructured imports
+  // Type imports
+
+  // Type definitions
+
+  // Constants
+  // Props
+  // Variables
+
+  // Lifecycle events
+
+  // Functions
+
+  // Reactive statements
+</script>
+
+<!-- Page content -->
+```
+
+**Example:**
+
+```svelte
+<script lang="ts">
+  // Default imports
+  import isEqual from 'lodash.isequal';
+  // Destructured imports
+  import { onMount } from 'svelte';
+  // Type imports
+  import type { PageServerData } from './$types';
+
+  // Type definitions
+  interface Example {
+    ...
+  }
+
+  // Constants
+  const someConstant = 21;
+  // Props
+  export let page: PageServerData;
+  // Variables
+  let object: Example = {
+    ...
+  };
+
+  // Lifecycle events
+  onMount(() => {
+    ...
+  });
+
+  // Functions
+  function onClick() {
+    ...
+  }
+
+  // Reactive statements
+  $: {
+    ...
+  }
+</script>
+```
