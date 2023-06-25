@@ -78,6 +78,7 @@ export interface Field {
   onSearch?: () => Promise<Record<string, unknown>>;
   mapResult?: MapResult;
   errorCount: number;
+  list?: boolean; 
 }
 
 export interface MapResult {

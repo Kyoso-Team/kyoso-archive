@@ -74,6 +74,37 @@ export const format = {
     }
 
     return str;
+  },
+  cardinal: (n: number) => {
+    let str = n.toString();
+
+    if (['1', '2', '3'].find((n) => n === str.at(-1)) && str.at(-2) !== '1') {
+      switch(str.at(-1)) {
+        default:
+          return `${n}th`;
+        case '1':
+          return `${n}st`;
+        case '2':
+          return `${n}nd`;
+        case '3':
+          return `${n}rd`;
+      }
+    }
+
+    return `${n}th`;
+  },
+  placements: (placements: number[]) => {
+    let str = '';
+
+    if (placements.length === 1) {
+      str = format.cardinal(placements[0]);
+    } else if (placements.length === 2) {
+      str = `${format.cardinal(placements[0])} & ${format.cardinal(placements[1])}`;
+    } else {
+      str = `${format.cardinal(placements[0])}-${format.cardinal(placements.at(-1) || 0)}`;
+    }
+
+    return str;
   }
 };
 
@@ -172,9 +203,13 @@ export function hasPerms(
     roles: {
       permissions: StaffPermission[];
     }[];
-  },
+  } | null,
   necessaryPermissions: StaffPermission[] | StaffPermission
 ) {
+  if (!staffMember) {
+    return false;
+  }
+
   let userPermissions: StaffPermission[] = [];
 
   staffMember.roles.forEach((role) => {

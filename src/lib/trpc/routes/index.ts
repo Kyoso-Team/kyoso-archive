@@ -6,3 +6,4 @@ export * from './users';
 export * from './stages';
 export * from './rounds';
 export * from './mod-multipliers';
+export * from './prizes';

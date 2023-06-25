@@ -24,6 +24,7 @@
     popup,
     Toast
   } from '@skeletonlabs/skeleton';
+  import { page } from '$app/stores';
   import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
 
@@ -104,7 +105,7 @@
       <svelte:fragment slot="lead">
         <nav class="flex gap-2 items-center">
           <a href="/">
-            <img src="./logo-hybrid.svg" alt="logo-hybrid" class="h-7 mr-4" />
+            <img src={`${$page.url.origin}/logo-hybrid.svg`} alt="logo-hybrid" class="h-7 mr-4" />
           </a>
           {#if data.user && data.user.isAdmin}
             <button

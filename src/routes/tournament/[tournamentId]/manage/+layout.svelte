@@ -6,10 +6,14 @@
 
   export let data: LayoutServerData;
 
+  onDestroy(() => {
+    sidebar.destroy();
+  });
+
   sidebar.create();
   let basePath = `/tournament/${data.tournament.id}/manage/`;
 
-  if (hasPerms(data.staffMember, ['Host', 'MutateTournament'])) {
+  if (hasPerms(data.staffMember, ['Host', 'Debug', 'MutateTournament'])) {
     let settings = sidebar.setSection('Settings', 'settings');
 
     let settingsPath = `${basePath}settings/`;
@@ -57,10 +61,10 @@
     ]);
   }
 
-  if (hasPerms(data.staffMember, ['Host', 'ViewStaffMembers', 'ViewRegs'])) {
+  if (hasPerms(data.staffMember, ['Host', 'Debug', 'ViewStaffMembers', 'ViewRegs'])) {
     let regs = sidebar.setSection('Regs.', 'regs');
 
-    if (hasPerms(data.staffMember, ['Host', 'ViewStaffMembers'])) {
+    if (hasPerms(data.staffMember, ['Host', 'Debug', 'ViewStaffMembers'])) {
       let staffPath = `${basePath}staff/`;
       regs.setSubsection('Staff', [
         {
@@ -78,7 +82,7 @@
       ]);
     }
 
-    if (hasPerms(data.staffMember, ['Host', 'ViewRegs'])) {
+    if (hasPerms(data.staffMember, ['Host', 'Debug', 'ViewRegs'])) {
       let links: {
         label: string;
         path: string;
@@ -126,6 +130,7 @@
   if (
     hasPerms(data.staffMember, [
       'Host',
+      'Debug',
       'ViewPoolStructure',
       'ViewPoolSuggestions',
       'ViewPooledMaps',
@@ -135,21 +140,17 @@
     let pooling = sidebar.setSection('Pooling', 'pooling');
   }
 
-  if (hasPerms(data.staffMember, ['Host', 'ViewMatches'])) {
+  if (hasPerms(data.staffMember, ['Host', 'Debug', 'ViewMatches'])) {
     let referee = sidebar.setSection('Reffing.', 'referee');
   }
 
-  if (hasPerms(data.staffMember, ['Host', 'ViewStats'])) {
+  if (hasPerms(data.staffMember, ['Host', 'Debug', 'ViewStats'])) {
     let stats = sidebar.setSection('Stats. Calc.', 'stats calc');
   }
 
-  if (hasPerms(data.staffMember, ['Host'])) {
+  if (hasPerms(data.staffMember, ['Host', 'Debug'])) {
     let pickems = sidebar.setSection('Pickems', 'pickems');
   }
-
-  onDestroy(() => {
-    sidebar.destroy();
-  });
 </script>
 
 <slot />

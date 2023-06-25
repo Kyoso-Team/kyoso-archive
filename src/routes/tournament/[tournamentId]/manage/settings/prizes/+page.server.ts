@@ -6,18 +6,18 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ parent }) => {
   let data = await parent();
 
-  if (!hasPerms(data.staffMember, ['Host', 'MutateTournament'])) {
+  if (!hasPerms(data.staffMember, ['Host', 'Debug', 'MutateTournament'])) {
     throw error(401, `You lack the necessary permissions to manage the prizes for tournament of ID ${data.tournament.id}.`);
   }
 
   let prizes = await prisma.prize.findMany({
     where: {
-      id: data.tournament.id
+      tournamentId: data.tournament.id
     },
     select: {
       id: true,
       type: true,
-      positions: true,
+      placements: true,
       trophy: true,
       medal: true,
       badge: true,
@@ -30,28 +30,16 @@ export const load = (async ({ parent }) => {
           metric: true,
           value: true
         }
-      },
-      awardedToPlayers: {
-        select: {
-          user: {
-            select: {
-              id: true,
-              osuUsername: true
-            }
-          }
-        }
-      },
-      awardedToTeams: {
-        select: {
-          id: true,
-          name: true
-        }
       }
+    },
+    orderBy: {
+      placements: 'asc'
     }
   });
 
   return {
     prizes,
-    id: data.tournament.id
+    id: data.tournament.id,
+    services: data.tournament.services
   };
 }) satisfies PageServerLoad;

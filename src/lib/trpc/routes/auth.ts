@@ -127,6 +127,60 @@ function invalidateCookies(cookies: Cookies, error?: string): never {
   });
 }
 
+// Add the current developer as a staff for all tournaments
+async function addUserToTournaments(user: {
+  id: number;
+}) {
+  if (env.NODE_ENV === 'development') {
+    let tournaments = await prisma.tournament.findMany({
+      select: {
+        id: true
+      }
+    });
+
+    for (let i = 0; i < tournaments.length; i++) {
+      let tournamentId = tournaments[i].id;
+
+      let existingStaffRole = await prisma.staffRole.findUnique({
+        where: {
+          name_tournamentId: {
+            tournamentId,
+            name: 'Debugger'
+          }
+        }
+      });
+
+      if (!existingStaffRole) {
+        await prisma.$transaction(async (tx) => {
+          let staffRole = await tx.staffRole.create({
+            data: {
+              tournamentId,
+              name: 'Debugger',
+              order: 0,
+              permissions: ['Debug']
+            },
+            select: {
+              id: true
+            }
+          });
+    
+          await tx.staffMember.create({
+            data: {
+              tournamentId,
+              roles: {
+                connect: {
+                  id: staffRole.id
+                }
+              },
+              userId: user.id
+            }
+          });
+        });
+      }
+    }
+  }
+}
+
 async function login(osuToken: Token, discordToken: TokenRequestResult): Promise<string> {
   let [osuProfile, discordProfile] = await getProfiles(osuToken, discordToken);
   let data = getData(osuToken, discordToken, osuProfile, discordProfile);
@@ -182,6 +236,7 @@ export const authRouter = t.router({
         osuUserId: userId
       },
       select: {
+        id: true,
         discordRefreshToken: true
       }
     });
@@ -201,6 +256,7 @@ export const authRouter = t.router({
         refreshToken: user.discordRefreshToken
       });
 
+      await addUserToTournaments(user);
       ctx.cookies.set("session", await login(osuToken, discordToken), cookiesOptions)
       return "/"
     } catch(e: any) {
@@ -253,7 +309,11 @@ export const authRouter = t.router({
       return "/user/settings"
     } else { // User is logging in and went through osu auth stuff
       ctx.cookies.delete('osu_token', cookiesOptions);
-      ctx.cookies.set("session", await login(osuToken, discordToken), cookiesOptions)
+
+      let jwt = await login(osuToken, discordToken);
+      await addUserToTournaments(verifyJWT(jwt) as SessionUser);
+
+      ctx.cookies.set("session", jwt, cookiesOptions)
       return "/"
     }
   }),

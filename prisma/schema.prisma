@@ -177,21 +177,19 @@ enum TournamentService {
 }
 
 model Prize {
-  id               Int        @id @default(autoincrement())
-  type             PrizeType
-  positions        Int[]      @db.SmallInt // A single element array for a single place. Example: 1st, 2nd, 3rd place
+  id           Int        @id @default(autoincrement())
+  type         PrizeType
+  placements   Int[]      @db.SmallInt // A single element array for a single place. Example: 1st, 2nd, 3rd place
   // A range of positions in case of multiple placements sharing the same prize. Example: Top 4-6
-  trophy           Boolean // Physical trophy
-  medal            Boolean // Physical medal
-  badge            Boolean
-  banner           Boolean
-  items            String[]   @db.VarChar(25)
-  osuSupporter     Int        @default(0) @db.SmallInt // In months
-  tournament       Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  tournamentId     Int
-  cash             CashPrize?
-  awardedToPlayers Player[]
-  awardedToTeams   Team[]
+  trophy       Boolean // Physical trophy
+  medal        Boolean // Physical medal
+  badge        Boolean
+  banner       Boolean
+  items        String[]   @db.VarChar(25)
+  osuSupporter Int        @default(0) @db.SmallInt // In months
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId Int
+  cash         CashPrize?
 }
 
 enum PrizeType {
@@ -325,6 +323,8 @@ enum StaffPermission {
 
   // Host can do everything regardless of other permissions, can also delete the tournament. Only one user can have this permission per tournament
   Host
+  // Same as above. This exists so a host can add this permission to a site admin to allow them to debug something without listing them as an actual staff member
+  Debug
   // Tournament
   MutateTournament
   // Staff
@@ -438,8 +438,6 @@ model Team {
   tournamentId        Int
   captain             Player              @relation("captain", fields: [captainId], references: [id])
   captainId           Int                 @unique
-  prizeWon            Prize?              @relation(fields: [prizeWonId], references: [id])
-  prizeWonId          Int?
   players             Player[]            @relation("player")
   asTeam1             Match[]             @relation("team1")
   asTeam2             Match[]             @relation("team2")
@@ -489,8 +487,6 @@ model Player {
   teamAsCaptain       Team?               @relation("captain")
   team                Team?               @relation("player", fields: [teamId], references: [id])
   teamId              Int?
-  prizeWon            Prize?              @relation(fields: [prizeWonId], references: [id])
-  prizeWonId          Int?
   asPlayer1           Match[]             @relation("player1")
   asPlayer2           Match[]             @relation("player2")
   asPotentialPlayer1  PotentialMatch[]    @relation("potentialPlayer1")

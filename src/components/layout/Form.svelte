@@ -58,8 +58,8 @@
         <p>{$form.description}</p>
       {/if}
     </header>
-    <div class="flex flex-col gap-4 py-4">
-      {#each $form.fields as { mapToKey, multipleValues, type, values, selectMultiple }}
+    <div class="flex flex-col gap-4 py-8">
+      {#each $form.fields as { mapToKey, multipleValues, type, values, selectMultiple, list, optional }}
         {#if multipleValues && (type === 'string' || type === 'number')}
           {#if selectMultiple}
             <InputSelectMulti key={mapToKey} />
@@ -67,7 +67,7 @@
             <InputSelect {type} key={mapToKey} defaultValue={values?.[0]} />
           {/if}
         {:else if type === 'string' || type === 'number' || type === 'boolean'}
-          <Input {type} key={mapToKey} />
+          <Input {type} key={mapToKey} {list} {optional} />
         {/if}
       {/each}
     </div>

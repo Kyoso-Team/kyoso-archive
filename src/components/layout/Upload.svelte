@@ -37,7 +37,7 @@
       }
 
       isUploading = false;
-    } catch(err: any) {
+    } catch(err) {
       console.error(err);
       error.set($error, err, 'close', true);
     }

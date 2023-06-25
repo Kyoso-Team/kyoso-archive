@@ -9,13 +9,13 @@
   import type { Mod, ModMultiplier } from '@prisma/client';
   import type { PageServerData } from './$types';
 
-  export let data: PageServerData;
-
   type MutateModMultiplier = {
     mods: Mod[];
     noMod: boolean;
     value: number;
   }
+
+  export let data: PageServerData;
 
   onMount(() => {
     sidebar.setSelected('Settings', 'Referee', 'Mod Multipliers');
@@ -24,7 +24,7 @@
   function mutateMultiplier(operation: 'create' | 'update', defaultValue?: MutateModMultiplier, multiplierId?: number) {
     form.create<MutateModMultiplier>({
       defaultValue,
-      title: 'Create Multiplier',
+      title: `${operation === 'create' ? 'Create' : 'Update'} Multiplier`,
       fields: ({ field, select }) => [
         field('Multiplier value', 'value', 'number'),
         field('Applies to NoMod?', 'noMod', 'boolean'),
@@ -117,7 +117,7 @@
   function onDeleteMultiplier({ id, mods }: Omit<ModMultiplier, 'tournamentId'>) {
     modal.yesNo(
       'Confirm Mod Multiplier Deletion',
-      `Are you sure you want to delete the mod multiplier for ${mods.length === 0 ? 'NM' : mods.reduce((str, mod) => `${str}${mod}`, '')} from this tournament?.`,
+      `Are you sure you want to delete the mod multiplier for ${mods.length === 0 ? 'NM' : mods.reduce((str, mod) => `${str}${mod}`, '')} from this tournament?`,
       async () => {
         try {
           await trpc($page).modMultipliers.deleteMultiplier.mutate({

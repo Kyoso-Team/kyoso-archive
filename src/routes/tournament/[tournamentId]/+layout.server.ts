@@ -14,7 +14,8 @@ export const load = (async ({ parent, params }) => {
     select: {
       id: true,
       acronym: true,
-      type: true
+      type: true,
+      services: true
     }
   });
 

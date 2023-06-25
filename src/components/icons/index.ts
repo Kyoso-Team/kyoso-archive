@@ -15,6 +15,13 @@ import CloseIcon from './Close.svelte';
 import LoadingIcon from './Loading.svelte';
 import CheckIcon from './Check.svelte';
 import EditIcon from './Edit.svelte';
+import TrophyIcon from './Trophy.svelte';
+import MedalIcon from './Medal.svelte';
+import BadgeIcon from './Badge.svelte';
+import BannerIcon from './Banner.svelte';
+import HeartIcon from './Heart.svelte';
+import MoneyIcon from './Money.svelte';
+import AdditionIcon from './Addition.svelte';
 
 export {
   SettingsIcon,
@@ -33,5 +40,12 @@ export {
   CloseIcon,
   LoadingIcon,
   CheckIcon,
-  EditIcon
+  EditIcon,
+  TrophyIcon,
+  MedalIcon,
+  BadgeIcon,
+  BannerIcon,
+  HeartIcon,
+  MoneyIcon,
+  AdditionIcon
 };

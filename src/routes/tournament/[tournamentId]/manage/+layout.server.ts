@@ -26,7 +26,7 @@ export const load = (async ({ parent }) => {
     }
   });
 
-  if (!staffMember) {
+  if (!staffMember && !user.isAdmin) {
     throw error(403, `You're not a staff member for tournament of ID ${tournament.id}.`);
   }
 
@@ -66,6 +66,7 @@ export const load = (async ({ parent }) => {
   return {
     tournament,
     staffMember,
-    rounds
+    rounds,
+    user
   };
 }) satisfies LayoutServerLoad;
