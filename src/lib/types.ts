@@ -110,3 +110,15 @@ export interface PayPalOrder {
     };
   }[];
 }
+
+export interface Post {
+  id: number;
+  title: string;
+  published_at: string;
+  cover_image: string;
+  description: string;
+}
+
+export interface ExtendedPost extends Post {
+  body_html: string;
+}

@@ -46,6 +46,10 @@
     {
       href: 'tournaments',
       label: 'Tournaments'
+    },
+    {
+      href: 'blog',
+      label: 'Blog'
     }
   ];
 

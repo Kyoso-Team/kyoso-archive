@@ -28,3 +28,5 @@ export const services: Record<
     teamsPrice: 2
   }
 };
+
+export const firsBlogPostTimestmap = 1_687_721_464_000;

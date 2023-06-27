@@ -3,8 +3,12 @@ body {
   @apply h-full overflow-hidden;
 }
 
+h1, h2, h3 {
+  @apply tracking-tight;
+}
+
 .document {
-  @apply max-w-2xl text-justify leading-relaxed;
+  @apply max-w-2xl leading-relaxed;
 }
 
 .document h1 {
@@ -26,6 +30,10 @@ ul {
 
 .document ul {
   @apply list-inside list-disc;
+}
+
+.document ul li::marker {
+  @apply text-left;
 }
 
 .center-content {
