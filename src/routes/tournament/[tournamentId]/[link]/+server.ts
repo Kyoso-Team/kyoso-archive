@@ -55,8 +55,10 @@ export const GET = (async ({ params, url }) => {
   }
 
   // Prevent these links to reference this endpoint (avoiding self-referencing)
-  if ([tournament.donationLink, tournament.websiteLink].find((link) => !!link && link !== url.href)) {
-    link = (tournament.donationLink) ? tournament.donationLink : tournament.websiteLink;
+  if (
+    [tournament.donationLink, tournament.websiteLink].find((link) => !!link && link !== url.href)
+  ) {
+    link = tournament.donationLink ? tournament.donationLink : tournament.websiteLink;
   }
 
   if (!link) {

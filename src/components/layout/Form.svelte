@@ -30,18 +30,25 @@
           : false;
       });
       let isUnmodified = isEqual($form.currentValue, $form.defaultValue);
-      let multiSelectDoesntHaveAtLeast = !!$form.fields.find(({ mapToKey, disableIf, selectMultiple }) => {
-        return (
-          $form?.currentValue &&
-          !disableIf?.($form.currentValue) &&
-          typeof selectMultiple === 'object' &&
-          (Array.isArray($form?.currentValue?.[mapToKey])
-            ? ($form?.currentValue?.[mapToKey] as unknown[]).length
-            : 0) <= selectMultiple.atLeast
-        );
-      });
+      let multiSelectDoesntHaveAtLeast = !!$form.fields.find(
+        ({ mapToKey, disableIf, selectMultiple }) => {
+          return (
+            $form?.currentValue &&
+            !disableIf?.($form.currentValue) &&
+            typeof selectMultiple === 'object' &&
+            (Array.isArray($form?.currentValue?.[mapToKey])
+              ? ($form?.currentValue?.[mapToKey] as unknown[]).length
+              : 0) <= selectMultiple.atLeast
+          );
+        }
+      );
 
-      disabled = hasErrors || isEmptyObject || requiredFieldIsUndefined || isUnmodified || multiSelectDoesntHaveAtLeast;
+      disabled =
+        hasErrors ||
+        isEmptyObject ||
+        requiredFieldIsUndefined ||
+        isUnmodified ||
+        multiSelectDoesntHaveAtLeast;
     }
   }
 </script>
@@ -75,7 +82,7 @@
       <button type="submit" class="btn variant-filled-primary cursor-pointer" {disabled}
         >Submit</button
       >
-      <button type="button" class="btn variant-ringed-primary" on:click={onClose}>Cancel</button>
+      <button type="button" class="variant-ringed-primary btn" on:click={onClose}>Cancel</button>
     </div>
   </form>
 {/if}

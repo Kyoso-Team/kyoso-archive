@@ -29,7 +29,7 @@
     try {
       isUploading = true;
       let resp = await upload.uploadFile($upload, files?.item(0));
-      
+
       if (resp.includes('success')) {
         hasUploaded = true;
       } else {
@@ -37,7 +37,7 @@
       }
 
       isUploading = false;
-    } catch(err) {
+    } catch (err) {
       console.error(err);
       error.set($error, err, 'close', true);
     }
@@ -56,7 +56,11 @@
 </script>
 
 {#if $upload}
-  <div class={`card bg-surface-800 flex items-center flex-col p-6 ${hasUploaded || isUploading ? 'w-64' : 'w-80 sm:w-[30rem]'}`}>
+  <div
+    class={`card flex flex-col items-center bg-surface-800 p-6 ${
+      hasUploaded || isUploading ? 'w-64' : 'w-80 sm:w-[30rem]'
+    }`}
+  >
     {#if hasUploaded || isUploading || errMsg}
       <div class="flex gap-2">
         {#if errMsg}
@@ -83,38 +87,42 @@
       {#if $upload.isImg}
         <div class="mb-2 w-full">
           <span>Preview:</span>
-          <div class="card flex justify-center aspect-[21/9]">
+          <div class="card flex aspect-[21/9] justify-center">
             <div
               style={`aspect-ratio: ${$upload.imgAspectRatio};`}
-              class="card bg-surface-backdrop-token relative w-auto h-full overflow-hidden border border-primary-600 flex items-center justify-center"
+              class="card relative flex h-full w-auto items-center justify-center overflow-hidden border border-primary-600 bg-surface-backdrop-token"
             >
               {#if currentImageUrl}
                 <img
                   src={currentImageUrl}
                   alt="uploaded-img"
-                  class={`absolute -inset-full m-auto ${$upload.limitBy === 'height' ? 'w-auto h-full' : 'h-auto w-full' }`}
+                  class={`absolute -inset-full m-auto ${
+                    $upload.limitBy === 'height' ? 'h-full w-auto' : 'h-auto w-full'
+                  }`}
                 />
               {:else}
-                <div class="text-gray-500 text-md sm:text-lg text-center px-2">No file selected</div>
+                <div class="text-md px-2 text-center text-gray-500 sm:text-lg">
+                  No file selected
+                </div>
               {/if}
             </div>
           </div>
         </div>
       {/if}
-      <div class="flex gap-2 w-full">
+      <div class="flex w-full gap-2">
         <FileButton
           name="file"
           width="text-sm block py-1"
           accept={$upload.accept.reduce((str, fileType) => `${str},.${fileType}`, '').substring(1)}
-          bind:files={files}
-        >Choose File</FileButton>
+          bind:files>Choose File</FileButton
+        >
         <div
-          class="rounded-md px-2 pt-1 text-sm bg-surface-backdrop-token w-full max-w-full overflow-hidden whitespace-nowrap text-ellipsis"
+          class="w-full max-w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-md px-2 pt-1 text-sm bg-surface-backdrop-token"
           use:popup={tooltip(fileNameTooltipTarget)}
         >
           <Tooltip
             target={fileNameTooltipTarget}
-            label={files?.item(0) ? (files?.item(0)?.name || '') : 'No file selected'}
+            label={files?.item(0) ? files?.item(0)?.name || '' : 'No file selected'}
           />
           {#if files?.item(0)}
             {files?.item(0)?.name || ''}
@@ -124,12 +132,10 @@
         </div>
       </div>
       <div class="mt-4">
-        <button
-          class="btn variant-filled-primary"
-          disabled={!files?.item(0)}
-          on:click={onUpload}
-        >Upload</button>
-        <button class="btn variant-ringed-primary" on:click={onClose}>Cancel</button>
+        <button class="btn variant-filled-primary" disabled={!files?.item(0)} on:click={onUpload}
+          >Upload</button
+        >
+        <button class="variant-ringed-primary btn" on:click={onClose}>Cancel</button>
       </div>
     {/if}
   </div>

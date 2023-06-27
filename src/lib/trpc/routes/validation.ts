@@ -43,27 +43,27 @@ export const validationRouter = t.router({
       return !round || (!!roundId && round.id === roundId);
     }),
   areModsUniqueInTournament: t.procedure
-  .input(
-    withTournamentSchema.extend({
-      mods: z.array(modSchema),
-      multiplierId: z.number().int().optional()
-    })
-  )
-  .query(async ({ input: { tournamentId, mods, multiplierId } }) => {
-    let multiplier = await tryCatch(async () => {
-      return await prisma.modMultiplier.findUnique({
-        where: {
-          tournamentId_mods: {
-            mods,
-            tournamentId
+    .input(
+      withTournamentSchema.extend({
+        mods: z.array(modSchema),
+        multiplierId: z.number().int().optional()
+      })
+    )
+    .query(async ({ input: { tournamentId, mods, multiplierId } }) => {
+      let multiplier = await tryCatch(async () => {
+        return await prisma.modMultiplier.findUnique({
+          where: {
+            tournamentId_mods: {
+              mods,
+              tournamentId
+            }
+          },
+          select: {
+            id: true
           }
-        },
-        select: {
-          id: true
-        }
-      });
-    }, "Can't get mod multiplier to validate mods uniqueness.");
+        });
+      }, "Can't get mod multiplier to validate mods uniqueness.");
 
-    return !multiplier || (!!multiplierId && multiplier.id === multiplierId);
-  })
+      return !multiplier || (!!multiplierId && multiplier.id === multiplierId);
+    })
 });

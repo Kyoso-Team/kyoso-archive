@@ -10,9 +10,9 @@ export const load = (async (event) => {
   if (event.cookies.get('session')) {
     try {
       user = await caller.auth.updateUser();
-    } catch(e) {
-      console.error(e)
-      throw redirect(302, "/")
+    } catch (e) {
+      console.error(e);
+      throw redirect(302, '/');
     }
   }
 

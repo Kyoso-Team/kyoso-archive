@@ -79,7 +79,7 @@ export const format = {
     let str = n.toString();
 
     if (['1', '2', '3'].find((n) => n === str.at(-1)) && str.at(-2) !== '1') {
-      switch(str.at(-1)) {
+      switch (str.at(-1)) {
         default:
           return `${n}th`;
         case '1':
@@ -227,10 +227,13 @@ export function getFileUrl(page: PageStore, path: string) {
   return `${page.url.origin}/uploads/${path}`;
 }
 
-export function colorByMod(mod: Mod | 'NM' | 'FM' | 'TB', value: ParseInt<keyof typeof colors['neutral']>) {
-  let color: Record<keyof typeof colors['neutral'], string> | undefined;
+export function colorByMod(
+  mod: Mod | 'NM' | 'FM' | 'TB',
+  value: ParseInt<keyof (typeof colors)['neutral']>
+) {
+  let color: Record<keyof (typeof colors)['neutral'], string> | undefined;
 
-  switch(mod) {
+  switch (mod) {
     case 'DT':
       color = colors.violet;
       break;

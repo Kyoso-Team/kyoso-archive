@@ -10,8 +10,12 @@
 
   export let data: PageServerData;
 
-  let bannerUrl = (data.hasBanner) ? getFileUrl($page, `tournament-banners/${format.digits(data.id, 5)}-full.jpeg`) : undefined;
-  let logoUrl = (data.hasLogo) ? getFileUrl($page, `tournament-logos/${format.digits(data.id, 5)}-full.jpeg`) : undefined;
+  let bannerUrl = data.hasBanner
+    ? getFileUrl($page, `tournament-banners/${format.digits(data.id, 5)}-full.jpeg`)
+    : undefined;
+  let logoUrl = data.hasLogo
+    ? getFileUrl($page, `tournament-logos/${format.digits(data.id, 5)}-full.jpeg`)
+    : undefined;
 
   onMount(() => {
     sidebar.setSelected('Settings', 'Settings', 'Graphics');
@@ -50,12 +54,12 @@
   async function uploadLogo(upload: Upload) {
     let resp = await upload.tournamentLogo({
       tournamentId: data.id
-    })
+    });
 
     if (resp.includes('success')) {
       await invalidateAll();
     }
-    
+
     return resp;
   }
 
@@ -98,8 +102,12 @@
   }
 
   $: {
-    bannerUrl = (data.hasBanner) ? getFileUrl($page, `tournament-banners/${format.digits(data.id, 5)}-full.jpeg`) : undefined;
-    logoUrl = (data.hasLogo) ? getFileUrl($page, `tournament-logos/${format.digits(data.id, 5)}-full.jpeg`) : undefined;
+    bannerUrl = data.hasBanner
+      ? getFileUrl($page, `tournament-banners/${format.digits(data.id, 5)}-full.jpeg`)
+      : undefined;
+    logoUrl = data.hasLogo
+      ? getFileUrl($page, `tournament-logos/${format.digits(data.id, 5)}-full.jpeg`)
+      : undefined;
   }
 </script>
 
@@ -109,38 +117,28 @@
     <h2 class="pb-2 text-center">Banner</h2>
     <span>Current banner:</span>
     <div class="card relative aspect-[21/9] w-80 overflow-hidden border border-primary-600">
-      <img
-        src={bannerUrl}
-        alt="banner"
-        class="absolute -inset-full m-auto h-auto w-full"
-      />
+      <img src={bannerUrl} alt="banner" class="absolute -inset-full m-auto h-auto w-full" />
     </div>
-    <div class="flex justify-end my-2 gap-2">
+    <div class="my-2 flex justify-end gap-2">
       <button class="btn variant-filled-primary" on:click={onChangeBanner}>Change</button>
-      <button
-        class="btn variant-filled-error"
-        disabled={!data.hasBanner}
-        on:click={onDeleteBanner}
-      >Delete</button>
+      <button class="variant-filled-error btn" disabled={!data.hasBanner} on:click={onDeleteBanner}
+        >Delete</button
+      >
     </div>
     <h2 class="py-2 text-center">Logo</h2>
     <span>Current logo:</span>
     <div class="card flex justify-center">
-      <div class="card relative flex items-center aspect-[1/1] w-[132px] overflow-hidden border border-primary-600">
-        <img
-          src={logoUrl}
-          alt="banner"
-          class="absolute -inset-full m-auto h-auto w-full"
-        />
+      <div
+        class="card relative flex aspect-[1/1] w-[132px] items-center overflow-hidden border border-primary-600"
+      >
+        <img src={logoUrl} alt="banner" class="absolute -inset-full m-auto h-auto w-full" />
       </div>
     </div>
-    <div class="flex justify-end mt-2 gap-2">
+    <div class="mt-2 flex justify-end gap-2">
       <button class="btn variant-filled-primary" on:click={onChangeLogo}>Change</button>
-      <button
-        class="btn variant-filled-error"
-        disabled={!data.hasLogo}
-        on:click={onDeleteLogo}
-      >Delete</button>
+      <button class="variant-filled-error btn" disabled={!data.hasLogo} on:click={onDeleteLogo}
+        >Delete</button
+      >
     </div>
   </div>
 </div>

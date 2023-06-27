@@ -107,28 +107,28 @@
   <svelte:fragment slot="header">
     <AppBar padding="py-3 px-6">
       <svelte:fragment slot="lead">
-        <nav class="flex gap-2 items-center">
+        <nav class="flex items-center gap-2">
           <a href="/">
-            <img src={`${$page.url.origin}/logo-hybrid.svg`} alt="logo-hybrid" class="h-7 mr-4" />
+            <img src={`${$page.url.origin}/logo-hybrid.svg`} alt="logo-hybrid" class="mr-4 h-7" />
           </a>
           {#if data.user && data.user.isAdmin}
             <button
-              class="btn hover:variant-soft-primary"
+              class="hover:variant-soft-primary btn"
               use:popup={{ ...navbarPopup, target: 'adminPopup' }}>Admin</button
             >
-            <div class="card absolute top-[5rem] left-4 w-52 py-2" data-popup="adminPopup">
+            <div class="card absolute left-4 top-[5rem] w-52 py-2" data-popup="adminPopup">
               <nav class="flex flex-col gap-1 px-2">
                 {#each adminNavLinks as { href, label }}
                   <a
                     href={`/admin/${href}`}
-                    class="btn justify-start py-1 hover:variant-soft-primary">{label}</a
+                    class="hover:variant-soft-primary btn justify-start py-1">{label}</a
                   >
                 {/each}
               </nav>
             </div>
           {/if}
           {#each navLinks as { href, label }}
-            <a href={`/${href}`} class="btn hover:variant-soft-primary">{label}</a>
+            <a href={`/${href}`} class="hover:variant-soft-primary btn">{label}</a>
           {/each}
         </nav>
       </svelte:fragment>
@@ -142,7 +142,7 @@
                 cursor="cursor-pointer"
               />
             </div>
-            <div class="card absolute top-[5rem] right-4 w-52 py-2" data-popup="avatarPopup">
+            <div class="card absolute right-4 top-[5rem] w-52 py-2" data-popup="avatarPopup">
               <section class="flex flex-col px-6">
                 <div class="font-bold">{data.user.username}</div>
                 <div class="text-sm">{data.user.discordTag}</div>
@@ -150,14 +150,14 @@
               <nav class="mt-2 flex flex-col gap-1 px-2">
                 <a
                   href={`/user/${data.user.id}`}
-                  class="btn justify-start py-1 hover:variant-soft-primary">Profile</a
+                  class="hover:variant-soft-primary btn justify-start py-1">Profile</a
                 >
-                <a href="/user/settings" class="btn justify-start py-1 hover:variant-soft-primary"
+                <a href="/user/settings" class="hover:variant-soft-primary btn justify-start py-1"
                   >Settings</a
                 >
                 <button
                   on:click={onLogoutClick}
-                  class="btn justify-start py-1 hover:variant-soft-primary">Logout</button
+                  class="hover:variant-soft-primary btn justify-start py-1">Logout</button
                 >
               </nav>
             </div>
@@ -179,7 +179,9 @@
     </div>
   {/if}
   {#if $upload}
-    <div class="fixed inset-0 z-20 h-screen w-screen items-center justify-center flex bg-surface-backdrop-token">
+    <div
+      class="fixed inset-0 z-20 flex h-screen w-screen items-center justify-center bg-surface-backdrop-token"
+    >
       <Upload />
     </div>
   {/if}

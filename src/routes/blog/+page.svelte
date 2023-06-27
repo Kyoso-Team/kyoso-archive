@@ -18,31 +18,32 @@
       return { id, title, published_at, cover_image, description };
     });
 
-    posts.push(... fetchedPosts);
-    morePosts = new Date(fetchedPosts.at(-1)?.published_at || '').getTime() !== firsBlogPostTimestmap;
+    posts.push(...fetchedPosts);
+    morePosts =
+      new Date(fetchedPosts.at(-1)?.published_at || '').getTime() !== firsBlogPostTimestmap;
   }
 </script>
 
 <div class="center-content">
   <h1>Blog</h1>
   <p class="pt-4">Announcements, guides, updates and more.</p>
-  <div class="flex flex-wrap gap-4 mt-8">
+  <div class="mt-8 flex flex-wrap gap-4">
     {#each posts as { id, cover_image, published_at, title, description }}
       <a href={`/blog/post/${id}`} class="card w-96 overflow-hidden">
         <header>
           <img src={cover_image} alt={`${title} - Cover`} />
         </header>
         <div class="p-4">
-          <span class="block text-sm text-primary-500 tracking-wide">{format.date(new Date(published_at))}</span>
+          <span class="block text-sm tracking-wide text-primary-500"
+            >{format.date(new Date(published_at))}</span
+          >
           <h3 class="block pt-1">{title}</h3>
-          <p class="pt-2 text-gray-200 text-justify">{description}</p>
+          <p class="pt-2 text-justify text-gray-200">{description}</p>
         </div>
       </a>
     {/each}
   </div>
   {#if morePosts}
-    <button on:click={onLoadMore} class="mt-4 btn variant-filled-primary">
-      Load More
-    </button>
+    <button on:click={onLoadMore} class="btn variant-filled-primary mt-4"> Load More </button>
   {/if}
 </div>

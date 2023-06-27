@@ -64,7 +64,7 @@
         ghCodeBlocks: true
       }).makeHtml(markdown)}
     {:else}
-      <textarea class="input h-full w-full resize-none py-1 px-2" bind:value={markdown} />
+      <textarea class="input h-full w-full resize-none px-2 py-1" bind:value={markdown} />
     {/if}
   </div>
   <div class="mt-4 grid w-[42rem] grid-cols-[auto_auto]">
@@ -78,7 +78,7 @@
       </button>
     </div>
     <div class="flex justify-end gap-2">
-      <button class="btn variant-ringed-primary" disabled={btnsDisabled} on:click={onUndoChanges}
+      <button class="variant-ringed-primary btn" disabled={btnsDisabled} on:click={onUndoChanges}
         >Undo Changes</button
       >
       <button class="btn variant-filled-primary" disabled={btnsDisabled} on:click={onUpdate}

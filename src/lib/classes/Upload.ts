@@ -4,7 +4,7 @@ export class Upload {
   constructor(file: File) {
     let data = new FormData();
     data.append('file', file);
-    
+
     this.formData = data;
   }
 
@@ -16,7 +16,7 @@ export class Upload {
       method: 'POST',
       body: this.formData
     });
-    
+
     return await resp.text();
   }
 

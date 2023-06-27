@@ -37,9 +37,9 @@
   <div class="flex flex-wrap">
     <div class="flex w-full">
       {#if type === 'string'}
-        <input type="text" class="input py-1 px-2" bind:value {disabled} />
+        <input type="text" class="input px-2 py-1" bind:value {disabled} />
       {:else if type === 'number'}
-        <input type="number" class="input py-1 px-2" bind:value {disabled} />
+        <input type="number" class="input px-2 py-1" bind:value {disabled} />
       {:else if type === 'boolean' && typeof value === 'boolean'}
         <input type="checkbox" class="hidden" />
         <SlideToggle name={label} active="bg-primary-500" {disabled} bind:checked={value} />
@@ -54,9 +54,9 @@
           {/each}
         </select>
       {:else if type === 'date'}
-        <input type="datetime-local" class="input py-1 px-2" bind:value={dateString} {disabled} />
+        <input type="datetime-local" class="input px-2 py-1" bind:value={dateString} {disabled} />
       {:else}
-        <textarea class="input h-28 resize-none py-1 px-2" bind:value {disabled} />
+        <textarea class="input h-28 resize-none px-2 py-1" bind:value {disabled} />
       {/if}
       {#if isLink}
         <a

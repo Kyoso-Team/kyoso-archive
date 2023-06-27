@@ -42,9 +42,13 @@
         .split(',')
         .map((value) => value.trim())
         .filter((value) => value !== '');
-      
+
       currentValue = type === 'number' ? values.map((value) => Number(value)) : values;
-    } else if ((type === 'string' && value !== '') || (type === 'number' && value !== null) || type === 'boolean') {
+    } else if (
+      (type === 'string' && value !== '') ||
+      (type === 'number' && value !== null) ||
+      type === 'boolean'
+    ) {
       currentValue = value;
     }
 
@@ -54,15 +58,17 @@
           errors = ['This field is required'];
         } else {
           let individualErrors: string[] = [];
-  
+
           currentValue.forEach((value, i) => {
             if (field?.validation) {
               let parsed = field.validation.safeParse(value);
-              let errors = parsed.success ? [] : parsed.error.issues.map(({ message }) => `${message} [on element: ${i + 1}]`);
-              individualErrors.push(... errors);
+              let errors = parsed.success
+                ? []
+                : parsed.error.issues.map(({ message }) => `${message} [on element: ${i + 1}]`);
+              individualErrors.push(...errors);
             }
           });
-  
+
           errors = individualErrors;
         }
       } else if (field.validation) {
@@ -102,7 +108,9 @@
       />
     {:else}
       {#if list}
-        <span class="block text-sm text-gray-300">Separate each value with a comma. (Example: value1,value2).</span>
+        <span class="block text-sm text-gray-300"
+          >Separate each value with a comma. (Example: value1,value2).</span
+        >
       {/if}
       <input
         type="text"

@@ -11,5 +11,5 @@ export const GET = (async (event) => {
   }
 
   let redirectUrl = await caller.auth.handleDiscordAuth(code);
-  throw redirect(302, redirectUrl)
+  throw redirect(302, redirectUrl);
 }) satisfies RequestHandler;

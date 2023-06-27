@@ -55,13 +55,15 @@ export const prizesRouter = t.router({
             items,
             osuSupporter,
             tournamentId,
-            cash: (cash) ? {
-              create: {
-                currency: cash.currency,
-                metric: cash.metric,
-                value: cash.value
-              }
-            } : undefined
+            cash: cash
+              ? {
+                  create: {
+                    currency: cash.currency,
+                    metric: cash.metric,
+                    value: cash.value
+                  }
+                }
+              : undefined
           }
         });
       }, "Can't create prize.");

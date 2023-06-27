@@ -42,9 +42,7 @@ const r = {
   },
   number: (min: number, max: number = min, exclude: number[] = []): number => {
     let result = Math.floor(Math.random() * (max + 1 - min) + min);
-    return exclude.find((value) => value === result)
-    ? r.number(min, max, exclude)
-    : result;
+    return exclude.find((value) => value === result) ? r.number(min, max, exclude) : result;
   },
   array: <T>(arr: T[], amount?: number) => {
     let x = arr.length;
@@ -58,7 +56,7 @@ const r = {
 };
 
 function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function seedUsers() {
@@ -143,42 +141,42 @@ async function seedUsers() {
             mode: 'osu'
           }
         });
-  
-      let discordResp = await fetch(`https://discord.com/api/users/${id.discord}`, {
-        headers: {
-          Authorization: `Bot ${env.discordBotToken}`
-        }
-      });
-      let discord = (await discordResp.json()) as DiscordUser;
-    
-      await prisma.user.create({
-        data: {
-          apiKey: r.string(24),
-          discordAccesstoken: r.string(64),
-          discordRefreshToken: r.string(64),
-          osuAccessToken: r.string(64),
-          osuRefreshToken: r.string(64),
-          isAdmin: r.boolean(),
-          isRestricted: r.boolean(),
-          osuUserId: osu.id,
-          osuUsername: osu.username,
-          discordUserId: discord.id,
-          discordUsername: discord.username,
-          discordDiscriminator: discord.discriminator,
-          country: {
-            connectOrCreate: {
-              create: {
-                code: osu.country.code,
-                name: osu.country.name
-              },
-              where: {
-                code: osu.country.code
+
+        let discordResp = await fetch(`https://discord.com/api/users/${id.discord}`, {
+          headers: {
+            Authorization: `Bot ${env.discordBotToken}`
+          }
+        });
+        let discord = (await discordResp.json()) as DiscordUser;
+
+        await prisma.user.create({
+          data: {
+            apiKey: r.string(24),
+            discordAccesstoken: r.string(64),
+            discordRefreshToken: r.string(64),
+            osuAccessToken: r.string(64),
+            osuRefreshToken: r.string(64),
+            isAdmin: r.boolean(),
+            isRestricted: r.boolean(),
+            osuUserId: osu.id,
+            osuUsername: osu.username,
+            discordUserId: discord.id,
+            discordUsername: discord.username,
+            discordDiscriminator: discord.discriminator,
+            country: {
+              connectOrCreate: {
+                create: {
+                  code: osu.country.code,
+                  name: osu.country.name
+                },
+                where: {
+                  code: osu.country.code
+                }
               }
             }
-          }
-        },
-        select: {
-          id: true
+          },
+          select: {
+            id: true
           }
         });
       })
@@ -287,7 +285,7 @@ async function seedteamTournament() {
       }
     });
   }
-  
+
   await prisma.modMultiplier.create({
     data: {
       value: 2.2,
@@ -306,7 +304,6 @@ async function seedteamTournament() {
   for (let i = 0; i < 12; i++) {
     let userId = r.number(1, userCount, usedUserIds);
     usedUserIds.push(userId);
-
 
     let player = await prisma.player.create({
       data: {
@@ -330,13 +327,17 @@ async function seedteamTournament() {
       tournamentId: tournament.id,
       captainId: playerIds[0],
       players: {
-        connect: [{
-          id: playerIds[0]
-        }, {
-          id: playerIds[1]
-        }, {
-          id: playerIds[2]
-        }]
+        connect: [
+          {
+            id: playerIds[0]
+          },
+          {
+            id: playerIds[1]
+          },
+          {
+            id: playerIds[2]
+          }
+        ]
       }
     },
     select: {

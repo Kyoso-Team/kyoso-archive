@@ -485,10 +485,10 @@
               <span class="badge variant-filled-primary ml-2">Main Stage</span>
             {/if}
           </div>
-          <div class="absolute top-4 right-4 flex gap-x-2">
+          <div class="absolute right-4 top-4 flex gap-x-2">
             {#if i !== 0}
               <button
-                class="btn btn-sm variant-ringed-primary p-1"
+                class="variant-ringed-primary btn btn-sm p-1"
                 on:click={() =>
                   onMoveStageOrder(id, order, data.stages[i - 1].id, data.stages[i - 1].order)}
               >
@@ -497,7 +497,7 @@
             {/if}
             {#if i !== data.stages.length - 1}
               <button
-                class="btn btn-sm variant-ringed-primary p-1"
+                class="variant-ringed-primary btn btn-sm p-1"
                 on:click={() =>
                   onMoveStageOrder(id, order, data.stages[i + 1].id, data.stages[i + 1].order)}
               >
@@ -505,7 +505,7 @@
               </button>
             {/if}
             {#if !isMainStage}
-              <button class="btn btn-sm variant-ringed-primary" on:click={() => onMakeMain(id)}
+              <button class="variant-ringed-primary btn btn-sm" on:click={() => onMakeMain(id)}
                 >Make Main</button
               >
             {/if}
@@ -553,10 +553,10 @@
                       </span>
                     {/if}
                   </div>
-                  <div class="absolute top-2 right-2 flex gap-x-2">
+                  <div class="absolute right-2 top-2 flex gap-x-2">
                     {#if j !== 0}
                       <button
-                        class="btn btn-sm variant-ringed-secondary p-1"
+                        class="variant-ringed-secondary btn btn-sm p-1"
                         on:click={() =>
                           onMoveRoundOrder(
                             round.id,
@@ -570,7 +570,7 @@
                     {/if}
                     {#if j !== rounds.length - 1}
                       <button
-                        class="btn btn-sm variant-ringed-secondary p-1"
+                        class="variant-ringed-secondary btn btn-sm p-1"
                         on:click={() =>
                           onMoveRoundOrder(
                             round.id,
@@ -595,7 +595,7 @@
                         })}>Update Round</button
                     >
                     <button
-                      class="btn btn-sm variant-filled-error"
+                      class="variant-filled-error btn btn-sm"
                       on:click={() => onDeleteRound(round.id, round.name)}>Delete Round</button
                     >
                   </div>
@@ -612,7 +612,7 @@
             </div>
             <div class="flex justify-end">
               <button
-                class="btn btn-sm variant-filled-error"
+                class="variant-filled-error btn btn-sm"
                 on:click={() => onDeleteStage(id, format)}>Delete Stage</button
               >
             </div>

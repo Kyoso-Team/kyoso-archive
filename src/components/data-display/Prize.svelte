@@ -1,7 +1,16 @@
 <script lang="ts">
   import { format, tooltip } from '$lib/utils';
   import { popup } from '@skeletonlabs/skeleton';
-  import { TrophyIcon, MedalIcon, BadgeIcon, BannerIcon, HeartIcon, MoneyIcon, AdditionIcon, Tooltip } from '$components';
+  import {
+    TrophyIcon,
+    MedalIcon,
+    BadgeIcon,
+    BannerIcon,
+    HeartIcon,
+    MoneyIcon,
+    AdditionIcon,
+    Tooltip
+  } from '$components';
   import type { Prize, CashPrize } from '@prisma/client';
 
   const badgeStyles = 'badge variant-ghost !bg-surface-900 h-7';
@@ -20,22 +29,22 @@
   };
 </script>
 
-<div class="card flex flex-col w-64 p-2 px-4 relative">
+<div class="card relative flex w-64 flex-col p-2 px-4">
   <slot name="menu" />
-  <div class="text-center mb-2">
-    <h3 class={
-      prize.positions?.[0] === 1
+  <div class="mb-2 text-center">
+    <h3
+      class={prize.placements?.[0] === 1
         ? 'text-yellow-300'
-        : prize.positions?.[0] === 2
-          ? 'text-gray-300'
-          : prize.positions?.[0] === 3
-            ? 'text-orange-300'
-            : ''
-    }>
-      {format.placements(prize.positions)} Place
+        : prize.placements?.[0] === 2
+        ? 'text-gray-300'
+        : prize.placements?.[0] === 3
+        ? 'text-orange-300'
+        : ''}
+    >
+      {format.placements(prize.placements)} Place
     </h3>
   </div>
-  <div class="flex items-center justify-center gap-1 flex-wrap">
+  <div class="flex flex-wrap items-center justify-center gap-1">
     {#if prize.trophy}
       <span class={`${badgeStyles} w-[52px]`} use:popup={tooltip(tooltips.trophy)}>
         <TrophyIcon h={18} styles="fill-white" />
@@ -65,7 +74,10 @@
         <span class={`${spanStyles} -mr-1`}>{prize.osuSupporter}</span>
         <HeartIcon h={18} styles="fill-white" />
       </span>
-      <Tooltip target={tooltips.supporter} label={`${prize.osuSupporter} months of osu! supporter`} />
+      <Tooltip
+        target={tooltips.supporter}
+        label={`${prize.osuSupporter} months of osu! supporter`}
+      />
     {/if}
     {#if prize.cash && prize.cash.value > 0}
       <span class={`${badgeStyles} w-20`} use:popup={tooltip(tooltips.cash)}>
@@ -74,7 +86,12 @@
         </span>
         <MoneyIcon h={22} styles="fill-white" />
       </span>
-      <Tooltip target={tooltips.cash} label={prize.cash.metric === 'Percent' ? `${prize.cash.value}% of the prize pool (${prize.cash.currency})` : `${prize.cash.value} ${prize.cash.currency}`} />
+      <Tooltip
+        target={tooltips.cash}
+        label={prize.cash.metric === 'Percent'
+          ? `${prize.cash.value}% of the prize pool (${prize.cash.currency})`
+          : `${prize.cash.value} ${prize.cash.currency}`}
+      />
     {/if}
     {#if prize.items.length > 0}
       <span class={`${badgeStyles} w-[52px]`} use:popup={tooltip(tooltips.items)}>

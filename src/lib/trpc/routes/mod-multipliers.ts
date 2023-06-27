@@ -31,7 +31,7 @@ export const modMultipliersRouter = t.router({
       await tryCatch(async () => {
         await prisma.modMultiplier.create({
           data: {
-            ... data,
+            ...data,
             tournamentId
           }
         });
@@ -51,17 +51,13 @@ export const modMultipliersRouter = t.router({
         `update multiplier of ID ${input.where.id}`
       );
 
-      let {
-        tournamentId,
-        where,
-        data
-      } = input;
+      let { tournamentId, where, data } = input;
 
       await tryCatch(async () => {
         await prisma.modMultiplier.update({
           where,
           data: {
-            ... data,
+            ...data,
             tournamentId
           }
         });

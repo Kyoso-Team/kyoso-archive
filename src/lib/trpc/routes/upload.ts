@@ -33,7 +33,7 @@ async function destroy(folderName: string, fileName: string) {
   await fetch(`${env.STORAGE_ENDPOINT}/${folderName}/${fileName}`, {
     method: 'DELETE',
     headers: {
-      'AccessKey': env.STORAGE_PASSWORD
+      AccessKey: env.STORAGE_PASSWORD
     }
   });
 }
@@ -166,22 +166,19 @@ export const uploadRouter = t.router({
           .toBuffer();
         let thumbImg = bufferToFile(thumbImgBuffer, 'thumb.jpeg');
 
-        await tryCatch(
-          async () => {
-            await upload('tournament-banners', `${fileName}-full`, fullImg);
-            await upload('tournament-banners', `${fileName}-thumb`, thumbImg);
+        await tryCatch(async () => {
+          await upload('tournament-banners', `${fileName}-full`, fullImg);
+          await upload('tournament-banners', `${fileName}-thumb`, thumbImg);
 
-            await prisma.tournament.update({
-              where: {
-                id: tournamentId
-              },
-              data: {
-                hasBanner: true
-              }
-            });
-          },
-          `Can't upload banner for tournament with ID ${tournamentId}.`
-        );
+          await prisma.tournament.update({
+            where: {
+              id: tournamentId
+            },
+            data: {
+              hasBanner: true
+            }
+          });
+        }, `Can't upload banner for tournament with ID ${tournamentId}.`);
       }),
     tournamentLogo: t.procedure
       .use(getUser)
@@ -227,22 +224,19 @@ export const uploadRouter = t.router({
           .toBuffer();
         let thumbImg = bufferToFile(thumbImgBuffer, 'icon.jpeg');
 
-        await tryCatch(
-          async () => {
-            await upload('tournament-logos', `${fileName}-full`, fullImg);
-            await upload('tournament-logos', `${fileName}-icon`, thumbImg);
+        await tryCatch(async () => {
+          await upload('tournament-logos', `${fileName}-full`, fullImg);
+          await upload('tournament-logos', `${fileName}-icon`, thumbImg);
 
-            await prisma.tournament.update({
-              where: {
-                id: tournamentId
-              },
-              data: {
-                hasLogo: true
-              }
-            });
-          },
-          `Can't upload logo for tournament with ID ${tournamentId}.`
-        );
+          await prisma.tournament.update({
+            where: {
+              id: tournamentId
+            },
+            data: {
+              hasLogo: true
+            }
+          });
+        }, `Can't upload logo for tournament with ID ${tournamentId}.`);
       })
   }),
   delete: t.router({
@@ -256,22 +250,19 @@ export const uploadRouter = t.router({
           `delete the banner for tournament of ID ${tournamentId}`
         );
 
-        await tryCatch(
-          async () => {
-            await destroy('tournament-banners', `${format.digits(tournamentId, 5)}-full.jpeg`);
-            await destroy('tournament-banners', `${format.digits(tournamentId, 5)}-thumb.jpeg`);
+        await tryCatch(async () => {
+          await destroy('tournament-banners', `${format.digits(tournamentId, 5)}-full.jpeg`);
+          await destroy('tournament-banners', `${format.digits(tournamentId, 5)}-thumb.jpeg`);
 
-            await prisma.tournament.update({
-              where: {
-                id: tournamentId
-              },
-              data: {
-                hasBanner: false
-              }
-            });
-          },
-          `Can't delete banner for tournament with ID ${tournamentId}.`
-        );
+          await prisma.tournament.update({
+            where: {
+              id: tournamentId
+            },
+            data: {
+              hasBanner: false
+            }
+          });
+        }, `Can't delete banner for tournament with ID ${tournamentId}.`);
       }),
     tournamentLogo: t.procedure
       .use(getUser)
@@ -283,22 +274,19 @@ export const uploadRouter = t.router({
           `delete the logo for tournament of ID ${tournamentId}`
         );
 
-        await tryCatch(
-          async () => {
-            await destroy('tournament-logos', `${format.digits(tournamentId, 5)}-full.jpeg`);
-            await destroy('tournament-logos', `${format.digits(tournamentId, 5)}-icon.jpeg`);
+        await tryCatch(async () => {
+          await destroy('tournament-logos', `${format.digits(tournamentId, 5)}-full.jpeg`);
+          await destroy('tournament-logos', `${format.digits(tournamentId, 5)}-icon.jpeg`);
 
-            await prisma.tournament.update({
-              where: {
-                id: tournamentId
-              },
-              data: {
-                hasLogo: false
-              }
-            });
-          },
-          `Can't delete logo for tournament with ID ${tournamentId}.`
-        );
+          await prisma.tournament.update({
+            where: {
+              id: tournamentId
+            },
+            data: {
+              hasLogo: false
+            }
+          });
+        }, `Can't delete logo for tournament with ID ${tournamentId}.`);
       })
   })
 });

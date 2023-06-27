@@ -23,7 +23,9 @@
 
     modal.yesNo(
       `${isAdmin ? 'Removing' : 'Adding'} an admin`,
-      `Are you sure you want to <strong>${isAdmin ? 'REMOVE' : 'ADD'} ${user.osuUsername}</strong> ${isAdmin ? 'from' : 'to'} admins?`,
+      `Are you sure you want to <strong>${isAdmin ? 'REMOVE' : 'ADD'} ${
+        user.osuUsername
+      }</strong> ${isAdmin ? 'from' : 'to'} admins?`,
       async () => {
         let success = await trpc($page).users.changeAdminStatus.mutate({
           id: user.id,
@@ -61,9 +63,8 @@
             class={`btn btn-sm ${user.isAdmin ? 'variant-filled-error' : 'variant-filled'}`}
             on:click={() => adminChange(user)}>{user.isAdmin ? 'Remove' : 'Make'} Admin</button
           >
-          <button
-            class="variant-filled-error btn btn-sm"
-            on:click={() => deleteUser(user)}>Delete User</button
+          <button class="variant-filled-error btn btn-sm" on:click={() => deleteUser(user)}
+            >Delete User</button
           >
         </Dropdown>
       </div>

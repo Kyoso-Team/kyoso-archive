@@ -19,9 +19,9 @@
   export let forceShowDiscord: boolean = false;
 </script>
 
-<div class="card sm:w-72 w-64 p-4 bg-surface-backdrop-token">
+<div class="card w-64 p-4 bg-surface-backdrop-token sm:w-72">
   <div class="grid grid-cols-[max-content_1fr_1fr_1fr] gap-0">
-    <div class="row-span-2 max-w-min mr-2">
+    <div class="row-span-2 mr-2 max-w-min">
       <Avatar src={buildUrl.userAvatar(user.osuUserId)} rounded="rounded-md" width="w-12" />
     </div>
     <div class="col-span-2 flex items-center">

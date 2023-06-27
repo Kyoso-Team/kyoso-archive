@@ -46,17 +46,22 @@ export const notificationsRouter = t.router({
       let notifs = await prisma.notification.findMany({
         ...paginate(page || 1),
         where: {
-          AND: [{
-            notifiedTo: {
-              some: {
-                id: ctx.user.id
+          AND: [
+            {
+              notifiedTo: {
+                some: {
+                  id: ctx.user.id
+                }
               }
-            }
-          }, afterDate ? {
-            notifiedAt: {
-              gt: afterDate
-            }
-          } : {}]
+            },
+            afterDate
+              ? {
+                  notifiedAt: {
+                    gt: afterDate
+                  }
+                }
+              : {}
+          ]
         },
         select: {
           id: true,

@@ -32,7 +32,7 @@
 <div class="center-content">
   <SearchBar label="Search Purchases" on:search={onSearch} />
   <div class="mb-6">
-    <h2 class="pl-1 pb-1">Sorting</h2>
+    <h2 class="pb-1 pl-1">Sorting</h2>
     <div class="card flex min-w-[18.5rem] max-w-3xl justify-center p-4">
       <section class="flex w-max flex-col">
         <span class="pl-1 font-bold">Date</span>

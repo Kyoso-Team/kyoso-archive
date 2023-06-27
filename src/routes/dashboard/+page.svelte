@@ -42,7 +42,7 @@
 
     form.create<TournamentFormData>({
       title: 'Create Tournament',
-      fields: ({ field }) => [
+      fields: ({ field, select }) => [
         field('Name', 'name', 'string', {
           validation: (z) => z.max(50)
         }),
@@ -60,7 +60,14 @@
         }),
         field('Type', 'type', 'string', {
           fromValues: {
-            values: (): TournamentType[] => ['Teams', 'Solo']
+            values: () => {
+              let value = select<TournamentType>();
+
+              return [
+                value('Teams'),
+                value('Solo')
+              ];
+            }
           }
         }),
         field('Max. team size', 'teamSize', 'number', {
@@ -168,7 +175,7 @@
     <div class="card relative min-w-[19rem] p-6">
       <button
         on:click={onExit}
-        class="btn variant-filled-primary absolute top-6 right-6 flex gap-1 px-3 py-1"
+        class="btn variant-filled-primary absolute right-6 top-6 flex gap-1 px-3 py-1"
       >
         <CloseIcon w={15} h={15} styles="fill-black" /> Close
       </button>

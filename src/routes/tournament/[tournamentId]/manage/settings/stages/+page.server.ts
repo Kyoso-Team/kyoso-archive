@@ -7,7 +7,10 @@ export const load = (async ({ parent }) => {
   let data = await parent();
 
   if (!hasPerms(data.staffMember, ['Host', 'MutateTournament'])) {
-    throw error(401, `You lack the necessary permissions to manage the stages for tournament of ID ${data.tournament.id}.`);
+    throw error(
+      401,
+      `You lack the necessary permissions to manage the stages for tournament of ID ${data.tournament.id}.`
+    );
   }
 
   let stages = await prisma.stage.findMany({

@@ -7,7 +7,7 @@
 </script>
 
 <div class={styles}>
-  <h2 class="pl-1 pb-1">{label}</h2>
+  <h2 class="pb-1 pl-1">{label}</h2>
   <div class="card mb-2 flex min-w-[18.5rem] max-w-5xl flex-wrap justify-center gap-4 p-4">
     {#if resultCount === 0}
       <div class="flex flex-col items-center">

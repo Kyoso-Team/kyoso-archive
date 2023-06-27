@@ -72,13 +72,15 @@ export interface Field {
     value: string | number;
     label: string;
   }[];
-  selectMultiple?: boolean | {
-    atLeast: number;
-  };
+  selectMultiple?:
+    | boolean
+    | {
+        atLeast: number;
+      };
   onSearch?: () => Promise<Record<string, unknown>>;
   mapResult?: MapResult;
   errorCount: number;
-  list?: boolean; 
+  list?: boolean;
 }
 
 export interface MapResult {

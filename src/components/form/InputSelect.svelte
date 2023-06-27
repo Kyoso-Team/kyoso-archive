@@ -6,10 +6,12 @@
 
   export let key: string;
   export let type: 'string' | 'number';
-  export let defaultValue: {
-    value: string | number;
-    label: string;
-  } | undefined;
+  export let defaultValue:
+    | {
+        value: string | number;
+        label: string;
+      }
+    | undefined;
   let value = defaultValue?.value;
   let disabled = false;
   let field: Field | undefined;
@@ -17,7 +19,10 @@
   onMount(() => {
     let defaultValue = $form?.defaultValue?.[key];
 
-    if ((typeof defaultValue === 'string' && type === 'string') || (typeof defaultValue === 'number' && type === 'number')) {
+    if (
+      (typeof defaultValue === 'string' && type === 'string') ||
+      (typeof defaultValue === 'number' && type === 'number')
+    ) {
       value = defaultValue;
     }
   });

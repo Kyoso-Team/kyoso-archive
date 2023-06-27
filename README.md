@@ -33,7 +33,6 @@ Scripts present in the package.json file. Each script must be prepended with `pn
 - `db:studio`: Opens UI to view and manage the database's data.
 - `review`: Runs `fmt`, `lint` and `check`, one after the other.
 
-
 ## Component Structure
 
 Structure to follow when writing Svelte components or pages.

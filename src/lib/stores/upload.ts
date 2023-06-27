@@ -13,13 +13,15 @@ interface UploadForm {
 function createUpload() {
   const { subscribe, set } = writable<UploadForm | undefined>();
 
-  function create(form: Omit<UploadForm, 'limitBy' | 'imgAspectRatio'> & {
-    limitBy?: 'width' | 'height';
-    imgAspectRatio?: string;
-  }) {
+  function create(
+    form: Omit<UploadForm, 'limitBy' | 'imgAspectRatio'> & {
+      limitBy?: 'width' | 'height';
+      imgAspectRatio?: string;
+    }
+  ) {
     form.limitBy ||= 'height';
     form.imgAspectRatio ||= '21/9';
-    
+
     set(form as UploadForm);
   }
 

@@ -23,7 +23,12 @@
   <div class="grid h-full grid-cols-[auto_auto] fill-white">
     <AppRail background="bg-surface-50-900-token">
       {#each Array.from($sidebar.sections.entries()) as [label, { icon }]}
-        <AppRailTile value={label} name={`section-${label}`} regionLead="flex items-center flex-col" bind:group={currentTile}>
+        <AppRailTile
+          value={label}
+          name={`section-${label}`}
+          regionLead="flex items-center flex-col"
+          bind:group={currentTile}
+        >
           <svelte:fragment slot="lead">
             {#if icon === 'settings'}
               <SettingsIcon w={30} h={30} />
@@ -38,7 +43,7 @@
             {:else}
               <StatsIcon w={30} h={30} />
             {/if}
-            <span class="text-sm block mt-1">{label}</span>
+            <span class="mt-1 block text-sm">{label}</span>
           </svelte:fragment>
         </AppRailTile>
       {/each}
@@ -60,7 +65,7 @@
                     $sidebar.selectedLink?.inSubsection === subsectionLabel &&
                     $sidebar.selectedLink?.label === label
                       ? 'variant-filled-primary'
-                      : 'text-white hover:variant-soft-primary'
+                      : 'hover:variant-soft-primary text-white'
                   }`}>{label}</span
                 >
               </a>

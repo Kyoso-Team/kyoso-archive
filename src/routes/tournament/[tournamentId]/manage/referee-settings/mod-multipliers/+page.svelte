@@ -13,7 +13,7 @@
     mods: Mod[];
     noMod: boolean;
     value: number;
-  }
+  };
 
   export let data: PageServerData;
 
@@ -21,7 +21,11 @@
     sidebar.setSelected('Settings', 'Referee', 'Mod Multipliers');
   });
 
-  function mutateMultiplier(operation: 'create' | 'update', defaultValue?: MutateModMultiplier, multiplierId?: number) {
+  function mutateMultiplier(
+    operation: 'create' | 'update',
+    defaultValue?: MutateModMultiplier,
+    multiplierId?: number
+  ) {
     form.create<MutateModMultiplier>({
       defaultValue,
       title: `${operation === 'create' ? 'Create' : 'Update'} Multiplier`,
@@ -59,7 +63,11 @@
           if (!areModsUnique) {
             error.set(
               $error,
-              `A mod multiplier for ${multiplier.mods.length === 0 ? 'NM' : multiplier.mods.reduce((str, mod) => `${str}${mod}`, '')} already exists in this tournament.`,
+              `A mod multiplier for ${
+                multiplier.mods.length === 0
+                  ? 'NM'
+                  : multiplier.mods.reduce((str, mod) => `${str}${mod}`, '')
+              } already exists in this tournament.`,
               'close',
               false,
               () => {
@@ -86,7 +94,7 @@
             }
 
             await trpc($page).modMultipliers.updateMultiplier.mutate({
-              ... input,
+              ...input,
               where: {
                 id: multiplierId
               }
@@ -107,17 +115,23 @@
   }
 
   function onUpdateMultiplier({ id, mods, value }: Omit<ModMultiplier, 'tournamentId'>) {
-    mutateMultiplier('update', {
-      mods,
-      value,
-      noMod: mods.length === 0
-    }, id);
+    mutateMultiplier(
+      'update',
+      {
+        mods,
+        value,
+        noMod: mods.length === 0
+      },
+      id
+    );
   }
 
   function onDeleteMultiplier({ id, mods }: Omit<ModMultiplier, 'tournamentId'>) {
     modal.yesNo(
       'Confirm Mod Multiplier Deletion',
-      `Are you sure you want to delete the mod multiplier for ${mods.length === 0 ? 'NM' : mods.reduce((str, mod) => `${str}${mod}`, '')} from this tournament?`,
+      `Are you sure you want to delete the mod multiplier for ${
+        mods.length === 0 ? 'NM' : mods.reduce((str, mod) => `${str}${mod}`, '')
+      } from this tournament?`,
       async () => {
         try {
           await trpc($page).modMultipliers.deleteMultiplier.mutate({
@@ -141,29 +155,44 @@
   <h1>Mod Multipliers</h1>
   <p class="mt-4">Multipliers for mods applied to FreeMod maps.</p>
   <div class="my-4">
-    <button
-      class="btn variant-filled-primary"
-      on:click={onCreateMultiplier}>Create Multiplier</button
+    <button class="btn variant-filled-primary" on:click={onCreateMultiplier}
+      >Create Multiplier</button
     >
   </div>
-  <div class="mt-4 card w-72 flex flex-col gap-2 p-4">
+  <div class="card mt-4 flex w-72 flex-col gap-2 p-4">
     {#if data.modMultipliers.length === 0}
       <p>No multipliers have been added</p>
     {:else}
       {#each data.modMultipliers as multiplier}
-        <div class="relative rounded-md bg-surface-backdrop-token py-2 px-4 flex gap-1 justify-center">
+        <div
+          class="relative flex justify-center gap-1 rounded-md px-4 py-2 bg-surface-backdrop-token"
+        >
           {#if multiplier.mods.length === 0}
-            <span class="badge variant-filled" style={`background-color: ${colorByMod('NM', 400)};`}>NM</span>
+            <span class="badge variant-filled" style={`background-color: ${colorByMod('NM', 400)};`}
+              >NM</span
+            >
           {:else}
             {#each multiplier.mods as mod}
-              <span class="badge variant-filled" style={`background-color: ${colorByMod(mod, 400)};`}>{mod}</span>
+              <span
+                class="badge variant-filled"
+                style={`background-color: ${colorByMod(mod, 400)};`}>{mod}</span
+              >
             {/each}
           {/if}
           <span>&#215;</span>
           <span>{multiplier.value.toString()}</span>
-          <Dropdown name={`manage-multiplier-${multiplier.id}`} styles="absolute -top-[2px] right-2">
-            <button class="btn btn-sm variant-filled" on:click={() => onUpdateMultiplier(multiplier)}>Update</button>
-            <button class="btn btn-sm variant-filled-error" on:click={() => onDeleteMultiplier(multiplier)}>Delete</button>
+          <Dropdown
+            name={`manage-multiplier-${multiplier.id}`}
+            styles="absolute -top-[2px] right-2"
+          >
+            <button
+              class="btn btn-sm variant-filled"
+              on:click={() => onUpdateMultiplier(multiplier)}>Update</button
+            >
+            <button
+              class="variant-filled-error btn btn-sm"
+              on:click={() => onDeleteMultiplier(multiplier)}>Delete</button
+            >
           </Dropdown>
         </div>
       {/each}

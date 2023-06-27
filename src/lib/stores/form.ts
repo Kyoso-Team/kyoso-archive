@@ -28,7 +28,7 @@ function createForm() {
     title: string;
     fields: (createField: {
       field: typeof field;
-      asyncField: typeof asyncField
+      asyncField: typeof asyncField;
       select: typeof select;
     }) => Field[];
     onSubmit: (value: T) => void | Promise<void>;
@@ -63,9 +63,11 @@ function createForm() {
                 value: string | number;
                 label: string;
               }[];
-              selectMultiple?: boolean | {
-                atLeast: number;
-              };
+              selectMultiple?:
+                | boolean
+                | {
+                    atLeast: number;
+                  };
             };
           }
         : undefined
