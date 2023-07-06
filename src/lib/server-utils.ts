@@ -6,7 +6,7 @@ import { hasTournamentConcluded } from './utils';
 import type { AnyZodObject } from 'zod';
 import type { URL } from 'url';
 import type { SessionUser } from '$types';
-import type { TournamentService } from '@prisma/client';
+import type { MappoolState, TournamentService } from '@prisma/client';
 
 export const forbidIf = {
   hasConcluded: (tournament: {
@@ -28,6 +28,17 @@ export const forbidIf = {
       throw new TRPCError({
         code: 'FORBIDDEN',
         message: `Tournament of ID ${tournament.id} doesn't have the ${mustInclude.toLowerCase()} service.`
+      });
+    }
+  },
+  poolIsPublished: (round: {
+    id: number;
+    mappoolState: MappoolState;
+  }) => {
+    if (round.mappoolState === 'Public') {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: `Round of ID ${round.id} already has its mappool published.`
       });
     }
   }

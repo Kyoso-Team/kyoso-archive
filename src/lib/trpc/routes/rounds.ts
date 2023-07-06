@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
 import { getUserAsStaff } from '$trpc/middleware';
 import { whereIdSchema, withTournamentSchema } from '$lib/schemas';
-import { isAllowed } from '$lib/server-utils';
+import { forbidIf, isAllowed } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
 import type { Prisma } from '@prisma/client';
 
@@ -104,9 +104,11 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
         `create round for tournament of ID ${input.tournamentId}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
 
       let {
         tournamentId,
@@ -134,9 +136,11 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
         `create round for tournament of ID ${input.tournamentId}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
 
       let {
         tournamentId,
@@ -164,9 +168,11 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
         `create round for tournament of ID ${input.tournamentId}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
 
       let {
         tournamentId,
@@ -195,9 +201,13 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
         `update round of ID ${input.where.id}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
+
+      if (Object.keys(input.data).length === 0) return;
 
       let {
         data: { name, bestOf, banCount }
@@ -223,9 +233,13 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
         `update round of ID ${input.where.id}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
+
+      if (Object.keys(input.data).length === 0) return;
 
       let {
         data: { name, runCount, summarizeRunsAs }
@@ -251,9 +265,13 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
         `update round of ID ${input.where.id}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
+
+      if (Object.keys(input.data).length === 0) return;
 
       let {
         data: { name, playersEliminatedPerMap }
@@ -284,9 +302,11 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
         `change the order of rounds for tournament of ID ${input.tournamentId}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
 
       await tryCatch(async () => {
         await prisma.$transaction([
@@ -319,9 +339,11 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
         `delete round of ID ${input.where.id}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
 
       let { where } = input;
 

@@ -7,7 +7,7 @@ import { getUserAsStaff, getStoredUser } from '$trpc/middleware';
 import { availabilitySchema, withTournamentSchema } from '$lib/schemas';
 import { forbidIf, isAllowed } from '$lib/server-utils';
 import { Client } from 'osu-web.js';
-import { getDiscordUser } from '$trpc/utils';
+import { getDiscordUser } from '$trpc/helpers';
 import { calc, hasPerms } from '$lib/utils';
 
 export const regsRouter = t.router({
@@ -64,19 +64,8 @@ export const regsRouter = t.router({
         `update user data for player of ID ${input.playerId}`
       );
 
-      let tournament = await prisma.tournament.findFirstOrThrow({
-        where: {
-          id: ctx.tournament.id
-        },
-        select: {
-          id: true,
-          concludesOn: true,
-          services: true
-        }
-      });
-
-      forbidIf.doesntIncludeService(tournament, 'Registrations');
-      forbidIf.hasConcluded(tournament);
+      forbidIf.doesntIncludeService(ctx.tournament, 'Registrations');
+      forbidIf.hasConcluded(ctx.tournament);
 
       let { discordUserId, osuUserId, badgeCount } = await tryCatch(async () => {
         let { user, badgeCount } = await prisma.player.findFirstOrThrow({

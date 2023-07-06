@@ -1,9 +1,9 @@
 import prisma from '$prisma';
 import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
-import { getUserAsStaff } from '$trpc/middleware';
+import { getUserAsStaffWithRound } from '$trpc/middleware';
 import { whereIdSchema, withRoundSchema, modSchema } from '$lib/schemas';
-import { isAllowed } from '$lib/server-utils';
+import { forbidIf, isAllowed } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
 
 const modpoolsMutationSchema = z.object({
@@ -15,7 +15,7 @@ const modpoolsMutationSchema = z.object({
 
 export const modpoolsRouter = t.router({
   createModpool: t.procedure
-    .use(getUserAsStaff)
+    .use(getUserAsStaffWithRound)
     .input(
       withRoundSchema.extend({
         data: modpoolsMutationSchema.extend({
@@ -25,9 +25,13 @@ export const modpoolsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolStructure']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolStructure']),
         `create modpool for tournament of ID ${input.tournamentId}`
       );
+      
+      forbidIf.doesntIncludeService(ctx.tournament, 'Mappooling');
+      forbidIf.hasConcluded(ctx.tournament);
+      forbidIf.poolIsPublished(ctx.round);
 
       let {
         roundId,
@@ -55,7 +59,7 @@ export const modpoolsRouter = t.router({
       }, "Can't create modpool.");
     }),
   updateModpool: t.procedure
-    .use(getUserAsStaff)
+    .use(getUserAsStaffWithRound)
     .input(
       withRoundSchema.extend({
         where: whereIdSchema,
@@ -64,9 +68,14 @@ export const modpoolsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolStructure']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolStructure']),
         `update modpool of ID ${input.where.id}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
+      forbidIf.poolIsPublished(ctx.round);
+
+      if (Object.keys(input.data).length === 0) return;
 
       let {
         where,
@@ -86,7 +95,7 @@ export const modpoolsRouter = t.router({
       }, `Can't update modpool of ID ${where.id}.`);
     }),
   swapOrder: t.procedure
-    .use(getUserAsStaff)
+    .use(getUserAsStaffWithRound)
     .input(
       withRoundSchema.extend({
         modpool1: z.object({
@@ -101,9 +110,11 @@ export const modpoolsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolStructure']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolStructure']),
         `change the order of modpools for tournament of ID ${input.tournamentId}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
 
       await tryCatch(async () => {
         await prisma.$transaction([
@@ -127,7 +138,7 @@ export const modpoolsRouter = t.router({
       }, `Can't change the order of modpools for tournament of ID ${input.tournamentId}.`);
     }),
   deleteModpool: t.procedure
-    .use(getUserAsStaff)
+    .use(getUserAsStaffWithRound)
     .input(
       withRoundSchema.extend({
         where: whereIdSchema
@@ -135,9 +146,12 @@ export const modpoolsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolStructure']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolStructure']),
         `delete modpool of ID ${input.where.id}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
+      forbidIf.poolIsPublished(ctx.round);
 
       let { where } = input;
 

@@ -86,10 +86,15 @@ export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
         id: parsed.tournamentId
       },
       select: {
-        id: true
+        id: true,
+        concludesOn: true,
+        services: true,
+        type: true,
+        teamSize: true,
+        teamPlaySize: true
       }
     });
-  }, `Couldn't find tournament with ID ${parse.data.tournamentId}.`);
+  }, `Couldn't find tournament with ID ${parsed.tournamentId}.`);
 
   let staffMember = await tryCatch(async () => {
     return await prisma.staffMember.findUniqueOrThrow({
@@ -115,6 +120,43 @@ export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
       user,
       tournament,
       staffMember
+    }
+  });
+});
+
+export const getUserAsStaffWithRound = getUserAsStaff.unstable_pipe(async ({ ctx, next, rawInput }) => {
+  let parse = z
+    .object({
+      roundId: z.number().int()
+    })
+    .safeParse(rawInput);
+  
+  if (!parse.success) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: '"roundId" is invalid'
+    });
+  }
+
+  let parsed = parse.data;
+
+  let round = await tryCatch(async () => {
+    return await prisma.round.findUniqueOrThrow({
+      where: {
+        id: parsed.roundId
+      },
+      select: {
+        id: true,
+        mappoolState: true,
+        publishStats: true
+      }
+    });
+  }, `Couldn't find round with ID ${parsed.roundId}.`);
+
+  return next({
+    ctx: {
+      ... ctx,
+      round
     }
   });
 });

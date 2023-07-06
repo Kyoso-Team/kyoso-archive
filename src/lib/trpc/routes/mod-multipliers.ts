@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
 import { getUserAsStaff } from '$trpc/middleware';
 import { whereIdSchema, withTournamentSchema } from '$lib/schemas';
-import { isAllowed } from '$lib/server-utils';
+import { forbidIf, isAllowed } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
 import { modSchema } from '$lib/schemas';
 
@@ -22,9 +22,11 @@ export const modMultipliersRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `create mod multipliers for tournament of ID ${input.tournamentId}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
 
       let { tournamentId, data } = input;
 
@@ -47,9 +49,13 @@ export const modMultipliersRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `update multiplier of ID ${input.where.id}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
+
+      if (Object.keys(input.data).length === 0) return;
 
       let { tournamentId, where, data } = input;
 
@@ -72,9 +78,11 @@ export const modMultipliersRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `delete mod multiplier of ID ${input.where.id}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
 
       let { where } = input;
 

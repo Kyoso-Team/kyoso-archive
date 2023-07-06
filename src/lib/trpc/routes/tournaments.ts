@@ -7,7 +7,7 @@ import { getUser, getUserAsStaff } from '$trpc/middleware';
 import { services } from '$lib/constants';
 import { TRPCError } from '@trpc/server';
 import { isAllowed } from '$lib/server-utils';
-import { hasPerms } from '$lib/utils';
+import { hasPerms, hasTournamentConcluded } from '$lib/utils';
 import { whereIdSchema } from '$lib/schemas';
 import type { PayPalOrder } from '$types';
 import type { AmountBreakdown } from '@paypal/checkout-server-sdk/lib/payments/lib';
@@ -259,9 +259,7 @@ export const tournamentRouter = t.router({
             freeModRules: z.string().nullish(),
             warmupRules: z.string().nullish(),
             lateProcedures: z.string().nullish(),
-            banOrder: z.union([z.literal('ABABAB'), z.literal('ABBAAB')]),
-            teamSize: z.number().int(),
-            teamPlaySize: z.number().int()
+            banOrder: z.union([z.literal('ABABAB'), z.literal('ABBAAB')])
           })
           .deepPartial()
       })
@@ -273,6 +271,37 @@ export const tournamentRouter = t.router({
       );
 
       if (Object.keys(input.data).length === 0) return;
+
+      if (hasTournamentConcluded(ctx.tournament)) {
+        let keys = [
+          'acronym',
+          'banOrder',
+          'doubleBanAllowed',
+          'doublePickAllowed',
+          'freeModRules',
+          'lateProcedures',
+          'name',
+          'pickTimerLength',
+          'playerRegsCloseOn',
+          'playerRegsOpenOn',
+          'rankRange',
+          'rollRules',
+          'staffRegsCloseOn',
+          'staffRegsOpenOn',
+          'useBWS',
+          'warmupRules',
+          'alwaysForceNoFail',
+          'goPublicOn',
+          'startTimerLength',
+          'rules',
+          'useTeamBanners'
+        ] as const;
+
+        keys.forEach((key) => {
+          input.data[key] = undefined;
+        });
+      }
+
       let {
         where,
         data: {
@@ -294,8 +323,6 @@ export const tournamentRouter = t.router({
           rollRules,
           staffRegsCloseOn,
           staffRegsOpenOn,
-          teamPlaySize,
-          teamSize,
           twitchChannelName,
           useBWS,
           warmupRules,
@@ -337,8 +364,6 @@ export const tournamentRouter = t.router({
             warmupRules,
             websiteLink,
             youtubeChannelId,
-            teamPlaySize,
-            teamSize,
             alwaysForceNoFail,
             concludesOn,
             goPublicOn,

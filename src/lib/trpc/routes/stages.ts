@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
 import { getUserAsStaff } from '$trpc/middleware';
 import { whereIdSchema, withTournamentSchema } from '$lib/schemas';
-import { isAllowed } from '$lib/server-utils';
+import { forbidIf, isAllowed } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
 
 export const stagesRouter = t.router({
@@ -25,9 +25,11 @@ export const stagesRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `create stage for tournament of ID ${input.tournamentId}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
 
       let {
         tournamentId,
@@ -59,9 +61,11 @@ export const stagesRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `set stage with ID ${input.stageId} as the main stage`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
 
       await tryCatch(async () => {
         await prisma.$transaction(async (tx) => {
@@ -113,9 +117,11 @@ export const stagesRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `change the order of stages for tournament of ID ${input.tournamentId}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
 
       await tryCatch(async () => {
         await prisma.$transaction([
@@ -147,9 +153,11 @@ export const stagesRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `delete stage of ID ${input.where.id}`
       );
+
+      forbidIf.hasConcluded(ctx.tournament);
 
       let { where } = input;
 
