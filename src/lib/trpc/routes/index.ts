@@ -7,3 +7,8 @@ export * from './stages';
 export * from './rounds';
 export * from './mod-multipliers';
 export * from './prizes';
+export * from './staff-roles';
+export * from './staff-members';
+export * from './modpools';
+export * from './suggested-maps';
+export * from './pooled-maps';

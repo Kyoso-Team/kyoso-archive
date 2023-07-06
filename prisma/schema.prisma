@@ -344,6 +344,7 @@ enum StaffPermission {
   DeletePoolSuggestions
   // Pool maps
   ViewPooledMaps
+  MutatePooledMaps
   DeletePooledMaps
   // Playtest (provide replays and feedback)
   ViewMapsToPlaytest
@@ -582,6 +583,8 @@ model StarRating {
   value     Float
   beatmap   Beatmap @relation(fields: [beatmapId], references: [osuBeatmapId], onDelete: Cascade)
   beatmapId Int
+
+  @@unique([mods, beatmapId])
 }
 
 model SuggestedMap {

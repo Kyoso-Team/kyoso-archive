@@ -10,6 +10,10 @@ export const withTournamentSchema = z.object({
   tournamentId: z.number().int()
 });
 
+export const withRoundSchema = withTournamentSchema.extend({
+  roundId: z.number().int()
+});
+
 export const modSchema = z.union([
   z.literal('EZ'),
   z.literal('HD'),
@@ -20,4 +24,22 @@ export const modSchema = z.union([
   z.literal('HT'),
   z.literal('FL'),
   z.literal('PF')
+]);
+
+export const skillsetSchema = z.union([
+  z.literal('Consistency'),
+  z.literal('Streams'),
+  z.literal('Tech'),
+  z.literal('Alt'),
+  z.literal('Speed'),
+  z.literal('Gimmick'),
+  z.literal('Rhythm'),
+  z.literal('Aim'),
+  z.literal('AwkwardAim'),
+  z.literal('FlowAim'),
+  z.literal('Reading'),
+  z.literal('Precision'),
+  z.literal('Stamina'),
+  z.literal('FingerControl'),
+  z.literal('JackOfAllTrades')
 ]);

@@ -35,7 +35,7 @@ export const prizesRouter = t.router({
     .mutation(async ({ ctx, input }) => {
       isAllowed(
         ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
-        `create prize for tourament of ID ${input.tournamentId}`
+        `create prize for tournament of ID ${input.tournamentId}`
       );
 
       let {

@@ -25,7 +25,7 @@ export const stagesRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `create stage for tournament of ID ${input.tournamentId}`
       );
 
@@ -59,7 +59,7 @@ export const stagesRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `set stage with ID ${input.stageId} as the main stage`
       );
 
@@ -113,7 +113,7 @@ export const stagesRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `change the order of stages for tournament of ID ${input.tournamentId}`
       );
 
@@ -147,7 +147,7 @@ export const stagesRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `delete stage of ID ${input.where.id}`
       );
 

@@ -22,8 +22,8 @@ export const modMultipliersRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
-        `create mod multipliers for tourament of ID ${input.tournamentId}`
+        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        `create mod multipliers for tournament of ID ${input.tournamentId}`
       );
 
       let { tournamentId, data } = input;
@@ -47,7 +47,7 @@ export const modMultipliersRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `update multiplier of ID ${input.where.id}`
       );
 
@@ -72,7 +72,7 @@ export const modMultipliersRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `delete mod multiplier of ID ${input.where.id}`
       );
 
