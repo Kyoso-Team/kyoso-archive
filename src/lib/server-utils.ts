@@ -1,9 +1,37 @@
-import { z, type AnyZodObject } from 'zod';
+import { z } from 'zod';
 import { verifyJWT } from '$lib/jwt';
 import { redirect, type Cookies } from '@sveltejs/kit';
 import { TRPCError } from '@trpc/server';
-import type { SessionUser } from '$types';
+import { hasTournamentConcluded } from './utils';
+import type { AnyZodObject } from 'zod';
 import type { URL } from 'url';
+import type { SessionUser } from '$types';
+import type { TournamentService } from '@prisma/client';
+
+export const forbidIf = {
+  hasConcluded: (tournament: {
+    id: number;
+    concludesOn: Date | null;
+  }) => {
+    if (hasTournamentConcluded(tournament)) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: `Tournament of ID ${tournament.id} has concluded.`
+      });
+    }
+  },
+  doesntIncludeService: (tournament: {
+    id: number;
+    services: TournamentService[];
+  }, mustInclude: TournamentService) => {
+    if (!tournament.services.includes(mustInclude)) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: `Tournament of ID ${tournament.id} doesn't have the ${mustInclude.toLowerCase()} service.`
+      });
+    }
+  }
+}
 
 export function getStoredUser<T extends boolean>(
   event: { cookies: Cookies },

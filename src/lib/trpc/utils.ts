@@ -1,16 +1,10 @@
-import { Client } from 'osu-web.js';
+import env from '$lib/env/server';
 import { tryCatch } from '$trpc';
+import { Client } from 'osu-web.js';
+import type { User as DiscordUser } from 'discord-oauth2';
 import type { PrismaClient } from '@prisma/client';
 
-export async function getOrCreateMap(prisma: PrismaClient, currentUserId: number, osuBeatmapId: number, modpoolId: number) {
-  let { osuAccessToken } = await prisma.user.findUniqueOrThrow({
-    where: {
-      id: currentUserId
-    },
-    select: {
-      osuAccessToken: true
-    }
-  });
+export async function getOrCreateMap(prisma: PrismaClient, osuAccessToken: string, osuBeatmapId: number, modpoolId: number) {
   let osuApi = new Client(osuAccessToken);
 
   let beatmapPromise = prisma.beatmap.findUnique({
@@ -129,4 +123,15 @@ export async function getOrCreateMap(prisma: PrismaClient, currentUserId: number
   }
 
   return beatmap;
+}
+
+export async function getDiscordUser(discordUserId: string) {
+  let resp = await fetch(`https://discord.com/api/users/${discordUserId}`, {
+    headers: {
+      Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`
+    }
+  });
+  let user = await resp.json(); 
+
+  return user as DiscordUser;
 }

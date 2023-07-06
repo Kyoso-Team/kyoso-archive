@@ -283,3 +283,7 @@ export function colorByMod(
 
   return color[value];
 }
+
+export function hasTournamentConcluded(tournament: { concludesOn: Date | null }) {
+  return !!tournament.concludesOn && tournament.concludesOn.getTime() > new Date().getTime()
+}
