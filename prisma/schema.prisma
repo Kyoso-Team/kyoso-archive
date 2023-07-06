@@ -434,6 +434,8 @@ model Team {
   registeredAt        DateTime            @default(now())
   name                String              @db.VarChar(20)
   inviteId            String              @unique @db.Char(8)
+  avgRank             Int
+  avgBwsRank          Int
   hasBanner           Boolean             @default(false)
   tournament          Tournament          @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId        Int
@@ -481,6 +483,9 @@ model Player {
   availability        String              @db.Char(99) // A string that represents the availability between 0 - 23 UTC (24 digits), from Friday to Monday
   // Where each digit can be either 0 (unavailable) or 1 (available)
   // Each day is separated by a period, similarly to an IP address
+  rank                Int
+  bwsRank             Int
+  badgeCount          Int                 @db.SmallInt
   tournament          Tournament          @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId        Int
   user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)

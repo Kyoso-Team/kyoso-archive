@@ -108,6 +108,12 @@ export const format = {
   }
 };
 
+export const calc = {
+  bwsRank: (rank: number, badgeCount: number) => {
+    return rank ** (0.9937 ** (badgeCount ** 2));
+  }
+}
+
 export const modal = {
   yesNo: (
     title: string,

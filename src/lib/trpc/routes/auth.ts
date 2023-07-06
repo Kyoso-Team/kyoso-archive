@@ -75,7 +75,7 @@ function getData(
 
 async function getOsuProfile(osuToken: Token) {
   return await tryCatch(
-    async () => await new Client(osuToken.access_token as string).users.getSelf(),
+    async () => await new Client(osuToken.access_token).users.getSelf(),
     "Can't get osu! profile data."
   );
 }

@@ -294,7 +294,10 @@ async function seedteamTournament() {
     }
   });
 
+  // Scuffed code is temp
   let playerIds: number[] = [];
+  let playerRanks: number[] = [];
+  let playerBwsRanks: number[] = [];
   let randomAvailabilities = [
     '001101110000110111000000.001101110000110111000000.001101110000110111000000.001101110000110111000000',
     '101010100101010100010010.010101001010100101010100.010101001010100101000100.010101001010101001001010',
@@ -305,9 +308,16 @@ async function seedteamTournament() {
     let userId = r.number(1, userCount, usedUserIds);
     usedUserIds.push(userId);
 
+    let badgeCount = r.number(1, 5);
+    let rank = r.number(1, 150_000);
+    let bwsRank = rank ** (0.9937 ** (badgeCount ** 2));
+
     let player = await prisma.player.create({
       data: {
         userId,
+        badgeCount,
+        rank,
+        bwsRank,
         availability: r.array(randomAvailabilities, 1)[0],
         tournamentId: tournament.id
       },
@@ -317,15 +327,22 @@ async function seedteamTournament() {
     });
 
     playerIds.push(player.id);
+    playerRanks.push(rank);
+    playerBwsRanks.push(bwsRank);
   }
 
   // Todo: Create 2 teams of 2 and 2 teams of 3, only creating 1 team for now
+  let team1PlayerRanks = [playerRanks[0], playerRanks[1], playerRanks[2]];
+  let team1PlayerBwsRanks = [playerBwsRanks[0], playerBwsRanks[1], playerBwsRanks[2]];
+
   await prisma.team.create({
     data: {
       inviteId: r.string(8),
       name: r.string(5, 20),
       tournamentId: tournament.id,
       captainId: playerIds[0],
+      avgRank: team1PlayerRanks.reduce((total, rank) => total + rank, 0) / team1PlayerRanks.length,
+      avgBwsRank: team1PlayerBwsRanks.reduce((total, rank) => total + rank, 0) / team1PlayerBwsRanks.length,
       players: {
         connect: [
           {
