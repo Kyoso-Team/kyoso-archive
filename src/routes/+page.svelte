@@ -1,6 +1,20 @@
 <script lang="ts">
+  import { page } from '$app/stores';
+  import { SEO } from '$components';
 </script>
 
+<SEO
+  page={$page}
+  title="Kyoso"
+  description="osu! tournament management beyond spreadsheets"
+  image={{
+    url: `${$page.url.origin}/seo/home.png`,
+    alt: 'kyoso-banner',
+    height: 630,
+    width: 1200,
+    twitterCardType: 'summary_large_image'
+  }}
+/>
 <div class="relative h-[32rem]">
   <div class="relative z-[2] flex h-full w-screen items-center overflow-hidden opacity-20">
     <video src="./landing-bg-video.mp4" class="absolute w-full pb-2" autoplay loop>

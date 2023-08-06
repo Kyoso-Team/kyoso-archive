@@ -5,7 +5,7 @@
   import { onMount } from 'svelte';
   import { invalidateAll } from '$app/navigation';
   import { colorByMod, modal } from '$lib/utils';
-  import { Dropdown } from '$components';
+  import { SEO, Dropdown } from '$components';
   import type { Mod, ModMultiplier } from '@prisma/client';
   import type { PageServerData } from './$types';
 
@@ -151,6 +151,12 @@
   }
 </script>
 
+<SEO
+  page={$page}
+  title={`Mod Multipliers - ${data.acronym}`}
+  description={`Manage the mod multipliers for ${data.acronym} (${data.name})`}
+  noIndex
+/>
 <div class="center-content">
   <h1>Mod Multipliers</h1>
   <p class="mt-4">Multipliers for mods applied to FreeMod maps.</p>

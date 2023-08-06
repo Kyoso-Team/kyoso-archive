@@ -43,6 +43,8 @@ export const load = (async ({ parent }) => {
   return {
     prizes,
     id: data.tournament.id,
+    name: data.tournament.name,
+    acronym: data.tournament.acronym,
     services: data.tournament.services
   };
 }) satisfies PageServerLoad;

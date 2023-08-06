@@ -2,6 +2,7 @@
   import { RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
   import { paginate } from '$stores';
   import {
+    SEO,
     SearchBar,
     Paginator,
     Purchase,
@@ -29,6 +30,12 @@
   }
 </script>
 
+<SEO
+  page={$page}
+  title="Purchases - Admin"
+  description="Manage purchases"
+  noIndex
+/>
 <div class="center-content">
   <SearchBar label="Search Purchases" on:search={onSearch} />
   <div class="mb-6">

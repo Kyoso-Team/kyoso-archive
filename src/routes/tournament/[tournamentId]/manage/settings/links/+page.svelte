@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Setting, Settings } from '$components';
+  import { SEO, Setting, Settings } from '$components';
   import { z } from 'zod';
   import { setSettingError, trimStringValues } from '$lib/utils';
   import { trpc } from '$trpc/client';
@@ -13,6 +13,8 @@
   let originalObj = {
     ...data,
     forumPostId: data.forumPostId?.toString() || (undefined as string | null | undefined)
+  } as Omit<PageServerData, 'name' | 'acronym' | 'forumPostId'> & {
+    forumPostId: string | null | undefined;
   };
   let currentObj = { ...originalObj };
   let errors: Partial<
@@ -123,6 +125,12 @@
   }
 </script>
 
+<SEO
+  page={$page}
+  title={`Links - ${data.acronym}`}
+  description={`Manage the links for ${data.acronym} (${data.name})`}
+  noIndex
+/>
 <div class="center-content">
   <h1>Links</h1>
   <Settings on:undo={onUndo} on:update={onUpdate} {currentObj} {originalObj} {errors}>

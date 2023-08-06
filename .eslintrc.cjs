@@ -44,6 +44,7 @@ module.exports = {
     '@typescript-eslint/no-inferrable-types': 'off',
     'quote-props': ['warn', 'consistent'],
     '@typescript-eslint/no-unused-vars': 'warn',
-    'unused-export-let': 'off'
+    'unused-export-let': 'off',
+    'svelte/no-at-html-tags': 'off'
   }
 };

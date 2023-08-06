@@ -25,6 +25,8 @@ export const load = (async ({ parent }) => {
 
   return {
     id: data.tournament.id,
+    name: data.tournament.name,
+    acronym: data.tournament.acronym,
     ...tournament
   };
 }) satisfies PageServerLoad;

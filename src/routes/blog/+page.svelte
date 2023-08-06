@@ -1,6 +1,8 @@
 <script lang="ts">
   import { format } from '$lib/utils';
   import { firsBlogPostTimestmap } from '$lib/constants';
+  import { page } from '$app/stores';
+  import { SEO } from '$components';
   import type { Post } from '$types';
   import type { PageServerData } from './$types';
 
@@ -24,6 +26,18 @@
   }
 </script>
 
+<SEO
+  page={$page}
+  title="Blog - Kyoso"
+  description="osu! tournament management beyond spreadsheets"
+  image={{
+    url: `${$page.url.origin}/seo/blog.png`,
+    alt: 'kyoso-blog-banner',
+    height: 630,
+    width: 1200,
+    twitterCardType: 'summary_large_image'
+  }}
+/>
 <div class="center-content">
   <h1>Blog</h1>
   <p class="pt-4">Announcements, guides, updates and more.</p>

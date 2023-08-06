@@ -10,11 +10,13 @@ export const load = (async ({ params, fetch }) => {
       accept: 'application/vnd.forem.api-v1+json'
     }
   });
-  let { body_html, published_at, title } = (await resp.json()) as ExtendedPost;
+  let { body_html, published_at, title, description, cover_image } = (await resp.json()) as ExtendedPost;
 
   return {
     body_html,
     published_at,
-    title
+    title,
+    description,
+    cover_image
   };
 }) satisfies PageServerLoad;

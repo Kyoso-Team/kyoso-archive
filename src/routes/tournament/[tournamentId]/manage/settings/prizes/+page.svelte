@@ -5,7 +5,7 @@
   import { onMount } from 'svelte';
   import { invalidateAll } from '$app/navigation';
   import { modal, format } from '$lib/utils';
-  import { Prize, Dropdown } from '$components';
+  import { SEO, Prize, Dropdown } from '$components';
   import type { PageServerData } from './$types';
   import type { PrizeType, CashMetric } from '@prisma/client';
 
@@ -195,6 +195,12 @@
   }
 </script>
 
+<SEO
+  page={$page}
+  title={`Prizes - ${data.acronym}`}
+  description={`Manage the prizes for ${data.acronym} (${data.name})`}
+  noIndex
+/>
 <div class="center-content">
   <h1>Prizes</h1>
   <h2 class="pt-8">Tournament Prizes</h2>

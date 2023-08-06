@@ -1,8 +1,21 @@
 <script lang="ts">
   import env from '$lib/env/client';
+  import { SEO } from '$components';
   import { page } from '$app/stores';
 </script>
 
+<SEO
+  page={$page}
+  title="Privacy - Kyoso"
+  description="Privacy policy"
+  image={{
+    url: `${$page.url.origin}/seo/privacy.png`,
+    alt: 'kyoso-privacy-policy-banner',
+    height: 630,
+    width: 1200,
+    twitterCardType: 'summary_large_image'
+  }}
+/>
 <div class="center-content">
   <div class="document">
     <h1>Privacy Policy</h1>

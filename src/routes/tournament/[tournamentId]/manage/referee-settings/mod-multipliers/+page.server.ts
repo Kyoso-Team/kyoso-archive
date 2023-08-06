@@ -26,6 +26,8 @@ export const load = (async ({ parent }) => {
 
   return {
     modMultipliers,
-    id: data.tournament.id
+    id: data.tournament.id,
+    name: data.tournament.name,
+    acronym: data.tournament.acronym
   };
 }) satisfies PageServerLoad;

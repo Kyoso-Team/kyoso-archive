@@ -6,7 +6,7 @@
   import { onMount } from 'svelte';
   import { invalidateAll } from '$app/navigation';
   import { modal, twColors } from '$lib/utils';
-  import { Permission, CheckIcon, AdditionIcon, MoveUpIcon, MoveDownIcon } from '$components';
+  import { SEO, Permission, CheckIcon, AdditionIcon, MoveUpIcon, MoveDownIcon } from '$components';
   import type { StaffPermission, StaffColor, StaffRole } from '@prisma/client';
   import type { PageServerData } from './$types';
 
@@ -172,7 +172,6 @@
     if (!role1 || !role2) return;
 
     try {
-      console.log(role1.name, role2.name)
       await trpc($page).staffRoles.swapOrder.mutate({
         tournamentId: data.tournament.id,
         role1: {
@@ -211,6 +210,12 @@
   }
 </script>
 
+<SEO
+  page={$page}
+  title={`Staff Roles - ${data.tournament.acronym}`}
+  description={`Manage the staff roles for ${data.tournament.acronym} (${data.tournament.name})`}
+  noIndex
+/>
 <div class="center-content !py-0 !pl-4 !pr-1">
   <div class="flex w-full">
     <nav class={`mr-4 min-w-max pr-4 border-surface-500/50 h-[calc(100vh-66px)] overflow-y-auto overflow-x-hidden ${selectedRole ? 'sm:border-r border-r-0' : ''}`}>

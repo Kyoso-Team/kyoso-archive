@@ -5,6 +5,7 @@
   import { onMount } from 'svelte';
   import { getFileUrl, format, modal } from '$lib/utils';
   import { invalidateAll } from '$app/navigation';
+  import { SEO } from '$components';
   import type { Upload } from '$classes';
   import type { PageServerData } from './$types';
 
@@ -111,6 +112,12 @@
   }
 </script>
 
+<SEO
+  page={$page}
+  title={`Graphics - ${data.acronym}`}
+  description={`Manage the graphics for ${data.acronym} (${data.name})`}
+  noIndex
+/>
 <div class="center-content">
   <h1>Graphics</h1>
   <div class="mt-4">

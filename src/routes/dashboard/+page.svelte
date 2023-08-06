@@ -6,7 +6,7 @@
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { CloseIcon } from '$components';
+  import { SEO, CloseIcon } from '$components';
   import type { PageServerData } from './$types';
   import type { TournamentFormData, TournamentType } from '$types';
   import type { TournamentService } from '@prisma/client';
@@ -168,6 +168,12 @@
   }
 </script>
 
+<SEO
+  page={$page}
+  title="Dashboard - Kyoso"
+  description="Privacy policy"
+  noIndex
+/>
 {#if createTournament.showStepper}
   <div
     class="fixed inset-0 z-20 flex h-screen w-screen items-center justify-center p-4 bg-surface-backdrop-token"

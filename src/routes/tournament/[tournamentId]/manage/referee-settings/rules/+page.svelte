@@ -4,6 +4,7 @@
   import { error, sidebar } from '$stores';
   import { onMount } from 'svelte';
   import { Converter } from 'showdown';
+  import { SEO } from '$components';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
@@ -47,6 +48,12 @@
   }
 </script>
 
+<SEO
+  page={$page}
+  title={`Rules - ${data.acronym}`}
+  description={`Manage the rules for ${data.acronym} (${data.name})`}
+  noIndex
+/>
 <div class="center-content">
   <h1>Rules</h1>
   <p class="pt-4">

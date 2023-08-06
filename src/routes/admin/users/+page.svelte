@@ -1,7 +1,7 @@
 <script lang="ts">
   import { toastStore } from '@skeletonlabs/skeleton';
   import { paginate } from '$stores';
-  import { SearchBar, Paginator, User, Dropdown, SearchResults } from '$components';
+  import { SEO, SearchBar, Paginator, User, Dropdown, SearchResults } from '$components';
   import { page } from '$app/stores';
   import { trpc } from '$trpc/client';
   import { modal } from '$lib/utils';
@@ -52,6 +52,12 @@
   }
 </script>
 
+<SEO
+  page={$page}
+  title="Users - Admin"
+  description="Manage users"
+  noIndex
+/>
 <div class="center-content">
   <SearchBar label="Search Users" on:search={onSearch} />
   <SearchResults label="Users" resultCount={data.userCount}>

@@ -5,7 +5,7 @@
   import { onMount } from 'svelte';
   import { invalidateAll } from '$app/navigation';
   import { modal } from '$lib/utils';
-  import { MoveUpIcon, MoveDownIcon } from '$components';
+  import { SEO, MoveUpIcon, MoveDownIcon } from '$components';
   import type { StageFormat, QualifierRunsSummary } from '@prisma/client';
   import type { PageServerData } from './$types';
 
@@ -469,6 +469,12 @@
   }
 </script>
 
+<SEO
+  page={$page}
+  title={`Stages - ${data.acronym}`}
+  description={`Manage the stages for ${data.acronym} (${data.name})`}
+  noIndex
+/>
 <div class="center-content">
   <h1>Stages</h1>
   <div class="my-4">

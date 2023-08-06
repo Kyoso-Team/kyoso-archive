@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { PageServerData } from './$types';
+  import { SEO } from '$components';
   import { SlideToggle, Table, modalStore } from '@skeletonlabs/skeleton';
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
@@ -62,6 +63,12 @@
   }
 </script>
 
+<SEO
+  page={$page}
+  title="Settings - Kyoso"
+  description="User settings"
+  noIndex
+/>
 <div class="m-8 rounded-lg bg-surface-800 p-4">
   <section class="mb-4 inline-grid">
     <h2 class="mb-2">Discord</h2>

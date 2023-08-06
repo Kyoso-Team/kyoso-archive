@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Setting, Settings } from '$components';
+  import { SEO, Setting, Settings } from '$components';
   import { z } from 'zod';
   import { setSettingError } from '$lib/utils';
   import { trpc } from '$trpc/client';
@@ -11,7 +11,7 @@
 
   export let data: PageServerData;
 
-  let originalObj = { ...data } as NullPartial<PageServerData, true, 'banOrder'>;
+  let originalObj = { ...data } as NullPartial<PageServerData, true, 'banOrder' | 'name' | 'acronym'>;
   let currentObj = { ...originalObj };
   let errors: Partial<
     Record<Exclude<keyof PageServerData, 'id' | 'goPublicOn' | 'concludesOn'>, string>
@@ -73,6 +73,12 @@
   }
 </script>
 
+<SEO
+  page={$page}
+  title={`Dates - ${data.acronym}`}
+  description={`Manage the dates for ${data.acronym} (${data.name})`}
+  noIndex
+/>
 <div class="center-content">
   <h1>Dates</h1>
   <Settings on:undo={onUndo} on:update={onUpdate} {currentObj} {originalObj} {errors}>

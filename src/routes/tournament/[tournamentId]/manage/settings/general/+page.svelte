@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Setting, Settings } from '$components';
+  import { SEO, Setting, Settings } from '$components';
   import { z } from 'zod';
   import { setSettingError, trimStringValues } from '$lib/utils';
   import { trpc } from '$trpc/client';
@@ -104,6 +104,12 @@
   }
 </script>
 
+<SEO
+  page={$page}
+  title={`General Settings - ${data.acronym}`}
+  description={`Manage the general settings for ${data.acronym} (${data.name})`}
+  noIndex
+/>
 <div class="center-content">
   <h1>Settings</h1>
   <Settings on:undo={onUndo} on:update={onUpdate} {currentObj} {originalObj} {errors}>

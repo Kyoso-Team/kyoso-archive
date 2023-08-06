@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Setting, Settings } from '$components';
+  import { SEO, Setting, Settings } from '$components';
   import { z } from 'zod';
   import { setSettingError, trimStringValues } from '$lib/utils';
   import { trpc } from '$trpc/client';
@@ -11,7 +11,7 @@
 
   export let data: PageServerData;
 
-  let originalObj = { ...data } as NullPartial<PageServerData, true, 'banOrder'>;
+  let originalObj = { ...data } as NullPartial<PageServerData, true, 'banOrder' | 'name' | 'acronym'>;
   let currentObj = { ...originalObj };
   let errors: Partial<Record<'pickTime' | 'startTime', string>> = {};
 
@@ -71,6 +71,12 @@
   }
 </script>
 
+<SEO
+  page={$page}
+  title={`Referee Settings - ${data.acronym}`}
+  description={`Manage the referee settings for ${data.acronym} (${data.name})`}
+  noIndex
+/>
 <div class="center-content">
   <h1>Referee Settings</h1>
   <Settings on:undo={onUndo} on:update={onUpdate} {currentObj} {originalObj} {errors}>
