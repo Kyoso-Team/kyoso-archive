@@ -5,6 +5,8 @@ import type { PopupSettings } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
 import type { PageStore, ParseInt } from '$types';
 
+export const twColors = colors as unknown as Record<string, Record<string, 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900>>;
+
 export const format = {
   rank: (n: number) => `#${new Intl.NumberFormat('us-US').format(n)}`,
   price: (n: number) => {

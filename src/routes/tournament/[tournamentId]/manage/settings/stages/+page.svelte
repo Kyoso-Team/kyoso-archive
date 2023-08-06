@@ -129,7 +129,10 @@
     }
   }
 
-  function onDeleteStage(stageId: number, format: StageFormat) {
+  function onDeleteStage(stage: {
+    id: number;
+    order: number;
+  }, format: StageFormat) {
     modal.yesNo(
       'Confirm Stage Deletion',
       `Are you sure you want to delete the ${mapReadableFormat(
@@ -139,9 +142,7 @@
         try {
           await trpc($page).stages.deleteStage.mutate({
             tournamentId: data.id,
-            where: {
-              id: stageId
-            }
+            where: stage
           });
 
           await invalidateAll();
@@ -439,16 +440,22 @@
     }
   }
 
-  function onDeleteRound(roundId: number, roundName: string) {
+  function onDeleteRound(round: {
+    id: number;
+    name: string;
+    order: number;
+  }, stageId: number) {
     modal.yesNo(
       'Confirm Round Deletion',
-      `Are you sure you want to delete the "${roundName}" round from this tournament? This will delete its mappools, schedules, statistics, etc.`,
+      `Are you sure you want to delete the "${round.name}" round from this tournament? This will delete its mappools, schedules, statistics, etc.`,
       async () => {
         try {
           await trpc($page).rounds.deleteRound.mutate({
             tournamentId: data.id,
             where: {
-              id: roundId
+              stageId,
+              id: round.id,
+              order: round.order
             }
           });
 
@@ -596,7 +603,7 @@
                     >
                     <button
                       class="variant-filled-error btn btn-sm"
-                      on:click={() => onDeleteRound(round.id, round.name)}>Delete Round</button
+                      on:click={() => onDeleteRound(round, id)}>Delete Round</button
                     >
                   </div>
                 </div>
@@ -613,7 +620,10 @@
             <div class="flex justify-end">
               <button
                 class="variant-filled-error btn btn-sm"
-                on:click={() => onDeleteStage(id, format)}>Delete Stage</button
+                on:click={() => onDeleteStage({
+                  id,
+                  order
+                }, format)}>Delete Stage</button
               >
             </div>
           </div>

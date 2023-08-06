@@ -11,10 +11,20 @@
   } from '$components';
 
   let currentTile = '';
+  let defaultSet = true;
 
   $: {
     if (currentTile === '') {
       currentTile = Array.from($sidebar?.sections.entries() || [])?.[0]?.[0] || '';
+    }
+  }
+
+  $: {
+    let selected = $sidebar?.selectedLink?.inSection;
+
+    if (defaultSet && selected) {
+      currentTile = selected;
+      defaultSet = false;
     }
   }
 </script>

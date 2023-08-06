@@ -148,7 +148,9 @@ export const stagesRouter = t.router({
     .use(getUserAsStaff)
     .input(
       withTournamentSchema.extend({
-        where: whereIdSchema
+        where: whereIdSchema.extend({
+          order: z.number().int()
+        })
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -159,12 +161,29 @@ export const stagesRouter = t.router({
 
       forbidIf.hasConcluded(ctx.tournament);
 
-      let { where } = input;
+      let { tournamentId, where: { id, order } } = input;
 
       await tryCatch(async () => {
-        await prisma.stage.delete({
-          where
-        });
-      }, `Can't delete stage of ID ${where.id}.`);
+        await prisma.$transaction([
+          prisma.stage.delete({
+            where: {
+              id
+            }
+          }),
+          prisma.stage.updateMany({
+            where: {
+              tournamentId,
+              order: {
+                gt: order
+              }
+            },
+            data: {
+              order: {
+                decrement: 1
+              }
+            }
+          })
+        ]);
+      }, `Can't delete stage of ID ${id}.`);
     })
 });

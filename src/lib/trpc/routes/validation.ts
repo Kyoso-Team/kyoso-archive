@@ -65,5 +65,29 @@ export const validationRouter = t.router({
       }, "Can't get mod multiplier to validate mods uniqueness.");
 
       return !multiplier || (!!multiplierId && multiplier.id === multiplierId);
+    }),
+  isStaffRoleNameUniqueInTournament: t.procedure
+    .input(
+      withTournamentSchema.extend({
+        name: z.string(),
+        staffRoleId: z.number().int().optional()
+      })
+    )
+    .query(async ({ input: { tournamentId, name, staffRoleId } }) => {
+      let staffRole = await tryCatch(async () => {
+        return await prisma.staffRole.findUnique({
+          where: {
+            name_tournamentId: {
+              name,
+              tournamentId
+            }
+          },
+          select: {
+            id: true
+          }
+        });
+      }, "Can't get staff role to validate name uniqueness.");
+
+      return !staffRole || (!!staffRoleId && staffRole.id === staffRoleId);
     })
 });

@@ -141,7 +141,9 @@ export const modpoolsRouter = t.router({
     .use(getUserAsStaffWithRound)
     .input(
       withRoundSchema.extend({
-        where: whereIdSchema
+        where: whereIdSchema.extend({
+          order: z.number().int()
+        })
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -153,12 +155,29 @@ export const modpoolsRouter = t.router({
       forbidIf.hasConcluded(ctx.tournament);
       forbidIf.poolIsPublished(ctx.round);
 
-      let { where } = input;
+      let { roundId, where: { id, order } } = input;
 
       await tryCatch(async () => {
-        await prisma.modpool.delete({
-          where
-        });
-      }, `Can't delete modpool of ID ${where.id}.`);
+        await prisma.$transaction([
+          prisma.modpool.delete({
+            where: {
+              id
+            }
+          }),
+          prisma.modpool.updateMany({
+            where: {
+              roundId,
+              order: {
+                gt: order
+              }
+            },
+            data: {
+              order: {
+                decrement: 1
+              }
+            }
+          })
+        ]);
+      }, `Can't delete modpool of ID ${id}.`);
     })
 });

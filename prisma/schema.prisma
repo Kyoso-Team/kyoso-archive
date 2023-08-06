@@ -336,7 +336,6 @@ enum StaffPermission {
   MutateRegs
   DeleteRegs
   // Mappool structure
-  ViewPoolStructure
   MutatePoolStructure
   // Suggest maps
   ViewPoolSuggestions
@@ -346,10 +345,8 @@ enum StaffPermission {
   ViewPooledMaps
   MutatePooledMaps
   DeletePooledMaps
-  // Playtest (provide replays and feedback)
-  ViewMapsToPlaytest
-  MutateMapsToPlaytest // Can replay and provide feedback
-  DeleteMapsToPlaytest
+  // Playtest
+  CanPlaytest // Can replay and provide feedback
   // Matches
   ViewMatches
   MutateMatches

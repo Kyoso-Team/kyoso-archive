@@ -131,10 +131,8 @@
     hasPerms(data.staffMember, [
       'Host',
       'Debug',
-      'ViewPoolStructure',
       'ViewPoolSuggestions',
-      'ViewPooledMaps',
-      'ViewMapsToPlaytest'
+      'ViewPooledMaps'
     ])
   ) {
     let pooling = sidebar.setSection('Pooling', 'pooling');

@@ -100,3 +100,7 @@ Structure to follow when writing Svelte components or pages.
   }
 </script>
 ```
+
+## Notes
+
+- When developing, set the `engines.node` property in `package.json` to `>16.x`. When commiting, leave it as `16.x`. This property is necessary because [Render](https://render.com) (the clould platform that Kyoso is being deployed to) only supports Node.js v14 by default, which isn't supported by SvelteKit.

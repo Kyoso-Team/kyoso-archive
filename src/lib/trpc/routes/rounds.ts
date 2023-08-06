@@ -333,8 +333,10 @@ export const roundsRouter = t.router({
     .use(getUserAsStaff)
     .input(
       withTournamentSchema.extend({
-        tournamentId: z.number().int(),
-        where: whereIdSchema
+        where: whereIdSchema.extend({
+          stageId: z.number().int(),
+          order: z.number().int()
+        })
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -345,12 +347,29 @@ export const roundsRouter = t.router({
 
       forbidIf.hasConcluded(ctx.tournament);
 
-      let { where } = input;
+      let { where: { id, order, stageId } } = input;
 
       await tryCatch(async () => {
-        await prisma.round.delete({
-          where
-        });
-      }, `Can't delete round of ID ${where.id}.`);
+        await prisma.$transaction([
+          prisma.round.delete({
+            where: {
+              id
+            }
+          }),
+          prisma.round.updateMany({
+            where: {
+              stageId,
+              order: {
+                gt: order
+              }
+            },
+            data: {
+              order: {
+                decrement: 1
+              }
+            }
+          })
+        ]);
+      }, `Can't delete round of ID ${id}.`);
     })
 });

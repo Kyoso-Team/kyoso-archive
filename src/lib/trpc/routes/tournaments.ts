@@ -1,7 +1,7 @@
 import prisma from '$prisma';
-import paypal, { money } from '$paypal';
+import paypalClient, { money } from '$paypal';
+import paypal from '@paypal/checkout-server-sdk';
 import { z } from 'zod';
-import { orders } from '@paypal/checkout-server-sdk';
 import { t, tryCatch } from '$trpc';
 import { getUser, getUserAsStaff } from '$trpc/middleware';
 import { services } from '$lib/constants';
@@ -158,7 +158,7 @@ export const tournamentRouter = t.router({
       }, 0);
       let total = subtotal - discount;
 
-      let request = new orders.OrdersCreateRequest();
+      let request = new paypal.orders.OrdersCreateRequest();
       request.prefer('return=representation');
       request.requestBody({
         intent: 'CAPTURE',
@@ -184,7 +184,7 @@ export const tournamentRouter = t.router({
       });
 
       let orderId = await tryCatch(async () => {
-        let order = await paypal.execute(request);
+        let order = await paypalClient.execute(request);
         return order.result.id as string;
       }, "Can't get PayPal order ID.");
 
@@ -199,10 +199,10 @@ export const tournamentRouter = t.router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      let request = new orders.OrdersGetRequest(input.orderId);
+      let request = new paypal.orders.OrdersGetRequest(input.orderId);
 
       let order = await tryCatch(async () => {
-        let order = await paypal.execute(request);
+        let order = await paypalClient.execute(request);
         return order.result as PayPalOrder;
       }, `Can't get PayPal order with ID of ${input.orderId}.`);
 

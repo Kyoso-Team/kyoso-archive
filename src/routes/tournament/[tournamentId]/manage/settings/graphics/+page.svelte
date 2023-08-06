@@ -113,7 +113,7 @@
 
 <div class="center-content">
   <h1>Graphics</h1>
-  <div class="my-4">
+  <div class="mt-4">
     <h2 class="pb-2 text-center">Banner</h2>
     <span>Current banner:</span>
     <div class="card relative aspect-[21/9] w-80 overflow-hidden border border-primary-600">
