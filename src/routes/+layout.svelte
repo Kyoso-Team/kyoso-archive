@@ -4,7 +4,6 @@
   import '../main.css';
   import 'highlight.js/styles/atom-one-dark.css';
   import env from '$lib/env/client';
-  import hljs from 'highlight.js';
   import { loadScript } from '@paypal/paypal-js';
   import { buildUrl } from 'osu-web.js';
   import { goto } from '$app/navigation';
@@ -27,16 +26,10 @@
   import { page } from '$app/stores';
   import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
-
-  storeHighlightJs.set(hljs);
+  
   storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
   export let data: LayoutServerData;
-
-  const authUrl = buildUrl.authRequest(env.PUBLIC_OSU_CLIENT_ID, env.PUBLIC_OSU_REDIRECT_URI, [
-    'identify',
-    'public'
-  ]);
 
   const navLinks = [
     {
@@ -79,6 +72,7 @@
 
   onMount(() => {
     loadPayPalScript();
+    loadHighlightJs();
   });
 
   async function loadPayPalScript() {
@@ -93,6 +87,11 @@
       console.error('An error ocurred while loading the PayPal SDK script');
       console.error(err);
     }
+  }
+
+  async function loadHighlightJs() {
+    let hljs = await import('highlight.js');
+    storeHighlightJs.set(hljs);
   }
 
   function onLogoutClick() {
@@ -162,7 +161,7 @@
               </nav>
             </div>
           {:else}
-            <a href={authUrl} class="btn variant-filled-primary">Login</a>
+            <a href="/auth/login" class="btn variant-filled-primary">Login</a>
           {/if}
         </div>
       </svelte:fragment>

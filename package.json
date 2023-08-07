@@ -20,7 +20,7 @@
     "seed": "node --loader ts-node/esm prisma/seed.ts"
   },
   "engines": {
-    "node": ">16.x"
+    "node": "16.x"
   },
   "devDependencies": {
     "@prisma/client": "^5.1.1",
