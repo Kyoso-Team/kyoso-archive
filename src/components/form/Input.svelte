@@ -1,4 +1,5 @@
 <script lang="ts">
+  import isEqual from 'lodash.isequal';
   import { onMount } from 'svelte';
   import { SlideToggle } from '@skeletonlabs/skeleton';
   import { form } from '$stores';
@@ -6,6 +7,8 @@
 
   export let key: string;
   export let type: Exclude<FormInputType, 'id'>;
+  export let list: boolean | undefined = false;
+  export let optional: boolean | undefined = false;
   let value: string | number | boolean | undefined = type === 'boolean' ? false : undefined;
   let errors: string[] = [];
   let disabled = false;
@@ -14,7 +17,9 @@
   onMount(() => {
     let defaultValue = $form?.defaultValue?.[key];
 
-    if (typeof defaultValue === 'string' && type === 'string') {
+    if (list && Array.isArray(defaultValue) && defaultValue.length > 0) {
+      value = defaultValue.reduce((str, value) => `${str},${value}`, '').substring(1);
+    } else if (typeof defaultValue === 'string' && type === 'string') {
       value = defaultValue;
     } else if (typeof defaultValue === 'number' && type === 'number') {
       value = defaultValue;
@@ -30,19 +35,43 @@
   }
 
   $: {
-    let currentValue =
-      type === 'string'
-        ? value === ''
-          ? undefined
-          : value
-        : type === 'number'
-        ? value === null
-          ? undefined
-          : value
-        : value;
+    let currentValue: typeof value | string[] | number[];
 
-    if ($form?.currentValue[key] !== currentValue && field) {
-      if (field.validation) {
+    if (list && typeof value === 'string') {
+      let values = value
+        .split(',')
+        .map((value) => value.trim())
+        .filter((value) => value !== '');
+
+      currentValue = type === 'number' ? values.map((value) => Number(value)) : values;
+    } else if (
+      (type === 'string' && value !== '') ||
+      (type === 'number' && value !== null) ||
+      type === 'boolean'
+    ) {
+      currentValue = value;
+    }
+
+    if (!isEqual($form?.currentValue[key], currentValue) && field) {
+      if (field.validation && Array.isArray(currentValue)) {
+        if (currentValue.length === 0 && !optional) {
+          errors = ['This field is required'];
+        } else {
+          let individualErrors: string[] = [];
+
+          currentValue.forEach((value, i) => {
+            if (field?.validation) {
+              let parsed = field.validation.safeParse(value);
+              let errors = parsed.success
+                ? []
+                : parsed.error.issues.map(({ message }) => `${message} [on element: ${i + 1}]`);
+              individualErrors.push(...errors);
+            }
+          });
+
+          errors = individualErrors;
+        }
+      } else if (field.validation) {
         let parsed = field.validation.safeParse(currentValue);
         errors = parsed.success ? [] : parsed.error.issues.map(({ message }) => message);
       }
@@ -69,14 +98,20 @@
     <span class={`duration-200 ${disabled ? 'opacity-70' : ''}`}>
       {field ? field.label : ''}<span class="text-error-600">{field?.optional ? '' : '*'}</span>
     </span>
-    {#if type === 'number'}
+    {#if type === 'number' && !list}
       <input
         type="number"
+        step="any"
         class={`input ${errors.length > 0 ? 'input-error' : ''}`}
         {disabled}
         bind:value
       />
     {:else}
+      {#if list}
+        <span class="block text-sm text-gray-300"
+          >Separate each value with a comma. (Example: value1,value2).</span
+        >
+      {/if}
       <input
         type="text"
         class={`input ${errors.length > 0 ? 'input-error' : ''}`}

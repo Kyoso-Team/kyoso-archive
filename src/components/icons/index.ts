@@ -12,5 +12,40 @@ import NoSearchResultsIcon from './NoSearchResults.svelte';
 import MoveUpIcon from './MoveUp.svelte';
 import MoveDownIcon from './MoveDown.svelte';
 import CloseIcon from './Close.svelte';
+import LoadingIcon from './Loading.svelte';
+import CheckIcon from './Check.svelte';
+import EditIcon from './Edit.svelte';
+import TrophyIcon from './Trophy.svelte';
+import MedalIcon from './Medal.svelte';
+import BadgeIcon from './Badge.svelte';
+import BannerIcon from './Banner.svelte';
+import HeartIcon from './Heart.svelte';
+import MoneyIcon from './Money.svelte';
+import AdditionIcon from './Addition.svelte';
 
-export { SettingsIcon, PickemsIcon, PoolingIcon, RefereeIcon, RegistrationsIcon, StatsIcon, LinkIcon, SearchIcon, AscendingIcon, DescendingIcon, NoSearchResultsIcon, MoveUpIcon, MoveDownIcon, CloseIcon };
+export {
+  SettingsIcon,
+  PickemsIcon,
+  PoolingIcon,
+  RefereeIcon,
+  RegistrationsIcon,
+  StatsIcon,
+  LinkIcon,
+  SearchIcon,
+  AscendingIcon,
+  DescendingIcon,
+  NoSearchResultsIcon,
+  MoveUpIcon,
+  MoveDownIcon,
+  CloseIcon,
+  LoadingIcon,
+  CheckIcon,
+  EditIcon,
+  TrophyIcon,
+  MedalIcon,
+  BadgeIcon,
+  BannerIcon,
+  HeartIcon,
+  MoneyIcon,
+  AdditionIcon
+};

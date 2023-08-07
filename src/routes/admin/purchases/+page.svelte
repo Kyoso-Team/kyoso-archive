@@ -1,7 +1,15 @@
 <script lang="ts">
   import { RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
   import { paginate } from '$stores';
-  import { SearchBar, Paginator, Purchase, AscendingIcon, DescendingIcon, NoSearchResultsIcon } from '$components';
+  import {
+    SEO,
+    SearchBar,
+    Paginator,
+    Purchase,
+    AscendingIcon,
+    DescendingIcon,
+    SearchResults
+  } from '$components';
   import { page } from '$app/stores';
   import type { PageServerData } from './$types';
   import type { Sort } from '$types';
@@ -22,10 +30,11 @@
   }
 </script>
 
+<SEO page={$page} title="Purchases - Admin" description="Manage purchases" noIndex />
 <div class="center-content">
   <SearchBar label="Search Purchases" on:search={onSearch} />
   <div class="mb-6">
-    <h2 class="pl-1 pb-1">Sorting</h2>
+    <h2 class="pb-1 pl-1">Sorting</h2>
     <div class="card flex min-w-[18.5rem] max-w-3xl justify-center p-4">
       <section class="flex w-max flex-col">
         <span class="pl-1 font-bold">Date</span>
@@ -45,20 +54,12 @@
       </section>
     </div>
   </div>
-  <div>
-    <h2 class="pl-1 pb-1">Purchases</h2>
-    <div class="card mb-2 flex min-w-[18.5rem] max-w-5xl flex-wrap justify-center gap-4 p-4">
-      {#if data.purchases.length === 0}
-        <div class="flex flex-col items-center">
-          <NoSearchResultsIcon w={75} h={75} styles="fill-primary-500" />
-          No results found
-        </div>
-      {:else}
-        {#each data.purchases as purchase}
-          <Purchase {purchase} />
-        {/each}
-      {/if}
-    </div>
-    <Paginator count={data.purchaseCount} page={data.page} on:change={onPageChange} />
-  </div>
+  <SearchResults label="Purchases" resultCount={data.purchaseCount}>
+    {#each data.purchases as purchase}
+      <Purchase {purchase} />
+    {/each}
+    <svelte:fragment slot="footer">
+      <Paginator count={data.purchaseCount} page={data.page} on:change={onPageChange} />
+    </svelte:fragment>
+  </SearchResults>
 </div>

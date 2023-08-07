@@ -4,27 +4,32 @@
   import '../main.css';
   import 'highlight.js/styles/atom-one-dark.css';
   import env from '$lib/env/client';
-  import hljs from 'highlight.js';
   import { loadScript } from '@paypal/paypal-js';
   import { buildUrl } from 'osu-web.js';
   import { goto } from '$app/navigation';
-  import { form, paypal, error } from '$stores';
-  import { Form, Error, Sidebar } from '$components';
+  import { form, paypal, error, upload } from '$stores';
+  import { Form, Error, Sidebar, Upload } from '$components';
   import { onMount } from 'svelte';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-  import { setInitialClassState, AppShell, AppBar, Avatar, storeHighlightJs, storePopup, Modal, popup } from '@skeletonlabs/skeleton';
-  import type { PopupSettings } from '@skeletonlabs/skeleton'
+  import {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setInitialClassState,
+    AppShell,
+    AppBar,
+    Avatar,
+    storeHighlightJs,
+    storePopup,
+    Modal,
+    popup,
+    Toast
+  } from '@skeletonlabs/skeleton';
+  import { page } from '$app/stores';
+  import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
 
-  storeHighlightJs.set(hljs);
   storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
   export let data: LayoutServerData;
-
-  const authUrl = buildUrl.authRequest(env.PUBLIC_OSU_CLIENT_ID, env.PUBLIC_OSU_REDIRECT_URI, [
-    'identify',
-    'public'
-  ]);
 
   const navLinks = [
     {
@@ -34,10 +39,18 @@
     {
       href: 'tournaments',
       label: 'Tournaments'
+    },
+    {
+      href: 'blog',
+      label: 'Blog'
     }
   ];
 
   const adminNavLinks = [
+    {
+      href: 'users',
+      label: 'Users'
+    },
     {
       href: 'purchases',
       label: 'Purchases'
@@ -51,7 +64,7 @@
   const navbarPopup: PopupSettings = {
     event: 'click',
     placement: 'bottom',
-    target: "",
+    target: '',
     middleware: {
       offset: 24
     }
@@ -59,6 +72,7 @@
 
   onMount(() => {
     loadPayPalScript();
+    loadHighlightJs();
   });
 
   async function loadPayPalScript() {
@@ -75,6 +89,11 @@
     }
   }
 
+  async function loadHighlightJs() {
+    let hljs = await import('highlight.js');
+    storeHighlightJs.set(hljs);
+  }
+
   function onLogoutClick() {
     goto('/auth/logout');
   }
@@ -85,38 +104,44 @@
 </svelte:head>
 <AppShell regionPage="relative" slotPageHeader="sticky top-0 z-10">
   <svelte:fragment slot="header">
-    <AppBar padding="p-3">
+    <AppBar padding="py-3 px-6">
       <svelte:fragment slot="lead">
-        <nav class="flex gap-2">
+        <nav class="flex items-center gap-2">
+          <a href="/">
+            <img src={`${$page.url.origin}/logo-hybrid.svg`} alt="logo-hybrid" class="mr-4 h-7" />
+          </a>
           {#if data.user && data.user.isAdmin}
-            <button class="btn hover:variant-soft-primary" use:popup={{...navbarPopup, target: "adminPopup"}}>Admin</button>
-            <div class="card absolute top-[5rem] left-4 w-52 py-2" data-popup="adminPopup">
+            <button
+              class="hover:variant-soft-primary btn"
+              use:popup={{ ...navbarPopup, target: 'adminPopup' }}>Admin</button
+            >
+            <div class="card absolute left-4 top-[5rem] w-52 py-2" data-popup="adminPopup">
               <nav class="flex flex-col gap-1 px-2">
                 {#each adminNavLinks as { href, label }}
                   <a
                     href={`/admin/${href}`}
-                    class="btn justify-start py-1 hover:variant-soft-primary">{label}</a
+                    class="hover:variant-soft-primary btn justify-start py-1">{label}</a
                   >
                 {/each}
               </nav>
             </div>
           {/if}
           {#each navLinks as { href, label }}
-            <a href={`/${href}`} class="btn hover:variant-soft-primary">{label}</a>
+            <a href={`/${href}`} class="hover:variant-soft-primary btn">{label}</a>
           {/each}
         </nav>
       </svelte:fragment>
       <svelte:fragment slot="trail">
         <div>
           {#if data.user}
-            <div use:popup={{...navbarPopup, target: "avatarPopup"}}>
+            <div use:popup={{ ...navbarPopup, target: 'avatarPopup' }}>
               <Avatar
                 src={buildUrl.userAvatar(data.user.osuUserId)}
                 width="w-10"
                 cursor="cursor-pointer"
               />
             </div>
-            <div class="card absolute top-[5rem] right-4 w-52 py-2" data-popup="avatarPopup">
+            <div class="card absolute right-4 top-[5rem] w-52 py-2" data-popup="avatarPopup">
               <section class="flex flex-col px-6">
                 <div class="font-bold">{data.user.username}</div>
                 <div class="text-sm">{data.user.discordTag}</div>
@@ -124,20 +149,19 @@
               <nav class="mt-2 flex flex-col gap-1 px-2">
                 <a
                   href={`/user/${data.user.id}`}
-                  class="btn justify-start py-1 hover:variant-soft-primary">Profile</a
+                  class="hover:variant-soft-primary btn justify-start py-1">Profile</a
                 >
-                <a
-                  href="/user/settings"
-                  class="btn justify-start py-1 hover:variant-soft-primary">Settings</a
+                <a href="/user/settings" class="hover:variant-soft-primary btn justify-start py-1"
+                  >Settings</a
                 >
                 <button
                   on:click={onLogoutClick}
-                  class="btn justify-start py-1 hover:variant-soft-primary">Logout</button
+                  class="hover:variant-soft-primary btn justify-start py-1">Logout</button
                 >
               </nav>
             </div>
           {:else}
-            <a href={authUrl} class="btn variant-filled-primary">Login</a>
+            <a href="/auth/login" class="btn variant-filled-primary">Login</a>
           {/if}
         </div>
       </svelte:fragment>
@@ -147,9 +171,17 @@
     <Sidebar />
   </svelte:fragment>
   <Modal />
+  <Toast />
   {#if $form}
     <div class="fixed inset-0 z-20 h-screen w-screen bg-surface-backdrop-token">
       <Form />
+    </div>
+  {/if}
+  {#if $upload}
+    <div
+      class="fixed inset-0 z-20 flex h-screen w-screen items-center justify-center bg-surface-backdrop-token"
+    >
+      <Upload />
     </div>
   {/if}
   {#if $error}

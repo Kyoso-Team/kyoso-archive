@@ -4,7 +4,7 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
 }
 
 //  _    _
@@ -25,8 +25,8 @@ model User {
   isRestricted                Boolean
   discordUserId               String                       @unique @db.VarChar(19)
   discordUsername             String                       @db.VarChar(32)
-  discordDiscriminator        Int                          @db.SmallInt
-  apiKey                      String                       @db.Char(24)
+  discordDiscriminator        String                       @db.Char(4)
+  apiKey                      String                       @unique @db.Char(24)
   freeServicesLeft            Int                          @default(3) @db.SmallInt
   // Auth
   osuAccessToken              String
@@ -51,6 +51,7 @@ model User {
   teamChangeAsUser            NotifTeamChange[]            @relation("affectedUser")
   teamChangeAsKicker          NotifTeamChange[]            @relation("kicker")
   asPickemUser                PickemUser[]
+  staffAppSubmissions         StaffAppSubmission[]
 }
 
 enum UserTheme {
@@ -86,9 +87,10 @@ model Purchase {
 //
 
 model Tournament {
-  id                    Int                    @id @default(autoincrement())
-  name                  String                 @unique @db.VarChar(50)
-  acronym               String                 @db.VarChar(8)
+  id                    Int                          @id @default(autoincrement())
+  createdAt             DateTime                     @default(now())
+  name                  String                       @unique @db.VarChar(50)
+  acronym               String                       @db.VarChar(8)
   lowerRankRange        Int
   upperRankRange        Int
   goPublicOn            DateTime? // Date in which the tournament will be displayed on the site for anyone to view
@@ -97,35 +99,38 @@ model Tournament {
   playerRegsCloseOn     DateTime?
   staffRegsOpenOn       DateTime?
   staffRegsCloseOn      DateTime?
-  teamSize              Int                    @default(1) @db.SmallInt
-  teamPlaySize          Int                    @default(1) @db.SmallInt
-  hasBanner             Boolean                @default(false)
+  teamSize              Int                          @default(1) @db.SmallInt
+  teamPlaySize          Int                          @default(1) @db.SmallInt
+  hasBanner             Boolean                      @default(false)
+  hasLogo               Boolean                      @default(false)
+  useTeamBanners        Boolean                      @default(true)
   useBWS                Boolean
   rules                 String? // Markdown
   type                  TournamentType
   services              TournamentService[]
   // Links
   forumPostId           Int?
-  discordInviteId       String?                @db.VarChar(12)
-  mainSheetId           String?                @db.VarChar(45)
-  twitchChannelName     String?                @db.VarChar(25)
-  youtubeChannelId      String?                @db.VarChar(25)
-  twitterHandle         String?                @db.VarChar(15)
+  discordInviteId       String?                      @db.VarChar(12)
+  mainSheetId           String?                      @db.VarChar(45)
+  twitchChannelName     String?                      @db.VarChar(25)
+  youtubeChannelId      String?                      @db.VarChar(25)
+  twitterHandle         String?                      @db.VarChar(15)
   donationLink          String?
   websiteLink           String?
   // Ref settings
-  pickTimerLength       Int                    @default(120)
-  startTimerLength      Int                    @default(10)
-  doublePickAllowed     Boolean                @default(false)
-  doubleBanAllowed      Boolean                @default(false)
-  alwaysForceNoFail     Boolean                @default(true)
+  pickTimerLength       Int                          @default(120)
+  startTimerLength      Int                          @default(10)
+  doublePickAllowed     Boolean                      @default(false)
+  doubleBanAllowed      Boolean                      @default(false)
+  alwaysForceNoFail     Boolean                      @default(true)
   rollRules             String?
   freeModRules          String?
   warmupRules           String?
   lateProcedures        String?
-  banOrder              BanOrder               @default(ABABAB)
-  winCondition          WinCondition           @default(Score)
+  banOrder              BanOrder                     @default(ABABAB)
+  winCondition          WinCondition                 @default(Score)
   // Relations
+  staffApplication      StaffApplication?
   staffRoles            StaffRole[]
   staffMembers          StaffMember[]
   inPurchases           Purchase[]
@@ -141,6 +146,7 @@ model Tournament {
   pickemUsers           PickemUser[]
   predictionSubmissions PredictionSubmission[]
   prizes                Prize[]
+  grantedHostNotifs     NotifGrantedTournamentHost[]
 }
 
 enum TournamentType {
@@ -170,29 +176,32 @@ enum TournamentService {
 }
 
 model Prize {
-  id                   Int          @id @default(autoincrement())
-  type                 PrizeType
-  positions            Int[]        @db.SmallInt // A single element array for a single place. Example: 1st, 2nd, 3rd place
+  id           Int        @id @default(autoincrement())
+  type         PrizeType
+  placements   Int[]      @db.SmallInt // A single element array for a single place. Example: 1st, 2nd, 3rd place
   // A range of positions in case of multiple placements sharing the same prize. Example: Top 4-6
-  trophy               Boolean // Physical trophy
-  medal                Boolean // Physical medal
-  badge                Boolean
-  banner               Boolean
-  cash                 Float        @default(0)
-  cashMetric           CashMetric   @default(Fixed)
-  cashCurrency         String       @default("USD") @db.Char(3)
-  items                String[]     @db.VarChar(25)
-  osuSupporter         Int?         @db.SmallInt // In months
-  tournament           Tournament   @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  tournamentId         Int
-  awardedToPlayers     Player[]
-  awardedToPickemUsers PickemUser[]
-  awardedToTeams       Team[]
+  trophy       Boolean // Physical trophy
+  medal        Boolean // Physical medal
+  badge        Boolean
+  banner       Boolean
+  items        String[]   @db.VarChar(25)
+  osuSupporter Int        @default(0) @db.SmallInt // In months
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId Int
+  cash         CashPrize?
 }
 
 enum PrizeType {
   Tournament
   Pickems
+}
+
+model CashPrize {
+  value     Float
+  metric    CashMetric
+  currency  String     @db.Char(3)
+  inPrize   Prize      @relation(fields: [inPrizeId], references: [id], onDelete: Cascade)
+  inPrizeId Int        @id @unique
 }
 
 enum CashMetric {
@@ -295,6 +304,7 @@ model BattleRoyaleRound {
 model StaffRole {
   id           Int               @id @default(autoincrement())
   name         String            @db.VarChar(25)
+  order        Int               @db.SmallInt
   color        StaffColor        @default(Slate)
   permissions  StaffPermission[]
   tournament   Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
@@ -312,6 +322,8 @@ enum StaffPermission {
 
   // Host can do everything regardless of other permissions, can also delete the tournament. Only one user can have this permission per tournament
   Host
+  // Same as above. This exists so a host can add this permission to a site admin to allow them to debug something without listing them as an actual staff member
+  Debug
   // Tournament
   MutateTournament
   // Staff
@@ -323,7 +335,6 @@ enum StaffPermission {
   MutateRegs
   DeleteRegs
   // Mappool structure
-  ViewPoolStructure
   MutatePoolStructure
   // Suggest maps
   ViewPoolSuggestions
@@ -331,11 +342,10 @@ enum StaffPermission {
   DeletePoolSuggestions
   // Pool maps
   ViewPooledMaps
+  MutatePooledMaps
   DeletePooledMaps
-  // Playtest (provide replays and feedback)
-  ViewMapsToPlaytest
-  MutateMapsToPlaytest // Can replay and provide feedback
-  DeleteMapsToPlaytest
+  // Playtest
+  CanPlaytest // Can replay and provide feedback
   // Matches
   ViewMatches
   MutateMatches
@@ -387,29 +397,32 @@ model StaffMember {
 }
 
 model StaffApplication {
-  id                Int                   @id @default(autoincrement())
-  title             String
-  description       String?
-  lookinFor         StaffAppRoles[]
-  submissions       StaffAppSubmissions[]
-  newStaffAppNotifs NotifNewStaffApp[]
+  tournament   Tournament           @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId Int                  @unique
+  title        String
+  description  String?
+  lookinFor    StaffAppRole[]
+  submissions  StaffAppSubmission[]
 }
 
-model StaffAppRoles {
+model StaffAppRole {
   id                 Int              @id @default(autoincrement())
   role               String           @db.VarChar(25)
   description        String?
-  staffApplication   StaffApplication @relation(fields: [staffApplicationId], references: [id], onDelete: Cascade)
+  staffApplication   StaffApplication @relation(fields: [staffApplicationId], references: [tournamentId], onDelete: Cascade)
   staffApplicationId Int
 }
 
-model StaffAppSubmissions {
-  id                 Int              @id @default(autoincrement())
-  applyingFor        String[]         @db.VarChar(25)
-  staffingExperience String
-  additionalComments String?
-  staffApplication   StaffApplication @relation(fields: [staffApplicationId], references: [id], onDelete: Cascade)
-  staffApplicationId Int
+model StaffAppSubmission {
+  id                          Int                          @id @default(autoincrement())
+  applyingFor                 String[]                     @db.VarChar(25)
+  staffingExperience          String
+  additionalComments          String?
+  staffApplication            StaffApplication             @relation(fields: [staffApplicationId], references: [tournamentId], onDelete: Cascade)
+  staffApplicationId          Int
+  submittedBy                 User                         @relation(fields: [submittedById], references: [id], onDelete: Cascade)
+  submittedById               Int
+  newStaffAppSubmissionNotifs NotifNewStaffAppSubmission[]
 }
 
 model Team {
@@ -417,13 +430,13 @@ model Team {
   registeredAt        DateTime            @default(now())
   name                String              @db.VarChar(20)
   inviteId            String              @unique @db.Char(8)
+  avgRank             Int
+  avgBwsRank          Int
   hasBanner           Boolean             @default(false)
   tournament          Tournament          @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId        Int
   captain             Player              @relation("captain", fields: [captainId], references: [id])
   captainId           Int                 @unique
-  prizeWon            Prize?              @relation(fields: [prizeWonId], references: [id])
-  prizeWonId          Int?
   players             Player[]            @relation("player")
   asTeam1             Match[]             @relation("team1")
   asTeam2             Match[]             @relation("team2")
@@ -437,6 +450,7 @@ model Team {
   scores              TeamScore[]
   teamChangeNotifs    NotifTeamChange[]
   inQualPredictions   QualPrediction[]
+  joinRequests        JoinTeamRequest[]
 
   @@unique([name, tournamentId])
 }
@@ -447,6 +461,8 @@ model JoinTeamRequest {
   status                JoinTeamRequestStatus  @default(Pending)
   requestedBy           Player                 @relation(fields: [requestedById], references: [id], onDelete: Cascade)
   requestedById         Int
+  team                  Team                   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId                Int
   joinTeamRequestNotifs NotifJoinTeamRequest[]
 }
 
@@ -463,6 +479,9 @@ model Player {
   availability        String              @db.Char(99) // A string that represents the availability between 0 - 23 UTC (24 digits), from Friday to Monday
   // Where each digit can be either 0 (unavailable) or 1 (available)
   // Each day is separated by a period, similarly to an IP address
+  rank                Int
+  bwsRank             Int
+  badgeCount          Int                 @db.SmallInt
   tournament          Tournament          @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId        Int
   user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -470,8 +489,6 @@ model Player {
   teamAsCaptain       Team?               @relation("captain")
   team                Team?               @relation("player", fields: [teamId], references: [id])
   teamId              Int?
-  prizeWon            Prize?              @relation(fields: [prizeWonId], references: [id])
-  prizeWonId          Int?
   asPlayer1           Match[]             @relation("player1")
   asPlayer2           Match[]             @relation("player2")
   asPotentialPlayer1  PotentialMatch[]    @relation("potentialPlayer1")
@@ -502,7 +519,8 @@ model Modpool {
   id            Int            @id @default(autoincrement())
   category      String         @db.VarChar(3) // "NM", "HD", "TB", etc.
   mods          Mod[]
-  isFreeMod     Boolean
+  isFreeMod     Boolean        @default(false)
+  isTieBreaker  Boolean        @default(false)
   order         Int            @db.SmallInt // The order in which the modpools should be presented. Example: NM (1) should go before HD (2)
   mapCount      Int            @db.SmallInt
   round         Round          @relation(fields: [roundId], references: [id], onDelete: Cascade)
@@ -565,6 +583,8 @@ model StarRating {
   value     Float
   beatmap   Beatmap @relation(fields: [beatmapId], references: [osuBeatmapId], onDelete: Cascade)
   beatmapId Int
+
+  @@unique([mods, beatmapId])
 }
 
 model SuggestedMap {
@@ -855,8 +875,6 @@ model PickemUser {
   userId       Int
   tournament   Tournament             @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId Int
-  prizeWon     Prize?                 @relation(fields: [prizeWonId], references: [id])
-  prizeWonId   Int?
   submissions  PredictionSubmission[]
 
   @@unique([userId, tournamentId])
@@ -946,17 +964,17 @@ enum IssueType {
 }
 
 model Notification {
-  id                   String                      @id @unique @db.Char(16) // ID will be generated with nanoid
-  notifiedAt           DateTime                    @default(now())
-  newIssue             NotifIssue?
-  tournamentDeleted    NotifTournamentDeleted?
-  gratedTournamentHost NotifGrantedTournamentHost?
-  staffChange          NotifStaffChange?
-  newStaffApp          NotifNewStaffApp?
-  roundPublication     NotifRoundPublication?
-  joinTeamRequest      NotifJoinTeamRequest?
-  teamChange           NotifTeamChange?
-  notifiedTo           User[]
+  id                    String                      @id @unique @db.Char(16) // ID will be generated with nanoid
+  notifiedAt            DateTime                    @default(now())
+  newIssue              NotifIssue?
+  tournamentDeleted     NotifTournamentDeleted?
+  grantedTournamentHost NotifGrantedTournamentHost?
+  staffChange           NotifStaffChange?
+  newStaffAppSubmission NotifNewStaffAppSubmission?
+  roundPublication      NotifRoundPublication?
+  joinTeamRequest       NotifJoinTeamRequest?
+  teamChange            NotifTeamChange?
+  notifiedTo            User[]
 }
 
 // Notifies admins when a new issue is submitted or notifies the user who submitted the issue that the issue has been resolved
@@ -986,10 +1004,12 @@ model NotifTournamentDeleted {
 model NotifGrantedTournamentHost {
   notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
   notificationId String       @id @unique
+  tournament     Tournament?  @relation(fields: [tournamentId], references: [id])
+  tournamentId   Int?
   previousHost   User?        @relation("previousHost", fields: [previousHostId], references: [id])
   previousHostId Int?
-  newHost        User         @relation("newHost", fields: [newHostId], references: [id], onDelete: Cascade)
-  newHostId      Int
+  newHost        User?        @relation("newHost", fields: [newHostId], references: [id])
+  newHostId      Int?
 }
 
 // Notifies a user when they're added to or removed from a tournament's staff team
@@ -998,8 +1018,8 @@ model NotifStaffChange {
   withRoles      String[]               @db.VarChar(25)
   notification   Notification           @relation(fields: [notificationId], references: [id], onDelete: Cascade)
   notificationId String                 @id @unique
-  user           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         Int
+  user           User?                  @relation(fields: [userId], references: [id])
+  userId         Int?
 }
 
 enum NotifStaffChangeAction {
@@ -1008,11 +1028,11 @@ enum NotifStaffChangeAction {
 }
 
 // Notifies tournament staff members with the "MutateStaffMembers" permission when a tournament receives a new application from a user to join the staff team
-model NotifNewStaffApp {
-  notification   Notification      @relation(fields: [notificationId], references: [id], onDelete: Cascade)
-  notificationId String            @id @unique
-  staffApp       StaffApplication? @relation(fields: [staffAppId], references: [id])
-  staffAppId     Int?
+model NotifNewStaffAppSubmission {
+  notification         Notification        @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  notificationId       String              @id @unique
+  staffAppSubmission   StaffAppSubmission? @relation(fields: [staffAppSubmissionId], references: [id])
+  staffAppSubmissionId Int?
 }
 
 // Notifies a team captain when a player has requested to be a part of their team

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
 import { getUserAsStaff } from '$trpc/middleware';
 import { whereIdSchema, withTournamentSchema } from '$lib/schemas';
-import { isAllowed } from '$lib/server-utils';
+import { forbidIf, isAllowed } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
 import type { Prisma } from '@prisma/client';
 
@@ -16,76 +16,82 @@ const extendCreate = {
 };
 
 const standardSchema = baseSchema.extend({
-  bestOf: z.number().int().gte(1).refine(
-    (n: number) => n % 2 !== 0,
-    'Input must be odd'
-  ),
+  bestOf: z
+    .number()
+    .int()
+    .gte(1)
+    .refine((n: number) => n % 2 !== 0, 'Input must be odd'),
   banCount: z.number().int().gte(0)
 });
 
 const qualifierSchema = baseSchema.extend({
   runCount: z.number().int().gte(1),
-  summarizeRunsAs: z.union([
-    z.literal('Sum'),
-    z.literal('Average'),
-    z.literal('Best')
-  ]).optional()
+  summarizeRunsAs: z.union([z.literal('Sum'), z.literal('Average'), z.literal('Best')]).optional()
 });
 
 const battleRoyaleRound = baseSchema.extend({
   playersEliminatedPerMap: z.number().int().gte(1)
 });
 
-async function createRound({ stageId, tournamentId, name, standardRound, qualifierRound, battleRoyaleRound }: Omit<Prisma.RoundCreateArgs['data'], 'order'>) {
-  await tryCatch(
-    async () => {
-      let roundCount = await prisma.round.count({
-        where: {
-          stageId
-        }
-      });
+async function createRound({
+  stageId,
+  tournamentId,
+  name,
+  standardRound,
+  qualifierRound,
+  battleRoyaleRound
+}: Omit<Prisma.RoundCreateArgs['data'], 'order'>) {
+  await tryCatch(async () => {
+    let roundCount = await prisma.round.count({
+      where: {
+        stageId
+      }
+    });
 
-      await prisma.round.create({
-        data: {
-          name,
-          standardRound,
-          qualifierRound,
-          battleRoyaleRound,
-          order: roundCount + 1,
-          stage: {
-            connect: {
-              id: stageId
-            }
-          },
-          tournament: {
-            connect: {
-              id: tournamentId
-            }
+    await prisma.round.create({
+      data: {
+        name,
+        standardRound,
+        qualifierRound,
+        battleRoyaleRound,
+        order: roundCount + 1,
+        stage: {
+          connect: {
+            id: stageId
+          }
+        },
+        tournament: {
+          connect: {
+            id: tournamentId
           }
         }
-      });
-    },
-    'Can\'t create round.'
-  );
+      }
+    });
+  }, "Can't create round.");
 }
 
-async function updateRound(roundId: number, { name, standardRound, qualifierRound, battleRoyaleRound }: Omit<Prisma.RoundUpdateArgs['data'], 'order'>) {
-  await tryCatch(
-    async () => {
-      await prisma.round.update({
-        where: {
-          id: roundId
-        },
-        data: {
-          name,
-          standardRound,
-          qualifierRound,
-          battleRoyaleRound
-        }
-      });
-    },
-    `Can't update round of ID ${roundId}.`
-  );
+async function updateRound(
+  roundId: number,
+  {
+    name,
+    standardRound,
+    qualifierRound,
+    battleRoyaleRound
+  }: Omit<Prisma.RoundUpdateArgs['data'], 'order'>
+) {
+  await tryCatch(async () => {
+    await prisma.round.update({
+      where: {
+        id: roundId
+      },
+      data: {
+        name,
+        standardRound,
+        qualifierRound,
+        battleRoyaleRound
+      }
+    });
+  }, `Can't update round of ID ${roundId}.`);
 }
 
 export const roundsRouter = t.router({
@@ -98,11 +104,16 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
-        `create round for tourament of ID ${input.tournamentId}`
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        `create round for tournament of ID ${input.tournamentId}`
       );
 
-      let { tournamentId, data: { name, stageId, bestOf, banCount } } = input;
+      forbidIf.hasConcluded(ctx.tournament);
+
+      let {
+        tournamentId,
+        data: { name, stageId, bestOf, banCount }
+      } = input;
 
       await createRound({
         name,
@@ -123,13 +134,18 @@ export const roundsRouter = t.router({
         data: qualifierSchema.extend(extendCreate)
       })
     )
-    .mutation(async ({ ctx, input}) => {
+    .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
-        `create round for tourament of ID ${input.tournamentId}`
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        `create round for tournament of ID ${input.tournamentId}`
       );
 
-      let { tournamentId, data: { name, stageId, runCount, summarizeRunsAs } } = input;
+      forbidIf.hasConcluded(ctx.tournament);
+
+      let {
+        tournamentId,
+        data: { name, stageId, runCount, summarizeRunsAs }
+      } = input;
 
       await createRound({
         name,
@@ -152,11 +168,16 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
-        `create round for tourament of ID ${input.tournamentId}`
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        `create round for tournament of ID ${input.tournamentId}`
       );
 
-      let { tournamentId, data: { name, stageId, playersEliminatedPerMap } } = input;
+      forbidIf.hasConcluded(ctx.tournament);
+
+      let {
+        tournamentId,
+        data: { name, stageId, playersEliminatedPerMap }
+      } = input;
 
       await createRound({
         name,
@@ -180,11 +201,17 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
         `update round of ID ${input.where.id}`
       );
 
-      let { data: { name, bestOf, banCount } } = input;
+      forbidIf.hasConcluded(ctx.tournament);
+
+      if (Object.keys(input.data).length === 0) return;
+
+      let {
+        data: { name, bestOf, banCount }
+      } = input;
 
       await updateRound(input.where.id, {
         name,
@@ -206,11 +233,17 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
         `update round of ID ${input.where.id}`
       );
 
-      let { data: { name, runCount, summarizeRunsAs } } = input;
+      forbidIf.hasConcluded(ctx.tournament);
+
+      if (Object.keys(input.data).length === 0) return;
+
+      let {
+        data: { name, runCount, summarizeRunsAs }
+      } = input;
 
       await updateRound(input.where.id, {
         name,
@@ -232,11 +265,17 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
         `update round of ID ${input.where.id}`
       );
 
-      let { data: { name, playersEliminatedPerMap } } = input;
+      forbidIf.hasConcluded(ctx.tournament);
+
+      if (Object.keys(input.data).length === 0) return;
+
+      let {
+        data: { name, playersEliminatedPerMap }
+      } = input;
 
       await updateRound(input.where.id, {
         name,
@@ -260,59 +299,79 @@ export const roundsRouter = t.router({
           order: z.number().int().gte(1)
         })
       })
-    ).mutation(async ({ ctx, input }) => {
+    )
+    .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
         `change the order of rounds for tournament of ID ${input.tournamentId}`
       );
 
-      await tryCatch(
-        async () => {
-          await prisma.$transaction([
-            prisma.round.update({
-              where: {
-                id: input.round1.id
-              },
-              data: {
-                order: input.round2.order
-              }
-            }),
-            prisma.round.update({
-              where: {
-                id: input.round2.id
-              },
-              data: {
-                order: input.round1.order
-              }
-            })
-          ]);
-        },
-        `Can't change the order of rounds for tournament of ID ${input.tournamentId}.`
-      );
+      forbidIf.hasConcluded(ctx.tournament);
+
+      await tryCatch(async () => {
+        await prisma.$transaction([
+          prisma.round.update({
+            where: {
+              id: input.round1.id
+            },
+            data: {
+              order: input.round2.order
+            }
+          }),
+          prisma.round.update({
+            where: {
+              id: input.round2.id
+            },
+            data: {
+              order: input.round1.order
+            }
+          })
+        ]);
+      }, `Can't change the order of rounds for tournament of ID ${input.tournamentId}.`);
     }),
   deleteRound: t.procedure
     .use(getUserAsStaff)
     .input(
       withTournamentSchema.extend({
-        tournamentId: z.number().int(),
-        where: whereIdSchema
+        where: whereIdSchema.extend({
+          stageId: z.number().int(),
+          order: z.number().int()
+        })
       })
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
         `delete round of ID ${input.where.id}`
       );
 
-      let { where } = input;
+      forbidIf.hasConcluded(ctx.tournament);
 
-      await tryCatch(
-        async () => {
-          await prisma.round.delete({
-            where
-          });
-        },
-        `Can't delete round of ID ${where.id}.`
-      );
+      let {
+        where: { id, order, stageId }
+      } = input;
+
+      await tryCatch(async () => {
+        await prisma.$transaction([
+          prisma.round.delete({
+            where: {
+              id
+            }
+          }),
+          prisma.round.updateMany({
+            where: {
+              stageId,
+              order: {
+                gt: order
+              }
+            },
+            data: {
+              order: {
+                decrement: 1
+              }
+            }
+          })
+        ]);
+      }, `Can't delete round of ID ${id}.`);
     })
 });

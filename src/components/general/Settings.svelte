@@ -36,15 +36,11 @@
     <slot />
   </div>
   <div class="mt-4 flex justify-end gap-2">
-    <button 
-      class="btn variant-ringed-primary" 
-      disabled={btnsDisabled} 
-      on:click={onUndoChanges}
-    >Undo Changes</button>
-    <button 
-      class="btn variant-filled-primary" 
-      disabled={btnsDisabled} 
-      on:click={onUpdate}
-    >Update</button>
+    <button class="variant-ringed-primary btn" disabled={btnsDisabled} on:click={onUndoChanges}
+      >Undo Changes</button
+    >
+    <button class="btn variant-filled-primary" disabled={btnsDisabled} on:click={onUpdate}
+      >Update</button
+    >
   </div>
 </div>

@@ -13,15 +13,16 @@ export const load = (async ({ parent, params }) => {
     },
     select: {
       id: true,
+      name: true,
       acronym: true,
-      type: true
+      type: true,
+      services: true
     }
   });
 
   if (!tournament) {
     throw error(404, `Couldn't find tournament with ID ${tournamentId}.`);
   }
-
 
   return {
     ...data,

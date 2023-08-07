@@ -10,6 +10,7 @@ import { customAlphabet } from 'nanoid';
 import type { TokenRequestResult, User } from 'discord-oauth2';
 import type { Prisma } from '@prisma/client';
 import type { SessionUser } from '$types';
+import type { Cookies } from '@sveltejs/kit';
 
 const osuAuth = new OsuAuth(
   env.PUBLIC_OSU_CLIENT_ID,
@@ -51,7 +52,7 @@ function getData(
     osuRefreshToken: osuToken.refresh_token,
     discordAccesstoken: discordToken.access_token,
     discordRefreshToken: discordToken.refresh_token,
-    discordDiscriminator: Number(discordProfile.discriminator),
+    discordDiscriminator: discordProfile.discriminator,
     discordUserId: discordProfile.id,
     discordUsername: discordProfile.username,
     osuUserId: osuProfile.id,
@@ -74,7 +75,7 @@ function getData(
 
 async function getOsuProfile(osuToken: Token) {
   return await tryCatch(
-    async () => await new Client(osuToken.access_token as string).users.getSelf(),
+    async () => await new Client(osuToken.access_token).users.getSelf(),
     "Can't get osu! profile data."
   );
 }
@@ -101,7 +102,7 @@ function getStoredUser<
     osuUserId: number;
     osuUsername: string;
     discordUsername: string;
-    discordDiscriminator: number;
+    discordDiscriminator: string;
     isAdmin: boolean;
     updatedAt: Date;
   }
@@ -116,9 +117,97 @@ function getStoredUser<
   };
 }
 
+function invalidateCookies(cookies: Cookies, error?: string): never {
+  cookies.delete('session', cookiesOptions);
+  cookies.delete('osu_token', cookiesOptions);
+
+  throw new TRPCError({
+    code: 'INTERNAL_SERVER_ERROR',
+    message: error || 'Invalid cookies.'
+  });
+}
+
+// Add the current developer as a staff for all tournaments
+async function addUserToTournaments(user: { id: number }) {
+  if (env.NODE_ENV === 'development') {
+    let tournaments = await prisma.tournament.findMany({
+      select: {
+        id: true
+      }
+    });
+
+    for (let i = 0; i < tournaments.length; i++) {
+      let tournamentId = tournaments[i].id;
+
+      let existingStaffRole = await prisma.staffRole.findUnique({
+        where: {
+          name_tournamentId: {
+            tournamentId,
+            name: 'Debugger'
+          }
+        }
+      });
+
+      if (!existingStaffRole) {
+        await prisma.$transaction(async (tx) => {
+          let staffRole = await tx.staffRole.create({
+            data: {
+              tournamentId,
+              name: 'Debugger',
+              order: 0,
+              permissions: ['Debug']
+            },
+            select: {
+              id: true
+            }
+          });
+
+          await tx.staffMember.create({
+            data: {
+              tournamentId,
+              roles: {
+                connect: {
+                  id: staffRole.id
+                }
+              },
+              userId: user.id
+            }
+          });
+        });
+      }
+    }
+  }
+}
+
+async function login(osuToken: Token, discordToken: TokenRequestResult): Promise<string> {
+  let [osuProfile, discordProfile] = await getProfiles(osuToken, discordToken);
+  let data = getData(osuToken, discordToken, osuProfile, discordProfile);
+  let apiKey = customAlphabet(
+    '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+    24
+  )();
+
+  let user = await tryCatch(async () => {
+    return await prisma.user.upsert({
+      create: {
+        ...data,
+        apiKey
+      },
+      where: {
+        osuUserId: osuProfile.id
+      },
+      update: data,
+      select: userSelect
+    });
+  }, "Can't create or update user.");
+
+  let storedUser = getStoredUser(user);
+  return signJWT(storedUser);
+}
+
 export const authRouter = t.router({
   handleOsuAuth: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
-    let token = await tryCatch(
+    let osuToken = await tryCatch(
       async () => await osuAuth.requestToken(input),
       "Can't get osu! OAuth token."
     );
@@ -129,7 +218,7 @@ export const authRouter = t.router({
      * but the time we spend doing the request is time wasted if user is registering
      */
     let userId = 0;
-    let accessToken = token.access_token;
+    let accessToken = osuToken.access_token;
     let tokenPayload = JSON.parse(
       Buffer.from(
         accessToken.substring(accessToken.indexOf('.') + 1, accessToken.lastIndexOf('.')),
@@ -143,22 +232,58 @@ export const authRouter = t.router({
     let user = await prisma.user.findUnique({
       where: {
         osuUserId: userId
+      },
+      select: {
+        id: true,
+        discordRefreshToken: true
       }
     });
 
-    if (userId !== 0 && user) {
-      // User is registered and logging in, skip discord by simply running `updateUser`
-      let storedUser = getStoredUser(user);
-      ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
+    try {
+      // Avoid prompting user for discord auth if possible
+      if (!user) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'User does not exist yet.'
+        });
+      }
+
+      let discordToken = await discordAuth.tokenRequest({
+        ...discordAuthParams,
+        grantType: 'refresh_token',
+        scope,
+        refreshToken: user.discordRefreshToken
+      });
+
+      await addUserToTournaments(user);
+      ctx.cookies.set('session', await login(osuToken, discordToken), cookiesOptions);
       return '/';
-    } else {
-      // User is currently registering, make them link their discord
-      ctx.cookies.set('osu_token', signJWT(token), cookiesOptions);
-      return discordAuth.generateAuthUrl({ scope });
+    } catch (e) {
+      let err = e as
+        | {
+            message: string;
+            response?: {
+              error: string;
+            };
+          }
+        | undefined;
+
+      if (err?.message === 'User does not exist yet.' || err?.response?.error === 'invalid_grant') {
+        // Prompt user for discord auth
+        ctx.cookies.set('osu_token', signJWT(osuToken), cookiesOptions);
+        return discordAuth.generateAuthUrl({ scope });
+      } else {
+        // Something actually went wrong, throw error
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to authenticate user.',
+          cause: e
+        });
+      }
     }
   }),
   handleDiscordAuth: t.procedure.input(z.string()).query(async ({ input, ctx }) => {
-    let token = await tryCatch(async () => {
+    let discordToken = await tryCatch(async () => {
       return await discordAuth.tokenRequest({
         ...discordAuthParams,
         grantType: 'authorization_code',
@@ -167,142 +292,107 @@ export const authRouter = t.router({
       });
     }, "Can't get Discord OAuth token.");
 
-    ctx.cookies.set('discord_token', signJWT(token), cookiesOptions);
-  }),
-  login: t.procedure.query(async ({ ctx }) => {
     let osuToken = verifyJWT<Token>(ctx.cookies.get('osu_token'));
-    let discordToken = verifyJWT<TokenRequestResult>(ctx.cookies.get('discord_token'));
+    if (!osuToken) {
+      // User may be changing their discord account
+      let storedUser = verifyJWT<SessionUser>(ctx.cookies.get('session'));
+      if (!storedUser) {
+        invalidateCookies(ctx.cookies);
+      }
 
-    ctx.cookies.delete('osu_token', cookiesOptions);
-    ctx.cookies.delete('discord_token', cookiesOptions);
-
-    if (!osuToken || !discordToken) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Invalid login cookies.'
-      });
-    }
-
-    let [osuProfile, discordProfile] = await getProfiles(osuToken, discordToken);
-    let data = getData(osuToken, discordToken, osuProfile, discordProfile);
-    let apiKey = customAlphabet(
-      '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-      24
-    )();
-
-    let user = await tryCatch(async () => {
-      return await prisma.user.upsert({
-        create: {
-          ...data,
-          apiKey
-        },
+      let discordProfile = await getDiscordProfile(discordToken);
+      let updatedUser = await prisma.user.update({
         where: {
-          osuUserId: osuProfile.id
+          osuUserId: storedUser.osuUserId
         },
-        update: data,
-        select: userSelect
+        data: {
+          discordAccesstoken: discordToken.access_token,
+          discordRefreshToken: discordToken.refresh_token,
+          discordUserId: discordProfile.id,
+          discordUsername: discordProfile.username,
+          discordDiscriminator: discordProfile.discriminator
+        }
       });
-    }, "Can't create or update user.");
 
-    let storedUser = getStoredUser(user);
-    ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
+      storedUser = getStoredUser(updatedUser);
+      ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
+      return '/user/settings';
+    } else {
+      // User is logging in and went through osu auth stuff
+      ctx.cookies.delete('osu_token', cookiesOptions);
+
+      let jwt = await login(osuToken, discordToken);
+      await addUserToTournaments(verifyJWT(jwt) as SessionUser);
+
+      ctx.cookies.set('session', jwt, cookiesOptions);
+      return '/';
+    }
   }),
   logout: t.procedure.query(({ ctx }) => {
     ctx.cookies.delete('session', cookiesOptions);
   }),
-  changeDiscord: t.procedure.query(async ({ ctx }) => {
-    let storedUser = verifyJWT<SessionUser>(ctx.cookies.get('session'));
-    let discordToken = verifyJWT<TokenRequestResult>(ctx.cookies.get('discord_token'));
-    ctx.cookies.delete('discord_token', cookiesOptions);
-
-    if (!storedUser || !discordToken) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Invalid cookies.'
-      });
-    }
-
-    let discordProfile = await getDiscordProfile(discordToken);
-    let updatedUser = await prisma.user.update({
-      where: {
-        osuUserId: storedUser.osuUserId
-      },
-      data: {
-        discordAccesstoken: discordToken.access_token,
-        discordRefreshToken: discordToken.refresh_token,
-        discordUserId: discordProfile.id,
-        discordUsername: discordProfile.username,
-        discordDiscriminator: Number(discordProfile.discriminator)
-      }
-    });
-
-    storedUser = getStoredUser(updatedUser);
-    ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
-  }),
   updateUser: t.procedure.query(async ({ ctx }) => {
     let storedUser = verifyJWT<SessionUser>(ctx.cookies.get('session'));
-
     if (!storedUser) {
-      ctx.cookies.delete('session', cookiesOptions);
-
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Invalid user cookie.'
-      });
+      invalidateCookies(ctx.cookies);
     }
 
-    let user = await tryCatch(async () => {
-      return await prisma.user.findUniqueOrThrow({
-        where: {
-          id: storedUser?.id
-        },
-        select: {
-          id: true,
-          isAdmin: true,
-          osuRefreshToken: true,
-          discordRefreshToken: true
-        }
-      });
-    }, "Can't refresh user data.");
-
-    if (new Date().getTime() - new Date(storedUser.updatedAt).getTime() >= 86_400_000) {
-      let [osuToken, discordToken] = await Promise.all([
-        tryCatch(
-          async () => await osuAuth.refreshToken(user.osuRefreshToken),
-          "Can't refresh osu! OAuth token."
-        ),
-        tryCatch(async () => {
-          return await discordAuth.tokenRequest({
-            ...discordAuthParams,
-            grantType: 'refresh_token',
-            scope,
-            refreshToken: user.discordRefreshToken
-          });
-        }, "Can't refresh Discord OAuth token.")
-      ]);
-      let [osuProfile, discordProfile] = await getProfiles(osuToken, discordToken);
-      let data = getData(osuToken, discordToken, osuProfile, discordProfile);
-
-      let updatedUser = await tryCatch(async () => {
-        return await prisma.user.update({
+    try {
+      let user = await tryCatch(async () => {
+        return await prisma.user.findUniqueOrThrow({
           where: {
-            id: user.id
+            id: storedUser?.id
           },
-          data,
-          select: userSelect
+          select: {
+            id: true,
+            isAdmin: true,
+            osuRefreshToken: true,
+            discordRefreshToken: true
+          }
         });
-      }, "Can't update user.");
+      }, "Can't refresh user data.");
 
-      storedUser = getStoredUser(updatedUser);
-    } else {
-      storedUser = {
-        ...storedUser,
-        isAdmin: user.isAdmin
-      };
+      if (new Date().getTime() - new Date(storedUser.updatedAt).getTime() >= 86_400_000) {
+        let [osuToken, discordToken] = await Promise.all([
+          tryCatch(
+            async () => await osuAuth.refreshToken(user.osuRefreshToken),
+            "Can't refresh osu! OAuth token."
+          ),
+          tryCatch(async () => {
+            return await discordAuth.tokenRequest({
+              ...discordAuthParams,
+              grantType: 'refresh_token',
+              scope,
+              refreshToken: user.discordRefreshToken
+            });
+          }, "Can't refresh Discord OAuth token.")
+        ]);
+        let [osuProfile, discordProfile] = await getProfiles(osuToken, discordToken);
+        let data = getData(osuToken, discordToken, osuProfile, discordProfile);
+
+        let updatedUser = await tryCatch(async () => {
+          return await prisma.user.update({
+            where: {
+              id: user.id
+            },
+            data,
+            select: userSelect
+          });
+        }, "Can't update user.");
+
+        storedUser = getStoredUser(updatedUser);
+      } else {
+        storedUser = {
+          ...storedUser,
+          isAdmin: user.isAdmin
+        };
+      }
+
+      ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
+      return storedUser;
+    } catch (e) {
+      invalidateCookies(ctx.cookies, (e as { message: string }).message);
     }
-
-    ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
-    return storedUser;
   }),
   generateDiscordAuthLink: t.procedure.query(({ ctx }) => {
     if (verifyJWT<SessionUser>(ctx.cookies.get('session'))) {

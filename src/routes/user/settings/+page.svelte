@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { PageServerData } from './$types';
-  import { SlideToggle, Table, Modal, modalStore } from '@skeletonlabs/skeleton';
+  import { SEO } from '$components';
+  import { SlideToggle, Table, modalStore } from '@skeletonlabs/skeleton';
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
 
@@ -11,7 +12,7 @@
   $: visibleDiscord = user.showDiscordTag;
 
   async function changeVisibility() {
-    await trpc($page).users.changeDiscordVisibility.query(!visibleDiscord);
+    await trpc($page).users.changeDiscordVisibility.mutate(!visibleDiscord);
   }
 
   function confirmDiscordChange() {
@@ -62,6 +63,7 @@
   }
 </script>
 
+<SEO page={$page} title="Settings - Kyoso" description="User settings" noIndex />
 <div class="m-8 rounded-lg bg-surface-800 p-4">
   <section class="mb-4 inline-grid">
     <h2 class="mb-2">Discord</h2>
@@ -74,7 +76,7 @@
     >
       Your Discord tag is {visibleDiscord ? '' : 'NOT '}visible!
     </SlideToggle>
-    <button on:click={confirmDiscordChange} class="btn variant-filled-error mt-4"
+    <button on:click={confirmDiscordChange} class="variant-filled-error btn mt-4"
       >CHANGE DISCORD ACCOUNT</button
     >
   </section>
@@ -100,6 +102,6 @@
     <button bind:this={apiReveal} on:click={revealApiKey} class="btn variant-filled-primary"
       >Reveal key</button
     >
-    <button on:click={confirmKeyReset} class="btn variant-filled-error">RESET KEY</button>
+    <button on:click={confirmKeyReset} class="variant-filled-error btn">RESET KEY</button>
   </section>
 </div>

@@ -6,17 +6,23 @@
 
   export let key: string;
   export let type: 'string' | 'number';
-  export let defaultValue: string | number | undefined;
-  let value = defaultValue;
+  export let defaultValue:
+    | {
+        value: string | number;
+        label: string;
+      }
+    | undefined;
+  let value = defaultValue?.value;
   let disabled = false;
   let field: Field | undefined;
 
   onMount(() => {
     let defaultValue = $form?.defaultValue?.[key];
 
-    if (typeof defaultValue === 'string' && type === 'string') {
-      value = defaultValue;
-    } else if (typeof defaultValue === 'number' && type === 'number') {
+    if (
+      (typeof defaultValue === 'string' && type === 'string') ||
+      (typeof defaultValue === 'number' && type === 'number')
+    ) {
       value = defaultValue;
     }
   });
@@ -47,12 +53,12 @@
       {#each field?.values || [] as fieldValue}
         <ListBoxItem
           name={`${$form?.title.toLowerCase().replaceAll(' ', '-')} ${field?.mapToKey}`}
-          value={fieldValue}
+          value={fieldValue.value}
           active={`duration-200 ${disabled ? '' : 'variant-filled-primary'}`}
           hover={disabled ? '' : 'hover:variant-soft-primary'}
           bind:group={value}
         >
-          {fieldValue.toString()}
+          {fieldValue.label}
         </ListBoxItem>
       {/each}
     </ListBox>

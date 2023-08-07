@@ -69,7 +69,7 @@
   <div class="mt-2 font-bold">Services Purchased</div>
   <div class="mb-2 flex flex-wrap gap-2">
     {#each purchase.services as service}
-      <span class="badge variant-filled-tertiary">{service}</span>
+      <span class="variant-filled-tertiary badge">{service}</span>
     {/each}
   </div>
   <span class="text-sm">PayPal Order ID: {purchase.paypalOrderId}</span>

@@ -6,7 +6,7 @@
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { CloseIcon } from '$components';
+  import { SEO, CloseIcon } from '$components';
   import type { PageServerData } from './$types';
   import type { TournamentFormData, TournamentType } from '$types';
   import type { TournamentService } from '@prisma/client';
@@ -42,7 +42,7 @@
 
     form.create<TournamentFormData>({
       title: 'Create Tournament',
-      fields: ({ field }) => [
+      fields: ({ field, select }) => [
         field('Name', 'name', 'string', {
           validation: (z) => z.max(50)
         }),
@@ -60,7 +60,11 @@
         }),
         field('Type', 'type', 'string', {
           fromValues: {
-            values: (): TournamentType[] => ['Teams', 'Solo']
+            values: () => {
+              let value = select<TournamentType>();
+
+              return [value('Teams'), value('Solo')];
+            }
           }
         }),
         field('Max. team size', 'teamSize', 'number', {
@@ -161,6 +165,7 @@
   }
 </script>
 
+<SEO page={$page} title="Dashboard - Kyoso" description="Privacy policy" noIndex />
 {#if createTournament.showStepper}
   <div
     class="fixed inset-0 z-20 flex h-screen w-screen items-center justify-center p-4 bg-surface-backdrop-token"
@@ -168,7 +173,7 @@
     <div class="card relative min-w-[19rem] p-6">
       <button
         on:click={onExit}
-        class="btn variant-filled-primary absolute top-6 right-6 flex gap-1 px-3 py-1"
+        class="btn variant-filled-primary absolute right-6 top-6 flex gap-1 px-3 py-1"
       >
         <CloseIcon w={15} h={15} styles="fill-black" /> Close
       </button>
@@ -246,26 +251,32 @@
             Total Cost: {#if selectedServices.length && data.user.freeServicesLeft > 0}
               <s class="text-sm text-slate-300">
                 {format.price(
-                    selectedServices.reduce((total, service) => {
-                      return (
-                        total +
-                        services[service][
-                          createTournament.tournament?.type === 'Teams' ? 'teamsPrice' : 'soloPrice'
-                        ]
-                      );
-                    }, 0)
-                  )}
-                </s>
+                  selectedServices.reduce((total, service) => {
+                    return (
+                      total +
+                      services[service][
+                        createTournament.tournament?.type === 'Teams' ? 'teamsPrice' : 'soloPrice'
+                      ]
+                    );
+                  }, 0)
+                )}
+              </s>
             {/if}
             {format.price(
-              selectedServices.map((service) => services[service][
-                createTournament.tournament?.type === 'Teams' ? 'teamsPrice' : 'soloPrice'
-              ])
-              .sort((a, b) => b - a)
-              .reduce((total, price, index) => {
-                if (data.user.freeServicesLeft > 0 && index === 1) {total = 0}
-                return (index < data.user.freeServicesLeft ? total : total + price)
-              }, 0)
+              selectedServices
+                .map(
+                  (service) =>
+                    services[service][
+                      createTournament.tournament?.type === 'Teams' ? 'teamsPrice' : 'soloPrice'
+                    ]
+                )
+                .sort((a, b) => b - a)
+                .reduce((total, price, index) => {
+                  if (data.user.freeServicesLeft > 0 && index === 1) {
+                    total = 0;
+                  }
+                  return index < data.user.freeServicesLeft ? total : total + price;
+                }, 0)
             )}
           </h4>
           {#if data.user.freeServicesLeft > 0}

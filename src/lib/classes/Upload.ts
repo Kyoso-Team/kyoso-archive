@@ -12,15 +12,19 @@ export class Upload {
     this.formData.append('input', JSON.stringify(input));
     this.formData.append('procedure', procedureName);
 
-    await fetch('/uploads/new', {
+    let resp = await fetch('/uploads/new', {
       method: 'POST',
       body: this.formData
     });
+
+    return await resp.text();
   }
-  
-  public async tournamentBanner(input: {
-    tournamentId: number;
-  }) {
-    await this.uploadFile('tournamentBanner', input);
+
+  public async tournamentBanner(input: { tournamentId: number }) {
+    return await this.uploadFile('tournamentBanner', input);
+  }
+
+  public async tournamentLogo(input: { tournamentId: number }) {
+    return await this.uploadFile('tournamentLogo', input);
   }
 }

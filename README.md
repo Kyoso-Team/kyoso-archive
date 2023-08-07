@@ -13,6 +13,7 @@ Repository for the Kyoso website.
 - [Taiwind](https://tailwindcss.com): Styling
 - [Skeleton](https://www.skeleton.dev): UI library
 - [Paypal](https://developer.paypal.com): Payment processing
+- [Bunny](https://bunny.net): File storage
 
 ## Getting Started
 
@@ -31,3 +32,75 @@ Scripts present in the package.json file. Each script must be prepended with `pn
 - `db:generate`: Generate a new migration file. Must be used after making changes to the schema (`src/lib/db/schema` folder).
 - `db:migrate`: Apply generated migrations.
 - `review`: Runs `fmt`, `lint` and `check`, one after the other.
+
+## Component Structure
+
+Structure to follow when writing Svelte components or pages.
+
+```svelte
+<script lang="ts">
+  // Default imports
+  // Destructured imports
+  // Type imports
+
+  // Type definitions
+
+  // Constants
+  // Props
+  // Variables
+
+  // Lifecycle events
+
+  // Functions
+
+  // Reactive statements
+</script>
+
+<!-- Page content -->
+```
+
+**Example:**
+
+```svelte
+<script lang="ts">
+  // Default imports
+  import isEqual from 'lodash.isequal';
+  // Destructured imports
+  import { onMount } from 'svelte';
+  // Type imports
+  import type { PageServerData } from './$types';
+
+  // Type definitions
+  interface Example {
+    ...
+  }
+
+  // Constants
+  const someConstant = 21;
+  // Props
+  export let page: PageServerData;
+  // Variables
+  let object: Example = {
+    ...
+  };
+
+  // Lifecycle events
+  onMount(() => {
+    ...
+  });
+
+  // Functions
+  function onClick() {
+    ...
+  }
+
+  // Reactive statements
+  $: {
+    ...
+  }
+</script>
+```
+
+## Notes
+
+- When developing, set the `engines.node` property in `package.json` to `>16.x` if you're using a Node version above 16. When commiting, leave it as `16.x`. This property is necessary because [Render](https://render.com) (the clould platform that Kyoso is being deployed to) only supports Node.js v14 by default, which isn't supported by SvelteKit.

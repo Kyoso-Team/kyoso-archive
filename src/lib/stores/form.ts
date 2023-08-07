@@ -26,7 +26,11 @@ function createForm() {
     onClose
   }: {
     title: string;
-    fields: (createField: { field: typeof field; asyncField: typeof asyncField }) => Field[];
+    fields: (createField: {
+      field: typeof field;
+      asyncField: typeof asyncField;
+      select: typeof select;
+    }) => Field[];
     onSubmit: (value: T) => void | Promise<void>;
     onClose?: () => void | Promise<void>;
     defaultValue?: T;
@@ -50,12 +54,20 @@ function createForm() {
       >,
       options?: I extends 'string' | 'number'
         ? {
+            list?: boolean;
             validation?: (z: Z) => Z | ZodOptional<Z> | ZodEffects<Z, unknown, unknown>;
             disableIf?: (currentValue: Partial<T>) => boolean;
             optional?: boolean;
             fromValues?: {
-              values: () => I extends 'string' ? string[] : number[];
-              selectMultiple?: boolean;
+              values: () => {
+                value: string | number;
+                label: string;
+              }[];
+              selectMultiple?:
+                | boolean
+                | {
+                    atLeast: number;
+                  };
             };
           }
         : undefined
@@ -72,11 +84,10 @@ function createForm() {
           : type === 'boolean'
           ? z.boolean(err)
           : z.date(err);
+      let validation = options?.validation?.(schema as Z) as ZodString;
 
       return {
-        validation: options?.validation?.(
-          (options.optional ? schema.optional() : schema) as Z
-        ) as ZodString,
+        validation: (options?.optional ? validation.optional() : validation) as ZodString,
         disableIf: options?.disableIf as
           | ((currentValue: Record<string, unknown>) => boolean)
           | undefined,
@@ -86,6 +97,7 @@ function createForm() {
         multipleValues: !!options?.fromValues,
         values: options?.fromValues?.values() || [],
         selectMultiple: options?.fromValues?.selectMultiple,
+        list: options?.list,
         label,
         type
       };
@@ -113,6 +125,13 @@ function createForm() {
       };
     }
 
+    function select<V extends string | number>() {
+      return (value: V, label?: string) => ({
+        value,
+        label: label || value.toString()
+      });
+    }
+
     set({
       title,
       defaultValue,
@@ -122,7 +141,8 @@ function createForm() {
       onSubmit: onSubmit as (value: Record<string, unknown>) => void | Promise<void>,
       fields: fields({
         field,
-        asyncField
+        asyncField,
+        select
       })
     });
   }

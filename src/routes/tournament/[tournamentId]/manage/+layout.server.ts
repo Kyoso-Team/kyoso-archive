@@ -6,7 +6,7 @@ export const load = (async ({ parent }) => {
   let { tournament, user } = await parent();
 
   if (!user) {
-    throw error(401, 'You\'re not logged in.');
+    throw error(401, "You're not logged in.");
   }
 
   let staffMember = await prisma.staffMember.findUnique({
@@ -26,7 +26,7 @@ export const load = (async ({ parent }) => {
     }
   });
 
-  if (!staffMember) {
+  if (!staffMember && !user.isAdmin) {
     throw error(403, `You're not a staff member for tournament of ID ${tournament.id}.`);
   }
 
@@ -60,12 +60,13 @@ export const load = (async ({ parent }) => {
   }[] = [];
 
   stages.forEach((stage) => {
-    rounds.push(... stage.rounds);
+    rounds.push(...stage.rounds);
   });
 
   return {
     tournament,
     staffMember,
-    rounds
+    rounds,
+    user
   };
 }) satisfies LayoutServerLoad;

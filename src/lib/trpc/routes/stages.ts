@@ -1,10 +1,9 @@
 import prisma from '$prisma';
 import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
-import { getUser, getUserAsStaff } from '$trpc/middleware';
+import { getUserAsStaff } from '$trpc/middleware';
 import { whereIdSchema, withTournamentSchema } from '$lib/schemas';
-import { TRPCError } from '@trpc/server';
-import { isAllowed } from '$lib/server-utils';
+import { forbidIf, isAllowed } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
 
 export const stagesRouter = t.router({
@@ -26,30 +25,32 @@ export const stagesRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `create stage for tournament of ID ${input.tournamentId}`
       );
 
-      let { tournamentId, data: { format } } = input;
+      forbidIf.hasConcluded(ctx.tournament);
 
-      await tryCatch(
-        async () => {
-          let stageCount = await prisma.stage.count({
-            where: {
-              tournamentId
-            }
-          });
+      let {
+        tournamentId,
+        data: { format }
+      } = input;
 
-          await prisma.stage.create({
-            data: {
-              format,
-              tournamentId,
-              order: stageCount + 1
-            }
-          });
-        },
-        'Can\'t create stage.'
-      );
+      await tryCatch(async () => {
+        let stageCount = await prisma.stage.count({
+          where: {
+            tournamentId
+          }
+        });
+
+        await prisma.stage.create({
+          data: {
+            format,
+            tournamentId,
+            order: stageCount + 1
+          }
+        });
+      }, "Can't create stage.");
     }),
   makeMain: t.procedure
     .use(getUserAsStaff)
@@ -60,46 +61,45 @@ export const stagesRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `set stage with ID ${input.stageId} as the main stage`
       );
 
-      await tryCatch(
-        async () => {
-          await prisma.$transaction(async (tx) => {
-            let currentMainStage = await tx.stage.findFirstOrThrow({
-              where: {
-                tournamentId: input.tournamentId,
-                isMainStage: true
-              },
-              select: {
-                id: true
-              }
-            });
+      forbidIf.hasConcluded(ctx.tournament);
 
-            if (currentMainStage.id === input.stageId) return;
-
-            await tx.stage.update({
-              where: {
-                id: currentMainStage.id
-              },
-              data: {
-                isMainStage: false
-              }
-            });
-
-            await tx.stage.update({
-              where: {
-                id: input.stageId
-              },
-              data: {
-                isMainStage: true
-              }
-            });
+      await tryCatch(async () => {
+        await prisma.$transaction(async (tx) => {
+          let currentMainStage = await tx.stage.findFirstOrThrow({
+            where: {
+              tournamentId: input.tournamentId,
+              isMainStage: true
+            },
+            select: {
+              id: true
+            }
           });
-        },
-        `Can't set stage with ID ${input.stageId} as the main stage.`
-      );
+
+          if (currentMainStage.id === input.stageId) return;
+
+          await tx.stage.update({
+            where: {
+              id: currentMainStage.id
+            },
+            data: {
+              isMainStage: false
+            }
+          });
+
+          await tx.stage.update({
+            where: {
+              id: input.stageId
+            },
+            data: {
+              isMainStage: true
+            }
+          });
+        });
+      }, `Can't set stage with ID ${input.stageId} as the main stage.`);
     }),
   swapOrder: t.procedure
     .use(getUserAsStaff)
@@ -114,58 +114,79 @@ export const stagesRouter = t.router({
           order: z.number().int().gte(1)
         })
       })
-    ).mutation(async ({ ctx, input }) => {
+    )
+    .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `change the order of stages for tournament of ID ${input.tournamentId}`
       );
 
-      await tryCatch(
-        async () => {
-          await prisma.$transaction([
-            prisma.stage.update({
-              where: {
-                id: input.stage1.id
-              },
-              data: {
-                order: input.stage2.order
-              }
-            }),
-            prisma.stage.update({
-              where: {
-                id: input.stage2.id
-              },
-              data: {
-                order: input.stage1.order
-              }
-            })
-          ]);
-        },
-        `Can't change the order of stages for tournament of ID ${input.tournamentId}.`
-      );
+      forbidIf.hasConcluded(ctx.tournament);
+
+      await tryCatch(async () => {
+        await prisma.$transaction([
+          prisma.stage.update({
+            where: {
+              id: input.stage1.id
+            },
+            data: {
+              order: input.stage2.order
+            }
+          }),
+          prisma.stage.update({
+            where: {
+              id: input.stage2.id
+            },
+            data: {
+              order: input.stage1.order
+            }
+          })
+        ]);
+      }, `Can't change the order of stages for tournament of ID ${input.tournamentId}.`);
     }),
   deleteStage: t.procedure
     .use(getUserAsStaff)
     .input(
       withTournamentSchema.extend({
-        where: whereIdSchema
+        where: whereIdSchema.extend({
+          order: z.number().int()
+        })
       })
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `delete stage of ID ${input.where.id}`
       );
 
-      let { where } = input;
+      forbidIf.hasConcluded(ctx.tournament);
 
-      await tryCatch(
-        async () => {
-          await prisma.stage.delete({
-            where
-          });
-        },
-        `Can't delete stage of ID ${where.id}.`
-      );
+      let {
+        tournamentId,
+        where: { id, order }
+      } = input;
+
+      await tryCatch(async () => {
+        await prisma.$transaction([
+          prisma.stage.delete({
+            where: {
+              id
+            }
+          }),
+          prisma.stage.updateMany({
+            where: {
+              tournamentId,
+              order: {
+                gt: order
+              }
+            },
+            data: {
+              order: {
+                decrement: 1
+              }
+            }
+          })
+        ]);
+      }, `Can't delete stage of ID ${id}.`);
     })
 });

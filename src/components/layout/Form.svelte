@@ -2,7 +2,7 @@
   import isEqual from 'lodash.isequal';
   import { form } from '$stores';
   import { focusTrap } from '@skeletonlabs/skeleton';
-  import { Input, InputSelect } from '$components';
+  import { Input, InputSelect, InputSelectMulti } from '$components';
 
   let disabled = false;
 
@@ -30,8 +30,25 @@
           : false;
       });
       let isUnmodified = isEqual($form.currentValue, $form.defaultValue);
+      let multiSelectDoesntHaveAtLeast = !!$form.fields.find(
+        ({ mapToKey, disableIf, selectMultiple }) => {
+          return (
+            $form?.currentValue &&
+            !disableIf?.($form.currentValue) &&
+            typeof selectMultiple === 'object' &&
+            (Array.isArray($form?.currentValue?.[mapToKey])
+              ? ($form?.currentValue?.[mapToKey] as unknown[]).length
+              : 0) <= selectMultiple.atLeast
+          );
+        }
+      );
 
-      disabled = hasErrors || isEmptyObject || requiredFieldIsUndefined || isUnmodified;
+      disabled =
+        hasErrors ||
+        isEmptyObject ||
+        requiredFieldIsUndefined ||
+        isUnmodified ||
+        multiSelectDoesntHaveAtLeast;
     }
   }
 </script>
@@ -48,12 +65,16 @@
         <p>{$form.description}</p>
       {/if}
     </header>
-    <div class="flex flex-col gap-4 py-4">
-      {#each $form.fields as { mapToKey, multipleValues, type, values }}
+    <div class="flex flex-col gap-4 py-8">
+      {#each $form.fields as { mapToKey, multipleValues, type, values, selectMultiple, list, optional }}
         {#if multipleValues && (type === 'string' || type === 'number')}
-          <InputSelect {type} key={mapToKey} defaultValue={values?.[0]} />
+          {#if selectMultiple}
+            <InputSelectMulti key={mapToKey} />
+          {:else}
+            <InputSelect {type} key={mapToKey} defaultValue={values?.[0]} />
+          {/if}
         {:else if type === 'string' || type === 'number' || type === 'boolean'}
-          <Input {type} key={mapToKey} />
+          <Input {type} key={mapToKey} {list} {optional} />
         {/if}
       {/each}
     </div>
@@ -61,7 +82,7 @@
       <button type="submit" class="btn variant-filled-primary cursor-pointer" {disabled}
         >Submit</button
       >
-      <button type="button" class="btn variant-ringed-primary" on:click={onClose}>Cancel</button>
+      <button type="button" class="variant-ringed-primary btn" on:click={onClose}>Cancel</button>
     </div>
   </form>
 {/if}

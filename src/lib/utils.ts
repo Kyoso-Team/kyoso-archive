@@ -1,7 +1,14 @@
+import colors from 'tailwindcss/colors';
 import { modalStore } from '@skeletonlabs/skeleton';
-import type { StaffPermission } from '@prisma/client';
+import type { Mod, StaffPermission } from '@prisma/client';
 import type { PopupSettings } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
+import type { PageStore, ParseInt } from '$types';
+
+export const twColors = colors as unknown as Record<
+  string,
+  Record<string, 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900>
+>;
 
 export const format = {
   rank: (n: number) => `#${new Intl.NumberFormat('us-US').format(n)}`,
@@ -49,9 +56,9 @@ export const format = {
   },
   digits: (n: number, digitCount: number) => {
     let nStr = n.toString();
-    let missingDigits = digitCount - nStr.length ;
+    let missingDigits = digitCount - nStr.length;
     let str = '';
-    
+
     for (let i = missingDigits; i > 0; i--) {
       str += '0';
     }
@@ -72,6 +79,43 @@ export const format = {
     }
 
     return str;
+  },
+  cardinal: (n: number) => {
+    let str = n.toString();
+
+    if (['1', '2', '3'].find((n) => n === str.at(-1)) && str.at(-2) !== '1') {
+      switch (str.at(-1)) {
+        default:
+          return `${n}th`;
+        case '1':
+          return `${n}st`;
+        case '2':
+          return `${n}nd`;
+        case '3':
+          return `${n}rd`;
+      }
+    }
+
+    return `${n}th`;
+  },
+  placements: (placements: number[]) => {
+    let str = '';
+
+    if (placements.length === 1) {
+      str = format.cardinal(placements[0]);
+    } else if (placements.length === 2) {
+      str = `${format.cardinal(placements[0])} & ${format.cardinal(placements[1])}`;
+    } else {
+      str = `${format.cardinal(placements[0])}-${format.cardinal(placements.at(-1) || 0)}`;
+    }
+
+    return str;
+  }
+};
+
+export const calc = {
+  bwsRank: (rank: number, badgeCount: number) => {
+    return rank ** (0.9937 ** (badgeCount ** 2));
   }
 };
 
@@ -82,7 +126,6 @@ export const modal = {
     onYes: () => void | Promise<void>,
     onNo?: () => void | Promise<void>
   ) => {
-
     modalStore.trigger({
       title,
       type: 'confirm',
@@ -101,6 +144,15 @@ export const modal = {
       }
     });
   }
+};
+
+export const buildLink = {
+  forumPost: (forumPostId: number) => `https://osu.ppy.sh/community/forums/topics/${forumPostId}`,
+  discord: (discordInviteId: string) => `https://discord.gg/${discordInviteId}`,
+  spreadsheet: (spreadsheetId: string) => `https://docs.google.com/spreadsheets/d/${spreadsheetId}`,
+  twitch: (twitchChannelName: string) => `https://www.twitch.tv/${twitchChannelName}`,
+  youtube: (youtubeChannelId: string) => `https://www.youtube.com/channel/${youtubeChannelId}`,
+  twitter: (twitterHandle: string) => `https://twitter.com/${twitterHandle}`
 };
 
 export const byteUnit = {
@@ -162,9 +214,13 @@ export function hasPerms(
     roles: {
       permissions: StaffPermission[];
     }[];
-  },
+  } | null,
   necessaryPermissions: StaffPermission[] | StaffPermission
 ) {
+  if (!staffMember) {
+    return false;
+  }
+
   let userPermissions: StaffPermission[] = [];
 
   staffMember.roles.forEach((role) => {
@@ -176,4 +232,63 @@ export function hasPerms(
   return Array.isArray(necessaryPermissions)
     ? userPermissions.some((userPerm) => necessaryPermissions.includes(userPerm))
     : userPermissions.some((userPerm) => necessaryPermissions === userPerm);
+}
+
+export function getFileUrl(page: PageStore, path: string) {
+  return `${page.url.origin}/uploads/${path}`;
+}
+
+export function colorByMod(
+  mod: Mod | 'NM' | 'FM' | 'TB',
+  value: ParseInt<keyof (typeof colors)['neutral']>
+) {
+  let color: Record<keyof (typeof colors)['neutral'], string> | undefined;
+
+  switch (mod) {
+    case 'DT':
+      color = colors.violet;
+      break;
+    case 'EZ':
+      color = colors.green;
+      break;
+    case 'FL':
+      color = colors.zinc;
+      break;
+    case 'FM':
+      color = colors.fuchsia;
+      break;
+    case 'HD':
+      color = colors.yellow;
+      break;
+    case 'HR':
+      color = colors.red;
+      break;
+    case 'HT':
+      color = colors.rose;
+      break;
+    case 'NM':
+      color = colors.blue;
+      break;
+    case 'PF':
+      color = colors.emerald;
+      break;
+    case 'RX':
+      color = colors.cyan;
+      break;
+    case 'SD':
+      color = colors.indigo;
+      break;
+    case 'TB':
+      color = colors.orange;
+      break;
+    default:
+      color = colors.neutral;
+      break;
+  }
+
+  return color[value];
+}
+
+export function hasTournamentConcluded(tournament: { concludesOn: Date | null }) {
+  return !!tournament.concludesOn && tournament.concludesOn.getTime() > new Date().getTime();
 }

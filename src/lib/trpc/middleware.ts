@@ -75,7 +75,8 @@ export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
     select: {
       id: true,
       isAdmin: true,
-      osuUserId: true
+      osuUserId: true,
+      osuAccessToken: true
     }
   });
 
@@ -85,10 +86,15 @@ export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
         id: parsed.tournamentId
       },
       select: {
-        id: true
+        id: true,
+        concludesOn: true,
+        services: true,
+        type: true,
+        teamSize: true,
+        teamPlaySize: true
       }
     });
-  }, `Couldn't find tournament with ID ${parse.data.tournamentId}.`);
+  }, `Couldn't find tournament with ID ${parsed.tournamentId}.`);
 
   let staffMember = await tryCatch(async () => {
     return await prisma.staffMember.findUniqueOrThrow({
@@ -118,91 +124,41 @@ export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
   });
 });
 
-async function getTournamentHelper<T extends 'general' | 'dates' | 'ref'>(
-  input: unknown,
-  dataType: T
-) {
-  let parse = z
-    .object({
-      tournamentId: z.number().int()
-    })
-    .safeParse(input);
-  
-  if (!parse.success) {
-    throw new TRPCError({
-      code: 'BAD_REQUEST',
-      message: '"tournamentId" is invalid'
+export const getUserAsStaffWithRound = getUserAsStaff.unstable_pipe(
+  async ({ ctx, next, rawInput }) => {
+    let parse = z
+      .object({
+        roundId: z.number().int()
+      })
+      .safeParse(rawInput);
+
+    if (!parse.success) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: '"roundId" is invalid'
+      });
+    }
+
+    let parsed = parse.data;
+
+    let round = await tryCatch(async () => {
+      return await prisma.round.findUniqueOrThrow({
+        where: {
+          id: parsed.roundId
+        },
+        select: {
+          id: true,
+          mappoolState: true,
+          publishStats: true
+        }
+      });
+    }, `Couldn't find round with ID ${parsed.roundId}.`);
+
+    return next({
+      ctx: {
+        ...ctx,
+        round
+      }
     });
   }
-
-  let parsed = parse.data;
-
-  let tournament = await tryCatch(async () => {
-    return await prisma.tournament.findUniqueOrThrow({
-      where: {
-        id: parsed.tournamentId
-      },
-      select: dataType === 'general'
-        ? {
-          lowerRankRange: true,
-          upperRankRange: true,
-          teamSize: true,
-          teamPlaySize: true,
-          useBWS: true,
-          type: true,
-          services: true
-        } : dataType === 'dates'
-          ? {
-            goPublicOn: true,
-            concludesOn: true,
-            playerRegsOpenOn: true,
-            playerRegsCloseOn: true,
-            staffRegsOpenOn: true,
-            staffRegsCloseOn: true
-          } : {
-            doublePickAllowed: true,
-            doubleBanAllowed: true,
-            alwaysForceNoFail: true,
-            banOrder: true,
-            winCondition: true
-          }
-    });
-  }, `Couldn't find tournament with ID ${parse.data.tournamentId}.`);
-
-  return tournament as T extends 'general' ? {
-    lowerRankRange: number;
-    upperRankRange: number;
-    teamSize: number;
-    teamPlaySize: number;
-    useBWS: boolean;
-    type: TournamentType;
-    services: TournamentService[];
-  } : T extends 'dates' ? {
-    goPublicOn: Date | null;
-    concludesOn: Date | null;
-    playerRegsOpenOn: Date | null;
-    playerRegsCloseOn: Date | null;
-    staffRegsOpenOn: Date | null;
-    staffRegsCloseOn: Date | null;
-  } : {
-    doublePickAllowed: boolean;
-    doubleBanAllowed: boolean;
-    alwaysForceNoFail: boolean;
-    banOrder: BanOrder;
-    winCondition: WinCondition;
-  };
-}
-
-export const getTournamentGeneralSettings = getUserAsStaff.unstable_pipe(async ({ ctx, next, rawInput }) => {
-  let tournament = await getTournamentHelper(rawInput, 'general');
-
-  return next({
-    ctx: {
-      ... ctx,
-      tournament: {
-        ... tournament,
-        id: ctx.tournament.id
-      }
-    }
-  });
-});
+);

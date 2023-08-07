@@ -1,13 +1,13 @@
 import prisma from '$prisma';
-import paypal, { money } from '$paypal';
+import paypalClient, { money } from '$paypal';
+import paypal from '@paypal/checkout-server-sdk';
 import { z } from 'zod';
-import { orders } from '@paypal/checkout-server-sdk';
 import { t, tryCatch } from '$trpc';
 import { getUser, getUserAsStaff } from '$trpc/middleware';
 import { services } from '$lib/constants';
 import { TRPCError } from '@trpc/server';
 import { isAllowed } from '$lib/server-utils';
-import { hasPerms } from '$lib/utils';
+import { hasPerms, hasTournamentConcluded } from '$lib/utils';
 import { whereIdSchema } from '$lib/schemas';
 import type { PayPalOrder } from '$types';
 import type { AmountBreakdown } from '@paypal/checkout-server-sdk/lib/payments/lib';
@@ -87,6 +87,7 @@ async function createTournament(
           name: 'Host',
           color: 'Red',
           permissions: ['Host'],
+          order: 1,
           tournamentId: tournament.id,
           staffMembers: {
             connect: {
@@ -157,7 +158,7 @@ export const tournamentRouter = t.router({
       }, 0);
       let total = subtotal - discount;
 
-      let request = new orders.OrdersCreateRequest();
+      let request = new paypal.orders.OrdersCreateRequest();
       request.prefer('return=representation');
       request.requestBody({
         intent: 'CAPTURE',
@@ -183,7 +184,7 @@ export const tournamentRouter = t.router({
       });
 
       let orderId = await tryCatch(async () => {
-        let order = await paypal.execute(request);
+        let order = await paypalClient.execute(request);
         return order.result.id as string;
       }, "Can't get PayPal order ID.");
 
@@ -198,10 +199,10 @@ export const tournamentRouter = t.router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      let request = new orders.OrdersGetRequest(input.orderId);
+      let request = new paypal.orders.OrdersGetRequest(input.orderId);
 
       let order = await tryCatch(async () => {
-        let order = await paypal.execute(request);
+        let order = await paypalClient.execute(request);
         return order.result as PayPalOrder;
       }, `Can't get PayPal order with ID of ${input.orderId}.`);
 
@@ -239,7 +240,7 @@ export const tournamentRouter = t.router({
             staffRegsOpenOn: z.date().nullish(),
             staffRegsCloseOn: z.date().nullish(),
             useBWS: z.boolean(),
-            hasBanner: z.boolean(),
+            useTeamBanners: z.boolean(),
             rules: z.string().nullish(),
             forumPostId: z.number().int().nullish(),
             discordInviteId: z.string().max(12).nullish(),
@@ -258,9 +259,7 @@ export const tournamentRouter = t.router({
             freeModRules: z.string().nullish(),
             warmupRules: z.string().nullish(),
             lateProcedures: z.string().nullish(),
-            banOrder: z.union([z.literal('ABABAB'), z.literal('ABBAAB')]),
-            teamSize: z.number().int(),
-            teamPlaySize: z.number().int()
+            banOrder: z.union([z.literal('ABABAB'), z.literal('ABBAAB')])
           })
           .deepPartial()
       })
@@ -272,6 +271,37 @@ export const tournamentRouter = t.router({
       );
 
       if (Object.keys(input.data).length === 0) return;
+
+      if (hasTournamentConcluded(ctx.tournament)) {
+        let keys = [
+          'acronym',
+          'banOrder',
+          'doubleBanAllowed',
+          'doublePickAllowed',
+          'freeModRules',
+          'lateProcedures',
+          'name',
+          'pickTimerLength',
+          'playerRegsCloseOn',
+          'playerRegsOpenOn',
+          'rankRange',
+          'rollRules',
+          'staffRegsCloseOn',
+          'staffRegsOpenOn',
+          'useBWS',
+          'warmupRules',
+          'alwaysForceNoFail',
+          'goPublicOn',
+          'startTimerLength',
+          'rules',
+          'useTeamBanners'
+        ] as const;
+
+        keys.forEach((key) => {
+          input.data[key] = undefined;
+        });
+      }
+
       let {
         where,
         data: {
@@ -293,8 +323,6 @@ export const tournamentRouter = t.router({
           rollRules,
           staffRegsCloseOn,
           staffRegsOpenOn,
-          teamPlaySize,
-          teamSize,
           twitchChannelName,
           useBWS,
           warmupRules,
@@ -303,10 +331,10 @@ export const tournamentRouter = t.router({
           alwaysForceNoFail,
           concludesOn,
           goPublicOn,
-          hasBanner,
           startTimerLength,
           twitterHandle,
-          rules
+          rules,
+          useTeamBanners
         }
       } = input;
 
@@ -336,15 +364,13 @@ export const tournamentRouter = t.router({
             warmupRules,
             websiteLink,
             youtubeChannelId,
-            teamPlaySize,
-            teamSize,
             alwaysForceNoFail,
             concludesOn,
             goPublicOn,
-            hasBanner,
             startTimerLength,
             twitterHandle,
             rules,
+            useTeamBanners,
             lowerRankRange: rankRange === 'open rank' ? -1 : rankRange?.lower,
             upperRankRange: rankRange === 'open rank' ? -1 : rankRange?.upper
           }

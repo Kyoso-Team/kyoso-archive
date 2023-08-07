@@ -6,10 +6,13 @@
   export let value: string | number | boolean | undefined | null | Date;
   export let type: 'string' | 'text' | 'number' | 'boolean' | 'select' | 'date';
   export let label: string;
-  export let values: (string | {
-    label: string;
-    value: string;
-  })[] = [];
+  export let values: (
+    | string
+    | {
+        label: string;
+        value: string;
+      }
+  )[] = [];
   export let error: string | undefined = undefined;
   export let final: boolean = false;
   export let disabled: boolean = false;
@@ -34,9 +37,9 @@
   <div class="flex flex-wrap">
     <div class="flex w-full">
       {#if type === 'string'}
-        <input type="text" class="input py-1 px-2" bind:value {disabled} />
+        <input type="text" class="input px-2 py-1" bind:value {disabled} />
       {:else if type === 'number'}
-        <input type="number" class="input py-1 px-2" bind:value {disabled} />
+        <input type="number" class="input px-2 py-1" bind:value {disabled} />
       {:else if type === 'boolean' && typeof value === 'boolean'}
         <input type="checkbox" class="hidden" />
         <SlideToggle name={label} active="bg-primary-500" {disabled} bind:checked={value} />
@@ -46,14 +49,14 @@
             {#if typeof selectable === 'string'}
               <option value={selectable}>{selectable}</option>
             {:else}
-            <option value={selectable.value}>{selectable.label}</option>
+              <option value={selectable.value}>{selectable.label}</option>
             {/if}
           {/each}
         </select>
       {:else if type === 'date'}
-        <input type="datetime-local" class="input py-1 px-2" bind:value={dateString} {disabled} />
+        <input type="datetime-local" class="input px-2 py-1" bind:value={dateString} {disabled} />
       {:else}
-        <textarea class="input h-28 resize-none py-1 px-2" bind:value {disabled} />
+        <textarea class="input h-28 resize-none px-2 py-1" bind:value {disabled} />
       {/if}
       {#if isLink}
         <a
