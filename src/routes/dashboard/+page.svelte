@@ -63,10 +63,7 @@
             values: () => {
               let value = select<TournamentType>();
 
-              return [
-                value('Teams'),
-                value('Solo')
-              ];
+              return [value('Teams'), value('Solo')];
             }
           }
         }),
@@ -168,12 +165,7 @@
   }
 </script>
 
-<SEO
-  page={$page}
-  title="Dashboard - Kyoso"
-  description="Privacy policy"
-  noIndex
-/>
+<SEO page={$page} title="Dashboard - Kyoso" description="Privacy policy" noIndex />
 {#if createTournament.showStepper}
   <div
     class="fixed inset-0 z-20 flex h-screen w-screen items-center justify-center p-4 bg-surface-backdrop-token"

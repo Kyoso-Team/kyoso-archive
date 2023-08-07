@@ -30,12 +30,7 @@
   }
 </script>
 
-<SEO
-  page={$page}
-  title="Purchases - Admin"
-  description="Manage purchases"
-  noIndex
-/>
+<SEO page={$page} title="Purchases - Admin" description="Manage purchases" noIndex />
 <div class="center-content">
   <SearchBar label="Search Purchases" on:search={onSearch} />
   <div class="mb-6">

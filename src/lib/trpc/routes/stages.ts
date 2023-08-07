@@ -161,7 +161,10 @@ export const stagesRouter = t.router({
 
       forbidIf.hasConcluded(ctx.tournament);
 
-      let { tournamentId, where: { id, order } } = input;
+      let {
+        tournamentId,
+        where: { id, order }
+      } = input;
 
       await tryCatch(async () => {
         await prisma.$transaction([

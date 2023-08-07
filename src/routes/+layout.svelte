@@ -26,7 +26,7 @@
   import { page } from '$app/stores';
   import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
-  
+
   storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
   export let data: LayoutServerData;

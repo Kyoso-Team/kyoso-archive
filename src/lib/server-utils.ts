@@ -9,10 +9,7 @@ import type { SessionUser } from '$types';
 import type { MappoolState, TournamentService } from '@prisma/client';
 
 export const forbidIf = {
-  hasConcluded: (tournament: {
-    id: number;
-    concludesOn: Date | null;
-  }) => {
+  hasConcluded: (tournament: { id: number; concludesOn: Date | null }) => {
     if (hasTournamentConcluded(tournament)) {
       throw new TRPCError({
         code: 'FORBIDDEN',
@@ -20,21 +17,23 @@ export const forbidIf = {
       });
     }
   },
-  doesntIncludeService: (tournament: {
-    id: number;
-    services: TournamentService[];
-  }, mustInclude: TournamentService) => {
+  doesntIncludeService: (
+    tournament: {
+      id: number;
+      services: TournamentService[];
+    },
+    mustInclude: TournamentService
+  ) => {
     if (!tournament.services.includes(mustInclude)) {
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: `Tournament of ID ${tournament.id} doesn't have the ${mustInclude.toLowerCase()} service.`
+        message: `Tournament of ID ${
+          tournament.id
+        } doesn't have the ${mustInclude.toLowerCase()} service.`
       });
     }
   },
-  poolIsPublished: (round: {
-    id: number;
-    mappoolState: MappoolState;
-  }) => {
+  poolIsPublished: (round: { id: number; mappoolState: MappoolState }) => {
     if (round.mappoolState === 'Public') {
       throw new TRPCError({
         code: 'FORBIDDEN',
@@ -42,7 +41,7 @@ export const forbidIf = {
       });
     }
   }
-}
+};
 
 export function getStoredUser<T extends boolean>(
   event: { cookies: Cookies },

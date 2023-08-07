@@ -259,12 +259,14 @@ export const authRouter = t.router({
       ctx.cookies.set('session', await login(osuToken, discordToken), cookiesOptions);
       return '/';
     } catch (e) {
-      let err = e as {
-        message: string;
-        response?: {
-          error: string;
-        }
-      } | undefined;
+      let err = e as
+        | {
+            message: string;
+            response?: {
+              error: string;
+            };
+          }
+        | undefined;
 
       if (err?.message === 'User does not exist yet.' || err?.response?.error === 'invalid_grant') {
         // Prompt user for discord auth

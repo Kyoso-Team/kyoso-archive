@@ -15,13 +15,16 @@ export const load = (async ({ parent }) => {
 
   let roles = await prisma.staffRole.findMany({
     where: {
-      AND: [{
-        tournamentId: data.tournament.id
-      }, {
-        name: {
-          notIn: ['Host', 'Debugger']
+      AND: [
+        {
+          tournamentId: data.tournament.id
+        },
+        {
+          name: {
+            notIn: ['Host', 'Debugger']
+          }
         }
-      }]
+      ]
     },
     select: {
       id: true,

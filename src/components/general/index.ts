@@ -8,4 +8,14 @@ import SearchResults from './SearchResults.svelte';
 import Permission from './Permission.svelte';
 import SEO from './SEO.svelte';
 
-export { SearchBar, Paginator, Setting, Tooltip, Settings, Dropdown, SearchResults, Permission, SEO };
+export {
+  SearchBar,
+  Paginator,
+  Setting,
+  Tooltip,
+  Settings,
+  Dropdown,
+  SearchResults,
+  Permission,
+  SEO
+};

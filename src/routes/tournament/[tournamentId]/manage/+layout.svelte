@@ -127,14 +127,7 @@
     }
   }
 
-  if (
-    hasPerms(data.staffMember, [
-      'Host',
-      'Debug',
-      'ViewPoolSuggestions',
-      'ViewPooledMaps'
-    ])
-  ) {
+  if (hasPerms(data.staffMember, ['Host', 'Debug', 'ViewPoolSuggestions', 'ViewPooledMaps'])) {
     let pooling = sidebar.setSection('Pooling', 'pooling');
   }
 

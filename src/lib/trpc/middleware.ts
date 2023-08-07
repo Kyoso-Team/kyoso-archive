@@ -124,39 +124,41 @@ export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
   });
 });
 
-export const getUserAsStaffWithRound = getUserAsStaff.unstable_pipe(async ({ ctx, next, rawInput }) => {
-  let parse = z
-    .object({
-      roundId: z.number().int()
-    })
-    .safeParse(rawInput);
-  
-  if (!parse.success) {
-    throw new TRPCError({
-      code: 'BAD_REQUEST',
-      message: '"roundId" is invalid'
-    });
-  }
+export const getUserAsStaffWithRound = getUserAsStaff.unstable_pipe(
+  async ({ ctx, next, rawInput }) => {
+    let parse = z
+      .object({
+        roundId: z.number().int()
+      })
+      .safeParse(rawInput);
 
-  let parsed = parse.data;
+    if (!parse.success) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: '"roundId" is invalid'
+      });
+    }
 
-  let round = await tryCatch(async () => {
-    return await prisma.round.findUniqueOrThrow({
-      where: {
-        id: parsed.roundId
-      },
-      select: {
-        id: true,
-        mappoolState: true,
-        publishStats: true
+    let parsed = parse.data;
+
+    let round = await tryCatch(async () => {
+      return await prisma.round.findUniqueOrThrow({
+        where: {
+          id: parsed.roundId
+        },
+        select: {
+          id: true,
+          mappoolState: true,
+          publishStats: true
+        }
+      });
+    }, `Couldn't find round with ID ${parsed.roundId}.`);
+
+    return next({
+      ctx: {
+        ...ctx,
+        round
       }
     });
-  }, `Couldn't find round with ID ${parsed.roundId}.`);
-
-  return next({
-    ctx: {
-      ... ctx,
-      round
-    }
-  });
-});
+  }
+);

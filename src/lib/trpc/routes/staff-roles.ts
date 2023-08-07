@@ -24,37 +24,39 @@ const staffRoleMutationSchema = z.object({
     z.literal('Fuchsia'),
     z.literal('Pink')
   ]),
-  permissions: z.array(
-    z.union([
-      z.literal('Host'),
-      z.literal('Debug'),
-      z.literal('MutateTournament'),
-      z.literal('ViewStaffMembers'),
-      z.literal('MutateStaffMembers'),
-      z.literal('DeleteStaffMembers'),
-      z.literal('ViewRegs'),
-      z.literal('MutateRegs'),
-      z.literal('DeleteRegs'),
-      z.literal('MutatePoolStructure'),
-      z.literal('ViewPoolSuggestions'),
-      z.literal('MutatePoolSuggestions'),
-      z.literal('DeletePoolSuggestions'),
-      z.literal('ViewPooledMaps'),
-      z.literal('MutatePooledMaps'),
-      z.literal('DeletePooledMaps'),
-      z.literal('CanPlaytest'),
-      z.literal('ViewMatches'),
-      z.literal('MutateMatches'),
-      z.literal('DeleteMatches'),
-      z.literal('RefMatches'),
-      z.literal('CommentateMatches'),
-      z.literal('StreamMatches'),
-      z.literal('ViewStats'),
-      z.literal('MutateStats'),
-      z.literal('DeleteStats'),
-      z.literal('CanPlay')
-    ])
-  ).optional()
+  permissions: z
+    .array(
+      z.union([
+        z.literal('Host'),
+        z.literal('Debug'),
+        z.literal('MutateTournament'),
+        z.literal('ViewStaffMembers'),
+        z.literal('MutateStaffMembers'),
+        z.literal('DeleteStaffMembers'),
+        z.literal('ViewRegs'),
+        z.literal('MutateRegs'),
+        z.literal('DeleteRegs'),
+        z.literal('MutatePoolStructure'),
+        z.literal('ViewPoolSuggestions'),
+        z.literal('MutatePoolSuggestions'),
+        z.literal('DeletePoolSuggestions'),
+        z.literal('ViewPooledMaps'),
+        z.literal('MutatePooledMaps'),
+        z.literal('DeletePooledMaps'),
+        z.literal('CanPlaytest'),
+        z.literal('ViewMatches'),
+        z.literal('MutateMatches'),
+        z.literal('DeleteMatches'),
+        z.literal('RefMatches'),
+        z.literal('CommentateMatches'),
+        z.literal('StreamMatches'),
+        z.literal('ViewStats'),
+        z.literal('MutateStats'),
+        z.literal('DeleteStats'),
+        z.literal('CanPlay')
+      ])
+    )
+    .optional()
 });
 
 export const staffRolesRouter = t.router({
@@ -190,7 +192,10 @@ export const staffRolesRouter = t.router({
 
       forbidIf.hasConcluded(ctx.tournament);
 
-      let { tournamentId, where: { id, order } } = input;
+      let {
+        tournamentId,
+        where: { id, order }
+      } = input;
 
       await tryCatch(async () => {
         await prisma.$transaction([

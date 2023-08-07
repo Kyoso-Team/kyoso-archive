@@ -342,7 +342,8 @@ async function seedteamTournament() {
       tournamentId: tournament.id,
       captainId: playerIds[0],
       avgRank: team1PlayerRanks.reduce((total, rank) => total + rank, 0) / team1PlayerRanks.length,
-      avgBwsRank: team1PlayerBwsRanks.reduce((total, rank) => total + rank, 0) / team1PlayerBwsRanks.length,
+      avgBwsRank:
+        team1PlayerBwsRanks.reduce((total, rank) => total + rank, 0) / team1PlayerBwsRanks.length,
       players: {
         connect: [
           {

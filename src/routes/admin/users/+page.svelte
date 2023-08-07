@@ -52,12 +52,7 @@
   }
 </script>
 
-<SEO
-  page={$page}
-  title="Users - Admin"
-  description="Manage users"
-  noIndex
-/>
+<SEO page={$page} title="Users - Admin" description="Manage users" noIndex />
 <div class="center-content">
   <SearchBar label="Search Users" on:search={onSearch} />
   <SearchResults label="Users" resultCount={data.userCount}>

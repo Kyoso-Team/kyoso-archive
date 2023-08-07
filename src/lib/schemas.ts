@@ -44,7 +44,10 @@ export const skillsetSchema = z.union([
   z.literal('JackOfAllTrades')
 ]);
 
-export const availabilitySchema = z.string().length(99).refine((str) => {
-  let regex = /(1|0){24}\.(1|0){24}\.(1|0){24}\.(1|0){24}/g;
-  return regex.test(str);
-}, 'Input doesn\'t match availability string format');
+export const availabilitySchema = z
+  .string()
+  .length(99)
+  .refine((str) => {
+    let regex = /(1|0){24}\.(1|0){24}\.(1|0){24}\.(1|0){24}/g;
+    return regex.test(str);
+  }, "Input doesn't match availability string format");

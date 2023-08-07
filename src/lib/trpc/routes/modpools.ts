@@ -28,7 +28,7 @@ export const modpoolsRouter = t.router({
         hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolStructure']),
         `create modpool for tournament of ID ${input.tournamentId}`
       );
-      
+
       forbidIf.doesntIncludeService(ctx.tournament, 'Mappooling');
       forbidIf.hasConcluded(ctx.tournament);
       forbidIf.poolIsPublished(ctx.round);
@@ -155,7 +155,10 @@ export const modpoolsRouter = t.router({
       forbidIf.hasConcluded(ctx.tournament);
       forbidIf.poolIsPublished(ctx.round);
 
-      let { roundId, where: { id, order } } = input;
+      let {
+        roundId,
+        where: { id, order }
+      } = input;
 
       await tryCatch(async () => {
         await prisma.$transaction([

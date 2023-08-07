@@ -5,7 +5,10 @@ import type { PopupSettings } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
 import type { PageStore, ParseInt } from '$types';
 
-export const twColors = colors as unknown as Record<string, Record<string, 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900>>;
+export const twColors = colors as unknown as Record<
+  string,
+  Record<string, 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900>
+>;
 
 export const format = {
   rank: (n: number) => `#${new Intl.NumberFormat('us-US').format(n)}`,
@@ -114,7 +117,7 @@ export const calc = {
   bwsRank: (rank: number, badgeCount: number) => {
     return rank ** (0.9937 ** (badgeCount ** 2));
   }
-}
+};
 
 export const modal = {
   yesNo: (
@@ -287,5 +290,5 @@ export function colorByMod(
 }
 
 export function hasTournamentConcluded(tournament: { concludesOn: Date | null }) {
-  return !!tournament.concludesOn && tournament.concludesOn.getTime() > new Date().getTime()
+  return !!tournament.concludesOn && tournament.concludesOn.getTime() > new Date().getTime();
 }

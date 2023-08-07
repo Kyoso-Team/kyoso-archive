@@ -11,7 +11,11 @@
 
   export let data: PageServerData;
 
-  let originalObj = { ...data } as NullPartial<PageServerData, true, 'banOrder' | 'name' | 'acronym'>;
+  let originalObj = { ...data } as NullPartial<
+    PageServerData,
+    true,
+    'banOrder' | 'name' | 'acronym'
+  >;
   let currentObj = { ...originalObj };
   let errors: Partial<Record<'pickTime' | 'startTime', string>> = {};
 

@@ -129,10 +129,13 @@
     }
   }
 
-  function onDeleteStage(stage: {
-    id: number;
-    order: number;
-  }, format: StageFormat) {
+  function onDeleteStage(
+    stage: {
+      id: number;
+      order: number;
+    },
+    format: StageFormat
+  ) {
     modal.yesNo(
       'Confirm Stage Deletion',
       `Are you sure you want to delete the ${mapReadableFormat(
@@ -440,11 +443,14 @@
     }
   }
 
-  function onDeleteRound(round: {
-    id: number;
-    name: string;
-    order: number;
-  }, stageId: number) {
+  function onDeleteRound(
+    round: {
+      id: number;
+      name: string;
+      order: number;
+    },
+    stageId: number
+  ) {
     modal.yesNo(
       'Confirm Round Deletion',
       `Are you sure you want to delete the "${round.name}" round from this tournament? This will delete its mappools, schedules, statistics, etc.`,
@@ -626,10 +632,14 @@
             <div class="flex justify-end">
               <button
                 class="variant-filled-error btn btn-sm"
-                on:click={() => onDeleteStage({
-                  id,
-                  order
-                }, format)}>Delete Stage</button
+                on:click={() =>
+                  onDeleteStage(
+                    {
+                      id,
+                      order
+                    },
+                    format
+                  )}>Delete Stage</button
               >
             </div>
           </div>

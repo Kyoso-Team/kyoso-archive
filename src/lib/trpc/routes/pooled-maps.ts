@@ -26,7 +26,8 @@ export const pooledMapsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePooledMaps']),
+        ctx.user.isAdmin ||
+          hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePooledMaps']),
         `create pooled beatmap for tournament of ID ${input.tournamentId}`
       );
 
@@ -52,7 +53,7 @@ export const pooledMapsRouter = t.router({
           suggestedById: true
         }
       });
-      
+
       if (suggestedMap) {
         await tryCatch(async () => {
           if (!suggestedMap) return;
@@ -103,7 +104,8 @@ export const pooledMapsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePooledMaps']),
+        ctx.user.isAdmin ||
+          hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePooledMaps']),
         `update pooled beatmap of ID ${input.where.id}`
       );
 
@@ -135,7 +137,8 @@ export const pooledMapsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'DeletePooledMaps']),
+        ctx.user.isAdmin ||
+          hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'DeletePooledMaps']),
         `delete pooled beatmap of ID ${input.where.id}`
       );
 

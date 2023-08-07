@@ -48,7 +48,7 @@ export const regsRouter = t.router({
           data: {
             availability
           }
-        })
+        });
       }, `Can't update player with user ID ${ctx.user.id} in tournament of ID ${tournamentId}.`);
     }),
   updatePlayer: t.procedure
@@ -84,7 +84,7 @@ export const regsRouter = t.router({
         });
 
         return {
-          ... user,
+          ...user,
           badgeCount
         };
       }, `Can't find player of ID ${input.playerId}.`);
@@ -102,10 +102,7 @@ export const regsRouter = t.router({
       let discordUserPromise = getDiscordUser(discordUserId);
 
       let [osuUser, discordUser] = await tryCatch(async () => {
-        return await Promise.all([
-          osuUserPromise,
-          discordUserPromise
-        ]);
+        return await Promise.all([osuUserPromise, discordUserPromise]);
       }, `Can't fetch osu! and/or Discord user data for player of ID ${input.playerId}.`);
 
       await tryCatch(async () => {
@@ -142,7 +139,9 @@ export const regsRouter = t.router({
 
         if (!team) return;
 
-        let { _avg: { rank, bwsRank } } = await prisma.player.aggregate({
+        let {
+          _avg: { rank, bwsRank }
+        } = await prisma.player.aggregate({
           where: {
             teamId: team.id
           },

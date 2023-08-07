@@ -4,7 +4,12 @@ import { Client } from 'osu-web.js';
 import type { User as DiscordUser } from 'discord-oauth2';
 import type { PrismaClient } from '@prisma/client';
 
-export async function getOrCreateMap(prisma: PrismaClient, osuAccessToken: string, osuBeatmapId: number, modpoolId: number) {
+export async function getOrCreateMap(
+  prisma: PrismaClient,
+  osuAccessToken: string,
+  osuBeatmapId: number,
+  modpoolId: number
+) {
   let osuApi = new Client(osuAccessToken);
 
   let beatmapPromise = prisma.beatmap.findUnique({
@@ -26,17 +31,19 @@ export async function getOrCreateMap(prisma: PrismaClient, osuAccessToken: strin
 
   let [beatmap, modpool] = await Promise.all([beatmapPromise, modpoolPromise]);
 
-  let starRating = beatmap ? await prisma.starRating.findUnique({
-    where: {
-      mods_beatmapId: {
-        mods: modpool.mods,
-        beatmapId: beatmap.osuBeatmapId
-      }
-    },
-    select: {
-      id: true
-    }
-  }) : null;
+  let starRating = beatmap
+    ? await prisma.starRating.findUnique({
+        where: {
+          mods_beatmapId: {
+            mods: modpool.mods,
+            beatmapId: beatmap.osuBeatmapId
+          }
+        },
+        select: {
+          id: true
+        }
+      })
+    : null;
 
   if (!beatmap) {
     let data = await osuApi.beatmaps.getBeatmap(osuBeatmapId);
@@ -92,8 +99,8 @@ export async function getOrCreateMap(prisma: PrismaClient, osuAccessToken: strin
             osuBeatmapId: true
           }
         });
-      })
-    }, "Can't create beatmap for suggestion."); 
+      });
+    }, "Can't create beatmap for suggestion.");
   }
 
   if (!starRating) {
@@ -115,7 +122,7 @@ export async function getOrCreateMap(prisma: PrismaClient, osuAccessToken: strin
       } else {
         throw new Error('Somehow about to create a star rating without creating the beatmap');
       }
-    }, "Can't create beatmap star rating for suggestion."); 
+    }, "Can't create beatmap star rating for suggestion.");
   }
 
   if (!beatmap) {
@@ -131,7 +138,7 @@ export async function getDiscordUser(discordUserId: string) {
       Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`
     }
   });
-  let user = await resp.json(); 
+  let user = await resp.json();
 
   return user as DiscordUser;
 }

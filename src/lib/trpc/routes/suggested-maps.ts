@@ -25,7 +25,8 @@ export const suggestedMapsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolSuggestions']),
+        ctx.user.isAdmin ||
+          hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolSuggestions']),
         `create beatmap suggestion for tournament of ID ${input.tournamentId}`
       );
 
@@ -65,7 +66,8 @@ export const suggestedMapsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolSuggestions']),
+        ctx.user.isAdmin ||
+          hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolSuggestions']),
         `update suggested beatmap of ID ${input.where.id}`
       );
 
@@ -97,7 +99,8 @@ export const suggestedMapsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'DeletePoolSuggestions']),
+        ctx.user.isAdmin ||
+          hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'DeletePoolSuggestions']),
         `delete suggested beatmap of ID ${input.where.id}`
       );
 

@@ -6,8 +6,6 @@ import { whereIdSchema, withTournamentSchema } from '$lib/schemas';
 import { isAllowed } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
 
-const teamRouter = t.router({
-  
-});
+const teamRouter = t.router({});
 
 export default teamRouter;

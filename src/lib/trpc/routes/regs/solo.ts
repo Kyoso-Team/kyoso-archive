@@ -6,8 +6,6 @@ import { whereIdSchema, withTournamentSchema } from '$lib/schemas';
 import { isAllowed } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
 
-const soloRouter = t.router({
-  
-});
+const soloRouter = t.router({});
 
 export default soloRouter;
