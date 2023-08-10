@@ -1,9 +1,9 @@
-import { pgTable, serial, uniqueIndex, varchar, boolean, integer, smallint, text, real, numeric } from 'drizzle-orm/pg-core';
+import { pgTable, serial, varchar, boolean, integer, smallint, text, real, numeric, unique } from 'drizzle-orm/pg-core';
 import { dbMod, dbSkillset, dbRound, dbStaffMember, dbTournament, dbPlayedMap, dbPlayedKnockoutMap, dbBannedMap, dbPlayedQualMap, dbPlayerScore, dbTeamScore } from '.';
 import { length, actions } from '../utils';
 import { relations } from 'drizzle-orm';
 
-export const dbModpool = pgTable('modpools', {
+export const dbModpool = pgTable('modpool', {
   id: serial('id').primaryKey(),
   category: varchar('category', length(3)).notNull(), // "NM", "HD", "TB", etc.
   mods: dbMod('mods').array(4).notNull().default([]),
@@ -12,7 +12,7 @@ export const dbModpool = pgTable('modpools', {
   mapCount: smallint('map_count'),
   roundId: integer('round_id').notNull().references(() => dbRound.id, actions('cascade'))
 }, (tbl) => ({
-  roundIdCategoryKey: uniqueIndex('round_id_category_key').on(tbl.roundId, tbl.category)
+  roundIdCategoryKey: unique('modpool_round_id_category_key').on(tbl.roundId, tbl.category)
 }));
 
 export const dbModpoolRelations = relations(dbModpool, ({ one, many }) => ({
@@ -24,7 +24,7 @@ export const dbModpoolRelations = relations(dbModpool, ({ one, many }) => ({
   pooledMaps: many(dbPooledMap)
 }));
 
-export const dbBeatmapset = pgTable('beatmapsets', {
+export const dbBeatmapset = pgTable('beatmapset', {
   osuBeatmapsetId: integer('osu_beatmapset_id').primaryKey(),
   artist: varchar('artist', length(70)).notNull(),
   title: varchar('title', length(180)).notNull(), // https://youtu.be/LnkfOVHkVfo
@@ -39,7 +39,7 @@ export const dbBeatmapsetRelations = relations(dbBeatmapset, ({ one, many }) => 
   beatmaps: many(dbBeatmap)
 }));
 
-export const dbMapper = pgTable('mappers', {
+export const dbMapper = pgTable('mapper', {
   osuUserId: integer('osu_user_id').primaryKey(),
   username: varchar('username', length(16)).notNull()
 });
@@ -48,7 +48,7 @@ export const dbMapperRelations = relations(dbMapper, ({ many }) => ({
   beatmapsets: many(dbBeatmapset)
 }));
 
-export const dbBeatmap = pgTable('beatmaps', {
+export const dbBeatmap = pgTable('beatmap', {
   osuBeatmapId: integer('osu_beatmap_id').primaryKey(),
   diffName: varchar('difficulty_name', length(75)).notNull(),
   maxCombo: smallint('max_combo').notNull(),
@@ -73,12 +73,14 @@ export const dbBeatmapRelations = relations(dbBeatmap, ({ one, many }) => ({
 }));
 
 // Star rating is kept in DB because it can't be calculated with the data the osu! API provides
-export const dbStarRating = pgTable('star_ratings', {
+export const dbStarRating = pgTable('star_rating', {
   id: serial('id').primaryKey(),
   mods: dbMod('mods').array(4).notNull().default([]),
   value: real('value').notNull(),
   beatmapId: integer('beatmap_id').notNull().references(() => dbBeatmap.osuBeatmapId, actions('cascade'))
-});
+}, (tbl) => ({
+  modsBeatmapIdKey: unique('star_rating_mods_beatmap_id_key').on(tbl.mods, tbl.beatmapId)
+}));
 
 export const dbStarRatingRelations = relations(dbStarRating, ({ one }) => ({
   beatmap: one(dbBeatmap, {
@@ -87,7 +89,7 @@ export const dbStarRatingRelations = relations(dbStarRating, ({ one }) => ({
   })
 }));
 
-export const dbSuggestedMap = pgTable('suggested_maps', {
+export const dbSuggestedMap = pgTable('suggested_map', {
   id: serial('id').primaryKey(),
   suggestedSkillsets: dbSkillset('suggested_skillset').array(3).notNull().default([]),
   suggesterComment: text('suggester_comment'),
@@ -97,7 +99,7 @@ export const dbSuggestedMap = pgTable('suggested_maps', {
   beatmapId: integer('beatmap_id').notNull().references(() => dbBeatmap.osuBeatmapId, actions('cascade')),
   suggestedByStaffMemberId: integer('suggested_by_staff_member_id').references(() => dbStaffMember.id)
 }, (tbl) => ({
-  beatmapIdModpoolIdKey: uniqueIndex('beatmap_id_modpool_id_key').on(tbl.beatmapId, tbl.modpoolId)
+  beatmapIdModpoolIdKey: unique('suggested_map_beatmap_id_modpool_id_key').on(tbl.beatmapId, tbl.modpoolId)
 }));
 
 export const dbSuggestedMapRelations = relations(dbSuggestedMap, ({ one }) => ({
@@ -123,7 +125,7 @@ export const dbSuggestedMapRelations = relations(dbSuggestedMap, ({ one }) => ({
   })
 }));
 
-export const dbPooledMap = pgTable('pooled_maps', {
+export const dbPooledMap = pgTable('pooled_map', {
   id: serial('id').primaryKey(),
   slot: smallint('slot').notNull(), // Position in modpool. Example: If slot is 1 and modpool is NM then: NM1,
   skillsets: dbSkillset('skillsets').array(3).notNull().default([]),
@@ -137,7 +139,7 @@ export const dbPooledMap = pgTable('pooled_maps', {
   suggestedByStaffMemberId: integer('suggested_by_staff_member_id').references(() => dbStaffMember.id),
   pooledByStaffMemberId: integer('pooled_by_staff_member_id').references(() => dbStaffMember.id)
 }, (tbl) => ({
-  modpoolIdBeatmapIdKey: uniqueIndex('modpool_id_beatmap_id_key').on(tbl.modpoolId, tbl.beatmapId)
+  modpoolIdBeatmapIdKey: unique('pooled_map_modpool_id_beatmap_id_key').on(tbl.modpoolId, tbl.beatmapId)
 }));
 
 export const dbPooledMapRelations = relations(dbPooledMap, ({ one, many }) => ({
@@ -176,23 +178,25 @@ export const dbPooledMapRelations = relations(dbPooledMap, ({ one, many }) => ({
   inPlayerScores: many(dbPlayerScore)
 }));
 
-export const dbPooledMapRating = pgTable('pooled_map_ratings', {
+export const dbPooledMapRating = pgTable('pooled_map_rating', {
   id: serial('id').primaryKey(),
   rating: numeric('rating', {
     precision: 3,
     scale: 1
   }).notNull(), // Enjoyment rating from a scale of 0 to 10
-  forPooledMapId: integer('for_pooled_map_id').notNull().references(() => dbPooledMap.id, actions('cascade')),
-  givenByStaffMemberId: integer('given_by_staff_member_id').references(() => dbStaffMember.id)
-});
+  pooledMapId: integer('pooled_map_id').notNull().references(() => dbPooledMap.id, actions('cascade')),
+  ratedById: integer('rated_by_id').references(() => dbStaffMember.id)
+}, (tbl) => ({
+  ratedByIdPooledByIdKey: unique('pooled_map_rating_rated_by_id_pooled_by_id_key').on(tbl.ratedById, tbl.pooledMapId)
+}));
 
 export const dbPooledMapRatingRelations = relations(dbPooledMapRating, ({ one }) => ({
-  forPooledMap: one(dbPooledMap, {
-    fields: [dbPooledMapRating.forPooledMapId],
+  pooledMap: one(dbPooledMap, {
+    fields: [dbPooledMapRating.pooledMapId],
     references: [dbPooledMap.id]
   }),
-  givenByStaffMember: one(dbStaffMember, {
-    fields: [dbPooledMapRating.givenByStaffMemberId],
+  ratedBy: one(dbStaffMember, {
+    fields: [dbPooledMapRating.ratedById],
     references: [dbStaffMember.id]
   })
 }));

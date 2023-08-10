@@ -1,11 +1,11 @@
-import { pgTable, serial, uniqueIndex, varchar, timestamp, boolean, integer, smallint, text, char, real } from 'drizzle-orm/pg-core';
+import { pgTable, serial, varchar, timestamp, boolean, integer, smallint, text, char, real, unique } from 'drizzle-orm/pg-core';
 import { dbTournamentService, dbTournamentType, dbPurchase, dbBanOrder, dbWinCondition, dbPrizeType, dbCashMetric, dbStageFormat, dbMappoolState, dbQualifierRunsSummary, dbLobby, dbModpool, dbPickemUser, dbPlayer, dbPlayerScore, dbPooledMap, dbPotentialMatch, dbPredictionSubmission, dbRoundPublicationNotif, dbStaffMember, dbStaffRole, dbSuggestedMap, dbTeam, dbTeamScore, dbModMultiplier } from '.';
 import { timestampConfig, length, actions } from '../utils';
 import { relations } from 'drizzle-orm';
 
-export const dbTournament = pgTable('tournaments', {
+export const dbTournament = pgTable('tournament', {
   id: serial('id').primaryKey(),
-  name: varchar('name', length(50)).notNull(),
+  name: varchar('name', length(50)).notNull().unique('tournament_name_key'),
   acronym: varchar('acronym', length(8)).notNull(),
   /* when lowerRankRange and upperRankRange are set to -1, then the tournament is open rank */
   lowerRankRange: integer('lower_rank_range').notNull(),
@@ -19,6 +19,8 @@ export const dbTournament = pgTable('tournaments', {
   teamSize: smallint('team_size').notNull().default(1),
   teamPlaySize: smallint('team_play_size').notNull().default(1),
   hasBanner: boolean('has_banner').default(false),
+  hasLogo: boolean('has_logo').default(false),
+  useTeamBanners: boolean('use_team_banners').default(true),
   useBWS: boolean('use_bws').notNull(),
   rules: text('rules'), // Markdown
   type: dbTournamentType('type').notNull(),
@@ -44,9 +46,7 @@ export const dbTournament = pgTable('tournaments', {
   lateProcedures: text('late_procedures'),
   banOrder: dbBanOrder('ban_order').notNull().default('ABABAB'),
   winCondition: dbWinCondition('win_condition').notNull().default('score')
-}, (tbl) => ({
-  nameKey: uniqueIndex('name_key').on(tbl.name)
-}));
+});
 
 export const dbTournamentRelations = relations(dbTournament, ({ many }) => ({
   staffRoles: many(dbStaffRole),
@@ -66,10 +66,10 @@ export const dbTournamentRelations = relations(dbTournament, ({ many }) => ({
   prizes: many(dbPrize)
 }));
 
-export const dbPrize = pgTable('prizes', {
+export const dbPrize = pgTable('prize', {
   id: serial('id').primaryKey(),
   type: dbPrizeType('type').notNull(),
-  positions: smallint('positons').array().notNull().default([]), // A single element array for a single place. Example: 1st, 2nd, 3rd place
+  placements: smallint('positons').array().notNull().default([]), // A single element array for a single place. Example: 1st, 2nd, 3rd place
   // A range of positions in case of multiple placements sharing the same prize. Example: Top 4-6
   trophy: boolean('trophy').notNull(),
   medal: boolean('medal').notNull(),
@@ -104,14 +104,14 @@ export const dbPrizeCashRelations = relations(dbPrizeCash, ({ one }) => ({
   })
 }));
 
-export const dbStage = pgTable('stages', {
+export const dbStage = pgTable('stage', {
   id: serial('id').primaryKey(),
   format: dbStageFormat('format').notNull(),
   order: smallint('order').notNull(),
   isMainStage: boolean('is_main_stage').notNull().default(false),
   tournamentId: integer('tournament_id').notNull().references(() => dbTournament.id, actions('cascade'))
 }, (tbl) => ({
-  tournamentIdFormatKey: uniqueIndex('tournament_id_format_key').on(tbl.tournamentId, tbl.format)
+  tournamentIdFormatKey: unique('stage_tournament_id_format_key').on(tbl.tournamentId, tbl.format)
 }));
 
 export const dbStageRelations = relations(dbStage, ({ one, many }) => ({
@@ -122,7 +122,7 @@ export const dbStageRelations = relations(dbStage, ({ one, many }) => ({
   rounds: many(dbRound)
 }));
 
-export const dbRound = pgTable('rounds', {
+export const dbRound = pgTable('round', {
   id: serial('id').primaryKey(),
   name: varchar('name', length(20)).notNull(),
   order: smallint('order').notNull(),
@@ -133,7 +133,7 @@ export const dbRound = pgTable('rounds', {
   stageId: integer('stage_id').notNull().references(() => dbStage.id, actions('cascade')),
   tournamentId: integer('tournament_id').notNull().references(() => dbTournament.id, actions('cascade'))
 }, (tbl) => ({
-  nameTournamentIdKey: uniqueIndex('name_tournament_id_key').on(tbl.name, tbl.tournamentId)
+  nameTournamentIdKey: unique('round_name_tournament_id_key').on(tbl.name, tbl.tournamentId)
 }));
 
 export const dbRoundRelations = relations(dbRound, ({ many }) => ({
@@ -148,13 +148,11 @@ export const dbRoundRelations = relations(dbRound, ({ many }) => ({
 }));
 
 // Applies to: Groups, swiss, single and double elim.
-export const dbStandardRound = pgTable('standard_rounds', {
+export const dbStandardRound = pgTable('standard_round', {
   bestOf: smallint('best_of').notNull(),
   banCount: smallint('ban_count').notNull(),
   roundId: integer('round_id').primaryKey().references(() => dbRound.id, actions('cascade'))
-}, (tbl) => ({
-  roundIdKey: uniqueIndex('round_id_key').on(tbl.roundId)
-}));
+});
 
 export const dbStandardRoundRelations = relations(dbStandardRound, ({ one }) => ({
   round: one(dbRound, {
@@ -163,14 +161,12 @@ export const dbStandardRoundRelations = relations(dbStandardRound, ({ one }) => 
   })
 }));
 
-export const dbQualifierRound = pgTable('qualifier_rounds', {
+export const dbQualifierRound = pgTable('qualifier_round', {
   publishMpLinks: boolean('publish_mp_links').notNull().default(false),
   runCount: smallint('run_count').notNull(), // How many times will the mappool be played
   summarizeRunsAs: dbQualifierRunsSummary('summarize_runs_as').notNull().default('average'),
   roundId: integer('round_id').primaryKey().references(() => dbRound.id, actions('cascade'))
-}, (tbl) => ({
-  roundIdKey: uniqueIndex('round_id_key').on(tbl.roundId)
-}));
+});
 
 export const dbQualifierRoundRelations = relations(dbQualifierRound, ({ one }) => ({
   round: one(dbRound, {
@@ -179,12 +175,10 @@ export const dbQualifierRoundRelations = relations(dbQualifierRound, ({ one }) =
   })
 }));
 
-export const dbBattleRoyaleRound = pgTable('battle_royale_rounds', {
+export const dbBattleRoyaleRound = pgTable('battle_royale_round', {
   playersEliminatedPerMap: smallint('players_eliminated_per_map').notNull(),
   roundId: integer('round_id').primaryKey().references(() => dbRound.id, actions('cascade'))
-}, (tbl) => ({
-  roundIdKey: uniqueIndex('round_id_key').on(tbl.roundId)
-}));
+});
 
 export const dbBattleRoyaleRoundRelations = relations(dbBattleRoyaleRound, ({ one }) => ({
   round: one(dbRound, {

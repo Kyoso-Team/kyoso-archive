@@ -38,6 +38,7 @@ const serverEnv = {
   STORAGE_ENDPOINT,
   STORAGE_PASSWORD,
   PAYPAL_CLIENT_SECRET,
+  DATABASE_URL,
   ADMIN_BY_DEFAULT: (JSON.parse(ADMIN_BY_DEFAULT) as string[]).map((id) => Number(id))
 };
 

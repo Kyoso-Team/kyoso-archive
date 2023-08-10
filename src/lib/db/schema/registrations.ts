@@ -1,16 +1,16 @@
-import { pgTable, serial, uniqueIndex, varchar, timestamp, boolean, integer, text, char } from 'drizzle-orm/pg-core';
-import { dbStaffColor, dbStaffPermission, dbTournament, dbUser, dbStaffMemberToStaffRole, dbPrize, dbQualLobbyToTeam, dbPlayedQualMapToTeam, dbJoinRequestStatus, dbJoinTeamRequestNotif, dbKnockoutLobbyToPlayer, dbKnockoutLobbyToTeam, dbLobbyToStaffMemberAsCommentator, dbLobbyToStaffMemberAsReferee, dbLobbyToStaffMemberAsStreamer, dbMatch, dbNewStaffAppSubmissionNotif, dbPlayedKnockoutMapToPlayerAsKnockedOut, dbPlayedKnockoutMapToPlayerAsPlayed, dbPlayedKnockoutMapToTeamAsKnockedOut, dbPlayedKnockoutMapToTeamAsPlayed, dbPlayedQualMapToPlayer, dbPlayerScore, dbPooledMap, dbPooledMapRating, dbPotentialMatch, dbQualLobbyToPlayer, dbQualPrediction, dbSuggestedMap, dbTeamChangeNotif, dbTeamScore } from '.';
+import { pgTable, serial, uniqueIndex, varchar, timestamp, boolean, integer, text, char, type AnyPgColumn, unique } from 'drizzle-orm/pg-core';
+import { dbStaffColor, dbStaffPermission, dbTournament, dbUser, dbStaffMemberToStaffRole, dbQualLobbyToTeam, dbPlayedQualMapToTeam, dbJoinRequestStatus, dbJoinTeamRequestNotif, dbKnockoutLobbyToPlayer, dbKnockoutLobbyToTeam, dbLobbyToStaffMemberAsCommentator, dbLobbyToStaffMemberAsReferee, dbLobbyToStaffMemberAsStreamer, dbMatch, dbNewStaffAppSubmissionNotif, dbPlayedKnockoutMapToPlayerAsKnockedOut, dbPlayedKnockoutMapToPlayerAsPlayed, dbPlayedKnockoutMapToTeamAsKnockedOut, dbPlayedKnockoutMapToTeamAsPlayed, dbPlayedQualMapToPlayer, dbPlayerScore, dbPooledMap, dbPooledMapRating, dbPotentialMatch, dbQualLobbyToPlayer, dbQualPrediction, dbSuggestedMap, dbTeamChangeNotif, dbTeamScore } from '.';
 import { timestampConfig, length, relation, actions } from '../utils';
 import { relations } from 'drizzle-orm';
 
-export const dbStaffRole = pgTable('staff_roles', {
+export const dbStaffRole = pgTable('staff_role', {
   id: serial('id').primaryKey(),
   name: varchar('name', length(25)).notNull(),
   color: dbStaffColor('color').notNull().default('slate'),
   permissions: dbStaffPermission('permissions').array(dbStaffPermission.enumValues.length).notNull().default([]),
   tournamentId: integer('tournament_id').notNull().references(() => dbTournament.id, actions('cascade'))
 }, (tbl) => ({
-  nameTournamentIdKey: uniqueIndex('name_tournament_id_key').on(tbl.name, tbl.tournamentId)
+  nameTournamentIdKey: unique('staff_role_name_tournament_id_key').on(tbl.name, tbl.tournamentId)
 }));
 
 export const dbStaffRoleRelations = relations(dbStaffRole, ({ one, many }) => ({
@@ -21,12 +21,12 @@ export const dbStaffRoleRelations = relations(dbStaffRole, ({ one, many }) => ({
   staffMembers: many(dbStaffMemberToStaffRole)
 }));
 
-export const dbStaffMember = pgTable('staff_members', {
+export const dbStaffMember = pgTable('staff_member', {
   id: serial('id').primaryKey(),
   userId: integer('user_id').notNull().references(() => dbUser.id, actions('cascade')),
   tournamentId: integer('tournament_id').notNull().references(() => dbTournament.id, actions('cascade'))
 }, (tbl) => ({
-  userIdTournamentIdKey: uniqueIndex('user_id_tournament_id_key').on(tbl.userId, tbl.tournamentId)
+  userIdTournamentIdKey: unique('staff_member_user_id_tournament_id_key').on(tbl.userId, tbl.tournamentId)
 }));
 
 export const dbStaffMemberRelations = relations(dbStaffMember, ({ one, many }) => ({
@@ -48,7 +48,7 @@ export const dbStaffMemberRelations = relations(dbStaffMember, ({ one, many }) =
   pooledMapsRatingsGiven: many(dbPooledMapRating)
 }));
 
-export const dbStaffApplication = pgTable('staff_applications', {
+export const dbStaffApplication = pgTable('staff_application', {
   title: varchar('title', length(75)).notNull(),
   description: text('description'),
   forTournamentId: integer('tournament_id').primaryKey().references(() => dbTournament.id, actions('cascade'))
@@ -63,13 +63,13 @@ export const dbStaffApplicationRelations = relations(dbStaffApplication, ({ one,
   submissions: many(dbStaffAppSubmission)
 }));
 
-export const dbStaffAppRole = pgTable('staff_application_roles', {
+export const dbStaffAppRole = pgTable('staff_application_role', {
   id: serial('id').primaryKey(),
   name: varchar('name', length(25)).notNull(),
   description: text('description'),
   staffApplicationId: integer('staff_application_id').notNull().references(() => dbStaffApplication.forTournamentId, actions('cascade'))
 }, (tbl) => ({
-  nameStaffApplicationIdKey: uniqueIndex('name_staff_application_id_key').on(tbl.name, tbl.staffApplicationId)
+  nameStaffApplicationIdKey: uniqueIndex('staff_application_role_name_staff_application_id_key').on(tbl.name, tbl.staffApplicationId)
 }));
 
 export const dbStaffAppRoleRelations = relations(dbStaffAppRole, ({ one }) => ({
@@ -79,13 +79,14 @@ export const dbStaffAppRoleRelations = relations(dbStaffAppRole, ({ one }) => ({
   })
 }));
 
-export const dbStaffAppSubmission = pgTable('staff_application_submissions', {
+export const dbStaffAppSubmission = pgTable('staff_application_submission', {
   id: serial('id').primaryKey(),
   applyingFor: varchar('applying_for', length(25)).array().notNull().default([]),
   status: dbJoinRequestStatus('status').notNull().default('pending'),
   staffingExperience: text('staffing_experience').notNull(),
   additionalComments: text('additional_comments'),
-  staffApplicationId: integer('staff_application_id').notNull().references(() => dbStaffApplication.forTournamentId, actions('cascade'))
+  staffApplicationId: integer('staff_application_id').notNull().references(() => dbStaffApplication.forTournamentId, actions('cascade')),
+  submittedById: integer('submitted_by_id').notNull().references(() => dbUser.id, actions('cascade'))
 });
 
 export const dbStaffAppSubmissionRelations = relations(dbStaffAppSubmission, ({ one, many }) => ({
@@ -93,22 +94,23 @@ export const dbStaffAppSubmissionRelations = relations(dbStaffAppSubmission, ({ 
     fields: [dbStaffAppSubmission.staffApplicationId],
     references: [dbStaffApplication.forTournamentId]
   }),
+  submittedBy: one(dbUser, {
+    fields: [dbStaffAppSubmission.submittedById],
+    references: [dbUser.id]
+  }),
   inNewStaffAppSubmissionNotifs: many(dbNewStaffAppSubmissionNotif)
 }));
 
-export const dbTeam = pgTable('teams', {
+export const dbTeam = pgTable('team', {
   id: serial('id').primaryKey(),
   registeredAt: timestamp('registered_at', timestampConfig).notNull().defaultNow(),
   name: varchar('name', length(20)).notNull(),
-  inviteId: char('invite_id', length(8)).notNull(),
+  inviteId: char('invite_id', length(8)).notNull().unique('team_invite_id_key'),
   hasBanner: boolean('has_banner').notNull().default(false),
   tournamentId: integer('tournament_id').notNull().references(() => dbTournament.id, actions('cascade')),
-  captainId: integer('captain_id').notNull().references(() => dbPlayer.id),
-  prizeWonId: integer('prize_won_id').references(() => dbPrize.id)
-}, (tbl) => ({
-  inviteIdKey: uniqueIndex('invite_id_key').on(tbl.inviteId),
-  captainIdKey: uniqueIndex('captain_id_key').on(tbl.captainId), 
-  nameTournamentIdKey: uniqueIndex('name_tournament_id_key').on(tbl.name, tbl.tournamentId)
+  captainId: integer('captain_id').notNull().references(() => dbPlayer.id).unique('team_captain_id_key')
+}, (tbl) => ({ 
+  nameTournamentIdKey: unique('team_name_tournament_id_key').on(tbl.name, tbl.tournamentId)
 }));
 
 export const dbTeamRelations = relations(dbTeam, ({ one, many }) => ({
@@ -120,10 +122,6 @@ export const dbTeamRelations = relations(dbTeam, ({ one, many }) => ({
     fields: [dbTeam.captainId],
     references: [dbPlayer.id],
     relationName: 'captain'
-  }),
-  prizeWon: one(dbPrize, {
-    fields: [dbTeam.prizeWonId],
-    references: [dbPrize.id]
   }),
   players: many(dbPlayer, relation('player')),
   asTeam1: many(dbMatch, relation('team_1')),
@@ -140,7 +138,7 @@ export const dbTeamRelations = relations(dbTeam, ({ one, many }) => ({
   inQualPredictions: many(dbQualPrediction)
 }));
 
-export const dbJoinTeamRequest = pgTable('join_team_requests', {
+export const dbJoinTeamRequest = pgTable('join_team_request', {
   id: serial('id').primaryKey(),
   requestedAt: timestamp('requested_at', timestampConfig).notNull().defaultNow(),
   status: dbJoinRequestStatus('status').notNull().default('pending'),
@@ -156,7 +154,7 @@ export const dbJoinTeamRequestRelations = relations(dbJoinTeamRequest, ({ one, m
 }));
 
 // If the player is in a team tournament and doesn't have a team, then they're a free agent
-export const dbPlayer = pgTable('players', {
+export const dbPlayer = pgTable('player', {
   id: serial('id').primaryKey(),
   registeredAt: timestamp('registered_at', timestampConfig).notNull().defaultNow(),
   availability: char('availability', length(99)).notNull(), // A string that represents the availability between 0 - 23 UTC (24 digits), from Friday to Monday
@@ -164,10 +162,9 @@ export const dbPlayer = pgTable('players', {
   // Each day is separated by a period, similarly to an IP address
   tournamentId: integer('tournament_id').notNull().references(() => dbTournament.id, actions('cascade')),
   userId: integer('user_id').notNull().references(() => dbUser.id, actions('cascade')),
-  teamId: integer('team_id').references(() => dbTeam.id),
-  prizeWonId: integer('prize_won_id').references(() => dbPrize.id)
+  teamId: integer('team_id').references((): AnyPgColumn => dbTeam.id)
 }, (tbl) => ({
-  userIdTournamentIdKey: uniqueIndex('user_id_tournament_id_key').on(tbl.userId, tbl.tournamentId)
+  userIdTournamentIdKey: unique('player_user_id_tournament_id_key').on(tbl.userId, tbl.tournamentId)
 }));
 
 export const dbPlayerRelations = relations(dbPlayer, ({ one, many }) => ({
@@ -183,10 +180,6 @@ export const dbPlayerRelations = relations(dbPlayer, ({ one, many }) => ({
     fields: [dbPlayer.teamId],
     references: [dbTeam.id],
     relationName: 'player'
-  }),
-  prizeWon: one(dbPrize, {
-    fields: [dbPlayer.prizeWonId],
-    references: [dbPrize.id]
   }),
   asPlayer1: many(dbMatch, relation('player_1')),
   asPlayer2: many(dbMatch, relation('player_2')),

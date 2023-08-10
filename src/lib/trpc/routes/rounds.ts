@@ -104,7 +104,7 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `create round for tournament of ID ${input.tournamentId}`
       );
 
@@ -136,7 +136,7 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `create round for tournament of ID ${input.tournamentId}`
       );
 
@@ -168,7 +168,7 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `create round for tournament of ID ${input.tournamentId}`
       );
 
@@ -201,7 +201,7 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `update round of ID ${input.where.id}`
       );
 
@@ -233,7 +233,7 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `update round of ID ${input.where.id}`
       );
 
@@ -265,7 +265,7 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `update round of ID ${input.where.id}`
       );
 
@@ -302,7 +302,7 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `change the order of rounds for tournament of ID ${input.tournamentId}`
       );
 
@@ -341,7 +341,7 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
         `delete round of ID ${input.where.id}`
       );
 

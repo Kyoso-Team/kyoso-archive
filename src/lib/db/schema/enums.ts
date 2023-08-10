@@ -70,6 +70,8 @@ export const dbStaffPermission = pgEnum('staff_permission', [
 
   // Host can do everything regardless of other permissions, can also delete the tournament. Only one user can have this permission per tournament
   'host',
+  // Same as above. This exists so a host can add this permission to a site admin to allow them to debug something without listing them as an actual staff member,
+  'debug',
   // Tournament
   'mutate_tournament',
   // Staff and staff regs.
@@ -77,11 +79,10 @@ export const dbStaffPermission = pgEnum('staff_permission', [
   'mutate_staff_members',
   'delete_staff_members',
   // Player regs.
-  'view_player_regs',
-  'mutate_player_regs',
-  'delete_player_regs',
+  'view_regs',
+  'mutate_regs',
+  'delete_regs',
   // Mappool structure,
-  'view_pool_structure',
   'mutate_pool_structure',
   // Suggest maps
   'view_pool_suggestions',
@@ -89,11 +90,10 @@ export const dbStaffPermission = pgEnum('staff_permission', [
   'delete_pool_suggestions',
   // Pool maps,
   'view_pooled_maps',
+  'mutate_pooled_maps',
   'delete_pooled_maps',
-  // Playtest (provide replays and feedback)
-  'view_maps_to_playtest',
-  'mutate_maps_to_playtest', // Can replay and provide feedback
-  'delete_maps_to_playtest',
+  // Playtest
+  'can_playtest',
   // Matches
   'view_matches',
   'mutate_matches',
@@ -175,23 +175,23 @@ export const dbIssueType = pgEnum('issue_type', [
   'user_behavior' // Inappropriate behavior from a user
 ]);
 
-export const dbNotifIssueType = pgEnum('notification_issue_type', [
+export const dbIssueNotifType = pgEnum('issue_notification_type', [
   'submission',
   'resolved'
 ]);
 
-export const dbNotifStaffChangeAction = pgEnum('notification_staff_change_action', [
+export const dbStaffChangeNotifAction = pgEnum('staff_change_notification_action', [
   'added',
   'removed'
 ]);
 
-export const dbNotifTeamChangeAction = pgEnum('notification_team_change_action', [
+export const dbTeamChangeNotifAction = pgEnum('team_change_notification_action', [
   'joined',
   'left',
   'kicked'
 ]);
 
-export const dbNotifRoundPublicationType = pgEnum('notification_round_publication_type', [
+export const dbRoundPublicationNotifType = pgEnum('round_publication_notification_type', [
   'mappool',
   'schedules',
   'statistics'

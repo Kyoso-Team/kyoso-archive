@@ -3,7 +3,7 @@ import { dbIssueType, dbUser, dbIssueNotif } from '.';
 import { timestampConfig, length } from '../utils';
 import { relations } from 'drizzle-orm';
 
-export const dbIssue = pgTable('issues', {
+export const dbIssue = pgTable('issue', {
   id: serial('id').primaryKey(),
   submittedOn: timestamp('submitted_on', timestampConfig).notNull().defaultNow(),
   title: varchar('title', length(35)).notNull(),
@@ -11,7 +11,7 @@ export const dbIssue = pgTable('issues', {
   type: dbIssueType('type').notNull(),
   imageCount: smallint('image_count').notNull().default(0),
   canContact: boolean('can_contact').notNull().default(false), // Allow admins to contact the user through Discord if necessary?
-  isResolved: boolean('is_resolved').notNull().default(false),
+  resolved: boolean('resolved').notNull().default(false),
   submittedById: integer('submitted_by_id').references(() => dbUser.id)
 });
 

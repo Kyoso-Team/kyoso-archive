@@ -87,7 +87,7 @@ function createForm() {
       let validation = options?.validation?.(schema as Z) as ZodString;
 
       return {
-        validation: (options?.optional ? validation.optional() : validation) as ZodString,
+        validation: (options?.optional ? validation?.optional() : validation) as ZodString,
         disableIf: options?.disableIf as
           | ((currentValue: Record<string, unknown>) => boolean)
           | undefined,
