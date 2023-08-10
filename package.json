@@ -10,16 +10,13 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "prettier --plugin-search-dir . --check . && eslint .",
     "fmt": "prettier --plugin-search-dir . --write .",
-    "db:generate": "pnpm dlx drizzle-kit generate:pg",
-    "db:migrate": "node --experimental-specifier-resolution=node --loader ts-node/esm scripts/migrate.ts",
-    "db:reset": "pnpm dlx prisma migrate reset --skip-seed",
-    "db:push": "pnpm dlx prisma db push",
-    "db:seed": "pnpm db:reset && pnpm db:push && pnpm dlx prisma db seed",
-    "db:studio": "pnpm dlx prisma studio",
-    "review": "pnpm fmt && pnpm lint && pnpm check"
-  },
-  "prisma": {
-    "seed": "node --loader ts-node/esm prisma/seed.ts"
+    "review": "pnpm fmt && pnpm lint && pnpm check",
+    "db:generate": "npx drizzle-kit generate:pg",
+    "db:migrate": "node --loader ts-node/esm scripts/migrate.ts",
+    "db:reset": "node --loader ts-node/esm scripts/reset.ts",
+    "db:push": "npx drizzle-kit push:pg",
+    "db:seed": "pnpm db:reset && pnpm db:push && node --loader ts-node/esm scripts/seed.ts",
+    "db:studio": "npx drizzle-kit studio"
   },
   "engines": {
     "node": "16.x"
@@ -44,6 +41,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-svelte": "^2.32.4",
     "node-fetch": "^3.3.1",
+    "pg": "^8.11.2",
     "postcss": "^8.4.21",
     "prettier": "^2.8.0",
     "prettier-plugin-svelte": "^2.10.1",
