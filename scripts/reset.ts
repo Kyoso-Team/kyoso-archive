@@ -17,7 +17,8 @@ async function main() {
     DROP SCHEMA IF EXISTS drizzle CASCADE;
     CREATE SCHEMA drizzle;
   `);
+
   console.log('Reset database successfully');
 }
 
-main();
+main().then(() => process.exit(0));;

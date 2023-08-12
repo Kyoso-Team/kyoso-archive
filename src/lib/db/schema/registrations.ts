@@ -1,4 +1,4 @@
-import { pgTable, serial, uniqueIndex, varchar, timestamp, boolean, integer, text, char, type AnyPgColumn, unique } from 'drizzle-orm/pg-core';
+import { pgTable, serial, uniqueIndex, varchar, timestamp, boolean, integer, text, char, type AnyPgColumn, unique, smallint, real } from 'drizzle-orm/pg-core';
 import { dbStaffColor, dbStaffPermission, dbTournament, dbUser, dbStaffMemberToStaffRole, dbQualLobbyToTeam, dbPlayedQualMapToTeam, dbJoinRequestStatus, dbJoinTeamRequestNotif, dbKnockoutLobbyToPlayer, dbKnockoutLobbyToTeam, dbLobbyToStaffMemberAsCommentator, dbLobbyToStaffMemberAsReferee, dbLobbyToStaffMemberAsStreamer, dbMatch, dbNewStaffAppSubmissionNotif, dbPlayedKnockoutMapToPlayerAsKnockedOut, dbPlayedKnockoutMapToPlayerAsPlayed, dbPlayedKnockoutMapToTeamAsKnockedOut, dbPlayedKnockoutMapToTeamAsPlayed, dbPlayedQualMapToPlayer, dbPlayerScore, dbPooledMap, dbPooledMapRating, dbPotentialMatch, dbQualLobbyToPlayer, dbQualPrediction, dbSuggestedMap, dbTeamChangeNotif, dbTeamScore } from '.';
 import { timestampConfig, length, relation, actions } from '../utils';
 import { relations } from 'drizzle-orm';
@@ -7,6 +7,7 @@ export const dbStaffRole = pgTable('staff_role', {
   id: serial('id').primaryKey(),
   name: varchar('name', length(25)).notNull(),
   color: dbStaffColor('color').notNull().default('slate'),
+  order: smallint('order').notNull(),
   permissions: dbStaffPermission('permissions').array(dbStaffPermission.enumValues.length).notNull().default([]),
   tournamentId: integer('tournament_id').notNull().references(() => dbTournament.id, actions('cascade'))
 }, (tbl) => ({
@@ -107,6 +108,8 @@ export const dbTeam = pgTable('team', {
   name: varchar('name', length(20)).notNull(),
   inviteId: char('invite_id', length(8)).notNull().unique('team_invite_id_key'),
   hasBanner: boolean('has_banner').notNull().default(false),
+  avgRank: real('average_rank').notNull(),
+  avgBwsRank: real('average_bws_rank').notNull(),
   tournamentId: integer('tournament_id').notNull().references(() => dbTournament.id, actions('cascade')),
   captainId: integer('captain_id').notNull().references(() => dbPlayer.id).unique('team_captain_id_key')
 }, (tbl) => ({ 
@@ -160,6 +163,9 @@ export const dbPlayer = pgTable('player', {
   availability: char('availability', length(99)).notNull(), // A string that represents the availability between 0 - 23 UTC (24 digits), from Friday to Monday
   // Where each digit can be either 0 (unavailable) or 1 (available)
   // Each day is separated by a period, similarly to an IP address
+  rank: integer('rank').notNull(),
+  bwsRank: integer('bws_rank').notNull(), // Make it a generated column when that feature lands in Drizzle
+  badgeCount: integer('badge_count').notNull(),
   tournamentId: integer('tournament_id').notNull().references(() => dbTournament.id, actions('cascade')),
   userId: integer('user_id').notNull().references(() => dbUser.id, actions('cascade')),
   teamId: integer('team_id').references((): AnyPgColumn => dbTeam.id)

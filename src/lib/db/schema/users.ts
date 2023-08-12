@@ -10,7 +10,7 @@ export const dbUser = pgTable('user', {
   isAdmin: boolean('is_admin').notNull().default(false),
   osuUserId: integer('osu_user_id').notNull().unique('user_osu_user_id_key'),
   osuUsername: varchar('osu_username', length(16)).notNull().unique('user_osu_username_key'),
-  isRestrcited: boolean('is_restricted'),
+  isRestricted: boolean('is_restricted'),
   discordUserId: varchar('discord_user_id', length(19)).notNull().unique('user_discord_user_id_key'),
   discordUsername: varchar('discord_username', length(32)).notNull(),
   discordDiscriminator: char('discord_discriminator', length(4)).notNull(),

@@ -18,4 +18,4 @@ async function main() {
   console.log('Applied migrations successfully');
 }
 
-main();
+main().then(() => process.exit(0));;
