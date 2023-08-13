@@ -10,7 +10,6 @@ const config = {
   kit: {
     adapter: adapter(),
     alias: {
-      $prisma: `${lib}prisma`,
       $trpc: `${lib}trpc`,
       $stores: `${lib}stores`,
       $types: `${lib}types`,
