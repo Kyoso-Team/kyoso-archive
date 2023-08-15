@@ -1,5 +1,5 @@
 import { pgTable, serial, varchar, timestamp, boolean, integer, smallint, text, char, numeric, unique } from 'drizzle-orm/pg-core';
-import { dbTournamentService, dbUserTheme, dbTournament, dbStaffMember, dbPlayer, dbNotification, dbIssue, dbTournamentDeletedNotif, dbGrantedTournamentHostNotif, dbStaffChangeNotif, dbTeamChangeNotif, dbPickemUser, dbStaffAppSubmission } from './';
+import { dbTournamentService, dbUserTheme, dbTournament, dbStaffMember, dbPlayer, dbIssue, dbTournamentDeletedNotif, dbGrantedTournamentHostNotif, dbStaffChangeNotif, dbTeamChangeNotif, dbPickemUser, dbStaffAppSubmission, dbUserToNotification } from './';
 import { timestampConfig, length, relation, actions } from '../utils';
 import { relations } from 'drizzle-orm';
 
@@ -10,7 +10,7 @@ export const dbUser = pgTable('user', {
   isAdmin: boolean('is_admin').notNull().default(false),
   osuUserId: integer('osu_user_id').notNull().unique('user_osu_user_id_key'),
   osuUsername: varchar('osu_username', length(16)).notNull().unique('user_osu_username_key'),
-  isRestricted: boolean('is_restricted'),
+  isRestricted: boolean('is_restricted').notNull(),
   discordUserId: varchar('discord_user_id', length(19)).notNull().unique('user_discord_user_id_key'),
   discordUsername: varchar('discord_username', length(32)).notNull(),
   discordDiscriminator: char('discord_discriminator', length(4)).notNull(),
@@ -23,7 +23,7 @@ export const dbUser = pgTable('user', {
   discordRefreshToken: text('discord_refresh_token').notNull(),
   // Relations
   theme: dbUserTheme('theme').default('dark').notNull(),
-  showDiscordTag: boolean('show_discord_tag').default(true),
+  showDiscordTag: boolean('show_discord_tag').notNull().default(true),
   countryId: integer('country_id').notNull().references(() => dbCountry.id)
 }, (tbl) => ({
   discordUsernameDiscordDiscriminatorKey: unique('user_discord_username_discord_discriminator_key').on(tbl.discordUsername, tbl.discordDiscriminator)
@@ -37,7 +37,7 @@ export const dbUserRelations = relations(dbUser, ({ one, many }) => ({
   asStaffMember: many(dbStaffMember),
   asPlayer: many(dbPlayer),
   purchases: many(dbPurchase),
-  notifications: many(dbNotification),
+  notifications: many(dbUserToNotification),
   issuesSubmitted: many(dbIssue),
   inTournamentDeletedNotifs: many(dbTournamentDeletedNotif),
   inGrantedHostNotifsAsNewHost: many(dbGrantedTournamentHostNotif, relation('new_host')),

@@ -1,0 +1,1 @@
+ALTER TABLE "user" ALTER COLUMN "show_discord_tag" SET NOT NULL;

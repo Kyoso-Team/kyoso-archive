@@ -1,5 +1,5 @@
 import { pgTable, bigserial, varchar, timestamp, integer, bigint } from 'drizzle-orm/pg-core';
-import { dbUser, dbIssueNotifType, dbStaffChangeNotifAction, dbStaffAppSubmission, dbJoinTeamRequest, dbTeam, dbTeamChangeNotifAction, dbRoundPublicationNotifType, dbRound, dbIssue, dbTournament } from '.';
+import { dbUser, dbIssueNotifType, dbStaffChangeNotifAction, dbStaffAppSubmission, dbJoinTeamRequest, dbTeam, dbTeamChangeNotifAction, dbRoundPublicationNotifType, dbRound, dbIssue, dbTournament, dbUserToNotification } from '.';
 import { timestampConfig, length, actions } from '../utils';
 import { relations } from 'drizzle-orm';
 
@@ -11,7 +11,7 @@ export const dbNotification = pgTable('notification', {
 });
 
 export const dbNotificationRelations = relations(dbNotification, ({ many }) => ({
-  notifiedTo: many(dbUser)
+  notifiedTo: many(dbUserToNotification)
 }));
 
 // Notifies admins when a new issue is submitted or notifies the user who submitted the issue that the issue has been resolved

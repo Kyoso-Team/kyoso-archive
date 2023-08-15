@@ -80,14 +80,11 @@ export const dbPrize = pgTable('prize', {
   tournamentId: integer('tournament_id').notNull().references(() => dbTournament.id, actions('cascade'))
 });
 
-export const dbPrizeRelations = relations(dbPrize, ({ one, many }) => ({
+export const dbPrizeRelations = relations(dbPrize, ({ one }) => ({
   tournament: one(dbTournament, {
     fields: [dbPrize.tournamentId],
     references: [dbTournament.id]
-  }),
-  awardedToPlayers: many(dbPlayer),
-  awardedToTeams: many(dbTeam),
-  awardedToPickemUsers: many(dbPickemUser)
+  })
 }));
 
 export const dbPrizeCash = pgTable('prize_cash', {
@@ -136,7 +133,15 @@ export const dbRound = pgTable('round', {
   nameTournamentIdKey: unique('round_name_tournament_id_key').on(tbl.name, tbl.tournamentId)
 }));
 
-export const dbRoundRelations = relations(dbRound, ({ many }) => ({
+export const dbRoundRelations = relations(dbRound, ({ one, many }) => ({
+  stage: one(dbStage, {
+    fields: [dbRound.stageId],
+    references: [dbStage.id]
+  }),
+  tournament: one(dbTournament, {
+    fields: [dbRound.tournamentId],
+    references: [dbTournament.id]
+  }),
   modpools: many(dbModpool),
   suggestedMaps: many(dbSuggestedMap),
   pooledMaps: many(dbPooledMap),
