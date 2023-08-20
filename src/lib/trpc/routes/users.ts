@@ -1,7 +1,9 @@
-import prisma from '$prisma';
+import db from '$db';
+import { dbUser } from '$db/schema';
+import { eq } from 'drizzle-orm';
 import { t, tryCatch } from '$trpc';
 import { z } from 'zod';
-import { getStoredUser, isAllowed } from '$lib/server-utils';
+import { getStoredUser, isAllowed, select, findFirstOrThrow } from '$lib/server-utils';
 import { getUser } from '$trpc/middleware';
 
 export const usersRouter = t.router({
@@ -9,14 +11,18 @@ export const usersRouter = t.router({
     let storedUser = getStoredUser(ctx, true);
 
     let user = await tryCatch(async () => {
-      return await prisma.user.update({
-        where: {
-          id: storedUser.id
-        },
-        data: {
-          showDiscordTag: input
-        }
-      });
+      return findFirstOrThrow(
+        await db
+          .update(dbUser)
+          .set({
+            showDiscordTag: input
+          })
+          .where(eq(dbUser.id, storedUser.id))
+          .returning(select(dbUser, [
+            'showDiscordTag'
+          ])),
+        'user'
+      );
     }, "Can't update user data.");
 
     return user.showDiscordTag === input;
@@ -34,14 +40,18 @@ export const usersRouter = t.router({
       isAllowed(ctx.user.isAdmin, `delete user with id ${input}`);
 
       let user = await tryCatch(async () => {
-        return await prisma.user.update({
-          where: {
-            id: input.id
-          },
-          data: {
-            isAdmin: input.toAdmin
-          }
-        });
+        return findFirstOrThrow(
+          await db
+            .update(dbUser)
+            .set({
+              isAdmin: input.toAdmin
+            })
+            .where(eq(dbUser.id, input.id))
+            .returning(select(dbUser, [
+              'isAdmin'
+            ])),
+          'user'
+        );
       }, "Can't change admin status of user.");
 
       return user.isAdmin === input.toAdmin;
@@ -57,11 +67,16 @@ export const usersRouter = t.router({
       isAllowed(ctx.user.isAdmin, `delete user with id ${input}`);
 
       let user = await tryCatch(async () => {
-        return await prisma.user.delete({
-          where: {
-            id: input
-          }
-        });
+        return findFirstOrThrow(
+          await db
+            .delete(dbUser)
+            .where(eq(dbUser.id, input))
+            .returning(select(dbUser, [
+              'id',
+              'osuUsername'
+            ])),
+            'user'
+        );
       }, "Can't delete user.");
 
       return user;

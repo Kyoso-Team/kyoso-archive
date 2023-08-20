@@ -1,4 +1,6 @@
-import prisma from '$prisma';
+import db from '$db';
+import { dbModMultiplier } from '$db/schema';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
 import { getUserAsStaff } from '$trpc/middleware';
@@ -22,7 +24,7 @@ export const modMultipliersRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug']),
         `create mod multipliers for tournament of ID ${input.tournamentId}`
       );
 
@@ -31,12 +33,12 @@ export const modMultipliersRouter = t.router({
       let { tournamentId, data } = input;
 
       await tryCatch(async () => {
-        await prisma.modMultiplier.create({
-          data: {
+        await db
+          .insert(dbModMultiplier)
+          .values({
             ...data,
             tournamentId
-          }
-        });
+          });
       }, "Can't create mod multiplier.");
     }),
   updateMultiplier: t.procedure
@@ -49,7 +51,7 @@ export const modMultipliersRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug']),
         `update multiplier of ID ${input.where.id}`
       );
 
@@ -60,13 +62,13 @@ export const modMultipliersRouter = t.router({
       let { tournamentId, where, data } = input;
 
       await tryCatch(async () => {
-        await prisma.modMultiplier.update({
-          where,
-          data: {
+        await db
+          .update(dbModMultiplier)
+          .set({
             ...data,
             tournamentId
-          }
-        });
+          })
+          .where(eq(dbModMultiplier.id, where.id));
       }, `Can't update mod multiplier of ID ${where.id}.`);
     }),
   deleteMultiplier: t.procedure
@@ -78,7 +80,7 @@ export const modMultipliersRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug']),
         `delete mod multiplier of ID ${input.where.id}`
       );
 
@@ -87,9 +89,9 @@ export const modMultipliersRouter = t.router({
       let { where } = input;
 
       await tryCatch(async () => {
-        await prisma.modMultiplier.delete({
-          where
-        });
+        await db
+          .delete(dbModMultiplier)
+          .where(eq(dbModMultiplier.id, where.id));
       }, `Can't delete mod multiplier of ID ${where.id}.`);
     })
 });

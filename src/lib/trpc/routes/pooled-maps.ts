@@ -1,14 +1,16 @@
-import prisma from '$prisma';
+import db from '$db';
+import { dbPooledMap, dbSuggestedMap } from '$db/schema';
+import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
 import { getUserAsStaffWithRound } from '$trpc/middleware';
 import { whereIdSchema, withRoundSchema, skillsetSchema } from '$lib/schemas';
-import { forbidIf, isAllowed } from '$lib/server-utils';
+import { findFirst, forbidIf, isAllowed, select } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
 import { getOrCreateMap } from '$trpc/helpers';
 
 const pooledMapsMutationSchema = z.object({
-  skillset: skillsetSchema,
+  skillsets: skillsetSchema.array(),
   comment: z.string().nullish().optional()
 });
 
@@ -27,71 +29,71 @@ export const pooledMapsRouter = t.router({
     .mutation(async ({ ctx, input }) => {
       isAllowed(
         ctx.user.isAdmin ||
-          hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePooledMaps']),
+          hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug', 'mutate_pooled_maps']),
         `create pooled beatmap for tournament of ID ${input.tournamentId}`
       );
 
-      forbidIf.doesntIncludeService(ctx.tournament, 'Mappooling');
+      forbidIf.doesntIncludeService(ctx.tournament, 'mappooling');
       forbidIf.hasConcluded(ctx.tournament);
       forbidIf.poolIsPublished(ctx.round);
 
       let {
         tournamentId,
         roundId,
-        data: { modpoolId, osuBeatmapId, skillset, comment, slot }
+        data: { modpoolId, osuBeatmapId, skillsets, comment, slot }
       } = input;
 
-      let suggestedMap = await prisma.suggestedMap.findUnique({
-        where: {
-          beatmapId_modpoolId: {
-            beatmapId: osuBeatmapId,
-            modpoolId
-          }
-        },
-        select: {
-          beatmapId: true,
-          suggestedById: true
-        }
-      });
+      let suggestedMap = findFirst(
+        await db
+          .select(select(dbSuggestedMap, [
+            'beatmapId',
+            'suggestedByStaffMemberId'
+          ]))
+          .from(dbSuggestedMap)
+          .where(and(
+            eq(dbSuggestedMap.beatmapId, osuBeatmapId),
+            eq(dbSuggestedMap.modpoolId, modpoolId)
+          ))
+      );
 
       if (suggestedMap) {
         await tryCatch(async () => {
           if (!suggestedMap) return;
 
-          await prisma.pooledMap.create({
-            data: {
+          await db
+            .insert(dbPooledMap)
+            .values({
               slot,
-              skillset,
-              comment,
+              skillsets,
               tournamentId,
               roundId,
               modpoolId,
+              poolerComment: comment,
               beatmapId: suggestedMap.beatmapId,
-              suggestedById: suggestedMap.suggestedById,
-              pooledById: ctx.staffMember.id
-            }
-          });
+              suggestedByStaffMemberId: suggestedMap.suggestedByStaffMemberId,
+              pooledByStaffMemberId: ctx.staffMember.id
+            });
         }, "Can't create pooled beatmap.");
 
         return;
       }
 
-      let map = await getOrCreateMap(prisma, ctx.user.osuAccessToken, osuBeatmapId, modpoolId);
+      let map = await getOrCreateMap(db, ctx.user.osuAccessToken, osuBeatmapId, modpoolId);
 
       await tryCatch(async () => {
-        await prisma.pooledMap.create({
-          data: {
-            slot,
-            skillset,
-            comment,
-            tournamentId,
-            roundId,
-            modpoolId,
-            beatmapId: map.osuBeatmapId,
-            suggestedById: ctx.staffMember.id,
-            pooledById: ctx.staffMember.id
-          }
-        });
+        await db
+            .insert(dbPooledMap)
+            .values({
+              slot,
+              skillsets,
+              tournamentId,
+              roundId,
+              modpoolId,
+              poolerComment: comment,
+              beatmapId: map.osuBeatmapId,
+              suggestedByStaffMemberId: ctx.staffMember.id,
+              pooledByStaffMemberId: ctx.staffMember.id
+            });
       }, "Can't create pooled beatmap.");
     }),
   updateMap: t.procedure
@@ -105,7 +107,7 @@ export const pooledMapsRouter = t.router({
     .mutation(async ({ ctx, input }) => {
       isAllowed(
         ctx.user.isAdmin ||
-          hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePooledMaps']),
+          hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug', 'mutate_pooled_maps']),
         `update pooled beatmap of ID ${input.where.id}`
       );
 
@@ -115,17 +117,17 @@ export const pooledMapsRouter = t.router({
 
       let {
         where,
-        data: { skillset, comment }
+        data: { skillsets, comment }
       } = input;
 
       await tryCatch(async () => {
-        await prisma.pooledMap.update({
-          where,
-          data: {
-            skillset,
-            comment
-          }
-        });
+        await db
+          .update(dbPooledMap)
+          .set({
+            skillsets,
+            poolerComment: comment
+          })
+          .where(eq(dbPooledMap.id, where.id));
       }, `Can't update pooled beatmap of ID ${where.id}.`);
     }),
   deleteMap: t.procedure
@@ -138,7 +140,7 @@ export const pooledMapsRouter = t.router({
     .mutation(async ({ ctx, input }) => {
       isAllowed(
         ctx.user.isAdmin ||
-          hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'DeletePooledMaps']),
+          hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug', 'delete_pooled_maps']),
         `delete pooled beatmap of ID ${input.where.id}`
       );
 
@@ -148,9 +150,9 @@ export const pooledMapsRouter = t.router({
       let { where } = input;
 
       await tryCatch(async () => {
-        await prisma.pooledMap.delete({
-          where
-        });
+        await db
+          .delete(dbPooledMap)
+          .where(eq(dbPooledMap.id, where.id));
       }, `Can't delete pooled beatmap of ID ${where.id}.`);
     })
 });

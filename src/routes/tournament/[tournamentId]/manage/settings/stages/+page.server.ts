@@ -1,4 +1,4 @@
-import prisma from '$prisma';
+import db from '$db';
 import { hasPerms } from '$lib/utils';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
@@ -6,54 +6,52 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ parent }) => {
   let data = await parent();
 
-  if (!hasPerms(data.staffMember, ['Host', 'Debug', 'MutateTournament'])) {
+  if (!hasPerms(data.staffMember, ['host', 'debug', 'mutate_tournament'])) {
     throw error(
       401,
       `You lack the necessary permissions to manage the stages for tournament of ID ${data.tournament.id}.`
     );
   }
 
-  let stages = await prisma.stage.findMany({
-    where: {
-      tournamentId: data.tournament.id
-    },
-    select: {
+  let stages = await db.query.dbStage.findMany({
+    columns: {
       id: true,
       format: true,
       isMainStage: true,
-      order: true,
+      order: true
+    },
+    with: {
       rounds: {
-        select: {
+        columns: {
           id: true,
           name: true,
-          order: true,
+          order: true
+        },
+        with: {
           standardRound: {
-            select: {
+            columns: {
               bestOf: true,
               banCount: true
             }
           },
-          battleRoyaleRound: {
-            select: {
-              playersEliminatedPerMap: true
-            }
-          },
           qualifierRound: {
-            select: {
+            columns: {
               runCount: true,
               summarizeRunsAs: true
             }
+          },
+          battleRoyaleRound: {
+            columns: {
+              playersEliminatedPerMap: true
+            }
           }
         },
-        orderBy: {
-          order: 'asc'
-        }
+        orderBy: (round, { asc }) => asc(round.order)
       }
     },
-    orderBy: {
-      order: 'asc'
-    }
-  });
+    where: (stage, { eq }) => eq(stage.tournamentId, data.tournament.id),
+    orderBy: (stage, { asc }) => asc(stage.order)
+  });;
 
   return {
     stages,

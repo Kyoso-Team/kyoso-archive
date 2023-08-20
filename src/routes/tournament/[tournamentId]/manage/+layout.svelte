@@ -13,7 +13,7 @@
   sidebar.create();
   let basePath = `/tournament/${data.tournament.id}/manage/`;
 
-  if (hasPerms(data.staffMember, ['Host', 'Debug', 'MutateTournament'])) {
+  if (hasPerms(data.staffMember, ['host', 'debug', 'mutate_tournament'])) {
     let settings = sidebar.setSection('Settings', 'settings');
 
     let settingsPath = `${basePath}settings/`;
@@ -61,10 +61,10 @@
     ]);
   }
 
-  if (hasPerms(data.staffMember, ['Host', 'Debug', 'ViewStaffMembers', 'ViewRegs'])) {
+  if (hasPerms(data.staffMember, ['host', 'debug', 'mutate_tournament', 'view_staff_members', 'view_regs'])) {
     let regs = sidebar.setSection('Regs.', 'regs');
 
-    if (hasPerms(data.staffMember, ['Host', 'Debug', 'ViewStaffMembers'])) {
+    if (hasPerms(data.staffMember, ['host', 'debug', 'mutate_tournament', 'view_staff_members'])) {
       let staffPath = `${basePath}staff/`;
       regs.setSubsection('Staff', [
         {
@@ -82,13 +82,13 @@
       ]);
     }
 
-    if (hasPerms(data.staffMember, ['Host', 'Debug', 'ViewRegs'])) {
+    if (hasPerms(data.staffMember, ['host', 'debug', 'mutate_tournament', 'view_regs'])) {
       let links: {
         label: string;
         path: string;
       }[] = [];
 
-      if (data.tournament.type === 'Teams') {
+      if (data.tournament.type === 'teams') {
         links = [
           {
             label: 'Teams',
@@ -101,7 +101,7 @@
         ];
       }
 
-      if (data.tournament.type === 'Solo') {
+      if (data.tournament.type === 'solo') {
         links = [
           {
             label: 'Players',
@@ -110,7 +110,7 @@
         ];
       }
 
-      if (data.tournament.type === 'Draft') {
+      if (data.tournament.type === 'draft') {
         links = [
           {
             label: 'Players',
@@ -127,20 +127,20 @@
     }
   }
 
-  if (hasPerms(data.staffMember, ['Host', 'Debug', 'ViewPoolSuggestions', 'ViewPooledMaps'])) {
-    let pooling = sidebar.setSection('Pooling', 'pooling');
+  if (hasPerms(data.staffMember, ['host', 'debug', 'mutate_tournament', 'view_pool_suggestions', 'view_pooled_maps'])) {
+    // let pooling = sidebar.setSection('Pooling', 'pooling');
   }
 
-  if (hasPerms(data.staffMember, ['Host', 'Debug', 'ViewMatches'])) {
-    let referee = sidebar.setSection('Reffing.', 'referee');
+  if (hasPerms(data.staffMember, ['host', 'debug', 'mutate_tournament', 'view_matches'])) {
+    // let referee = sidebar.setSection('Reffing.', 'referee');
   }
 
-  if (hasPerms(data.staffMember, ['Host', 'Debug', 'ViewStats'])) {
-    let stats = sidebar.setSection('Stats. Calc.', 'stats calc');
+  if (hasPerms(data.staffMember, ['host', 'debug', 'mutate_tournament', 'view_stats'])) {
+    // let stats = sidebar.setSection('Stats. Calc.', 'stats calc');
   }
 
-  if (hasPerms(data.staffMember, ['Host', 'Debug'])) {
-    let pickems = sidebar.setSection('Pickems', 'pickems');
+  if (hasPerms(data.staffMember, ['host', 'debug', 'mutate_tournament'])) {
+    // let pickems = sidebar.setSection('Pickems', 'pickems');
   }
 </script>
 

@@ -7,24 +7,24 @@
   import { invalidateAll } from '$app/navigation';
   import { modal, twColors } from '$lib/utils';
   import { SEO, Permission, CheckIcon, AdditionIcon, MoveUpIcon, MoveDownIcon } from '$components';
-  import type { StaffPermission, StaffColor, StaffRole } from '@prisma/client';
+  import type { StaffPermission, StaffColor, StaffRole } from '$types';
   import type { PageServerData } from './$types';
 
   const allColors: StaffColor[] = [
-    'Slate',
-    'Gray',
-    'Red',
-    'Orange',
-    'Yellow',
-    'Lime',
-    'Green',
-    'Emerald',
-    'Cyan',
-    'Blue',
-    'Indigo',
-    'Purple',
-    'Fuchsia',
-    'Pink'
+    'slate',
+    'gray',
+    'red',
+    'orange',
+    'yellow',
+    'lime',
+    'green',
+    'emerald',
+    'cyan',
+    'blue',
+    'indigo',
+    'purple',
+    'fuchsia',
+    'pink'
   ];
   const spanStyles = 'font-bold text-xl text-primary-500 block mt-8 mb-2';
   export let data: PageServerData;
@@ -155,7 +155,7 @@
             tournamentId: data.tournament.id,
             data: {
               name,
-              color: 'Red'
+              color: 'red'
             }
           });
 
@@ -310,7 +310,7 @@
             <span class={spanStyles.replace('mt-8 ', '')}>Tournament</span>
             <Permission
               label="Administrate tournament"
-              permissionName="MutateTournament"
+              permissionName="mutate_tournament"
               description="Allows the user to do anything the other roles do. In addition, the user is able to control the tournament's settings (dates, links, rules, manage stages, rounds prizes and graphics)."
               {disabled}
               noBorder
@@ -319,205 +319,205 @@
             <span class={spanStyles}>Staff Team</span>
             <Permission
               label="View Staff"
-              permissionName="ViewStaffMembers"
+              permissionName="view_staff_members"
               description="The user is able to view staff members and roles."
               disabled={disabled ||
                 hasPerms(selectedRole.permissions, [
-                  'MutateTournament',
-                  'MutateStaffMembers',
-                  'DeleteStaffMembers'
+                  'mutate_tournament',
+                  'mutate_staff_members',
+                  'delete_staff_members'
                 ])}
               bind:permissions={selectedRole.permissions}
             />
             <Permission
               label="Modify Staff"
-              permissionName="MutateStaffMembers"
+              permissionName="mutate_staff_members"
               description="The user is able to create, view and update staff members and roles."
               disabled={disabled ||
-                hasPerms(selectedRole.permissions, ['MutateTournament', 'DeleteStaffMembers'])}
+                hasPerms(selectedRole.permissions, ['mutate_tournament', 'delete_staff_members'])}
               bind:permissions={selectedRole.permissions}
             />
             <Permission
               label="Manage Staff"
-              permissionName="DeleteStaffMembers"
+              permissionName="delete_staff_members"
               description="The user is able to create, view, update and delete staff members and roles."
-              disabled={disabled || hasPerms(selectedRole.permissions, ['MutateTournament'])}
+              disabled={disabled || hasPerms(selectedRole.permissions, ['mutate_tournament'])}
               noBorder
               bind:permissions={selectedRole.permissions}
             />
             <span class={spanStyles}>Registrations</span>
             <Permission
               label="View Registrations"
-              permissionName="ViewRegs"
+              permissionName="view_regs"
               description="The user is able to view player registrations."
               disabled={disabled ||
                 hasPerms(selectedRole.permissions, [
-                  'MutateTournament',
-                  'MutateRegs',
-                  'DeleteRegs'
+                  'mutate_tournament',
+                  'mutate_regs',
+                  'delete_regs'
                 ])}
               bind:permissions={selectedRole.permissions}
             />
             <Permission
               label="Modify Registrations"
-              permissionName="MutateRegs"
+              permissionName="mutate_regs"
               description="The user is able to view and update player registrations."
               disabled={disabled ||
-                hasPerms(selectedRole.permissions, ['MutateTournament', 'DeleteRegs'])}
+                hasPerms(selectedRole.permissions, ['mutate_tournament', 'delete_regs'])}
               bind:permissions={selectedRole.permissions}
             />
             <Permission
               label="Manage Registrations"
-              permissionName="DeleteRegs"
+              permissionName="delete_regs"
               description="The user is able to view, update and delete player registrations."
-              disabled={disabled || hasPerms(selectedRole.permissions, ['MutateTournament'])}
+              disabled={disabled || hasPerms(selectedRole.permissions, ['mutate_tournament'])}
               noBorder
               bind:permissions={selectedRole.permissions}
             />
             <span class={spanStyles}>Mappool Structure</span>
             <Permission
               label="Modify Mappool Structure"
-              permissionName="MutatePoolStructure"
+              permissionName="mutate_pool_structure"
               description="The user is able to view and update the mappool's structure for any round."
-              disabled={disabled || hasPerms(selectedRole.permissions, ['MutateTournament'])}
+              disabled={disabled || hasPerms(selectedRole.permissions, ['mutate_tournament'])}
               noBorder
               bind:permissions={selectedRole.permissions}
             />
             <span class={spanStyles}>Beatmap Pooling</span>
             <Permission
               label="View Pooled Beatmaps"
-              permissionName="ViewPooledMaps"
+              permissionName="view_pooled_maps"
               description="The user is able to view the mappool's beatmaps for any round."
               disabled={disabled ||
                 hasPerms(selectedRole.permissions, [
-                  'MutateTournament',
-                  'MutatePooledMaps',
-                  'DeletePooledMaps',
-                  'CanPlaytest'
+                  'mutate_tournament',
+                  'mutate_pooled_maps',
+                  'delete_pooled_maps',
+                  'can_playtest'
                 ])}
               bind:permissions={selectedRole.permissions}
             />
             <Permission
               label="Modify Pooled Beatmaps"
-              permissionName="MutatePooledMaps"
+              permissionName="mutate_pooled_maps"
               description="The user is able to create, view and update the mappool's beatmaps for any round."
               disabled={disabled ||
-                hasPerms(selectedRole.permissions, ['MutateTournament', 'DeletePooledMaps'])}
+                hasPerms(selectedRole.permissions, ['mutate_tournament', 'delete_pooled_maps'])}
               bind:permissions={selectedRole.permissions}
             />
             <Permission
               label="Manage Pooled Beatmaps"
-              permissionName="DeletePooledMaps"
+              permissionName="delete_pooled_maps"
               description="The user is able to create, view, update and delete the mappool's beatmaps for any round."
-              disabled={disabled || hasPerms(selectedRole.permissions, ['MutateTournament'])}
+              disabled={disabled || hasPerms(selectedRole.permissions, ['mutate_tournament'])}
               noBorder
               bind:permissions={selectedRole.permissions}
             />
             <span class={spanStyles}>Beatmap Suggestions</span>
             <Permission
               label="View Suggestions"
-              permissionName="ViewPoolSuggestions"
+              permissionName="view_pool_suggestions"
               description="The user is able to view the mappool's beatmap suggestions for any round."
               disabled={disabled ||
                 hasPerms(selectedRole.permissions, [
-                  'MutateTournament',
-                  'MutatePoolSuggestions',
-                  'DeletePoolSuggestions',
-                  'ViewPooledMaps',
-                  'MutatePooledMaps',
-                  'DeletePooledMaps'
+                  'mutate_tournament',
+                  'mutate_pool_suggestions',
+                  'delete_pool_suggestions',
+                  'view_pooled_maps',
+                  'mutate_pooled_maps',
+                  'delete_pooled_maps'
                 ])}
               bind:permissions={selectedRole.permissions}
             />
             <Permission
               label="Modify Suggestions"
-              permissionName="MutatePoolSuggestions"
+              permissionName="mutate_pool_suggestions"
               description="The user is able to create, view and update the mappool's beatmap suggestions for any round."
               disabled={disabled ||
-                hasPerms(selectedRole.permissions, ['MutateTournament', 'DeleteRegs'])}
+                hasPerms(selectedRole.permissions, ['mutate_tournament', 'delete_pool_suggestions'])}
               bind:permissions={selectedRole.permissions}
             />
             <Permission
               label="Manage Suggestions"
-              permissionName="DeletePoolSuggestions"
+              permissionName="delete_pool_suggestions"
               description="The user is able to create, view, update and delete the mappool's beatmap suggestions for any round."
-              disabled={disabled || hasPerms(selectedRole.permissions, ['MutateTournament'])}
+              disabled={disabled || hasPerms(selectedRole.permissions, ['mutate_tournament'])}
               noBorder
               bind:permissions={selectedRole.permissions}
             />
             <span class={spanStyles}>Playtesting</span>
             <Permission
               label="Provide Feedback & Replays"
-              permissionName="CanPlaytest"
+              permissionName="can_playtest"
               description="The user is able to provide feedback and submit replays for a pooled beatmap."
-              disabled={disabled || hasPerms(selectedRole.permissions, ['MutateTournament'])}
+              disabled={disabled || hasPerms(selectedRole.permissions, ['mutate_tournament'])}
               noBorder
               bind:permissions={selectedRole.permissions}
             />
             <span class={spanStyles}>Matches</span>
             <Permission
               label="View Matches"
-              permissionName="ViewMatches"
+              permissionName="view_matches"
               description="The user is able to view the matches for any round."
               disabled={disabled ||
                 hasPerms(selectedRole.permissions, [
-                  'MutateTournament',
-                  'MutateMatches',
-                  'DeleteMatches',
-                  'RefMatches',
-                  'CommentateMatches',
-                  'StreamMatches'
+                  'mutate_tournament',
+                  'mutate_matches',
+                  'delete_matches',
+                  'ref_matches',
+                  'commentate_matches',
+                  'stream_matches'
                 ])}
               bind:permissions={selectedRole.permissions}
             />
             <Permission
               label="Modify Matches"
-              permissionName="MutateMatches"
+              permissionName="mutate_matches"
               description="The user is able to create, view and update the matches for any round."
               disabled={disabled ||
-                hasPerms(selectedRole.permissions, ['MutateTournament', 'DeleteMatches'])}
+                hasPerms(selectedRole.permissions, ['mutate_tournament', 'delete_matches'])}
               bind:permissions={selectedRole.permissions}
             />
             <Permission
               label="Manage Matches"
-              permissionName="DeleteMatches"
+              permissionName="delete_matches"
               description="The user is able to create, view, update and delete the matches for any round."
-              disabled={disabled || hasPerms(selectedRole.permissions, ['MutateTournament'])}
+              disabled={disabled || hasPerms(selectedRole.permissions, ['mutate_tournament'])}
               bind:permissions={selectedRole.permissions}
             />
             <Permission
               label="Referee Matches"
-              permissionName="RefMatches"
+              permissionName="ref_matches"
               description="The user is able to referee the matches for any round."
               disabled={disabled ||
                 hasPerms(selectedRole.permissions, [
-                  'MutateTournament',
-                  'MutateMatches',
-                  'DeleteMatches'
+                  'mutate_tournament',
+                  'mutate_matches',
+                  'delete_matches'
                 ])}
               bind:permissions={selectedRole.permissions}
             />
             <Permission
               label="Commentate Matches"
-              permissionName="CommentateMatches"
+              permissionName="commentate_matches"
               description="The user is able to commentate the matches for any round."
               disabled={disabled ||
                 hasPerms(selectedRole.permissions, [
-                  'MutateTournament',
-                  'MutateMatches',
-                  'DeleteMatches'
+                  'mutate_tournament',
+                  'mutate_matches',
+                  'delete_matches'
                 ])}
               bind:permissions={selectedRole.permissions}
             />
             <Permission
               label="Stream Matches"
-              permissionName="StreamMatches"
+              permissionName="stream_matches"
               description="The user is able to commentate the matches for any round."
               disabled={disabled ||
                 hasPerms(selectedRole.permissions, [
-                  'MutateTournament',
-                  'MutateMatches',
-                  'DeleteMatches'
+                  'mutate_tournament',
+                  'mutate_matches',
+                  'delete_matches'
                 ])}
               noBorder
               bind:permissions={selectedRole.permissions}
@@ -525,57 +525,57 @@
             <span class={spanStyles}>Statistics</span>
             <Permission
               label="View Stats."
-              permissionName="ViewStats"
+              permissionName="view_stats"
               description="The user is able to view the statistics for any round."
               disabled={disabled ||
                 hasPerms(selectedRole.permissions, [
-                  'MutateTournament',
-                  'MutateStats',
-                  'DeleteStats'
+                  'mutate_tournament',
+                  'mutate_stats',
+                  'delete_stats'
                 ])}
               bind:permissions={selectedRole.permissions}
             />
             <Permission
               label="Calculate Stats."
-              permissionName="MutateStats"
+              permissionName="mutate_stats"
               description="The user is able to view and calculate the statistics for any round."
               disabled={disabled ||
-                hasPerms(selectedRole.permissions, ['MutateTournament', 'DeleteStats'])}
+                hasPerms(selectedRole.permissions, ['mutate_tournament', 'delete_stats'])}
               bind:permissions={selectedRole.permissions}
             />
             <Permission
               label="Manage Stats."
-              permissionName="DeleteStats"
+              permissionName="delete_stats"
               description="The user is able to view, calculate and delete the statistics for any round."
-              disabled={disabled || hasPerms(selectedRole.permissions, ['MutateTournament'])}
+              disabled={disabled || hasPerms(selectedRole.permissions, ['mutate_tournament'])}
               noBorder
               bind:permissions={selectedRole.permissions}
             />
             <span class={spanStyles}>Other</span>
             <Permission
               label="Can Play"
-              permissionName="CanPlay"
+              permissionName="can_play"
               description="The user is able to play in the tournament despite being a staff member."
               disabled={disabled ||
                 hasPerms(selectedRole.permissions, [
-                  'MutateTournament',
-                  'MutateStaffMembers',
-                  'DeleteStaffMembers',
-                  'ViewRegs',
-                  'MutateRegs',
-                  'DeleteRegs',
-                  'MutatePoolStructure',
-                  'ViewPoolSuggestions',
-                  'MutatePoolSuggestions',
-                  'DeletePoolSuggestions',
-                  'ViewPooledMaps',
-                  'MutatePooledMaps',
-                  'DeletePooledMaps',
-                  'CanPlaytest',
-                  'MutateMatches',
-                  'DeleteMatches',
-                  'MutateStats',
-                  'DeleteStats'
+                  'mutate_tournament',
+                  'mutate_staff_members',
+                  'delete_staff_members',
+                  'view_regs',
+                  'mutate_regs',
+                  'delete_regs',
+                  'mutate_pool_structure',
+                  'view_pool_suggestions',
+                  'mutate_pool_suggestions',
+                  'delete_pool_suggestions',
+                  'view_pooled_maps',
+                  'mutate_pooled_maps',
+                  'delete_pooled_maps',
+                  'can_playtest',
+                  'mutate_matches',
+                  'delete_matches',
+                  'mutate_stats',
+                  'delete_stats'
                 ])}
               noBorder
               bind:permissions={selectedRole.permissions}

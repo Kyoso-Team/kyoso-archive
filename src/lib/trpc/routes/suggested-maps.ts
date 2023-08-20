@@ -1,4 +1,6 @@
-import prisma from '$prisma';
+import db from '$db';
+import { dbSuggestedMap } from '$db/schema';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
 import { getUserAsStaffWithRound } from '$trpc/middleware';
@@ -8,7 +10,7 @@ import { hasPerms } from '$lib/utils';
 import { getOrCreateMap } from '$trpc/helpers';
 
 const suggestedMapsMutationSchema = z.object({
-  suggestedSkillset: skillsetSchema,
+  suggestedSkillsets: z.array(skillsetSchema),
   comment: z.string().nullish().optional()
 });
 
@@ -26,34 +28,34 @@ export const suggestedMapsRouter = t.router({
     .mutation(async ({ ctx, input }) => {
       isAllowed(
         ctx.user.isAdmin ||
-          hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolSuggestions']),
+          hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug', 'mutate_pool_suggestions']),
         `create beatmap suggestion for tournament of ID ${input.tournamentId}`
       );
 
-      forbidIf.doesntIncludeService(ctx.tournament, 'Mappooling');
+      forbidIf.doesntIncludeService(ctx.tournament, 'mappooling');
       forbidIf.hasConcluded(ctx.tournament);
       forbidIf.poolIsPublished(ctx.round);
 
       let {
         tournamentId,
         roundId,
-        data: { modpoolId, osuBeatmapId, suggestedSkillset, comment }
+        data: { modpoolId, osuBeatmapId, suggestedSkillsets, comment }
       } = input;
 
-      let beatmap = await getOrCreateMap(prisma, ctx.user.osuAccessToken, osuBeatmapId, modpoolId);
+      let beatmap = await getOrCreateMap(db, ctx.user.osuAccessToken, osuBeatmapId, modpoolId);
 
       await tryCatch(async () => {
-        await prisma.suggestedMap.create({
-          data: {
-            suggestedSkillset,
-            comment,
+        await db
+          .insert(dbSuggestedMap)
+          .values({
+            suggestedSkillsets,
             tournamentId,
             roundId,
             modpoolId,
+            suggesterComment: comment,
             beatmapId: beatmap.osuBeatmapId,
-            suggestedById: ctx.staffMember.id
-          }
-        });
+            suggestedByStaffMemberId: ctx.staffMember.id
+          });
       }, "Can't create beatmap suggestion.");
     }),
   updateMap: t.procedure
@@ -67,7 +69,7 @@ export const suggestedMapsRouter = t.router({
     .mutation(async ({ ctx, input }) => {
       isAllowed(
         ctx.user.isAdmin ||
-          hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolSuggestions']),
+          hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug', 'mutate_pool_suggestions']),
         `update suggested beatmap of ID ${input.where.id}`
       );
 
@@ -77,17 +79,17 @@ export const suggestedMapsRouter = t.router({
 
       let {
         where,
-        data: { suggestedSkillset, comment }
+        data: { suggestedSkillsets, comment }
       } = input;
 
       await tryCatch(async () => {
-        await prisma.suggestedMap.update({
-          where,
-          data: {
-            suggestedSkillset,
-            comment
-          }
-        });
+        await db
+          .update(dbSuggestedMap)
+          .set({
+            suggestedSkillsets,
+            suggesterComment: comment
+          })
+          .where(eq(dbSuggestedMap.id, where.id));
       }, `Can't update suggested beatmap of ID ${where.id}.`);
     }),
   deleteMap: t.procedure
@@ -100,7 +102,7 @@ export const suggestedMapsRouter = t.router({
     .mutation(async ({ ctx, input }) => {
       isAllowed(
         ctx.user.isAdmin ||
-          hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'DeletePoolSuggestions']),
+          hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug', 'mutate_pool_suggestions']),
         `delete suggested beatmap of ID ${input.where.id}`
       );
 
@@ -110,9 +112,9 @@ export const suggestedMapsRouter = t.router({
       let { where } = input;
 
       await tryCatch(async () => {
-        await prisma.suggestedMap.delete({
-          where
-        });
+        await db
+          .delete(dbSuggestedMap)
+          .where(eq(dbSuggestedMap.id, where.id));
       }, `Can't delete suggested beatmap of ID ${where.id}.`);
     })
 });

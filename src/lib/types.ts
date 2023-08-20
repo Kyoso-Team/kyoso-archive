@@ -1,8 +1,27 @@
+import type { dbMappoolState, dbTournamentService, dbMod, dbStaffPermission, dbStaffColor, dbModMultiplier, dbStaffRole, dbBanOrder, dbTournamentType, dbWinCondition, dbPrizeType, dbCashMetric, dbQualifierRunsSummary, dbStageFormat } from '$db/schema';
 import type { ZodBoolean, ZodDate, ZodNumber, ZodString } from 'zod';
+import type { PgEnum } from 'drizzle-orm/pg-core';
 import type { Page } from '@sveltejs/kit';
+import type { InferModel } from 'drizzle-orm';
+
+export type InferEnum<T extends PgEnum<[string, ... string[]]>> = T['enumValues'][number];
+export type MappoolState = InferEnum<typeof dbMappoolState>;
+export type TournamentService = InferEnum<typeof dbTournamentService>;
+export type Mod = InferEnum<typeof dbMod>;
+export type StaffPermission = InferEnum<typeof dbStaffPermission>;
+export type StaffColor = InferEnum<typeof dbStaffColor>;
+export type BanOrder = InferEnum<typeof dbBanOrder>;
+export type TournamentType = InferEnum<typeof dbTournamentType>;
+export type WinCondition = InferEnum<typeof dbWinCondition>;
+export type PrizeType = InferEnum<typeof dbPrizeType>;
+export type CashMetric = InferEnum<typeof dbCashMetric>;
+export type QualifierRunsSummary = InferEnum<typeof dbQualifierRunsSummary>;
+export type StageFormat = InferEnum<typeof dbStageFormat>;
+
+export type ModMultiplier = InferModel<typeof dbModMultiplier>;
+export type StaffRole = InferModel<typeof dbStaffRole>;
 
 export type FormInputType = 'string' | 'number' | 'boolean' | 'date' | 'id';
-export type TournamentType = 'Teams' | 'Solo';
 export type Sort = 'asc' | 'desc';
 export type FileType = 'png' | 'jpg' | 'jpeg' | 'webp' | 'gif' | 'osr' | 'osz';
 
@@ -32,11 +51,19 @@ export type AssignFieldType<
   ? Str
   : T[K] extends string | undefined
   ? Str
+  : T[K] extends string | null
+  ? Str
+  : T[K] extends string | undefined | null
+  ? Str
   : T[K] extends string[]
   ? Str
   : T[K] extends number
   ? Num
   : T[K] extends number | undefined
+  ? Num
+  : T[K] extends number | null
+  ? Num
+  : T[K] extends number | undefined | null
   ? Num
   : T[K] extends number[]
   ? Num

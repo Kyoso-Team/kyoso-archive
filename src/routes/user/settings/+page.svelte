@@ -33,10 +33,10 @@
   let purchases = data.purchases.map((purch) => {
     return [
       purch.purchasedAt.toUTCString(),
-      `US$${purch.cost.toFixed(2)}`,
+      `US$${purch.cost}`,
       String(purch.services).replace(/,/g, ', '),
       purch.forTournament ? purch.forTournament.name : 'None',
-      purch.paypalOrderId
+      purch.payPalOrderId
     ].map((x) => String(x));
   });
 

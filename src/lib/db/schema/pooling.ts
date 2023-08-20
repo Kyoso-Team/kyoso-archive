@@ -8,6 +8,7 @@ export const dbModpool = pgTable('modpool', {
   category: varchar('category', length(3)).notNull(), // "NM", "HD", "TB", etc.
   mods: dbMod('mods').array(4).notNull().default([]),
   isFreeMod: boolean('is_free_mod').notNull(),
+  isTieBreaker: boolean('is_tie_breaker').notNull(),
   order: smallint('order').notNull(), // The order in which the modpools should be presented. Example: NM (1) should go before HD (2)
   mapCount: smallint('map_count'),
   roundId: integer('round_id').notNull().references(() => dbRound.id, actions('cascade'))

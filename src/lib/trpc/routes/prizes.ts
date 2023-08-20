@@ -1,13 +1,15 @@
-import prisma from '$prisma';
+import db from '$db';
+import { dbPrize, dbPrizeCash } from '$db/schema';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
 import { getUserAsStaff } from '$trpc/middleware';
 import { whereIdSchema, withTournamentSchema } from '$lib/schemas';
-import { forbidIf, isAllowed } from '$lib/server-utils';
+import { findFirstOrThrow, forbidIf, isAllowed, select } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
 
 const prizeMutationSchema = z.object({
-  type: z.union([z.literal('Tournament'), z.literal('Pickems')]),
+  type: z.union([z.literal('tournament'), z.literal('pickems')]),
   placements: z.array(z.number().int()),
   trophy: z.boolean().default(false),
   medal: z.boolean().default(false),
@@ -16,12 +18,12 @@ const prizeMutationSchema = z.object({
   cash: z
     .object({
       value: z.number(),
-      metric: z.union([z.literal('Fixed'), z.literal('Percent')]).default('Fixed'),
+      metric: z.union([z.literal('fixed'), z.literal('percent')]).default('fixed'),
       currency: z.string().length(3)
     })
     .optional(),
-  items: z.array(z.string().max(25)).default([]),
-  osuSupporter: z.number().int().default(0)
+  additionalItems: z.array(z.string().max(25)).default([]),
+  monthsOsuSupporter: z.number().int().nullish().default(0)
 });
 
 export const prizesRouter = t.router({
@@ -34,7 +36,7 @@ export const prizesRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug']),
         `create prize for tournament of ID ${input.tournamentId}`
       );
 
@@ -42,30 +44,38 @@ export const prizesRouter = t.router({
 
       let {
         tournamentId,
-        data: { type, placements, trophy, medal, badge, banner, cash, items, osuSupporter }
+        data: { type, placements, trophy, medal, badge, banner, cash, additionalItems, monthsOsuSupporter }
       } = input;
 
       await tryCatch(async () => {
-        await prisma.prize.create({
-          data: {
-            type,
-            placements,
-            trophy,
-            medal,
-            badge,
-            banner,
-            items,
-            osuSupporter,
-            tournamentId,
-            cash: cash
-              ? {
-                  create: {
-                    currency: cash.currency,
-                    metric: cash.metric,
-                    value: cash.value
-                  }
-                }
-              : undefined
+        await db.transaction(async (tx) => {
+          let prize = findFirstOrThrow(
+            await tx
+              .insert(dbPrize)
+              .values({
+                type,
+                placements,
+                trophy,
+                medal,
+                badge,
+                banner,
+                additionalItems,
+                monthsOsuSupporter,
+                tournamentId
+              })
+              .returning(select(dbPrize, [
+                'id'
+              ])),
+            'prize'
+          );
+
+          if (cash) {
+            await tx
+              .insert(dbPrizeCash)
+              .values({
+                ...cash,
+                inPrizeId: prize.id
+              });
           }
         });
       }, "Can't create prize.");
@@ -80,7 +90,7 @@ export const prizesRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug']),
         `update prize of ID ${input.where.id}`
       );
 
@@ -89,31 +99,33 @@ export const prizesRouter = t.router({
       let {
         tournamentId,
         where,
-        data: { type, placements, trophy, medal, badge, banner, cash, items, osuSupporter }
+        data: { type, placements, trophy, medal, badge, banner, cash, additionalItems, monthsOsuSupporter }
       } = input;
 
       if (Object.keys(input.data).length === 0) return;
 
       await tryCatch(async () => {
-        await prisma.prize.update({
-          where,
-          data: {
-            type,
-            placements,
-            trophy,
-            medal,
-            badge,
-            banner,
-            items,
-            osuSupporter,
-            tournamentId,
-            cash: {
-              update: {
-                currency: cash?.currency,
-                metric: cash?.metric,
-                value: cash?.value
-              }
-            }
+        await db.transaction(async (tx) => {
+          await tx
+            .update(dbPrize)
+            .set({
+              type,
+              placements,
+              trophy,
+              medal,
+              badge,
+              banner,
+              additionalItems,
+              monthsOsuSupporter,
+              tournamentId
+            })
+            .where(eq(dbPrize.id, where.id));
+          
+          if (cash) {
+            await tx
+              .update(dbPrizeCash)
+              .set(cash)
+              .where(eq(dbPrizeCash.inPrizeId, where.id));
           }
         });
       }, `Can't update prize of ID ${where.id}.`);
@@ -127,7 +139,7 @@ export const prizesRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug']),
         `delete prize of ID ${input.where.id}`
       );
 
@@ -136,9 +148,9 @@ export const prizesRouter = t.router({
       let { where } = input;
 
       await tryCatch(async () => {
-        await prisma.prize.delete({
-          where
-        });
+        await db
+          .delete(dbPrize)
+          .where(eq(dbPrize.id, where.id));
       }, `Can't delete prize of ID ${where.id}.`);
     })
 });

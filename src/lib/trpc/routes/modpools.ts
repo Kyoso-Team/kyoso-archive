@@ -1,10 +1,13 @@
-import prisma from '$prisma';
+import db from '$db';
+import { dbModpool } from '$db/schema';
+import { and, eq, gt, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
 import { getUserAsStaffWithRound } from '$trpc/middleware';
 import { whereIdSchema, withRoundSchema, modSchema } from '$lib/schemas';
-import { forbidIf, isAllowed } from '$lib/server-utils';
+import { forbidIf, getRowCount, isAllowed } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
+import { swapOrder } from '$trpc/helpers';
 
 const modpoolsMutationSchema = z.object({
   category: z.string().max(3),
@@ -25,11 +28,11 @@ export const modpoolsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolStructure']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug', 'mutate_pool_structure']),
         `create modpool for tournament of ID ${input.tournamentId}`
       );
 
-      forbidIf.doesntIncludeService(ctx.tournament, 'Mappooling');
+      forbidIf.doesntIncludeService(ctx.tournament, 'mappooling');
       forbidIf.hasConcluded(ctx.tournament);
       forbidIf.poolIsPublished(ctx.round);
 
@@ -39,14 +42,11 @@ export const modpoolsRouter = t.router({
       } = input;
 
       await tryCatch(async () => {
-        let modpoolCount = await prisma.modpool.count({
-          where: {
-            roundId
-          }
-        });
+        let modpoolCount = await getRowCount(dbModpool, eq(dbModpool.roundId, roundId));
 
-        await prisma.modpool.create({
-          data: {
+        await db
+          .insert(dbModpool)
+          .values({
             category,
             isFreeMod,
             isTieBreaker,
@@ -54,8 +54,7 @@ export const modpoolsRouter = t.router({
             mods,
             roundId,
             order: modpoolCount + 1
-          }
-        });
+          });
       }, "Can't create modpool.");
     }),
   updateModpool: t.procedure
@@ -68,7 +67,7 @@ export const modpoolsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolStructure']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug', 'mutate_pool_structure']),
         `update modpool of ID ${input.where.id}`
       );
 
@@ -83,15 +82,15 @@ export const modpoolsRouter = t.router({
       } = input;
 
       await tryCatch(async () => {
-        await prisma.modpool.update({
-          where,
-          data: {
+        await db
+          .update(dbModpool)
+          .set({
             category,
             isFreeMod,
             isTieBreaker,
             mapCount
-          }
-        });
+          })
+          .where(eq(dbModpool.id, where.id));
       }, `Can't update modpool of ID ${where.id}.`);
     }),
   swapOrder: t.procedure
@@ -110,31 +109,14 @@ export const modpoolsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolStructure']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug', 'mutate_pool_structure']),
         `change the order of modpools for tournament of ID ${input.tournamentId}`
       );
 
       forbidIf.hasConcluded(ctx.tournament);
 
       await tryCatch(async () => {
-        await prisma.$transaction([
-          prisma.modpool.update({
-            where: {
-              id: input.modpool1.id
-            },
-            data: {
-              order: input.modpool2.order
-            }
-          }),
-          prisma.modpool.update({
-            where: {
-              id: input.modpool2.id
-            },
-            data: {
-              order: input.modpool1.order
-            }
-          })
-        ]);
+        await swapOrder(db, dbModpool, input.modpool1, input.modpool2);
       }, `Can't change the order of modpools for tournament of ID ${input.tournamentId}.`);
     }),
   deleteModpool: t.procedure
@@ -148,7 +130,7 @@ export const modpoolsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutatePoolStructure']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug', 'mutate_pool_structure']),
         `delete modpool of ID ${input.where.id}`
       );
 
@@ -161,26 +143,21 @@ export const modpoolsRouter = t.router({
       } = input;
 
       await tryCatch(async () => {
-        await prisma.$transaction([
-          prisma.modpool.delete({
-            where: {
-              id
-            }
-          }),
-          prisma.modpool.updateMany({
-            where: {
-              roundId,
-              order: {
-                gt: order
-              }
-            },
-            data: {
-              order: {
-                decrement: 1
-              }
-            }
-          })
-        ]);
+        await db.transaction(async (tx) => {
+          await tx
+            .delete(dbModpool)
+            .where(eq(dbModpool.id, id));
+          
+          await tx
+            .update(dbModpool)
+            .set({
+              order: sql`${dbModpool.order} - 1`
+            })
+            .where(and(
+              eq(dbModpool.roundId, roundId),
+              gt(dbModpool.order, order)
+            ));
+        });
       }, `Can't delete modpool of ID ${id}.`);
     })
 });

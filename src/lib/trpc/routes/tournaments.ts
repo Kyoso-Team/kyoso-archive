@@ -1,19 +1,21 @@
-import prisma from '$prisma';
+import db from '$db';
 import paypalClient, { money } from '$paypal';
 import paypal from '@paypal/checkout-server-sdk';
+import { dbPurchase, dbStaffMember, dbStaffMemberToStaffRole, dbStaffRole, dbTournament, dbUser } from '$db/schema';
+import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
 import { getUser, getUserAsStaff } from '$trpc/middleware';
 import { services } from '$lib/constants';
 import { TRPCError } from '@trpc/server';
-import { isAllowed } from '$lib/server-utils';
+import { findFirstOrThrow, isAllowed, select } from '$lib/server-utils';
 import { hasPerms, hasTournamentConcluded } from '$lib/utils';
 import { whereIdSchema } from '$lib/schemas';
 import type { PayPalOrder } from '$types';
 import type { AmountBreakdown } from '@paypal/checkout-server-sdk/lib/payments/lib';
 
 const servicesSchema = z
-  .array(z.enum(['Registrations', 'Mappooling', 'Referee', 'Stats', 'Pickems']))
+  .array(z.enum(['registrations', 'mappooling', 'referee', 'stats', 'pickems']))
   .min(1);
 const rankRangeSchema = z.union([
   z.literal('open rank'),
@@ -25,7 +27,7 @@ const rankRangeSchema = z.union([
 const tournamentSchema = z.object({
   name: z.string(),
   acronym: z.string(),
-  type: z.union([z.literal('Teams'), z.literal('Solo'), z.literal('Draft')]),
+  type: z.union([z.literal('teams'), z.literal('solo'), z.literal('draft')]),
   rankRange: rankRangeSchema,
   useBWS: z.boolean(),
   services: servicesSchema,
@@ -44,79 +46,85 @@ async function createTournament(
   let { acronym, rankRange, name, useBWS, type, teamPlaySize, teamSize, services } = tournament;
 
   return await tryCatch(async () => {
-    return await prisma.$transaction(async (tx) => {
-      let tournament = await tx.tournament.create({
-        data: {
-          name,
-          acronym,
-          useBWS,
-          services,
-          type,
-          lowerRankRange: rankRange === 'open rank' ? -1 : rankRange.lower,
-          upperRankRange: rankRange === 'open rank' ? -1 : rankRange.upper,
-          teamSize: type === 'Teams' ? teamSize : 1,
-          teamPlaySize: type === 'Teams' ? teamPlaySize : 1,
-          inPurchases: order
-            ? {
-                create: {
-                  services,
-                  cost: Number(order.purchase_units[0].amount.value),
-                  paypalOrderId: order.id,
-                  purchasedById: user.id
-                }
-              }
-            : undefined
-        },
-        select: {
-          id: true
-        }
-      });
+    return await db.transaction(async (tx) => {
+      let tournament = findFirstOrThrow(
+        await tx
+          .insert(dbTournament)
+          .values({
+            name,
+            acronym,
+            useBWS,
+            services,
+            type,
+            lowerRankRange: rankRange === 'open rank' ? -1 : rankRange.lower,
+            upperRankRange: rankRange === 'open rank' ? -1 : rankRange.upper,
+            teamSize: type === 'teams' ? teamSize : 1,
+            teamPlaySize: type === 'teams' ? teamPlaySize : 1
+          })
+          .returning(select(dbTournament, [
+            'id'
+          ])),
+        'tournament'
+      );
+      
+      if (order) {
+        await tx
+          .insert(dbPurchase)
+          .values({
+            services,
+            cost: order.purchase_units[0].amount.value,
+            payPalOrderId: order.id,
+            purchasedById: user.id,
+            forTournamentId: tournament.id
+          });
+      }
 
-      let staffMember = await tx.staffMember.create({
-        data: {
-          userId: user.id,
+      let host = findFirstOrThrow(
+        await tx
+          .insert(dbStaffMember)
+          .values({
+            userId: user.id,
+            tournamentId: tournament.id
+          })
+          .returning(select(dbStaffMember, [
+            'id'
+          ])),
+        'staff member (host)'
+      );
+
+      let [_debuggerRole, hostRole] = await tx
+        .insert(dbStaffRole)
+        .values([{
+          name: 'Debugger',
+          color: 'gray',
+          permissions: ['debug'],
+          order: 0,
           tournamentId: tournament.id
-        },
-        select: {
-          id: true
-        }
-      });
-
-      await tx.staffRole.create({
-        data: {
+        }, {
           name: 'Host',
-          color: 'Red',
-          permissions: ['Host'],
+          color: 'red',
+          permissions: ['host'],
           order: 1,
-          tournamentId: tournament.id,
-          staffMembers: {
-            connect: {
-              id: staffMember.id
-            }
-          }
-        },
-        select: {
-          id: true
-        }
-      });
-
-      if (user.freeServicesLeft > 0) {
-        await tx.user.update({
-          where: {
-            id: user.id
-          },
-          data: {
-            freeServicesLeft:
-              services.length < 0
-                ? 0
-                : {
-                    decrement: services.length
-                  }
-          },
-          select: {
-            id: true
-          }
+          tournamentId: tournament.id
+        }])
+        .returning(select(dbStaffRole, [
+          'id'
+        ]));
+      
+      await tx
+        .insert(dbStaffMemberToStaffRole)
+        .values({
+          staffMemberId: host.id,
+          staffRoleId: hostRole.id
         });
+      
+      if (user.freeServicesLeft > 0) {
+        await tx
+          .update(dbUser)
+          .set({
+            freeServicesLeft: services.length < 0 ? 0 : sql`${dbUser.freeServicesLeft} - ${services.length}`
+          })
+          .where(eq(dbUser.id, user.id));
       }
 
       return tournament;
@@ -131,13 +139,13 @@ export const tournamentRouter = t.router({
       z.object({
         services: servicesSchema,
         type: z
-          .union([z.literal('Teams'), z.literal('Solo')])
+          .union([z.literal('teams'), z.literal('solo'), z.literal('draft')])
           .optional()
-          .default('Teams')
+          .default('teams')
       })
     )
     .mutation(async ({ ctx, input }) => {
-      let key = input.type === 'Teams' ? 'teamsPrice' : ('soloPrice' as 'teamsPrice' | 'soloPrice');
+      let key = input.type === 'teams' ? 'teamsPrice' : ('soloPrice' as 'teamsPrice' | 'soloPrice');
       // From most to least expensive
       input.services = input.services.sort((serviceA, serviceB) => {
         return services[serviceA][key] < services[serviceB][key] ? 1 : -1;
@@ -266,7 +274,7 @@ export const tournamentRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+        ctx.user.isAdmin || hasPerms(ctx.staffMember, ['mutate_tournament', 'host']),
         `update tournament with ID ${ctx.tournament.id}`
       );
 
@@ -339,9 +347,9 @@ export const tournamentRouter = t.router({
       } = input;
 
       await tryCatch(async () => {
-        await prisma.tournament.update({
-          where,
-          data: {
+        await db
+          .update(dbTournament)
+          .set({
             acronym,
             banOrder,
             discordInviteId,
@@ -373,8 +381,8 @@ export const tournamentRouter = t.router({
             useTeamBanners,
             lowerRankRange: rankRange === 'open rank' ? -1 : rankRange?.lower,
             upperRankRange: rankRange === 'open rank' ? -1 : rankRange?.upper
-          }
-        });
+          })
+          .where(eq(dbTournament.id, where.id));
       }, `Can't update tournament with ID ${ctx.tournament.id}.`);
     }),
   deleteTournament: t.procedure
@@ -382,16 +390,14 @@ export const tournamentRouter = t.router({
     .input(whereIdSchema)
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        ctx.user.isAdmin || hasPerms(ctx.staffMember, 'Host'),
+        ctx.user.isAdmin || hasPerms(ctx.staffMember, 'host'),
         `delete tournament with ID ${ctx.tournament.id}`
       );
 
       await tryCatch(async () => {
-        await prisma.tournament.delete({
-          where: {
-            id: input.id
-          }
-        });
+        await db
+          .delete(dbTournament)
+          .where(eq(dbTournament.id, input.id));
       }, `Can't delete tournament with ID ${ctx.tournament.id}.`);
     })
 });

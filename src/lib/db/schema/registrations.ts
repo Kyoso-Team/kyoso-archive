@@ -145,13 +145,18 @@ export const dbJoinTeamRequest = pgTable('join_team_request', {
   id: serial('id').primaryKey(),
   requestedAt: timestamp('requested_at', timestampConfig).notNull().defaultNow(),
   status: dbJoinRequestStatus('status').notNull().default('pending'),
-  sentById: integer('sent_by_id').notNull().references(() => dbPlayer.id)
+  sentById: integer('sent_by_id').notNull().references(() => dbPlayer.id),
+  teamId: integer('team_id').notNull().references(() => dbTeam.id)
 });
 
 export const dbJoinTeamRequestRelations = relations(dbJoinTeamRequest, ({ one, many }) => ({
   sentBy: one(dbPlayer, {
     fields: [dbJoinTeamRequest.sentById],
     references: [dbPlayer.id]
+  }),
+  team: one(dbTeam, {
+    fields: [dbJoinTeamRequest.teamId],
+    references: [dbTeam.id]
   }),
   inJoinTeamRequestNotifs: many(dbJoinTeamRequestNotif)
 }));
@@ -160,12 +165,7 @@ export const dbJoinTeamRequestRelations = relations(dbJoinTeamRequest, ({ one, m
 export const dbPlayer = pgTable('player', {
   id: serial('id').primaryKey(),
   registeredAt: timestamp('registered_at', timestampConfig).notNull().defaultNow(),
-  availability: char('availability', length(99)).notNull(), // A string that represents the availability between 0 - 23 UTC (24 digits), from Friday to Monday
-  // Where each digit can be either 0 (unavailable) or 1 (available)
-  // Each day is separated by a period, similarly to an IP address
-  rank: integer('rank').notNull(),
-  bwsRank: integer('bws_rank').notNull(), // Make it a generated column when that feature lands in Drizzle
-  badgeCount: integer('badge_count').notNull(),
+  bwsRank: integer('bws_rank'),
   tournamentId: integer('tournament_id').notNull().references(() => dbTournament.id, actions('cascade')),
   userId: integer('user_id').notNull().references(() => dbUser.id, actions('cascade')),
   teamId: integer('team_id').references((): AnyPgColumn => dbTeam.id)

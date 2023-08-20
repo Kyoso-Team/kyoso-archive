@@ -198,7 +198,6 @@ async function seedUsers() {
         }
 
         await db.insert(dbUser).values({
-          updatedAt: new Date(),
           apiKey: r.string(24),
           discordAccesstoken: r.string(64),
           discordRefreshToken: r.string(64),
@@ -208,6 +207,7 @@ async function seedUsers() {
           isRestricted: r.boolean(),
           osuUserId: osu.id,
           osuUsername: osu.username,
+          rank: osu.statistics.global_rank,
           discordUserId: discord.id,
           discordUsername: discord.username,
           discordDiscriminator: discord.discriminator,
@@ -273,9 +273,16 @@ async function seedteamTournament() {
     staffMemberIds.push(staffMember[0].id);
   }
 
-  let [hostRole, refereeRole] = await db
+  let [_debuggerRole, hostRole, refereeRole] = await db
     .insert(dbStaffRole)
     .values([
+			{
+				name: 'Debugger',
+				color: 'gray',
+				permissions: ['debug'],
+				order: 0,
+				tournamentId: tournament[0].id
+			},
       {
         name: 'Host',
         color: 'red',
@@ -322,58 +329,59 @@ async function seedteamTournament() {
     '000011100101101010101001.000111110011001011101110.100100000111000001000010.100010000100011001101001'
   ];
 
-  for (let i = 0; i < 12; i++) {
-    let userId = r.number(1, userCount, usedUserIds);
-    usedUserIds.push(userId);
+  // Needs rework
+  // for (let i = 0; i < 12; i++) {
+  //   let userId = r.number(1, userCount, usedUserIds);
+  //   usedUserIds.push(userId);
 
-    let badgeCount = r.number(1, 5);
-    let rank = r.number(1, 150_000);
-    let bwsRank = Math.round(rank ** (0.9937 ** (badgeCount ** 2)));
+  //   let badgeCount = r.number(1, 5);
+  //   let rank = r.number(1, 150_000);
+  //   let bwsRank = Math.round(rank ** (0.9937 ** (badgeCount ** 2)));
 
-    let player = await db
-      .insert(dbPlayer)
-      .values({
-        userId,
-        badgeCount,
-        rank,
-        bwsRank,
-        availability: r.array(randomAvailabilities, 1)[0],
-        tournamentId: tournament[0].id
-      })
-      .returning({
-        id: dbPlayer.id
-      });
+  //   let player = await db
+  //     .insert(dbPlayer)
+  //     .values({
+  //       userId,
+  //       badgeCount,
+  //       rank,
+  //       bwsRank,
+  //       availability: r.array(randomAvailabilities, 1)[0],
+  //       tournamentId: tournament[0].id
+  //     })
+  //     .returning({
+  //       id: dbPlayer.id
+  //     });
 
-    playerIds.push(player[0].id);
-    playerRanks.push(rank);
-    playerBwsRanks.push(bwsRank);
-  }
+  //   playerIds.push(player[0].id);
+  //   playerRanks.push(rank);
+  //   playerBwsRanks.push(bwsRank);
+  // }
 
-  // Todo: Create 2 teams of 2 and 2 teams of 3. Only creating 1 team for now
-  let team1PlayerRanks = [playerRanks[0], playerRanks[1], playerRanks[2]];
-  let team1PlayerBwsRanks = [playerBwsRanks[0], playerBwsRanks[1], playerBwsRanks[2]];
+  // // Todo: Create 2 teams of 2 and 2 teams of 3. Only creating 1 team for now
+  // let team1PlayerRanks = [playerRanks[0], playerRanks[1], playerRanks[2]];
+  // let team1PlayerBwsRanks = [playerBwsRanks[0], playerBwsRanks[1], playerBwsRanks[2]];
 
-  let team = await db
-    .insert(dbTeam)
-    .values({
-      inviteId: r.string(8),
-      name: r.string(5, 20),
-      tournamentId: tournament[0].id,
-      captainId: playerIds[0],
-      avgRank: team1PlayerRanks.reduce((total, rank) => total + rank, 0) / team1PlayerRanks.length,
-      avgBwsRank:
-        team1PlayerBwsRanks.reduce((total, rank) => total + rank, 0) / team1PlayerBwsRanks.length
-    })
-    .returning({
-      id: dbTeam.id
-    });
+  // let team = await db
+  //   .insert(dbTeam)
+  //   .values({
+  //     inviteId: r.string(8),
+  //     name: r.string(5, 20),
+  //     tournamentId: tournament[0].id,
+  //     captainId: playerIds[0],
+  //     avgRank: team1PlayerRanks.reduce((total, rank) => total + rank, 0) / team1PlayerRanks.length,
+  //     avgBwsRank:
+  //       team1PlayerBwsRanks.reduce((total, rank) => total + rank, 0) / team1PlayerBwsRanks.length
+  //   })
+  //   .returning({
+  //     id: dbTeam.id
+  //   });
 
-  await db
-    .update(dbPlayer)
-    .set({
-      teamId: team[0].id
-    })
-    .where(inArray(dbPlayer.id, [playerIds[0], playerIds[1], playerIds[2]]));
+  // await db
+  //   .update(dbPlayer)
+  //   .set({
+  //     teamId: team[0].id
+  //   })
+  //   .where(inArray(dbPlayer.id, [playerIds[0], playerIds[1], playerIds[2]]));
 
   return 'Seeded team tournament';
 }

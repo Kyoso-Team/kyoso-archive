@@ -11,12 +11,13 @@
     AdditionIcon,
     Tooltip
   } from '$components';
-  import type { Prize, CashPrize } from '@prisma/client';
+  import type { dbPrize, dbPrizeCash } from '$db/schema';
+  import type { InferModel } from 'drizzle-orm';
 
   const badgeStyles = 'badge variant-ghost !bg-surface-900 h-7';
   const spanStyles = 'text-white font-black text-base tracking-wide block relative';
-  export let prize: Omit<Prize, 'tournamentId'> & {
-    cash: Omit<CashPrize, 'inPrizeId'> | null;
+  export let prize: Omit<InferModel<typeof dbPrize>, 'tournamentId'> & {
+    cash: Omit<InferModel<typeof dbPrizeCash>, 'inPrizeId'> | null;
   };
   let tooltips = {
     trophy: `prize-trophy-${prize.id}`,
@@ -69,35 +70,35 @@
       </span>
       <Tooltip target={tooltips.banner} label="Profile banner" />
     {/if}
-    {#if prize.osuSupporter > 0}
+    {#if prize.monthsOsuSupporter || 0 > 0}
       <span class={`${badgeStyles} w-[72px]`} use:popup={tooltip(tooltips.supporter)}>
-        <span class={`${spanStyles} -mr-1`}>{prize.osuSupporter}</span>
+        <span class={`${spanStyles} -mr-1`}>{prize.monthsOsuSupporter}</span>
         <HeartIcon h={18} styles="fill-white" />
       </span>
       <Tooltip
         target={tooltips.supporter}
-        label={`${prize.osuSupporter} months of osu! supporter`}
+        label={`${prize.monthsOsuSupporter} months of osu! supporter`}
       />
     {/if}
     {#if prize.cash && prize.cash.value > 0}
       <span class={`${badgeStyles} w-20`} use:popup={tooltip(tooltips.cash)}>
         <span class={`${spanStyles} -mr-3`}>
-          {prize.cash.value}{prize.cash.metric === 'Percent' ? '%' : ''}
+          {prize.cash.value}{prize.cash.metric === 'percent' ? '%' : ''}
         </span>
         <MoneyIcon h={22} styles="fill-white" />
       </span>
       <Tooltip
         target={tooltips.cash}
-        label={prize.cash.metric === 'Percent'
+        label={prize.cash.metric === 'percent'
           ? `${prize.cash.value}% of the prize pool (${prize.cash.currency})`
           : `${prize.cash.value} ${prize.cash.currency}`}
       />
     {/if}
-    {#if prize.items.length > 0}
+    {#if prize.additionalItems.length > 0}
       <span class={`${badgeStyles} w-[52px]`} use:popup={tooltip(tooltips.items)}>
         <AdditionIcon h={20} styles="fill-white" />
       </span>
-      <Tooltip target={tooltips.items} label={format.listArray(prize.items)} />
+      <Tooltip target={tooltips.items} label={format.listArray(prize.additionalItems)} />
     {/if}
   </div>
 </div>

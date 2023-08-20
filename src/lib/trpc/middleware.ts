@@ -1,11 +1,13 @@
-import prisma from '$prisma';
+import db from '$db';
+import { dbUser, dbTournament, dbRound, dbStaffMemberToStaffRole, dbStaffRole, dbStaffMember } from '$db/schema';
+import { eq, and } from 'drizzle-orm';
+import { z } from 'zod';
 import { verifyJWT } from '$lib/jwt';
 import { t, tryCatch } from '$trpc';
 import { TRPCError } from '@trpc/server';
+import { findFirstOrThrow, select } from '$lib/server-utils';
 import type { SessionUser } from '$types';
 import type { Context } from '$trpc/context';
-import { z } from 'zod';
-import type { BanOrder, TournamentService, TournamentType, WinCondition } from '@prisma/client';
 
 function getStoredUserHelper(ctx: Context) {
   if (!ctx.cookies.get('session')) {
@@ -28,21 +30,22 @@ export const getStoredUser = t.middleware(({ ctx, next }) => {
 
 export const getUser = t.middleware(async ({ ctx, next }) => {
   let storedUser = getStoredUserHelper(ctx);
-  let user = await prisma.user.findUniqueOrThrow({
-    where: {
-      id: storedUser.id
-    },
-    select: {
-      id: true,
-      isAdmin: true,
-      osuUserId: true,
-      osuUsername: true,
-      discordUserId: true,
-      discordDiscriminator: true,
-      freeServicesLeft: true,
-      osuAccessToken: true
-    }
-  });
+  let user = findFirstOrThrow(
+    await db
+      .select(select(dbUser, [
+        'id',
+        'isAdmin',
+        'osuUserId',
+        'osuUsername',
+        'discordUserId',
+        'discordDiscriminator',
+        'freeServicesLeft',
+        'osuAccessToken'
+      ]))
+      .from(dbUser)
+      .where(eq(dbUser.id, storedUser.id)),
+    'user'
+  );
 
   return next({
     ctx: {
@@ -68,51 +71,62 @@ export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
   let parsed = parse.data;
   let storedUser = getStoredUserHelper(ctx);
 
-  let user = await prisma.user.findUniqueOrThrow({
-    where: {
-      id: storedUser.id
-    },
-    select: {
-      id: true,
-      isAdmin: true,
-      osuUserId: true,
-      osuAccessToken: true
-    }
-  });
+  let user = findFirstOrThrow(
+    await db
+      .select(select(dbUser, [
+        'id',
+        'isAdmin',
+        'osuUserId',
+        'osuAccessToken'
+      ]))
+      .from(dbUser)
+      .where(eq(dbUser.id, storedUser.id)),
+    'user'
+  );
 
   let tournament = await tryCatch(async () => {
-    return await prisma.tournament.findUniqueOrThrow({
-      where: {
-        id: parsed.tournamentId
-      },
-      select: {
-        id: true,
-        concludesOn: true,
-        services: true,
-        type: true,
-        teamSize: true,
-        teamPlaySize: true
-      }
-    });
+    return findFirstOrThrow(
+      await db
+        .select(select(dbTournament, [
+          'id',
+          'concludesOn',
+          'services',
+          'type',
+          'teamSize',
+          'teamPlaySize'
+        ]))
+        .from(dbTournament)
+        .where(eq(dbTournament.id, parsed.tournamentId)),
+      'tournament'
+    );
   }, `Couldn't find tournament with ID ${parsed.tournamentId}.`);
 
   let staffMember = await tryCatch(async () => {
-    return await prisma.staffMember.findUniqueOrThrow({
-      where: {
-        userId_tournamentId: {
-          userId: user.id,
-          tournamentId: tournament.id
+    let data = await db
+      .select({
+        staffMember: {
+          id: dbStaffMemberToStaffRole.staffMemberId
+        },
+        staffRole: {
+          permissions: dbStaffRole.permissions
         }
-      },
-      select: {
-        id: true,
-        roles: {
-          select: {
-            permissions: true
-          }
-        }
-      }
-    });
+      })
+      .from(dbStaffMemberToStaffRole)
+      .where(and(
+        eq(dbStaffMember.userId, user.id),
+        eq(dbStaffMember.tournamentId, tournament.id)
+      ))
+      .innerJoin(dbStaffMember, eq(dbStaffMember.id, dbStaffMemberToStaffRole.staffMemberId))
+      .innerJoin(dbStaffRole, eq(dbStaffRole.id, dbStaffMemberToStaffRole.staffRoleId));
+
+    if (!data[0]) {
+      throw new Error('Couldn\'t find staff member');
+    }
+
+    return {
+      id: data[0].staffMember.id,
+      roles: data.map(({ staffRole }) => staffRole)  
+    };
   }, `Couldn't find staff member with user ID ${user.id} in tournament with ID ${tournament.id}.`);
 
   return next({
@@ -142,16 +156,16 @@ export const getUserAsStaffWithRound = getUserAsStaff.unstable_pipe(
     let parsed = parse.data;
 
     let round = await tryCatch(async () => {
-      return await prisma.round.findUniqueOrThrow({
-        where: {
-          id: parsed.roundId
-        },
-        select: {
-          id: true,
-          mappoolState: true,
-          publishStats: true
-        }
-      });
+      return findFirstOrThrow(
+        await db
+          .select(select(dbRound, [
+            'id',
+            'mappoolState'
+          ]))
+          .from(dbRound)
+          .where(eq(dbRound.id, parsed.roundId)),
+        'round'
+      );
     }, `Couldn't find round with ID ${parsed.roundId}.`);
 
     return next({

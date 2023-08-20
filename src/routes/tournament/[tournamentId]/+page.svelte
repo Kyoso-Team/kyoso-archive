@@ -4,4 +4,4 @@
   export let data: PageServerData;
 </script>
 
-<h1>{data.tournament.name}</h1>
+<h1>{data.name}</h1>

@@ -140,7 +140,7 @@
       disabled={isOpenRank}
       bind:value={upperRankRange}
     />
-    {#if data.type !== 'Solo'}
+    {#if data.type !== 'solo'}
       <Setting
         label="Let teams upload banners?"
         type="boolean"

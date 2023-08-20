@@ -1,10 +1,5 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
 
-export const dbUserTheme = pgEnum('user_theme', [
-  'light',
-  'dark'
-]);
-
 export const dbTournamentType = pgEnum('tournament_type', [
   'teams',
   'draft',

@@ -6,7 +6,7 @@
   import { invalidateAll } from '$app/navigation';
   import { modal } from '$lib/utils';
   import { SEO, MoveUpIcon, MoveDownIcon } from '$components';
-  import type { StageFormat, QualifierRunsSummary } from '@prisma/client';
+  import type { StageFormat, QualifierRunsSummary } from '$types';
   import type { PageServerData } from './$types';
 
   type BattleRoyaleDefault = {
@@ -32,13 +32,13 @@
 
   function mapReadableFormat(format: StageFormat) {
     switch (format) {
-      case 'BattleRoyale':
+      case 'battle_royale':
         return 'Battle Royale';
-      case 'DoubleElim':
+      case 'double_elim':
         return 'Double Elimination Bracket';
-      case 'SingleElim':
+      case 'single_elim':
         return 'Single Elimination Bracket';
-      case 'Swiss':
+      case 'swiss':
         return 'Swiss Bracket';
       default:
         return format;
@@ -56,12 +56,12 @@
             values: () => {
               let value = select<StageFormat>();
               let formats = [
-                value('Groups'),
-                value('Qualifiers'),
-                value('Swiss'),
-                value('SingleElim', 'Single Elimination'),
-                value('DoubleElim', 'Double Elimination'),
-                value('BattleRoyale', 'Battle Royale')
+                value('groups', 'Groups'),
+                value('qualifiers', 'Qualifiers'),
+                value('swiss', 'Swiss'),
+                value('single_elim', 'Single Elimination'),
+                value('double_elim', 'Double Elimination'),
+                value('battle_royale', 'Battle Royale')
               ];
 
               return formats.filter((format) => {
@@ -158,9 +158,9 @@
   }
 
   async function createRound(stageId: number, format: StageFormat) {
-    if (format === 'BattleRoyale') {
+    if (format === 'battle_royale') {
       mutateBattleRoyaleRound(stageId, 'create');
-    } else if (format === 'Qualifiers') {
+    } else if (format === 'qualifiers') {
       mutateQualifierRound(stageId, 'create');
     } else {
       mutateStandardRound(stageId, 'create');
@@ -172,9 +172,9 @@
     roundId: number,
     defaultValue: Record<string, unknown> | undefined
   ) {
-    if (stageFormat === 'BattleRoyale') {
+    if (stageFormat === 'battle_royale') {
       mutateBattleRoyaleRound(0, 'update', defaultValue as BattleRoyaleDefault, roundId);
-    } else if (stageFormat === 'Qualifiers') {
+    } else if (stageFormat === 'qualifiers') {
       mutateQualifierRound(0, 'update', defaultValue as QualifierDefault, roundId);
     } else {
       mutateStandardRound(0, 'update', defaultValue as StandardDefault, roundId);
@@ -274,9 +274,9 @@
             values: () => {
               let value = select<QualifierRunsSummary>();
               let runs = [
-                value('Average', 'Average of scores'),
-                value('Sum', 'Sum of scores'),
-                value('Best', 'Best score between runs')
+                value('average', 'Average of scores'),
+                value('sum', 'Sum of scores'),
+                value('best', 'Best score between runs')
               ];
 
               return runs;

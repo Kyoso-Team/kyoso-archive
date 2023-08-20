@@ -7,7 +7,7 @@
   import { modal, format } from '$lib/utils';
   import { SEO, Prize, Dropdown } from '$components';
   import type { PageServerData } from './$types';
-  import type { PrizeType, CashMetric } from '@prisma/client';
+  import type { PrizeType, CashMetric } from '$types';
 
   type MutatePrize = {
     placements: number[];
@@ -15,8 +15,8 @@
     medal: boolean;
     badge: boolean;
     banner: boolean;
-    items: string[];
-    osuSupporter?: number;
+    additionalItems: string[];
+    monthsOsuSupporter?: number | null;
     cash: boolean;
     cashValue?: number;
     cashPercentage?: number;
@@ -42,7 +42,7 @@
     form.create<MutatePrize>({
       defaultValue,
       title: `${operation === 'create' ? 'Create' : 'Update'} ${
-        prizeType === 'Pickems' ? 'Pickem' : 'Tournament'
+        prizeType === 'pickems' ? 'Pickem' : 'Tournament'
       } Prize`,
       fields: ({ field, select }) => [
         field('For placements', 'placements', 'number', {
@@ -53,7 +53,7 @@
         field('Includes a medal?', 'medal', 'boolean'),
         field('Includes a profile badge?', 'badge', 'boolean'),
         field('Includes a profile banner?', 'banner', 'boolean'),
-        field('Months of osu! supporter', 'osuSupporter', 'number', {
+        field('Months of osu! supporter', 'monthsOsuSupporter', 'number', {
           optional: true,
           validation: (z) => z.min(0)
         }),
@@ -66,20 +66,20 @@
           fromValues: {
             values: () => {
               let value = select<CashMetric>();
-              return [value('Fixed', 'Fixed'), value('Percent', 'Percentage')];
+              return [value('fixed', 'Fixed'), value('percent', 'Percentage')];
             }
           },
           disableIf: ({ cash }) => !cash
         }),
         field('Amount of cash', 'cashValue', 'number', {
           validation: (z) => z.min(0),
-          disableIf: ({ cash, cashMetric }) => !cash || cashMetric === 'Percent'
+          disableIf: ({ cash, cashMetric }) => !cash || cashMetric === 'percent'
         }),
         field('Cash percentage', 'cashPercentage', 'number', {
           validation: (z) => z.min(0).max(100),
-          disableIf: ({ cash, cashMetric }) => !cash || cashMetric === 'Fixed'
+          disableIf: ({ cash, cashMetric }) => !cash || cashMetric === 'fixed'
         }),
-        field('Additional prizes', 'items', 'string', {
+        field('Additional prizes', 'additionalItems', 'string', {
           optional: true,
           list: true,
           validation: (z) => z.max(25)
@@ -95,8 +95,8 @@
                 ? {
                     currency: prize.cashCurrency || 'USD',
                     value:
-                      (prize.cashMetric === 'Fixed' ? prize.cashValue : prize.cashPercentage) || 0,
-                    metric: prize.cashMetric || 'Fixed'
+                      (prize.cashMetric === 'fixed' ? prize.cashValue : prize.cashPercentage) || 0,
+                    metric: prize.cashMetric || 'fixed'
                   }
                 : undefined
             },
@@ -131,34 +131,34 @@
     badge,
     banner,
     cash,
-    items,
+    additionalItems,
     medal,
-    osuSupporter,
+    monthsOsuSupporter,
     placements,
     trophy
   }: (typeof data.prizes)[number]) {
     return {
       badge,
       banner,
-      items,
+      additionalItems,
       medal,
-      osuSupporter,
+      monthsOsuSupporter,
       placements,
       trophy,
       cash: !!cash,
       cashCurrency: cash?.currency,
       cashMetric: cash?.metric,
-      cashValue: cash?.metric === 'Fixed' ? cash?.value : undefined,
-      cashPercentage: cash?.metric === 'Percent' ? cash?.value : undefined
+      cashValue: cash?.metric === 'fixed' ? cash?.value : undefined,
+      cashPercentage: cash?.metric === 'percent' ? cash?.value : undefined
     };
   }
 
   function onCreateTournamentPrize() {
-    mutatePrize('create', 'Tournament');
+    mutatePrize('create', 'tournament');
   }
 
   function onCreatePickemsPrize() {
-    mutatePrize('create', 'Pickems');
+    mutatePrize('create', 'pickems');
   }
 
   function onUpdatePrize(prize: (typeof data.prizes)[number]) {
@@ -169,7 +169,7 @@
     modal.yesNo(
       'Confirm Prize Deletion',
       `Are you sure you want to delete the ${format.placements(prize.placements)} place ${
-        prize.type === 'Pickems' ? 'pickems' : ''
+        prize.type === 'pickems' ? 'pickems' : ''
       } prize from this tournament?`,
       async () => {
         try {
@@ -190,8 +190,8 @@
   }
 
   $: {
-    tournamentPrizes = data.prizes.filter(({ type }) => type === 'Tournament');
-    pickemsPrizes = data.prizes.filter(({ type }) => type === 'Pickems');
+    tournamentPrizes = data.prizes.filter(({ type }) => type === 'tournament');
+    pickemsPrizes = data.prizes.filter(({ type }) => type === 'pickems');
   }
 </script>
 
@@ -230,7 +230,7 @@
       {/each}
     {/if}
   </div>
-  {#if data.services.includes('Pickems')}
+  {#if data.services.includes('pickems')}
     <h2 class="pt-8">Pickems Prizes</h2>
     <p class="pt-4">Prizes to be awarded to the winning users of the tournament's pickems</p>
     <div class="my-4">

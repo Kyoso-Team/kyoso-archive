@@ -8,8 +8,7 @@
   import { goto } from '$app/navigation';
   import { SEO, CloseIcon } from '$components';
   import type { PageServerData } from './$types';
-  import type { TournamentFormData, TournamentType } from '$types';
-  import type { TournamentService } from '@prisma/client';
+  import type { TournamentFormData, TournamentType, TournamentService } from '$types';
   import type { PayPalButtonsComponent } from '@paypal/paypal-js';
 
   export let data: PageServerData;
@@ -63,17 +62,17 @@
             values: () => {
               let value = select<TournamentType>();
 
-              return [value('Teams'), value('Solo')];
+              return [value('teams'), value('solo')];
             }
           }
         }),
         field('Max. team size', 'teamSize', 'number', {
           validation: (z) => z.int().gte(1).lte(8),
-          disableIf: (tournament) => tournament.type === 'Solo'
+          disableIf: (tournament) => tournament.type === 'solo'
         }),
         field('Players allowed to play per beatmap', 'teamPlaySize', 'number', {
           validation: (z) => z.int().gte(1).lte(8),
-          disableIf: (tournament) => tournament.type === 'Solo'
+          disableIf: (tournament) => tournament.type === 'solo'
         }),
         field('Use BWS formula?', 'useBWS', 'boolean')
       ],
@@ -203,7 +202,7 @@
                 </div>
                 <div>
                   <b>Format:</b>
-                  {createTournament.tournament.type === 'Solo'
+                  {createTournament.tournament.type === 'solo'
                     ? '1v1'
                     : `${createTournament.tournament.teamPlaySize}v${createTournament.tournament.teamPlaySize} - Team Size ${createTournament.tournament.teamSize}`}
                 </div>
@@ -239,7 +238,7 @@
                   <svelte:fragment slot="trail">
                     {format.price(
                       services[service][
-                        createTournament.tournament?.type === 'Teams' ? 'teamsPrice' : 'soloPrice'
+                        createTournament.tournament?.type === 'teams' ? 'teamsPrice' : 'soloPrice'
                       ]
                     )}
                   </svelte:fragment>
@@ -255,7 +254,7 @@
                     return (
                       total +
                       services[service][
-                        createTournament.tournament?.type === 'Teams' ? 'teamsPrice' : 'soloPrice'
+                        createTournament.tournament?.type === 'teams' ? 'teamsPrice' : 'soloPrice'
                       ]
                     );
                   }, 0)
@@ -267,7 +266,7 @@
                 .map(
                   (service) =>
                     services[service][
-                      createTournament.tournament?.type === 'Teams' ? 'teamsPrice' : 'soloPrice'
+                      createTournament.tournament?.type === 'teams' ? 'teamsPrice' : 'soloPrice'
                     ]
                 )
                 .sort((a, b) => b - a)

@@ -1,5 +1,7 @@
 import sharp from 'sharp';
-import prisma from '$prisma';
+import db from '$db';
+import { dbTournament } from '$db/schema';
+import { eq } from 'drizzle-orm';
 import env from '$lib/env/server';
 import { t, tryCatch } from '$trpc';
 import { z } from 'zod';
@@ -132,7 +134,7 @@ export const uploadRouter = t.router({
       )
       .mutation(async ({ ctx, input: { tournamentId, file } }) => {
         isAllowed(
-          ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+          ctx.user.isAdmin || hasPerms(ctx.staffMember, ['mutate_tournament', 'host']),
           `upload the banner for tournament of ID ${tournamentId}`
         );
 
@@ -170,14 +172,12 @@ export const uploadRouter = t.router({
           await upload('tournament-banners', `${fileName}-full`, fullImg);
           await upload('tournament-banners', `${fileName}-thumb`, thumbImg);
 
-          await prisma.tournament.update({
-            where: {
-              id: tournamentId
-            },
-            data: {
+          await db
+            .update(dbTournament)
+            .set({
               hasBanner: true
-            }
-          });
+            })
+            .where(eq(dbTournament.id, tournamentId));
         }, `Can't upload banner for tournament with ID ${tournamentId}.`);
       }),
     tournamentLogo: t.procedure
@@ -190,7 +190,7 @@ export const uploadRouter = t.router({
       )
       .mutation(async ({ ctx, input: { tournamentId, file } }) => {
         isAllowed(
-          ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+          ctx.user.isAdmin || hasPerms(ctx.staffMember, ['mutate_tournament', 'host']),
           `upload the logo for tournament of ID ${tournamentId}`
         );
 
@@ -228,14 +228,12 @@ export const uploadRouter = t.router({
           await upload('tournament-logos', `${fileName}-full`, fullImg);
           await upload('tournament-logos', `${fileName}-icon`, thumbImg);
 
-          await prisma.tournament.update({
-            where: {
-              id: tournamentId
-            },
-            data: {
+          await db
+            .update(dbTournament)
+            .set({
               hasLogo: true
-            }
-          });
+            })
+            .where(eq(dbTournament.id, tournamentId));
         }, `Can't upload logo for tournament with ID ${tournamentId}.`);
       })
   }),
@@ -246,7 +244,7 @@ export const uploadRouter = t.router({
       .input(withTournamentSchema)
       .mutation(async ({ ctx, input: { tournamentId } }) => {
         isAllowed(
-          ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+          ctx.user.isAdmin || hasPerms(ctx.staffMember, ['mutate_tournament', 'host']),
           `delete the banner for tournament of ID ${tournamentId}`
         );
 
@@ -254,14 +252,12 @@ export const uploadRouter = t.router({
           await destroy('tournament-banners', `${format.digits(tournamentId, 5)}-full.jpeg`);
           await destroy('tournament-banners', `${format.digits(tournamentId, 5)}-thumb.jpeg`);
 
-          await prisma.tournament.update({
-            where: {
-              id: tournamentId
-            },
-            data: {
+          await db
+            .update(dbTournament)
+            .set({
               hasBanner: false
-            }
-          });
+            })
+            .where(eq(dbTournament.id, tournamentId));
         }, `Can't delete banner for tournament with ID ${tournamentId}.`);
       }),
     tournamentLogo: t.procedure
@@ -270,7 +266,7 @@ export const uploadRouter = t.router({
       .input(withTournamentSchema)
       .mutation(async ({ ctx, input: { tournamentId } }) => {
         isAllowed(
-          ctx.user.isAdmin || hasPerms(ctx.staffMember, ['MutateTournament', 'Host']),
+          ctx.user.isAdmin || hasPerms(ctx.staffMember, ['mutate_tournament', 'host']),
           `delete the logo for tournament of ID ${tournamentId}`
         );
 
@@ -278,14 +274,12 @@ export const uploadRouter = t.router({
           await destroy('tournament-logos', `${format.digits(tournamentId, 5)}-full.jpeg`);
           await destroy('tournament-logos', `${format.digits(tournamentId, 5)}-icon.jpeg`);
 
-          await prisma.tournament.update({
-            where: {
-              id: tournamentId
-            },
-            data: {
+          await db
+            .update(dbTournament)
+            .set({
               hasLogo: false
-            }
-          });
+            })
+            .where(eq(dbTournament.id, tournamentId));
         }, `Can't delete logo for tournament with ID ${tournamentId}.`);
       })
   })

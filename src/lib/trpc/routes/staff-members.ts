@@ -1,28 +1,27 @@
-import prisma from '$prisma';
+import db from '$db';
+import { dbStaffMember, dbStaffMemberToStaffRole } from '$db/schema';
+import { and, eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
 import { getUserAsStaff } from '$trpc/middleware';
-import { whereIdSchema, withTournamentSchema } from '$lib/schemas';
+import { whereIdSchema, withTournamentSchema, mToN } from '$lib/schemas';
 import { forbidIf, isAllowed } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
-
-const mutateStaffMembersSchema = z.object({
-  roleIds: z.array(z.number())
-});
 
 export const staffMembersRouter = t.router({
   createMember: t.procedure
     .use(getUserAsStaff)
     .input(
       withTournamentSchema.extend({
-        data: mutateStaffMembersSchema.extend({
-          userId: z.number().int()
+        data: z.object({
+          userId: z.number().int(),
+          roleIds: z.array(z.number())
         })
       })
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutateStaffMembers']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug', 'mutate_staff_members']),
         `create staff member for tournament of ID ${input.tournamentId}`
       );
 
@@ -34,14 +33,25 @@ export const staffMembersRouter = t.router({
       } = input;
 
       await tryCatch(async () => {
-        await prisma.staffMember.create({
-          data: {
-            userId,
-            tournamentId,
-            roles: {
-              connect: roleIds.map((id) => ({ id }))
-            }
-          }
+        await db.transaction(async (tx) => {
+          let [{ staffMemberId }] =await tx
+            .insert(dbStaffMember)
+            .values({
+              userId,
+              tournamentId
+            })
+            .returning({
+              staffMemberId: dbStaffMember.id
+            });
+          
+          await tx
+            .insert(dbStaffMemberToStaffRole)
+            .values(
+              roleIds.map((staffRoleId) => ({
+                staffMemberId,
+                staffRoleId
+              }))
+            );
         });
       }, "Can't create staff member.");
     }),
@@ -50,33 +60,53 @@ export const staffMembersRouter = t.router({
     .input(
       withTournamentSchema.extend({
         where: whereIdSchema,
-        data: mutateStaffMembersSchema.deepPartial()
+        roles: mToN
       })
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'MutateStaffMembers']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug', 'mutate_staff_members']),
         `update staff member of ID ${input.where.id}`
       );
 
       forbidIf.hasConcluded(ctx.tournament);
 
-      if (Object.keys(input.data).length === 0) return;
+      if (Object.keys(input.roles).length === 0) return;
 
       let {
         where,
-        data: { roleIds }
+        roles: { addIds, removeIds }
       } = input;
 
+      addIds = addIds.filter((id) => removeIds.includes(id));
+      removeIds = removeIds.filter((id) => addIds.includes(id));
+
       await tryCatch(async () => {
-        await prisma.staffMember.update({
-          where,
-          data: {
-            roles: {
-              set: (roleIds || []).map((id) => ({ id }))
-            }
-          }
-        });
+        if (removeIds.length > 0) {
+          await db
+            .delete(dbStaffMemberToStaffRole)
+            .where(and(
+              eq(dbStaffMemberToStaffRole.staffMemberId, where.id),
+              inArray(dbStaffMemberToStaffRole.staffRoleId, removeIds)
+            ));
+        }
+
+        if (addIds.length > 0) {
+          await db
+            .insert(dbStaffMemberToStaffRole)
+            .values(
+              addIds.map((staffRoleId) => ({
+                staffMemberId: where.id,
+                staffRoleId
+              }))
+            )
+            .onConflictDoNothing({
+              target: [
+                dbStaffMemberToStaffRole.staffMemberId,
+                dbStaffMemberToStaffRole.staffRoleId
+              ]
+            });
+        }
       }, `Can't update staff member of ID ${where.id}.`);
     }),
   deleteMember: t.procedure
@@ -88,7 +118,7 @@ export const staffMembersRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug', 'DeleteStaffMembers']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug', 'delete_staff_members']),
         `delete staff member of ID ${input.where.id}`
       );
 
@@ -97,9 +127,9 @@ export const staffMembersRouter = t.router({
       let { where } = input;
 
       await tryCatch(async () => {
-        await prisma.staffMember.delete({
-          where
-        });
+        await db
+          .delete(dbStaffMember)
+          .where(eq(dbStaffMember.id, where.id));
       }, `Can't delete staff member of ID ${where.id}.`);
     })
 });

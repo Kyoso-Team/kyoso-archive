@@ -58,7 +58,7 @@
   <SearchResults label="Users" resultCount={data.userCount}>
     {#each data.users as user}
       <div class="relative">
-        <User {user} forceShowDiscord />
+        <User {user} showDiscordTag />
         <Dropdown name={`user-${user.id}`} styles="absolute top-0 right-2">
           <button
             class={`btn btn-sm ${user.isAdmin ? 'variant-filled-error' : 'variant-filled'}`}

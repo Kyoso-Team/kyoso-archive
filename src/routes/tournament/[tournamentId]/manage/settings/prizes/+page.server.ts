@@ -1,4 +1,7 @@
-import prisma from '$prisma';
+import db from '$db';
+import { dbPrize, dbPrizeCash } from '$db/schema';
+import { eq, asc } from 'drizzle-orm';
+import { select } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
@@ -6,39 +9,36 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ parent }) => {
   let data = await parent();
 
-  if (!hasPerms(data.staffMember, ['Host', 'Debug', 'MutateTournament'])) {
+  if (!hasPerms(data.staffMember, ['host', 'debug', 'mutate_tournament'])) {
     throw error(
       401,
       `You lack the necessary permissions to manage the prizes for tournament of ID ${data.tournament.id}.`
     );
   }
 
-  let prizes = await prisma.prize.findMany({
-    where: {
-      tournamentId: data.tournament.id
-    },
-    select: {
-      id: true,
-      type: true,
-      placements: true,
-      trophy: true,
-      medal: true,
-      badge: true,
-      banner: true,
-      items: true,
-      osuSupporter: true,
-      cash: {
-        select: {
-          currency: true,
-          metric: true,
-          value: true
-        }
-      }
-    },
-    orderBy: {
-      placements: 'asc'
-    }
-  });
+  let prizes = await db
+    .select({
+      ...select(dbPrize, [
+        'id',
+        'type',
+        'placements',
+        'trophy',
+        'medal',
+        'badge',
+        'banner',
+        'additionalItems',
+        'monthsOsuSupporter'
+      ]),
+      cash: select(dbPrizeCash, [
+        'currency',
+        'metric',
+        'value'
+      ])
+    })
+    .from(dbPrize)
+    .where(eq(dbPrize.tournamentId, data.tournament.id))
+    .innerJoin(dbPrizeCash, eq(dbPrizeCash.inPrizeId, dbPrize.id))
+    .orderBy(asc(dbPrize.placements));
 
   return {
     prizes,

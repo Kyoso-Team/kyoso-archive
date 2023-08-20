@@ -1,7 +1,7 @@
 import { getCaller } from '$trpc/caller';
+import { redirect } from '@sveltejs/kit';
 import type { SessionUser } from '$types';
 import type { LayoutServerLoad } from './$types';
-import { redirect } from '@sveltejs/kit';
 
 export const load = (async (event) => {
   const caller = await getCaller(event);

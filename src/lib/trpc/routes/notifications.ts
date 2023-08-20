@@ -1,18 +1,20 @@
-import prisma from '$prisma';
+import db from '$db';
+import { and, eq, gt } from 'drizzle-orm';
 import { z } from 'zod';
 import { t } from '$trpc';
 import { getStoredUser } from '$trpc/middleware';
 import { paginate } from '$lib/server-utils';
 
 interface BaseNotif {
-  id: string;
+  id: number;
   notifiedAt: Date;
+  read: boolean;
 }
 
 type NotifType =
   | 'grantedTournamentHost'
   | 'joinTeamRequest'
-  | 'newIssue'
+  | 'issue'
   | 'newStaffAppSubmission'
   | 'roundPublication'
   | 'staffChange'
@@ -37,118 +39,196 @@ export const notificationsRouter = t.router({
     .input(
       z
         .object({
-          afterDate: z.date(),
+          afterId: z.number().int().gte(1),
           page: z.number().int().gte(1)
         })
         .partial()
     )
-    .query(async ({ ctx, input: { page, afterDate } }) => {
-      let notifs = await prisma.notification.findMany({
-        ...paginate(page || 1),
-        where: {
-          AND: [
-            {
-              notifiedTo: {
-                some: {
-                  id: ctx.user.id
-                }
-              }
-            },
-            afterDate
-              ? {
-                  notifiedAt: {
-                    gt: afterDate
-                  }
-                }
-              : {}
-          ]
+    .query(async ({ ctx, input: { page, afterId } }) => {
+      let notifs = await db.query.dbUserToNotification.findMany({
+        columns: {
+          notificationId: true,
+          read: true
         },
-        select: {
-          id: true,
-          notifiedAt: true,
-          grantedTournamentHost: {
-            select: {
-              newHost: {
-                select: {
-                  id: true,
-                  osuUsername: true
+        with: {
+          notification: {
+            columns: {
+              notifiedAt: true
+            },
+            with: {
+              notifiedTo: {
+                columns: {
+                  read: true
                 }
               },
-              previousHost: {
-                select: {
-                  id: true,
-                  osuUsername: true
-                }
-              },
-              tournament: {
-                select: {
-                  id: true,
-                  name: true
-                }
-              }
-            }
-          },
-          joinTeamRequest: {
-            select: {
-              request: {
-                select: {
-                  id: true,
-                  requestedBy: {
-                    select: {
+              grantedTournamentHost: {
+                with: {
+                  newHost: {
+                    columns: {
                       id: true,
-                      user: {
-                        select: {
-                          id: true,
-                          osuUsername: true
-                        }
-                      }
+                      osuUsername: true
                     }
                   },
-                  team: {
-                    select: {
+                  previousHost: {
+                    columns: {
+                      id: true,
+                      osuUsername: true
+                    }
+                  },
+                  tournament: {
+                    columns: {
                       id: true,
                       name: true
                     }
                   }
                 }
-              }
-            }
-          },
-          newIssue: {
-            select: {
-              notifType: true,
-              issue: {
-                select: {
-                  id: true,
-                  title: true,
-                  submittedBy: {
-                    select: {
-                      id: true,
-                      osuUsername: true
-                    }
-                  }
-                }
-              }
-            }
-          },
-          newStaffAppSubmission: {
-            select: {
-              staffAppSubmission: {
-                select: {
-                  id: true,
-                  applyingFor: true,
-                  staffApplication: {
-                    select: {
-                      tournament: {
-                        select: {
+              },
+              joinTeamRequest: {
+                with: {
+                  request: {
+                    columns: {
+                      id: true
+                    },
+                    with: {
+                      sentBy: {
+                        columns: {
+                          id: true
+                        },
+                        with: {
+                          user: {
+                            columns: {
+                              id: true,
+                              osuUsername: true
+                            }
+                          }
+                        }
+                      },
+                      team: {
+                        columns: {
                           id: true,
                           name: true
                         }
                       }
                     }
+                  }
+                }
+              },
+              issue: {
+                columns: {
+                  notifType: true
+                },
+                with: {
+                  issue: {
+                    columns: {
+                      id: true,
+                      title: true
+                    },
+                    with: {
+                      submittedBy: {
+                        columns: {
+                          id: true,
+                          osuUsername: true
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              newStaffAppSubmission: {
+                with: {
+                  staffAppSubmission: {
+                    columns: {
+                      id: true,
+                      applyingFor: true
+                    },
+                    with: {
+                      staffApplication: {
+                        with: {
+                          forTournament: {
+                            columns: {
+                              id: true,
+                              name: true
+                            }
+                          }
+                        }
+                      },
+                      submittedBy: {
+                        columns: {
+                          id: true,
+                          osuUsername: true
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              roundPublication: {
+                columns: {
+                  publicized: true
+                },
+                with: {
+                  round: {
+                    columns: {
+                      id: true,
+                      name: true
+                    },
+                    with: {
+                      tournament: {
+                        columns: {
+                          id: true,
+                          name: true
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              staffChange: {
+                columns: {
+                  action: true,
+                  addedWithRoles: true
+                },
+                with: {
+                  user: {
+                    columns: {
+                      id: true,
+                      osuUsername: true
+                    }
+                  }
+                }
+              },
+              teamChange: {
+                columns: {
+                  action: true
+                },
+                with: {
+                  affectedUser: {
+                    columns: {
+                      id: true,
+                      osuUsername: true
+                    }
                   },
-                  submittedBy: {
-                    select: {
+                  kickedBy: {
+                    columns: {
+                      id: true,
+                      osuUsername: true
+                    }
+                  },
+                  team: {
+                    columns: {
+                      id: true,
+                      name: true
+                    }
+                  }
+                }
+              },
+              tournamentDeleted: {
+                columns: {
+                  tournamentName: true
+                },
+                with: {
+                  hostedBy: {
+                    columns: {
                       id: true,
                       osuUsername: true
                     }
@@ -156,74 +236,24 @@ export const notificationsRouter = t.router({
                 }
               }
             }
-          },
-          roundPublication: {
-            select: {
-              publicized: true,
-              round: {
-                select: {
-                  id: true,
-                  name: true,
-                  tournament: {
-                    select: {
-                      id: true,
-                      name: true
-                    }
-                  }
-                }
-              }
-            }
-          },
-          staffChange: {
-            select: {
-              action: true,
-              withRoles: true,
-              user: {
-                select: {
-                  id: true,
-                  osuUsername: true
-                }
-              }
-            }
-          },
-          teamChange: {
-            select: {
-              action: true,
-              affectedUser: {
-                select: {
-                  id: true,
-                  osuUsername: true
-                }
-              },
-              kickedBy: {
-                select: {
-                  id: true,
-                  osuUsername: true
-                }
-              },
-              team: {
-                select: {
-                  id: true,
-                  name: true
-                }
-              }
-            }
-          },
-          tournamentDeleted: {
-            select: {
-              tournamentName: true,
-              hostedBy: {
-                select: {
-                  id: true,
-                  osuUsername: true
-                }
-              }
-            }
           }
-        }
+        },
+        where: (junction) =>
+          and(
+            eq(junction.userId, ctx.user.id),
+            afterId ? gt(junction.notificationId, afterId) : undefined
+          ),
+        orderBy: (junction, { desc }) => desc(junction.notificationId),
+        ...paginate(page || 1)
       });
 
-      let mapped = notifs.map((notif) => {
+      let mapped = notifs.map(({ notificationId, read, notification }) => {
+        let notif = {
+          ...notification,
+          read,
+          id: notificationId
+        };
+
         if (notif.grantedTournamentHost) {
           return merge(notif, 'grantedTournamentHost', notif.grantedTournamentHost);
         }
@@ -232,8 +262,8 @@ export const notificationsRouter = t.router({
           return merge(notif, 'joinTeamRequest', notif.joinTeamRequest);
         }
 
-        if (notif.newIssue) {
-          return merge(notif, 'newIssue', notif.newIssue);
+        if (notif.issue) {
+          return merge(notif, 'issue', notif.issue);
         }
 
         if (notif.newStaffAppSubmission) {

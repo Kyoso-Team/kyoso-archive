@@ -1,11 +1,12 @@
-import { pgTable, integer, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, integer, primaryKey, boolean } from 'drizzle-orm/pg-core';
 import { dbStaffMember, dbStaffRole, dbTeam, dbPlayer, dbLobby, dbKnockoutLobby, dbPlayedKnockoutMap, dbPlayedQualMap, dbQualLobby, dbUser, dbNotification } from '.';
 import { actions } from '../utils';
 import { relations } from 'drizzle-orm';
 
 export const dbUserToNotification = pgTable('user_to_notification', {
   userId: integer('user_id').notNull().references(() => dbUser.id, actions('cascade', 'cascade')),
-  notificationId: integer('notification_id').notNull().references(() => dbNotification.id, actions('cascade', 'cascade'))
+  notificationId: integer('notification_id').notNull().references(() => dbNotification.id, actions('cascade', 'cascade')),
+  read: boolean('read').notNull().default(false)
 }, (tbl) => ({
   pkey: primaryKey(tbl.userId, tbl.notificationId)
 }));

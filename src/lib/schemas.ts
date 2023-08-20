@@ -4,7 +4,7 @@ export const whereIdSchema = z.object({
   id: z.number().int()
 });
 
-export const prismaSortSchema = z.union([z.literal('asc'), z.literal('desc')]);
+export const sortSchema = z.union([z.literal('asc'), z.literal('desc')]);
 
 export const withTournamentSchema = z.object({
   tournamentId: z.number().int()
@@ -14,34 +14,39 @@ export const withRoundSchema = withTournamentSchema.extend({
   roundId: z.number().int()
 });
 
+export const mToN = z.object({
+  addIds: z.array(z.number().int()).optional().default([]),
+  removeIds: z.array(z.number().int()).optional().default([])
+});
+
 export const modSchema = z.union([
-  z.literal('EZ'),
-  z.literal('HD'),
-  z.literal('HR'),
-  z.literal('SD'),
-  z.literal('DT'),
-  z.literal('RX'),
-  z.literal('HT'),
-  z.literal('FL'),
-  z.literal('PF')
+  z.literal('ez'),
+  z.literal('hd'),
+  z.literal('hr'),
+  z.literal('sd'),
+  z.literal('dt'),
+  z.literal('rx'),
+  z.literal('ht'),
+  z.literal('fl'),
+  z.literal('pf')
 ]);
 
 export const skillsetSchema = z.union([
-  z.literal('Consistency'),
-  z.literal('Streams'),
-  z.literal('Tech'),
-  z.literal('Alt'),
-  z.literal('Speed'),
-  z.literal('Gimmick'),
-  z.literal('Rhythm'),
-  z.literal('Aim'),
-  z.literal('AwkwardAim'),
-  z.literal('FlowAim'),
-  z.literal('Reading'),
-  z.literal('Precision'),
-  z.literal('Stamina'),
-  z.literal('FingerControl'),
-  z.literal('JackOfAllTrades')
+  z.literal('consistency'),
+  z.literal('streams'),
+  z.literal('tech'),
+  z.literal('alt'),
+  z.literal('speed'),
+  z.literal('gimmick'),
+  z.literal('rhythm'),
+  z.literal('aim'),
+  z.literal('awkward_aim'),
+  z.literal('flow_aim'),
+  z.literal('reading'),
+  z.literal('precision'),
+  z.literal('stamina'),
+  z.literal('finger_control'),
+  z.literal('jack_of_all_trades')
 ]);
 
 export const availabilitySchema = z

@@ -1,22 +1,18 @@
-import prisma from '$prisma';
+import db from '$db';
+import { dbTournament, dbRound, dbModMultiplier, dbStaffRole } from '$db/schema';
+import { eq, and } from 'drizzle-orm';
+import { getRowCount, select, findFirst } from '$lib/server-utils';
 import { t, tryCatch } from '$trpc';
 import { z } from 'zod';
 import { withTournamentSchema, modSchema } from '$lib/schemas';
 
 export const validationRouter = t.router({
   isTournamentNameUnique: t.procedure.input(z.string()).query(async ({ input }) => {
-    let tournament = await tryCatch(async () => {
-      return await prisma.tournament.findUnique({
-        where: {
-          name: input
-        },
-        select: {
-          id: true
-        }
-      });
+    let tournamentCount = await tryCatch(async () => {
+      return await getRowCount(dbTournament, eq(dbTournament.name, input));
     }, "Can't get tournament to validate name uniqueness.");
 
-    return !tournament;
+    return tournamentCount === 0;
   }),
   isRoundNameUniqueInTournament: t.procedure
     .input(
@@ -27,17 +23,18 @@ export const validationRouter = t.router({
     )
     .query(async ({ input: { roundId, name, tournamentId } }) => {
       let round = await tryCatch(async () => {
-        return await prisma.round.findUnique({
-          where: {
-            name_tournamentId: {
-              name,
-              tournamentId
-            }
-          },
-          select: {
-            id: true
-          }
-        });
+        return findFirst(
+          await db
+            .select(select(dbRound, [
+              'id'
+            ]))
+            .from(dbRound)
+            .where(and(
+              eq(dbRound.name, name),
+              eq(dbRound.tournamentId, tournamentId)
+            ))
+            .limit(1)
+        );
       }, "Can't get round to validate name uniqueness.");
 
       return !round || (!!roundId && round.id === roundId);
@@ -51,17 +48,18 @@ export const validationRouter = t.router({
     )
     .query(async ({ input: { tournamentId, mods, multiplierId } }) => {
       let multiplier = await tryCatch(async () => {
-        return await prisma.modMultiplier.findUnique({
-          where: {
-            tournamentId_mods: {
-              mods,
-              tournamentId
-            }
-          },
-          select: {
-            id: true
-          }
-        });
+        return findFirst(
+          await db
+            .select(select(dbModMultiplier, [
+              'id'
+            ]))
+            .from(dbModMultiplier)
+            .where(and(
+              eq(dbModMultiplier.mods, mods),
+              eq(dbModMultiplier.tournamentId, tournamentId)
+            ))
+            .limit(1)
+        );
       }, "Can't get mod multiplier to validate mods uniqueness.");
 
       return !multiplier || (!!multiplierId && multiplier.id === multiplierId);
@@ -75,17 +73,18 @@ export const validationRouter = t.router({
     )
     .query(async ({ input: { tournamentId, name, staffRoleId } }) => {
       let staffRole = await tryCatch(async () => {
-        return await prisma.staffRole.findUnique({
-          where: {
-            name_tournamentId: {
-              name,
-              tournamentId
-            }
-          },
-          select: {
-            id: true
-          }
-        });
+        return findFirst(
+          await db
+            .select(select(dbStaffRole, [
+              'id'
+            ]))
+            .from(dbStaffRole)
+            .where(and(
+              eq(dbStaffRole.name, name),
+              eq(dbStaffRole.tournamentId, tournamentId)
+            ))
+            .limit(1)
+        );
       }, "Can't get staff role to validate name uniqueness.");
 
       return !staffRole || (!!staffRoleId && staffRole.id === staffRoleId);

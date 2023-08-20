@@ -1,11 +1,14 @@
-import prisma from '$prisma';
+import db from '$db';
+import { dbRound, dbStandardRound, dbQualifierRound, dbBattleRoyaleRound } from '$db/schema';
+import { and, eq, gt, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
 import { getUserAsStaff } from '$trpc/middleware';
 import { whereIdSchema, withTournamentSchema } from '$lib/schemas';
-import { forbidIf, isAllowed } from '$lib/server-utils';
+import { forbidIf, getRowCount, isAllowed } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
-import type { Prisma } from '@prisma/client';
+import type { InferModel } from 'drizzle-orm';
+import { swapOrder } from '$trpc/helpers';
 
 const baseSchema = z.object({
   name: z.string().max(20)
@@ -26,7 +29,7 @@ const standardSchema = baseSchema.extend({
 
 const qualifierSchema = baseSchema.extend({
   runCount: z.number().int().gte(1),
-  summarizeRunsAs: z.union([z.literal('Sum'), z.literal('Average'), z.literal('Best')]).optional()
+  summarizeRunsAs: z.union([z.literal('sum'), z.literal('average'), z.literal('best')]).optional()
 });
 
 const battleRoyaleRound = baseSchema.extend({
@@ -40,31 +43,48 @@ async function createRound({
   standardRound,
   qualifierRound,
   battleRoyaleRound
-}: Omit<Prisma.RoundCreateArgs['data'], 'order'>) {
+}: Omit<InferModel<typeof dbRound, 'insert'>, 'order'> & Partial<{
+  standardRound: Omit<InferModel<typeof dbStandardRound, 'insert'>, 'roundId'>;
+  qualifierRound: Omit<InferModel<typeof dbQualifierRound, 'insert'>, 'roundId'>;
+  battleRoyaleRound: Omit<InferModel<typeof dbBattleRoyaleRound, 'insert'>, 'roundId'>;
+}>) {
   await tryCatch(async () => {
-    let roundCount = await prisma.round.count({
-      where: {
-        stageId
-      }
-    });
+    await db.transaction(async (tx) => {
+      let roundCount = await getRowCount(dbRound, eq(dbRound.stageId, stageId));
 
-    await prisma.round.create({
-      data: {
-        name,
-        standardRound,
-        qualifierRound,
-        battleRoyaleRound,
-        order: roundCount + 1,
-        stage: {
-          connect: {
-            id: stageId
-          }
-        },
-        tournament: {
-          connect: {
-            id: tournamentId
-          }
-        }
+      let [{ roundId }] = await tx
+        .insert(dbRound)
+        .values({
+          name,
+          stageId,
+          tournamentId,
+          order: roundCount + 1
+        })
+        .returning({
+          roundId: dbRound.id
+        });
+  
+      if (standardRound) {
+        await tx
+          .insert(dbStandardRound)
+          .values({
+            ...standardRound,
+            roundId
+          });
+      } else if (qualifierRound) {
+        await tx
+          .insert(dbQualifierRound)
+          .values({
+            ...qualifierRound,
+            roundId
+          });
+      } else if (battleRoyaleRound) {
+        await tx
+          .insert(dbBattleRoyaleRound)
+          .values({
+            ...battleRoyaleRound,
+            roundId
+          });
       }
     });
   }, "Can't create round.");
@@ -77,20 +97,34 @@ async function updateRound(
     standardRound,
     qualifierRound,
     battleRoyaleRound
-  }: Omit<Prisma.RoundUpdateArgs['data'], 'order'>
+  }: Partial<{
+    name: string;
+    standardRound: Partial<InferModel<typeof dbStandardRound, 'insert'>>;
+    qualifierRound: Partial<InferModel<typeof dbQualifierRound, 'insert'>>;
+    battleRoyaleRound: Partial<InferModel<typeof dbBattleRoyaleRound, 'insert'>>;
+  }>
 ) {
   await tryCatch(async () => {
-    await prisma.round.update({
-      where: {
-        id: roundId
-      },
-      data: {
-        name,
-        standardRound,
-        qualifierRound,
-        battleRoyaleRound
-      }
-    });
+    if (name) {
+      await db
+        .update(dbRound)
+        .set({ name })
+        .where(eq(dbRound.id, roundId));
+    }
+
+    if (standardRound) {
+      await db
+        .update(dbStandardRound)
+        .set(standardRound);
+    } else if (qualifierRound) {
+      await db
+        .update(dbQualifierRound)
+        .set(qualifierRound);
+    } else if (battleRoyaleRound) {
+      await db
+        .update(dbBattleRoyaleRound)
+        .set(battleRoyaleRound);
+    }
   }, `Can't update round of ID ${roundId}.`);
 }
 
@@ -104,7 +138,7 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug']),
         `create round for tournament of ID ${input.tournamentId}`
       );
 
@@ -120,10 +154,8 @@ export const roundsRouter = t.router({
         tournamentId,
         stageId,
         standardRound: {
-          create: {
-            bestOf,
-            banCount
-          }
+          bestOf,
+          banCount
         }
       });
     }),
@@ -136,7 +168,7 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug']),
         `create round for tournament of ID ${input.tournamentId}`
       );
 
@@ -152,10 +184,8 @@ export const roundsRouter = t.router({
         tournamentId,
         stageId,
         qualifierRound: {
-          create: {
-            runCount,
-            summarizeRunsAs
-          }
+          runCount,
+          summarizeRunsAs
         }
       });
     }),
@@ -168,7 +198,7 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug']),
         `create round for tournament of ID ${input.tournamentId}`
       );
 
@@ -184,9 +214,7 @@ export const roundsRouter = t.router({
         tournamentId,
         stageId,
         battleRoyaleRound: {
-          create: {
-            playersEliminatedPerMap
-          }
+          playersEliminatedPerMap
         }
       });
     }),
@@ -201,7 +229,7 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug']),
         `update round of ID ${input.where.id}`
       );
 
@@ -216,10 +244,8 @@ export const roundsRouter = t.router({
       await updateRound(input.where.id, {
         name,
         standardRound: {
-          update: {
-            banCount,
-            bestOf
-          }
+          banCount,
+          bestOf
         }
       });
     }),
@@ -233,7 +259,7 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug']),
         `update round of ID ${input.where.id}`
       );
 
@@ -248,10 +274,8 @@ export const roundsRouter = t.router({
       await updateRound(input.where.id, {
         name,
         qualifierRound: {
-          update: {
-            runCount,
-            summarizeRunsAs
-          }
+          runCount,
+          summarizeRunsAs
         }
       });
     }),
@@ -265,7 +289,7 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug']),
         `update round of ID ${input.where.id}`
       );
 
@@ -280,9 +304,7 @@ export const roundsRouter = t.router({
       await updateRound(input.where.id, {
         name,
         battleRoyaleRound: {
-          update: {
-            playersEliminatedPerMap
-          }
+          playersEliminatedPerMap
         }
       });
     }),
@@ -302,31 +324,14 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug']),
         `change the order of rounds for tournament of ID ${input.tournamentId}`
       );
 
       forbidIf.hasConcluded(ctx.tournament);
 
       await tryCatch(async () => {
-        await prisma.$transaction([
-          prisma.round.update({
-            where: {
-              id: input.round1.id
-            },
-            data: {
-              order: input.round2.order
-            }
-          }),
-          prisma.round.update({
-            where: {
-              id: input.round2.id
-            },
-            data: {
-              order: input.round1.order
-            }
-          })
-        ]);
+        await swapOrder(db, dbRound, input.round1, input.round2);
       }, `Can't change the order of rounds for tournament of ID ${input.tournamentId}.`);
     }),
   deleteRound: t.procedure
@@ -341,7 +346,7 @@ export const roundsRouter = t.router({
     )
     .mutation(async ({ ctx, input }) => {
       isAllowed(
-        hasPerms(ctx.staffMember, ['MutateTournament', 'Host', 'Debug']),
+        hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug']),
         `delete round of ID ${input.where.id}`
       );
 
@@ -352,26 +357,21 @@ export const roundsRouter = t.router({
       } = input;
 
       await tryCatch(async () => {
-        await prisma.$transaction([
-          prisma.round.delete({
-            where: {
-              id
-            }
-          }),
-          prisma.round.updateMany({
-            where: {
-              stageId,
-              order: {
-                gt: order
-              }
-            },
-            data: {
-              order: {
-                decrement: 1
-              }
-            }
-          })
-        ]);
+        await db.transaction(async (tx) => {
+          await tx
+            .delete(dbRound)
+            .where(eq(dbRound.id, id));
+          
+          await tx
+            .update(dbRound)
+            .set({
+              order: sql`${dbRound.order} - 1`
+            })
+            .where(and(
+              eq(dbRound.stageId, stageId),
+              gt(dbRound.order, order)
+            ));
+        });
       }, `Can't delete round of ID ${id}.`);
     })
 });

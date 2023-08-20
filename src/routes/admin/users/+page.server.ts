@@ -1,9 +1,17 @@
-import prisma from '$prisma';
+import db from '$db';
+import { dbCountry, dbUser } from '$db/schema';
+import { eq, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { getUrlParams, paginate } from '$lib/server-utils';
-import { prismaSortSchema } from '$lib/schemas';
+import {
+  getRowCount,
+  getUrlParams,
+  orderBy,
+  paginate,
+  textSearch,
+  select
+} from '$lib/server-utils';
+import { sortSchema } from '$lib/schemas';
 import type { PageServerLoad } from './$types';
-import type { Prisma } from '@prisma/client';
 
 export const load = (async ({ parent, url }) => {
   await parent();
@@ -11,56 +19,41 @@ export const load = (async ({ parent, url }) => {
     url,
     z.object({}),
     z.object({
-      registeredAt: prismaSortSchema
+      registeredAt: sortSchema
     })
   );
+  let { offset, limit } = paginate(page);
+  let where = or(
+    textSearch(dbUser.osuUsername, dbUser.discordUsername).query(search),
+    sql`${dbUser.osuUserId}::text = '${search}'`,
+    eq(dbUser.discordUserId, search)
+  );
 
-  let containsSearch: Prisma.StringFilter = {
-    contains: search,
-    mode: 'insensitive'
-  };
+  let qUsers = db
+    .select({
+      ...select(dbUser, [
+        'id',
+        'isAdmin',
+        'isRestricted',
+        'osuUsername',
+        'osuUserId',
+        'discordUsername',
+        'discordDiscriminator'
+      ]),
+      country: select(dbCountry, [
+        'name',
+        'code'
+      ])
+    })
+    .from(dbUser)
+    .where(search ? where : undefined)
+    .innerJoin(dbCountry, eq(dbCountry.id, dbUser.countryId))
+    .orderBy(orderBy(dbUser.registeredAt, sort.registeredAt || 'desc'))
+    .offset(offset)
+    .limit(limit);
 
-  let where: Prisma.UserWhereInput = {
-    OR: [
-      {
-        osuUsername: containsSearch
-      },
-      {
-        discordUsername: containsSearch
-      },
-      {
-        osuUserId: !isNaN(search as unknown as number) ? Number(search) : undefined
-      },
-      {
-        discordUserId: search
-      }
-    ]
-  };
-
-  let users = prisma.user.findMany({
-    ...paginate(page),
-    where,
-    select: {
-      id: true,
-      isAdmin: true,
-      isRestricted: true,
-      osuUsername: true,
-      osuUserId: true,
-      discordUsername: true,
-      discordDiscriminator: true,
-      showDiscordTag: true,
-      country: {
-        select: {
-          name: true,
-          code: true
-        }
-      }
-    },
-    orderBy: {
-      registeredAt: sort.registeredAt || 'desc'
-    }
-  });
-  let userCount = prisma.user.count({ where });
+  let qUserCount = getRowCount(dbUser, where);
+  let [users, userCount] = await Promise.all([qUsers, qUserCount]);
 
   return {
     users,

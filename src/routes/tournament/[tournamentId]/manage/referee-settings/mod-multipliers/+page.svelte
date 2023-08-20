@@ -6,7 +6,7 @@
   import { invalidateAll } from '$app/navigation';
   import { colorByMod, modal } from '$lib/utils';
   import { SEO, Dropdown } from '$components';
-  import type { Mod, ModMultiplier } from '@prisma/client';
+  import type { Mod, ModMultiplier } from '$types';
   import type { PageServerData } from './$types';
 
   type MutateModMultiplier = {
@@ -37,12 +37,12 @@
             values: () => {
               let value = select<Mod>();
               return [
-                value('EZ', 'Easy'),
-                value('FL', 'Flaslight'),
-                value('HD', 'Hidden'),
-                value('HR', 'Hard Rock'),
-                value('SD', 'Sudden Death'),
-                value('PF', 'Perfect')
+                value('ez', 'Easy'),
+                value('fl', 'Flaslight'),
+                value('hd', 'Hidden'),
+                value('hr', 'Hard Rock'),
+                value('sd', 'Sudden Death'),
+                value('pf', 'Perfect')
               ];
             },
             selectMultiple: {
@@ -174,7 +174,7 @@
           class="relative flex justify-center gap-1 rounded-md px-4 py-2 bg-surface-backdrop-token"
         >
           {#if multiplier.mods.length === 0}
-            <span class="badge variant-filled" style={`background-color: ${colorByMod('NM', 400)};`}
+            <span class="badge variant-filled" style={`background-color: ${colorByMod('nm', 400)};`}
               >NM</span
             >
           {:else}

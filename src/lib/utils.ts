@@ -1,9 +1,8 @@
 import colors from 'tailwindcss/colors';
 import { modalStore } from '@skeletonlabs/skeleton';
-import type { Mod, StaffPermission } from '@prisma/client';
 import type { PopupSettings } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
-import type { PageStore, ParseInt } from '$types';
+import type { PageStore, ParseInt, Mod, StaffPermission } from '$types';
 
 export const twColors = colors as unknown as Record<
   string,
@@ -214,7 +213,7 @@ export function hasPerms(
     roles: {
       permissions: StaffPermission[];
     }[];
-  } | null,
+  } | undefined,
   necessaryPermissions: StaffPermission[] | StaffPermission
 ) {
   if (!staffMember) {
@@ -239,46 +238,46 @@ export function getFileUrl(page: PageStore, path: string) {
 }
 
 export function colorByMod(
-  mod: Mod | 'NM' | 'FM' | 'TB',
+  mod: Mod | 'nm' | 'fm' | 'tb',
   value: ParseInt<keyof (typeof colors)['neutral']>
 ) {
   let color: Record<keyof (typeof colors)['neutral'], string> | undefined;
 
   switch (mod) {
-    case 'DT':
+    case 'dt':
       color = colors.violet;
       break;
-    case 'EZ':
+    case 'ez':
       color = colors.green;
       break;
-    case 'FL':
+    case 'fl':
       color = colors.zinc;
       break;
-    case 'FM':
+    case 'fm':
       color = colors.fuchsia;
       break;
-    case 'HD':
+    case 'hd':
       color = colors.yellow;
       break;
-    case 'HR':
+    case 'hr':
       color = colors.red;
       break;
-    case 'HT':
+    case 'ht':
       color = colors.rose;
       break;
-    case 'NM':
+    case 'nm':
       color = colors.blue;
       break;
-    case 'PF':
+    case 'pf':
       color = colors.emerald;
       break;
-    case 'RX':
+    case 'rx':
       color = colors.cyan;
       break;
-    case 'SD':
+    case 'sd':
       color = colors.indigo;
       break;
-    case 'TB':
+    case 'tb':
       color = colors.orange;
       break;
     default:

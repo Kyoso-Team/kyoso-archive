@@ -10,21 +10,20 @@
     osuUsername: string;
     discordUsername: string;
     discordDiscriminator: string;
-    showDiscordTag: boolean;
     country: {
       name: string;
       code: string;
     };
   };
-  export let forceShowDiscord: boolean = false;
+  export let showDiscordTag = false;
 </script>
 
-<div class="card w-64 p-4 bg-surface-backdrop-token sm:w-72">
+<div class="card w-64 p-4 bg-surface-backdrop-token sm:w-72 min-h-[113px]">
   <div class="grid grid-cols-[max-content_1fr_1fr_1fr] gap-0">
     <div class="row-span-2 mr-2 max-w-min">
       <Avatar src={buildUrl.userAvatar(user.osuUserId)} rounded="rounded-md" width="w-12" />
     </div>
-    <div class="col-span-2 flex items-center">
+    <div class="col-span-3 flex items-center">
       <a href={buildUrl.user(user.osuUserId)} target="_blank">{user.osuUsername}</a>
       <img
         class="ml-2 h-4"
@@ -33,7 +32,7 @@
       />
     </div>
     <div class="col-span-3 text-sm">
-      {#if user.showDiscordTag || forceShowDiscord}
+      {#if showDiscordTag}
         {user.discordUsername}#{user.discordDiscriminator}
       {/if}
     </div>

@@ -1,7 +1,7 @@
 <script lang="ts">
   import isEqual from 'lodash.isequal';
   import { SlideToggle } from '@skeletonlabs/skeleton';
-  import type { StaffPermission } from '@prisma/client';
+  import type { StaffPermission } from '$types';
 
   export let label: string;
   export let description: string;

@@ -1,16 +1,20 @@
 import env from '$lib/env/server';
-import prisma from '$prisma';
+import db from '$db';
 import DiscordOauth2 from 'discord-oauth2';
+import { dbCountry, dbStaffMember, dbStaffMemberToStaffRole, dbStaffRole, dbTournament, dbUser } from '$db/schema';
 import { t, tryCatch } from '$trpc';
 import { z } from 'zod';
-import { Auth as OsuAuth, Client, type Token, type UserExtended } from 'osu-web.js';
+import { Auth as OsuAuth, Client } from 'osu-web.js';
 import { signJWT, verifyJWT } from '$lib/jwt';
 import { TRPCError } from '@trpc/server';
 import { customAlphabet } from 'nanoid';
+import { and, eq, inArray } from 'drizzle-orm';
+import { findFirst, findFirstOrThrow, getRowCount } from '$lib/server-utils';
+import type { InferModel } from 'drizzle-orm';
 import type { TokenRequestResult, User } from 'discord-oauth2';
-import type { Prisma } from '@prisma/client';
 import type { SessionUser } from '$types';
 import type { Cookies } from '@sveltejs/kit';
+import type { Token, UserExtended } from 'osu-web.js';
 
 const osuAuth = new OsuAuth(
   env.PUBLIC_OSU_CLIENT_ID,
@@ -27,17 +31,17 @@ const discordAuthParams = {
 const discordAuth = new DiscordOauth2(discordAuthParams);
 const scope = ['identify'];
 const userSelect = {
-  id: true,
-  osuUsername: true,
-  discordUsername: true,
-  discordDiscriminator: true,
-  isAdmin: true,
-  updatedAt: true,
-  osuUserId: true
-};
+  id: dbUser.id,
+  osuUsername: dbUser.osuUsername,
+  discordUsername: dbUser.discordUsername,
+  discordDiscriminator: dbUser.discordDiscriminator,
+  isAdmin: dbUser.isAdmin,
+  updatedAt: dbUser.updatedApiDataAt,
+  osuUserId: dbUser.osuUserId
+} as const;
 const cookiesOptions = {
   path: '/'
-};
+} as const;
 
 function getData(
   osuToken: Token,
@@ -46,30 +50,29 @@ function getData(
     is_restricted: boolean;
   },
   discordProfile: User
-): Omit<Prisma.UserCreateInput, 'apiKey'> {
+): {
+	user: Omit<InferModel<typeof dbUser, 'insert'>, 'id' | 'apiKey' | 'countryId'>;
+	country: Omit<InferModel<typeof dbCountry, 'insert'>, 'id'>;
+} {
   return {
-    osuAccessToken: osuToken.access_token,
-    osuRefreshToken: osuToken.refresh_token,
-    discordAccesstoken: discordToken.access_token,
-    discordRefreshToken: discordToken.refresh_token,
-    discordDiscriminator: discordProfile.discriminator,
-    discordUserId: discordProfile.id,
-    discordUsername: discordProfile.username,
-    osuUserId: osuProfile.id,
-    osuUsername: osuProfile.username,
-    isRestricted: osuProfile.is_restricted,
-    isAdmin: env.ADMIN_BY_DEFAULT.includes(osuProfile.id),
-    country: {
-      connectOrCreate: {
-        create: {
-          code: osuProfile.country.code,
-          name: osuProfile.country.name
-        },
-        where: {
-          code: osuProfile.country.code
-        }
-      }
-    }
+    user: {
+			osuAccessToken: osuToken.access_token,
+			osuRefreshToken: osuToken.refresh_token,
+			discordAccesstoken: discordToken.access_token,
+			discordRefreshToken: discordToken.refresh_token,
+			discordDiscriminator: discordProfile.discriminator,
+			discordUserId: discordProfile.id,
+			discordUsername: discordProfile.username,
+			osuUserId: osuProfile.id,
+			osuUsername: osuProfile.username,
+			isRestricted: osuProfile.is_restricted,
+      rank: osuProfile.statistics.global_rank,
+			isAdmin: env.ADMIN_BY_DEFAULT.includes(osuProfile.id)
+		},
+		country: {
+			code: osuProfile.country.code,
+			name: osuProfile.country.name
+		}
   };
 }
 
@@ -129,54 +132,65 @@ function invalidateCookies(cookies: Cookies, error?: string): never {
 
 // Add the current developer as a staff for all tournaments
 async function addUserToTournaments(user: { id: number }) {
-  if (env.NODE_ENV === 'development') {
-    let tournaments = await prisma.tournament.findMany({
-      select: {
-        id: true
-      }
-    });
+  if (env.NODE_ENV !== 'development') return;
 
-    for (let i = 0; i < tournaments.length; i++) {
-      let tournamentId = tournaments[i].id;
+  let tournaments = await db
+    .select({
+      id: dbTournament.id,
+      debuggerRoleId: dbStaffRole.id
+    })
+    .from(dbTournament)
+    .innerJoin(dbStaffRole, eq(dbStaffRole.tournamentId, dbTournament.id))
+    .where(eq(dbStaffRole.order, 0));
 
-      let existingStaffRole = await prisma.staffRole.findUnique({
-        where: {
-          name_tournamentId: {
-            tournamentId,
-            name: 'Debugger'
-          }
-        }
-      });
+  let staffMemberCount = await getRowCount(dbStaffMember, and(
+    inArray(dbStaffMember.tournamentId, tournaments.map(({ id }) => id)),
+    eq(dbStaffMember.userId, user.id)
+  ));
 
-      if (!existingStaffRole) {
-        await prisma.$transaction(async (tx) => {
-          let staffRole = await tx.staffRole.create({
-            data: {
-              tournamentId,
-              name: 'Debugger',
-              order: 0,
-              permissions: ['Debug']
-            },
-            select: {
-              id: true
-            }
-          });
+  if (staffMemberCount > 0) return;
 
-          await tx.staffMember.create({
-            data: {
-              tournamentId,
-              roles: {
-                connect: {
-                  id: staffRole.id
-                }
-              },
-              userId: user.id
-            }
-          });
-        });
-      }
+  await db.transaction(async (tx) => {
+    let staffMembers = await tx.insert(dbStaffMember).values(
+      tournaments.map(({ id }) => ({
+        tournamentId: id,
+        userId: user.id
+      }))
+    )
+    .returning({ id: dbStaffMember.id });
+
+    await tx.insert(dbStaffMemberToStaffRole).values(
+      staffMembers.map(({ id }, i) => ({
+        staffMemberId: id,
+        staffRoleId: tournaments[i].debuggerRoleId
+      }))
+    );
+  });
+}
+
+async function createOrGetCountry(countryData: ReturnType<typeof getData>['country']) {
+  return await db.transaction(async (tx) => {
+    let country = findFirst(
+      await tx.insert(dbCountry).values(countryData)
+      .onConflictDoNothing({ target: dbCountry.code })
+      .returning({
+        id: dbCountry.id
+      })
+    );
+  
+    if (!country) {
+      country = findFirstOrThrow(
+        await tx.select({
+          id: dbCountry.id
+        })
+        .from(dbCountry)
+        .where(eq(dbCountry.code, countryData.code)),
+        'country'
+      );
     }
-  }
+
+    return country;
+  });
 }
 
 async function login(osuToken: Token, discordToken: TokenRequestResult): Promise<string> {
@@ -188,17 +202,22 @@ async function login(osuToken: Token, discordToken: TokenRequestResult): Promise
   )();
 
   let user = await tryCatch(async () => {
-    return await prisma.user.upsert({
-      create: {
-        ...data,
-        apiKey
-      },
-      where: {
-        osuUserId: osuProfile.id
-      },
-      update: data,
-      select: userSelect
-    });
+    let country = await createOrGetCountry(data.country);
+
+		return findFirstOrThrow(
+      await db.insert(dbUser).values({
+        ...data.user,
+        apiKey,
+        countryId: country.id
+      }).onConflictDoUpdate({
+        target: dbUser.osuUserId,
+        set: {
+          ...data.user,
+          countryId: country.id
+        }
+      }).returning(userSelect),
+      'user'
+    );
   }, "Can't create or update user.");
 
   let storedUser = getStoredUser(user);
@@ -229,15 +248,14 @@ export const authRouter = t.router({
       userId = Number(tokenPayload.sub);
     }
 
-    let user = await prisma.user.findUnique({
-      where: {
-        osuUserId: userId
-      },
-      select: {
-        id: true,
-        discordRefreshToken: true
-      }
-    });
+		let user = findFirst(
+			await db.select({
+				id: dbUser.id,
+				discordRefreshToken: dbUser.discordRefreshToken
+			})
+			.from(dbUser)
+			.where(eq(dbUser.osuUserId, userId))
+		);
 
     try {
       // Avoid prompting user for discord auth if possible
@@ -301,18 +319,19 @@ export const authRouter = t.router({
       }
 
       let discordProfile = await getDiscordProfile(discordToken);
-      let updatedUser = await prisma.user.update({
-        where: {
-          osuUserId: storedUser.osuUserId
-        },
-        data: {
+			let updatedUser = findFirstOrThrow(
+        await db.update(dbUser)
+        .set({
           discordAccesstoken: discordToken.access_token,
           discordRefreshToken: discordToken.refresh_token,
           discordUserId: discordProfile.id,
           discordUsername: discordProfile.username,
           discordDiscriminator: discordProfile.discriminator
-        }
-      });
+        })
+        .where(eq(dbUser.osuUserId, storedUser.osuUserId))
+        .returning(userSelect),
+        'user'
+      );
 
       storedUser = getStoredUser(updatedUser);
       ctx.cookies.set('session', signJWT(storedUser), cookiesOptions);
@@ -339,17 +358,17 @@ export const authRouter = t.router({
 
     try {
       let user = await tryCatch(async () => {
-        return await prisma.user.findUniqueOrThrow({
-          where: {
-            id: storedUser?.id
-          },
-          select: {
-            id: true,
-            isAdmin: true,
-            osuRefreshToken: true,
-            discordRefreshToken: true
-          }
-        });
+        return findFirstOrThrow(
+          await db.select({
+            id: dbUser.id,
+            isAdmin: dbUser.isAdmin,
+            osuRefreshToken: dbUser.osuRefreshToken,
+            discordRefreshToken: dbUser.discordRefreshToken
+          })
+          .from(dbUser)
+          .where(eq(dbUser.id, storedUser?.id || 0)),
+          'user'
+        );
       }, "Can't refresh user data.");
 
       if (new Date().getTime() - new Date(storedUser.updatedAt).getTime() >= 86_400_000) {
@@ -371,13 +390,18 @@ export const authRouter = t.router({
         let data = getData(osuToken, discordToken, osuProfile, discordProfile);
 
         let updatedUser = await tryCatch(async () => {
-          return await prisma.user.update({
-            where: {
-              id: user.id
-            },
-            data,
-            select: userSelect
-          });
+          let country = await createOrGetCountry(data.country);
+
+          return findFirstOrThrow(
+            await db.update(dbUser)
+              .set({
+                ...data.user,
+                countryId: country.id
+              })
+              .where(eq(dbUser.id, user.id))
+              .returning(userSelect),
+            'user'
+          );
         }, "Can't update user.");
 
         storedUser = getStoredUser(updatedUser);

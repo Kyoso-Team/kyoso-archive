@@ -1,4 +1,3 @@
-import prisma from '$prisma';
 import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
 import { getUserAsStaff } from '$trpc/middleware';

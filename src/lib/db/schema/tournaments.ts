@@ -7,7 +7,7 @@ export const dbTournament = pgTable('tournament', {
   id: serial('id').primaryKey(),
   name: varchar('name', length(50)).notNull().unique('tournament_name_key'),
   acronym: varchar('acronym', length(8)).notNull(),
-  /* when lowerRankRange and upperRankRange are set to -1, then the tournament is open rank */
+  // when lowerRankRange and upperRankRange are set to -1, then the tournament is open rank
   lowerRankRange: integer('lower_rank_range').notNull(),
   upperRankRange: integer('upper_rank_range').notNull(), // Date in which the tournament will be displayed on the site for anyone to view
   goPublicOn: timestamp('go_public_on', timestampConfig), // Date in which the tournament can no longer be modified (its settings, pools, schedules, etc.)
@@ -20,7 +20,7 @@ export const dbTournament = pgTable('tournament', {
   teamPlaySize: smallint('team_play_size').notNull().default(1),
   hasBanner: boolean('has_banner').default(false),
   hasLogo: boolean('has_logo').default(false),
-  useTeamBanners: boolean('use_team_banners').default(true),
+  useTeamBanners: boolean('use_team_banners').notNull().default(true),
   useBWS: boolean('use_bws').notNull(),
   rules: text('rules'), // Markdown
   type: dbTournamentType('type').notNull(),
@@ -142,6 +142,9 @@ export const dbRoundRelations = relations(dbRound, ({ one, many }) => ({
     fields: [dbRound.tournamentId],
     references: [dbTournament.id]
   }),
+  standardRound: one(dbStandardRound),
+  qualifierRound: one(dbQualifierRound),
+  battleRoyaleRound: one(dbBattleRoyaleRound),
   modpools: many(dbModpool),
   suggestedMaps: many(dbSuggestedMap),
   pooledMaps: many(dbPooledMap),

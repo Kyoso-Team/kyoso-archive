@@ -1,18 +1,21 @@
-import prisma from '$prisma';
-import { getStoredUser } from '$lib/server-utils';
+import db from '$db';
+import { dbUser } from '$db/schema';
+import { eq } from 'drizzle-orm';
+import { getStoredUser, findFirstOrThrow } from '$lib/server-utils';
 import type { PageServerLoad } from './$types';
 
 export const load = (async (event) => {
   let storedUser = getStoredUser(event, true);
 
-  let user = await prisma.user.findUniqueOrThrow({
-    where: {
-      id: storedUser.id
-    },
-    select: {
-      freeServicesLeft: true
-    }
-  });
+  let user = findFirstOrThrow(
+    await db
+      .select({
+        freeServicesLeft: dbUser.freeServicesLeft
+      })
+      .from(dbUser)
+      .where(eq(dbUser.id, storedUser.id)),
+    'user'
+  );
 
   return {
     user

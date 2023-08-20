@@ -1,4 +1,4 @@
-import type { TournamentService } from '@prisma/client';
+import type { TournamentService } from '$types';
 
 export const services: Record<
   TournamentService | string,
@@ -7,23 +7,23 @@ export const services: Record<
     teamsPrice: number;
   }
 > = {
-  Registrations: {
+  registrations: {
     soloPrice: 3,
     teamsPrice: 3.5
   },
-  Mappooling: {
+  mappooling: {
     soloPrice: 2.5,
     teamsPrice: 2.5
   },
-  Referee: {
+  referee: {
     soloPrice: 3,
     teamsPrice: 3
   },
-  Stats: {
+  stats: {
     soloPrice: 1.5,
     teamsPrice: 2
   },
-  Pickems: {
+  pickems: {
     soloPrice: 2,
     teamsPrice: 2
   }

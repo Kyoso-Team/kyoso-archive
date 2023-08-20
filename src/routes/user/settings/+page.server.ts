@@ -1,40 +1,41 @@
-import prisma from '$prisma';
+import db from '$db';
 import { getStoredUser } from '$lib/server-utils';
+import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load = (async (event) => {
   let storedUser = getStoredUser(event, true);
 
-  let user = await prisma.user.findUniqueOrThrow({
-    where: {
-      id: storedUser.id
-    },
-    select: {
+  let user = await db.query.dbUser.findFirst({
+    columns: {
       id: true,
       discordUserId: true,
       showDiscordTag: true,
       apiKey: true
-    }
+    },
+    where: (user, { eq }) => eq(user.id, storedUser.id)
   });
 
-  let purchases = await prisma.purchase.findMany({
-    where: {
-      purchasedBy: {
-        id: user.id
-      }
-    },
-    select: {
-      paypalOrderId: true,
+  if (!user) {
+    throw error(404, 'User not found');
+  }
+
+  let purchases = await db.query.dbPurchase.findMany({
+    columns: {
+      payPalOrderId: true,
       purchasedAt: true,
       cost: true,
-      services: true,
+      services: true
+    },
+    with: {
       forTournament: {
-        select: {
+        columns: {
           id: true,
           name: true
         }
       }
-    }
+    },
+    where: (purchase, { eq }) => eq(purchase.purchasedById, user?.id || 0)
   });
 
   return {

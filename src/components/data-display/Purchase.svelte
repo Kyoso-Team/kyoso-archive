@@ -4,13 +4,13 @@
   import { buildUrl } from 'osu-web.js';
   import { popup } from '@skeletonlabs/skeleton';
   import { Tooltip } from '$components';
-  import type { TournamentService } from '@prisma/client';
+  import type { TournamentService } from '$types';
 
   export let purchase: {
     id: number;
     purchasedAt: Date;
-    cost: number;
-    paypalOrderId: string;
+    cost: string;
+    payPalOrderId: string;
     services: TournamentService[];
     purchasedBy?: {
       id: number;
@@ -42,7 +42,7 @@
         <a href={buildUrl.user(purchase.purchasedBy.osuUserId)}
           >{purchase.purchasedBy.osuUsername}</a
         >
-        made a purchase of {format.price(purchase.cost)} for
+        made a purchase of {format.price(Number(purchase.cost))} for
         {' '}
         {#if purchase.forTournament}
           <a
@@ -72,5 +72,5 @@
       <span class="variant-filled-tertiary badge">{service}</span>
     {/each}
   </div>
-  <span class="text-sm">PayPal Order ID: {purchase.paypalOrderId}</span>
+  <span class="text-sm">PayPal Order ID: {purchase.payPalOrderId}</span>
 </div>

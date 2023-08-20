@@ -4,7 +4,6 @@
   import '../main.css';
   import 'highlight.js/styles/atom-one-dark.css';
   import env from '$lib/env/client';
-  import { loadScript } from '@paypal/paypal-js';
   import { buildUrl } from 'osu-web.js';
   import { goto } from '$app/navigation';
   import { form, paypal, error, upload } from '$stores';
@@ -77,6 +76,7 @@
 
   async function loadPayPalScript() {
     try {
+      let { loadScript } = await import('@paypal/paypal-js');
       let paypalScript = await loadScript({
         'client-id': env.PUBLIC_PAYPAL_CLIENT_ID,
         'currency': 'USD'

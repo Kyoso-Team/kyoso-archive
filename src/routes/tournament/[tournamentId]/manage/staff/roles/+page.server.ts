@@ -1,42 +1,35 @@
-import prisma from '$prisma';
+import db from '$db';
+import { dbStaffRole } from '$db/schema';
+import { eq, and, gt, asc } from 'drizzle-orm';
 import { hasPerms } from '$lib/utils';
+import { select } from '$lib/server-utils';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ parent }) => {
   let data = await parent();
 
-  if (!hasPerms(data.staffMember, ['Host', 'Debug', 'MutateTournament', 'ViewStaffMembers'])) {
+  if (!hasPerms(data.staffMember, ['host', 'debug', 'mutate_tournament', 'view_staff_members'])) {
     throw error(
       401,
       `You lack the necessary permissions to manage the staff roles for tournament of ID ${data.tournament.id}.`
     );
   }
 
-  let roles = await prisma.staffRole.findMany({
-    where: {
-      AND: [
-        {
-          tournamentId: data.tournament.id
-        },
-        {
-          name: {
-            notIn: ['Host', 'Debugger']
-          }
-        }
-      ]
-    },
-    select: {
-      id: true,
-      name: true,
-      order: true,
-      permissions: true,
-      color: true
-    },
-    orderBy: {
-      order: 'asc'
-    }
-  });
+  let roles = await db
+    .select(select(dbStaffRole, [
+      'id',
+      'name',
+      'order',
+      'permissions',
+      'color'
+    ]))
+    .from(dbStaffRole)
+    .where(and(
+      eq(dbStaffRole.tournamentId, data.tournament.id),
+      gt(dbStaffRole.order, 1)
+    ))
+    .orderBy(asc(dbStaffRole.order));
 
   return {
     roles,

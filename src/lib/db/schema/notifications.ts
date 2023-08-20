@@ -10,8 +10,16 @@ export const dbNotification = pgTable('notification', {
   notifiedAt: timestamp('notified_at', timestampConfig).notNull().defaultNow()
 });
 
-export const dbNotificationRelations = relations(dbNotification, ({ many }) => ({
-  notifiedTo: many(dbUserToNotification)
+export const dbNotificationRelations = relations(dbNotification, ({ one, many }) => ({
+  notifiedTo: many(dbUserToNotification),
+  grantedTournamentHost: one(dbGrantedTournamentHostNotif),
+  joinTeamRequest: one(dbJoinTeamRequestNotif),
+  issue: one(dbIssueNotif),
+  newStaffAppSubmission: one(dbNewStaffAppSubmissionNotif),
+  roundPublication: one(dbRoundPublicationNotif),
+  staffChange: one(dbStaffChangeNotif),
+  teamChange: one(dbTeamChangeNotif),
+  tournamentDeleted: one(dbTournamentDeletedNotif)
 }));
 
 // Notifies admins when a new issue is submitted or notifies the user who submitted the issue that the issue has been resolved
@@ -73,7 +81,7 @@ export const dbGrantedTournamentHostNotifRelations = relations(dbGrantedTourname
     fields: [dbGrantedTournamentHostNotif.tournamentId],
     references: [dbTournament.id]
   }),
-  previousHostId: one(dbUser, {
+  previousHost: one(dbUser, {
     fields: [dbGrantedTournamentHostNotif.previousHostId],
     references: [dbUser.id],
     relationName: 'prev_host'

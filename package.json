@@ -11,12 +11,13 @@
     "lint": "prettier --plugin-search-dir . --check . && eslint .",
     "fmt": "prettier --plugin-search-dir . --write .",
     "review": "pnpm fmt && pnpm lint && pnpm check",
-    "db:generate": "npx drizzle-kit generate:pg",
+    "db:generate": "pnpx drizzle-kit generate:pg",
+    "db:generate-custom": "pnpx drizzle-kit generate:pg --custom",
     "db:migrate": "node --loader ts-node/esm scripts/migrate.ts",
     "db:reset": "node --loader ts-node/esm scripts/reset.ts",
-    "db:push": "npx drizzle-kit push:pg",
+    "db:push": "pnpx drizzle-kit push:pg",
     "db:seed": "pnpm db:reset && pnpm db:migrate && node --experimental-specifier-resolution=node --loader ts-node/esm scripts/seed.ts",
-    "db:studio": "npx drizzle-kit studio"
+    "db:studio": "pnpx drizzle-kit studio"
   },
   "engines": {
     "node": "16.x"
@@ -35,7 +36,7 @@
     "@typescript-eslint/parser": "^5.45.0",
     "autoprefixer": "^10.4.14",
     "dotenv": "^16.0.3",
-    "drizzle-kit": "^0.19.12",
+    "drizzle-kit": "^0.19.13",
     "drizzle-orm": "^0.28.2",
     "eslint": "^8.28.0",
     "eslint-config-prettier": "^8.5.0",
