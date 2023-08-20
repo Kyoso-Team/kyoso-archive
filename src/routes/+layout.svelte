@@ -7,9 +7,7 @@
   import { buildUrl } from 'osu-web.js';
   import { goto } from '$app/navigation';
   import { form, paypal, error, upload } from '$stores';
-  import { Form, Error, Sidebar, Upload } from '$components';
   import { onMount } from 'svelte';
-  import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
   import {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setInitialClassState,
@@ -23,12 +21,16 @@
     Toast
   } from '@skeletonlabs/skeleton';
   import { page } from '$app/stores';
+  import type { Form, Error, Sidebar, Upload } from '$components'
   import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
 
-  storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
-
   export let data: LayoutServerData;
+  let formComponent: typeof Form | undefined;
+  let errorComponent: typeof Error | undefined;
+  let sidebarComponent: typeof Sidebar | undefined;
+  let uploadComponent: typeof Upload | undefined;
+
 
   const navLinks = [
     {
@@ -72,6 +74,11 @@
   onMount(() => {
     loadPayPalScript();
     loadHighlightJs();
+    loadFormComponent();
+    loadErrorComponent();
+    loadSidebarComponent();
+    loadUploadComponent();
+    loadPopupConfig();
   });
 
   async function loadPayPalScript() {
@@ -92,6 +99,31 @@
   async function loadHighlightJs() {
     let hljs = await import('highlight.js');
     storeHighlightJs.set(hljs);
+  }
+
+  async function loadFormComponent() {
+    let form = await import('$components/layout/Form.svelte');
+    formComponent = form.default;
+  }
+
+  async function loadErrorComponent() {
+    let error = await import('$components/layout/Error.svelte');
+    errorComponent = error.default;
+  }
+
+  async function loadSidebarComponent() {
+    let sidebar = await import('$components/layout/Sidebar.svelte');
+    sidebarComponent = sidebar.default;
+  }
+
+  async function loadUploadComponent() {
+    let upload = await import('$components/layout/Sidebar.svelte');
+    uploadComponent = upload.default;
+  }
+
+  async function loadPopupConfig() {
+    const { computePosition, autoUpdate, flip, shift, offset, arrow } = await import('@floating-ui/dom');
+    storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
   }
 
   function onLogoutClick() {
@@ -168,27 +200,29 @@
     </AppBar>
   </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
-    <Sidebar />
+    {#if sidebarComponent}
+      <svelte:component this={sidebarComponent} />
+    {/if}
   </svelte:fragment>
   <Modal />
   <Toast />
-  {#if $form}
+  {#if $form && formComponent}
     <div class="fixed inset-0 z-20 h-screen w-screen bg-surface-backdrop-token">
-      <Form />
+      <svelte:component this={formComponent} />
     </div>
   {/if}
-  {#if $upload}
+  {#if $upload && uploadComponent}
     <div
       class="fixed inset-0 z-20 flex h-screen w-screen items-center justify-center bg-surface-backdrop-token"
     >
-      <Upload />
+      <svelte:component this={uploadComponent} />
     </div>
   {/if}
-  {#if $error}
+  {#if $error && errorComponent}
     <div
       class="fixed inset-0 z-30 flex h-screen w-screen items-center justify-center bg-surface-backdrop-token"
     >
-      <Error />
+      <svelte:component this={errorComponent} />
     </div>
   {/if}
   <slot />
