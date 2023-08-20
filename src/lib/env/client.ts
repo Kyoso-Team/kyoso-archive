@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import {
-  PUBLIC_SUPER_USER,
   PUBLIC_OSU_CLIENT_ID,
   PUBLIC_OSU_REDIRECT_URI,
   PUBLIC_DISCORD_CLIENT_ID,
@@ -10,7 +9,6 @@ import {
 } from '$env/static/public';
 
 export const clientEnvSchema = z.object({
-  PUBLIC_SUPER_USER: z.boolean(),
   PUBLIC_OSU_CLIENT_ID: z.number().int(),
   PUBLIC_OSU_REDIRECT_URI: z.string().nonempty(),
   PUBLIC_DISCORD_CLIENT_ID: z.string().nonempty(),
@@ -20,7 +18,6 @@ export const clientEnvSchema = z.object({
 });
 
 export const clientEnv = {
-  PUBLIC_SUPER_USER: PUBLIC_SUPER_USER.toLocaleLowerCase() === 'true',
   PUBLIC_OSU_CLIENT_ID: Number(PUBLIC_OSU_CLIENT_ID),
   PUBLIC_OSU_REDIRECT_URI,
   PUBLIC_DISCORD_CLIENT_ID,
