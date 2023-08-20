@@ -4,19 +4,35 @@ import type { PopupSettings } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
 import type { PageStore, ParseInt, Mod, StaffPermission } from '$types';
 
+/**
+ * Tailwind's default colors as a record
+ */
 export const twColors = colors as unknown as Record<
   string,
   Record<string, 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900>
 >;
 
+/**
+ * Format numbers
+ */
 export const format = {
+  /**
+   * Example: 81000 => '#81,000'
+   */
   rank: (n: number) => `#${new Intl.NumberFormat('us-US').format(n)}`,
+  /**
+   * Example: 5 => '$5.00'
+   */
   price: (n: number) => {
     return new Intl.NumberFormat('us-US', {
       style: 'currency',
       currency: 'USD'
     }).format(n);
   },
+  /**
+   * Example (full): new Date('2023-08-20T20:07:11.768Z') => 'August 20th, 2023'
+   * Example: (shortened): new Date('2023-08-20T20:07:11.768Z') => 'Aug 20th, 2023'
+   */
   date: (date: Date, month: 'full' | 'shortened' = 'full') => {
     let months =
       month === 'shortened'
@@ -53,6 +69,9 @@ export const format = {
 
     return `${months[date.getMonth()]} ${dateStr}${cardinal}, ${date.getFullYear()}`;
   },
+  /**
+   * Example (with 5 digits): 25 => '00025'
+   */
   digits: (n: number, digitCount: number) => {
     let nStr = n.toString();
     let missingDigits = digitCount - nStr.length;
@@ -64,6 +83,9 @@ export const format = {
 
     return `${str}${nStr}`;
   },
+  /**
+   * Example: ['Mario564', 'Taevas', 'Rekunan'] => 'Mario564, Taevas & Rekunan'
+   */
   listArray: (arr: (string | number)[]) => {
     let str = '';
 
@@ -79,6 +101,9 @@ export const format = {
 
     return str;
   },
+  /**
+   * Example: 1 => '1st'
+   */
   cardinal: (n: number) => {
     let str = n.toString();
 
@@ -97,6 +122,12 @@ export const format = {
 
     return `${n}th`;
   },
+  /**
+   * Examples:
+   * - [1] => '1st'
+   * - [2,3] => '2nd & 3rd'
+   * - [4,6] => '4th-6th'
+   */
   placements: (placements: number[]) => {
     let str = '';
 
@@ -112,7 +143,13 @@ export const format = {
   }
 };
 
+/**
+ * Calculate certain values
+ */
 export const calc = {
+  /**
+   * Calculate a user's BWS rank
+   */
   bwsRank: (rank: number, badgeCount: number) => {
     return rank ** (0.9937 ** (badgeCount ** 2));
   }
@@ -145,6 +182,9 @@ export const modal = {
   }
 };
 
+/**
+ * Builds tournament related links
+ */
 export const buildLink = {
   forumPost: (forumPostId: number) => `https://osu.ppy.sh/community/forums/topics/${forumPostId}`,
   discord: (discordInviteId: string) => `https://discord.gg/${discordInviteId}`,
@@ -154,21 +194,26 @@ export const buildLink = {
   twitter: (twitterHandle: string) => `https://twitter.com/${twitterHandle}`
 };
 
+/**
+ * Transform a numerical value in a different byte unit
+ */
 export const byteUnit = {
   kb: (value: number) => value * 1_000,
   mb: (value: number) => value * 1_000_000
 };
 
-export function removeDuplicates<T>(arr: T[]) {
-  return [...new Set(arr)];
-}
-
+/**
+ * Returns an error message if the Zod schema didn't successfully parse the input  
+ */
 export function setSettingError<T extends string | number | null | undefined | Date>(
   parsed: SafeParseReturnType<T, T>
 ) {
   return !parsed.success ? parsed.error.issues[0].message : undefined;
 }
 
+/**
+ * Create a tooltip object
+ */
 export function tooltip(target: string): PopupSettings {
   return {
     target,
@@ -177,6 +222,9 @@ export function tooltip(target: string): PopupSettings {
   };
 }
 
+/**
+ * Trims the string type values in each property of an object
+ */
 export function trimStringValues<T extends Record<string, unknown>>(obj: T): T {
   let newObj: Record<string, unknown> = {};
 
@@ -196,6 +244,9 @@ function fillDateDigits(n: number) {
   return n < 10 ? `0${n}` : n.toString();
 }
 
+/**
+ * Parses a Date type value and transforms it into a valid string for an HTML input of type datetime-local
+ */
 export function dateToHtmlInput(date: Date) {
   let year = date.getFullYear();
   let month = fillDateDigits(date.getMonth() + 1);
@@ -208,6 +259,9 @@ export function dateToHtmlInput(date: Date) {
   return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
 }
 
+/**
+ * Does a staff member meet certain permissions?
+ */
 export function hasPerms(
   staffMember: {
     roles: {
@@ -225,18 +279,24 @@ export function hasPerms(
   staffMember.roles.forEach((role) => {
     userPermissions.push(...role.permissions);
   });
-
-  userPermissions = removeDuplicates(userPermissions);
+  
+  userPermissions = [...new Set(userPermissions)];
 
   return Array.isArray(necessaryPermissions)
     ? userPermissions.some((userPerm) => necessaryPermissions.includes(userPerm))
     : userPermissions.some((userPerm) => necessaryPermissions === userPerm);
 }
 
+/**
+ * Get the full URL a user uploaded file
+ */
 export function getFileUrl(page: PageStore, path: string) {
   return `${page.url.origin}/uploads/${path}`;
 }
 
+/**
+ * Apply a certain Tailwind color based off of a mod acronym
+ */
 export function colorByMod(
   mod: Mod | 'nm' | 'fm' | 'tb',
   value: ParseInt<keyof (typeof colors)['neutral']>
@@ -288,6 +348,9 @@ export function colorByMod(
   return color[value];
 }
 
+/**
+ * Has the tournament concluded?
+ */
 export function hasTournamentConcluded(tournament: { concludesOn: Date | null }) {
   return !!tournament.concludesOn && tournament.concludesOn.getTime() > new Date().getTime();
 }
