@@ -15,11 +15,11 @@ dependencies:
     specifier: ^5.1.6
     version: 5.1.6
   '@trpc/client':
-    specifier: ^10.18.0
-    version: 10.30.0(@trpc/server@10.30.0)
+    specifier: ^10.37.1
+    version: 10.37.1(@trpc/server@10.37.1)
   '@trpc/server':
-    specifier: ^10.18.0
-    version: 10.30.0
+    specifier: ^10.37.1
+    version: 10.37.1
   discord-oauth2:
     specifier: ^2.11.0
     version: 2.11.0
@@ -54,16 +54,16 @@ dependencies:
     specifier: ^2.8.0
     version: 2.8.0(svelte@4.0.0)(typescript@5.1.6)
   trpc-sveltekit:
-    specifier: ^3.5.1
-    version: 3.5.13(@sveltejs/adapter-node@1.2.4)(@trpc/client@10.30.0)(@trpc/server@10.30.0)(@types/ws@8.5.5)(ws@8.13.0)
+    specifier: ^3.5.20
+    version: 3.5.20(@sveltejs/adapter-node@1.2.4)(@trpc/client@10.37.1)(@trpc/server@10.37.1)(ws@8.13.0)
   zod:
     specifier: ^3.21.4
     version: 3.21.4
 
 devDependencies:
   '@skeletonlabs/skeleton':
-    specifier: ^1.6.2
-    version: 1.7.1
+    specifier: ^1.12.0
+    version: 1.12.0(svelte@4.0.0)
   '@sveltejs/adapter-node':
     specifier: ^1.2.3
     version: 1.2.4(@sveltejs/kit@1.20.4)
@@ -777,11 +777,13 @@ packages:
       picomatch: 2.3.1
       rollup: 3.25.1
 
-  /@skeletonlabs/skeleton@1.7.1:
-    resolution: {integrity: sha512-464uXRBzKzhZ5UgoBk7JvUDbYvcZpbThuC0ZLEiG8XKQhcabDUEdgZtVUAXmR8+L/vs247iVZZP1OHpW8Uexgg==}
+  /@skeletonlabs/skeleton@1.12.0(svelte@4.0.0):
+    resolution: {integrity: sha512-NCGy6WT3LUqu6EaFEG7J6lFQNB/DHlqFQpXMWkSpwdZIZ005OEVoZznNgdATYdTet++nS6LymBGVUQK00z82gw==}
+    peerDependencies:
+      svelte: ^3.56.0 || ^4.0.0
     dependencies:
       esm-env: 1.0.0
-      svelte: 3.58.0
+      svelte: 4.0.0
     dev: true
 
   /@sveltejs/adapter-node@1.2.4(@sveltejs/kit@1.20.4):
@@ -864,16 +866,16 @@ packages:
       tailwindcss: 3.3.2(ts-node@10.9.1)
     dev: true
 
-  /@trpc/client@10.30.0(@trpc/server@10.30.0):
-    resolution: {integrity: sha512-utz0qRI4eU3QcHvBwcSONEnt5pWR3Dyk4VFJnySHysBT6GQRRpJifWX5+RxDhFK93LxcAmiirFbYXjZ40gbobw==}
+  /@trpc/client@10.37.1(@trpc/server@10.37.1):
+    resolution: {integrity: sha512-OSblNfeI0Z9ERn3usgLV2x63CwwPoNOHf1FQK85cOT7F8MNaWyEHoEv7tHUwNGJwyzKXmpU+ockZ0movzX3D0g==}
     peerDependencies:
-      '@trpc/server': 10.30.0
+      '@trpc/server': 10.37.1
     dependencies:
-      '@trpc/server': 10.30.0
+      '@trpc/server': 10.37.1
     dev: false
 
-  /@trpc/server@10.30.0:
-    resolution: {integrity: sha512-pRsrHCuar3fbyOdJvO4b80OMP1Tx/wOSy5Ozy6cFDFWVUmfAyIX3En5Hoysy4cmMUuCsQsfTEYQwo+OcpjzBkg==}
+  /@trpc/server@10.37.1:
+    resolution: {integrity: sha512-r3VeA319/braYMBIzj+XLgLKQ9lJSVglvPvP9HUv4kr5w6Y5grQMxMcExhTiZWltE9bnSJHKtBBzHafOo7KC8A==}
     dev: false
 
   /@tsconfig/node10@1.0.9:
@@ -947,12 +949,6 @@ packages:
   /@types/showdown@2.0.1:
     resolution: {integrity: sha512-xdnAw2nFqomkaL0QdtEk0t7yz26UkaVPl4v1pYJvtE1T0fmfQEH3JaxErEhGByEAl3zUZrkNBlneuJp0WJGqEA==}
     dev: true
-
-  /@types/ws@8.5.5:
-    resolution: {integrity: sha512-lwhs8hktwxSjf9UaZ9tG5M03PGogvFaH8gUgLNbN9HKIg0dvv6q+gkSuJ8HN4/VbyxkuLzCjlN7GquQ0gUJfIg==}
-    dependencies:
-      '@types/node': 18.16.18
-    dev: false
 
   /@typescript-eslint/eslint-plugin@5.59.11(@typescript-eslint/parser@5.59.11)(eslint@8.43.0)(typescript@5.1.6):
     resolution: {integrity: sha512-XxuOfTkCUiOSyBWIvHlUraLw/JT/6Io1365RO6ZuI88STKMavJZPNMU0lFcUTeQXEhHiv64CbxYxBNoDVSmghg==}
@@ -3422,11 +3418,6 @@ packages:
       typescript: 5.1.6
     dev: true
 
-  /svelte@3.58.0:
-    resolution: {integrity: sha512-brIBNNB76mXFmU/Kerm4wFnkskBbluBDCjx/8TcpYRb298Yh2dztS2kQ6bhtjMcvUhd5ynClfwpz5h2gnzdQ1A==}
-    engines: {node: '>= 8'}
-    dev: true
-
   /svelte@4.0.0:
     resolution: {integrity: sha512-+yCYu3AEUu9n91dnQNGIbnVp8EmNQtuF/YImW4+FTXRHard7NMo+yTsWzggPAbj3fUEJ1FBJLkql/jkp6YB5pg==}
     engines: {node: '>=16'}
@@ -3532,19 +3523,17 @@ packages:
     resolution: {integrity: sha512-sf4i37nQ2LBx4m3wB74y+ubopq6W/dIzXg0FDGjsYnZHVa1Da8FH853wlL2gtUhg+xJXjfk3kUZS3BRoQeoQBQ==}
     engines: {node: '>=6'}
 
-  /trpc-sveltekit@3.5.13(@sveltejs/adapter-node@1.2.4)(@trpc/client@10.30.0)(@trpc/server@10.30.0)(@types/ws@8.5.5)(ws@8.13.0):
-    resolution: {integrity: sha512-7vX+a/8moh986vysjatWvzap/VBVVXLz5T2gdJLNvSwY/U5+hKcVjPhU4yt8667GLkEIvKo6qDhx9X9OEMx3yw==}
+  /trpc-sveltekit@3.5.20(@sveltejs/adapter-node@1.2.4)(@trpc/client@10.37.1)(@trpc/server@10.37.1)(ws@8.13.0):
+    resolution: {integrity: sha512-RHh5VxRkDmZNtH0nMkq0KW5ePFh+H3H/EhJuE74knDnhDiv3WnPLiCfA0XdZRkLLWYZP6waCBBbUjFPOK5Z1vg==}
     peerDependencies:
-      '@sveltejs/adapter-node': ^1.2.4
-      '@trpc/client': ^10.30.0
-      '@trpc/server': ^10.30.0
-      '@types/ws': ^8.5.4
-      ws: ^8.13.0
+      '@sveltejs/adapter-node': '>=1.2'
+      '@trpc/client': '>=10'
+      '@trpc/server': '>=10'
+      ws: '>=8'
     dependencies:
       '@sveltejs/adapter-node': 1.2.4(@sveltejs/kit@1.20.4)
-      '@trpc/client': 10.30.0(@trpc/server@10.30.0)
-      '@trpc/server': 10.30.0
-      '@types/ws': 8.5.5
+      '@trpc/client': 10.37.1(@trpc/server@10.37.1)
+      '@trpc/server': 10.37.1
       ws: 8.13.0
     dev: false
 

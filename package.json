@@ -23,7 +23,7 @@
     "node": "16.x"
   },
   "devDependencies": {
-    "@skeletonlabs/skeleton": "^1.6.2",
+    "@skeletonlabs/skeleton": "^1.12.0",
     "@sveltejs/adapter-node": "^1.2.3",
     "@sveltejs/kit": "^1.20.4",
     "@tailwindcss/forms": "^0.5.3",
@@ -60,8 +60,8 @@
     "@floating-ui/dom": "^1.2.7",
     "@paypal/checkout-server-sdk": "^1.0.3",
     "@paypal/paypal-js": "^5.1.6",
-    "@trpc/client": "^10.18.0",
-    "@trpc/server": "^10.18.0",
+    "@trpc/client": "^10.37.1",
+    "@trpc/server": "^10.37.1",
     "discord-oauth2": "^2.11.0",
     "highlight.js": "^11.8.0",
     "jsonwebtoken": "^9.0.0",
@@ -73,7 +73,7 @@
     "showdown": "^2.1.0",
     "superjson": "^1.12.3",
     "svelte-meta-tags": "^2.8.0",
-    "trpc-sveltekit": "^3.5.1",
+    "trpc-sveltekit": "^3.5.20",
     "zod": "^3.21.4"
   }
 }
