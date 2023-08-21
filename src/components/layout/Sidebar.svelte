@@ -75,7 +75,7 @@
                     $sidebar.selectedLink?.inSubsection === subsectionLabel &&
                     $sidebar.selectedLink?.label === label
                       ? 'variant-filled-primary'
-                      : 'hover:variant-soft-primary text-white'
+                      : 'text-white hover:variant-soft-primary'
                   }`}>{label}</span
                 >
               </a>

@@ -18,7 +18,7 @@
   <label class="label">
     <span>{label}</span>
     <div
-      class="input-group-divider input-group w-max grid-cols-[max-content_12rem_max-content] md:grid-cols-[max-content_24rem_max-content]"
+      class="input-group input-group-divider w-max grid-cols-[max-content_12rem_max-content] md:grid-cols-[max-content_24rem_max-content]"
     >
       <div class="input-group-shim">
         <SearchIcon w={30} h={30} styles="fill-white" />

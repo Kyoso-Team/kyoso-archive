@@ -21,7 +21,7 @@
     Toast
   } from '@skeletonlabs/skeleton';
   import { page } from '$app/stores';
-  import type { Form, Error, Sidebar, Upload } from '$components'
+  import type { Form, Error, Sidebar, Upload } from '$components';
   import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
 
@@ -30,7 +30,6 @@
   let errorComponent: typeof Error | undefined;
   let sidebarComponent: typeof Sidebar | undefined;
   let uploadComponent: typeof Upload | undefined;
-
 
   const navLinks = [
     {
@@ -122,7 +121,9 @@
   }
 
   async function loadPopupConfig() {
-    const { computePosition, autoUpdate, flip, shift, offset, arrow } = await import('@floating-ui/dom');
+    const { computePosition, autoUpdate, flip, shift, offset, arrow } = await import(
+      '@floating-ui/dom'
+    );
     storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
   }
 
@@ -144,7 +145,7 @@
           </a>
           {#if data.user && data.user.isAdmin}
             <button
-              class="hover:variant-soft-primary btn"
+              class="btn hover:variant-soft-primary"
               use:popup={{ ...navbarPopup, target: 'adminPopup' }}>Admin</button
             >
             <div class="card absolute left-4 top-[5rem] w-52 py-2" data-popup="adminPopup">
@@ -152,14 +153,14 @@
                 {#each adminNavLinks as { href, label }}
                   <a
                     href={`/admin/${href}`}
-                    class="hover:variant-soft-primary btn justify-start py-1">{label}</a
+                    class="btn justify-start py-1 hover:variant-soft-primary">{label}</a
                   >
                 {/each}
               </nav>
             </div>
           {/if}
           {#each navLinks as { href, label }}
-            <a href={`/${href}`} class="hover:variant-soft-primary btn">{label}</a>
+            <a href={`/${href}`} class="btn hover:variant-soft-primary">{label}</a>
           {/each}
         </nav>
       </svelte:fragment>
@@ -181,14 +182,14 @@
               <nav class="mt-2 flex flex-col gap-1 px-2">
                 <a
                   href={`/user/${data.user.id}`}
-                  class="hover:variant-soft-primary btn justify-start py-1">Profile</a
+                  class="btn justify-start py-1 hover:variant-soft-primary">Profile</a
                 >
-                <a href="/user/settings" class="hover:variant-soft-primary btn justify-start py-1"
+                <a href="/user/settings" class="btn justify-start py-1 hover:variant-soft-primary"
                   >Settings</a
                 >
                 <button
                   on:click={onLogoutClick}
-                  class="hover:variant-soft-primary btn justify-start py-1">Logout</button
+                  class="btn justify-start py-1 hover:variant-soft-primary">Logout</button
                 >
               </nav>
             </div>

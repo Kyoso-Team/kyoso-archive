@@ -33,12 +33,10 @@ export const modMultipliersRouter = t.router({
       let { tournamentId, data } = input;
 
       await tryCatch(async () => {
-        await db
-          .insert(dbModMultiplier)
-          .values({
-            ...data,
-            tournamentId
-          });
+        await db.insert(dbModMultiplier).values({
+          ...data,
+          tournamentId
+        });
       }, "Can't create mod multiplier.");
     }),
   updateMultiplier: t.procedure
@@ -89,9 +87,7 @@ export const modMultipliersRouter = t.router({
       let { where } = input;
 
       await tryCatch(async () => {
-        await db
-          .delete(dbModMultiplier)
-          .where(eq(dbModMultiplier.id, where.id));
+        await db.delete(dbModMultiplier).where(eq(dbModMultiplier.id, where.id));
       }, `Can't delete mod multiplier of ID ${where.id}.`);
     })
 });

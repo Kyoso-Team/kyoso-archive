@@ -85,7 +85,7 @@
       </button>
     </div>
     <div class="flex justify-end gap-2">
-      <button class="variant-ringed-primary btn" disabled={btnsDisabled} on:click={onUndoChanges}
+      <button class="btn variant-ringed-primary" disabled={btnsDisabled} on:click={onUndoChanges}
         >Undo Changes</button
       >
       <button class="btn variant-filled-primary" disabled={btnsDisabled} on:click={onUpdate}

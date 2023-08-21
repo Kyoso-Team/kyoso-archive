@@ -135,7 +135,7 @@
         <button class="btn variant-filled-primary" disabled={!files?.item(0)} on:click={onUpload}
           >Upload</button
         >
-        <button class="variant-ringed-primary btn" on:click={onClose}>Cancel</button>
+        <button class="btn variant-ringed-primary" on:click={onClose}>Cancel</button>
       </div>
     {/if}
   </div>

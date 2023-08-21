@@ -42,13 +42,11 @@ export const stagesRouter = t.router({
       await tryCatch(async () => {
         let stageCount = await getRowCount(dbStage, eq(dbStage.tournamentId, tournamentId));
 
-        await db
-          .insert(dbStage)
-          .values({
-            format,
-            tournamentId,
-            order: stageCount + 1
-          });
+        await db.insert(dbStage).values({
+          format,
+          tournamentId,
+          order: stageCount + 1
+        });
       }, "Can't create stage.");
     }),
   makeMain: t.procedure
@@ -70,14 +68,11 @@ export const stagesRouter = t.router({
         await db.transaction(async (tx) => {
           let currentMainStage = findFirstOrThrow(
             await db
-              .select(select(dbStage, [
-                'id'
-              ]))
+              .select(select(dbStage, ['id']))
               .from(dbStage)
-              .where(and(
-                eq(dbStage.tournamentId, input.tournamentId),
-                eq(dbStage.isMainStage, true)
-              )),
+              .where(
+                and(eq(dbStage.tournamentId, input.tournamentId), eq(dbStage.isMainStage, true))
+              ),
             'stage'
           );
 
@@ -89,7 +84,7 @@ export const stagesRouter = t.router({
               isMainStage: false
             })
             .where(eq(dbStage.id, currentMainStage.id));
-          
+
           await tx
             .update(dbStage)
             .set({
@@ -149,19 +144,14 @@ export const stagesRouter = t.router({
 
       await tryCatch(async () => {
         await db.transaction(async (tx) => {
-          await tx
-            .delete(dbStage)
-            .where(eq(dbStage.id, id));
-          
+          await tx.delete(dbStage).where(eq(dbStage.id, id));
+
           await tx
             .update(dbStage)
             .set({
               order: sql`${dbStage.order} - 1`
             })
-            .where(and(
-              eq(dbStage.tournamentId, tournamentId),
-              gt(dbStage.order, order)
-            ));
+            .where(and(eq(dbStage.tournamentId, tournamentId), gt(dbStage.order, order)));
         });
       }, `Can't delete stage of ID ${id}.`);
     })

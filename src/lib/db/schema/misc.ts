@@ -1,4 +1,13 @@
-import { pgTable, serial, varchar, timestamp, boolean, integer, smallint, text } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  serial,
+  varchar,
+  timestamp,
+  boolean,
+  integer,
+  smallint,
+  text
+} from 'drizzle-orm/pg-core';
 import { dbIssueType, dbUser, dbIssueNotif } from '.';
 import { timestampConfig, length } from '../utils';
 import { relations } from 'drizzle-orm';

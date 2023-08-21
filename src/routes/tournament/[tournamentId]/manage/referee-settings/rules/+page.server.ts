@@ -18,11 +18,11 @@ export const load = (async ({ parent }) => {
 
   let { rules } = findFirstOrThrow(
     await db
-    .select({
-      rules: dbTournament.rules
-    })
-    .from(dbTournament)
-    .where(eq(dbTournament.id, data.tournament.id)),
+      .select({
+        rules: dbTournament.rules
+      })
+      .from(dbTournament)
+      .where(eq(dbTournament.id, data.tournament.id)),
     'tournament'
   );
 

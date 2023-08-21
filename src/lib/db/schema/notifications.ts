@@ -1,5 +1,18 @@
 import { pgTable, bigserial, varchar, timestamp, integer, bigint } from 'drizzle-orm/pg-core';
-import { dbUser, dbIssueNotifType, dbStaffChangeNotifAction, dbStaffAppSubmission, dbJoinTeamRequest, dbTeam, dbTeamChangeNotifAction, dbRoundPublicationNotifType, dbRound, dbIssue, dbTournament, dbUserToNotification } from '.';
+import {
+  dbUser,
+  dbIssueNotifType,
+  dbStaffChangeNotifAction,
+  dbStaffAppSubmission,
+  dbJoinTeamRequest,
+  dbTeam,
+  dbTeamChangeNotifAction,
+  dbRoundPublicationNotifType,
+  dbRound,
+  dbIssue,
+  dbTournament,
+  dbUserToNotification
+} from '.';
 import { timestampConfig, length, actions } from '../utils';
 import { relations } from 'drizzle-orm';
 
@@ -27,7 +40,9 @@ export const dbIssueNotif = pgTable('issue_notification', {
   notifType: dbIssueNotifType('notification_type').notNull(),
   notificationId: bigint('notification_id', {
     mode: 'number'
-  }).primaryKey().references(() => dbNotification.id, actions('cascade')),
+  })
+    .primaryKey()
+    .references(() => dbNotification.id, actions('cascade')),
   issueId: integer('issue_id').references(() => dbIssue.id)
 });
 
@@ -47,7 +62,9 @@ export const dbTournamentDeletedNotif = pgTable('tournament_deleted_notification
   tournamentName: varchar('tournament_name', length(50)).notNull(),
   notificationId: bigint('notification_id', {
     mode: 'number'
-  }).primaryKey().references(() => dbNotification.id, actions('cascade')),
+  })
+    .primaryKey()
+    .references(() => dbNotification.id, actions('cascade')),
   hostedById: integer('hosted_by_id').references(() => dbUser.id)
 });
 
@@ -66,32 +83,37 @@ export const dbTournamentDeletedNotifRelations = relations(dbTournamentDeletedNo
 export const dbGrantedTournamentHostNotif = pgTable('granted_tournament_host_notification', {
   notificationId: bigint('notification_id', {
     mode: 'number'
-  }).primaryKey().references(() => dbNotification.id, actions('cascade')),
+  })
+    .primaryKey()
+    .references(() => dbNotification.id, actions('cascade')),
   tournamentId: integer('tournament_id').references(() => dbTournament.id),
   previousHostId: integer('previous_host_id').references(() => dbUser.id),
   newHostId: integer('new_host_id').references(() => dbUser.id)
 });
 
-export const dbGrantedTournamentHostNotifRelations = relations(dbGrantedTournamentHostNotif, ({ one }) => ({
-  notification: one(dbNotification, {
-    fields: [dbGrantedTournamentHostNotif.notificationId],
-    references: [dbNotification.id]
-  }),
-  tournament: one(dbTournament, {
-    fields: [dbGrantedTournamentHostNotif.tournamentId],
-    references: [dbTournament.id]
-  }),
-  previousHost: one(dbUser, {
-    fields: [dbGrantedTournamentHostNotif.previousHostId],
-    references: [dbUser.id],
-    relationName: 'prev_host'
-  }),
-  newHost: one(dbUser, {
-    fields: [dbGrantedTournamentHostNotif.newHostId],
-    references: [dbUser.id],
-    relationName: 'new_host'
+export const dbGrantedTournamentHostNotifRelations = relations(
+  dbGrantedTournamentHostNotif,
+  ({ one }) => ({
+    notification: one(dbNotification, {
+      fields: [dbGrantedTournamentHostNotif.notificationId],
+      references: [dbNotification.id]
+    }),
+    tournament: one(dbTournament, {
+      fields: [dbGrantedTournamentHostNotif.tournamentId],
+      references: [dbTournament.id]
+    }),
+    previousHost: one(dbUser, {
+      fields: [dbGrantedTournamentHostNotif.previousHostId],
+      references: [dbUser.id],
+      relationName: 'prev_host'
+    }),
+    newHost: one(dbUser, {
+      fields: [dbGrantedTournamentHostNotif.newHostId],
+      references: [dbUser.id],
+      relationName: 'new_host'
+    })
   })
-}));
+);
 
 // Notifies a user when they're added to or removed from a tournament's staff team
 export const dbStaffChangeNotif = pgTable('staff_change_notification', {
@@ -99,7 +121,9 @@ export const dbStaffChangeNotif = pgTable('staff_change_notification', {
   addedWithRoles: varchar('added_with_roles', length(25)).array().notNull().default([]),
   notificationId: bigint('notification_id', {
     mode: 'number'
-  }).primaryKey().references(() => dbNotification.id, actions('cascade')),
+  })
+    .primaryKey()
+    .references(() => dbNotification.id, actions('cascade')),
   userId: integer('user_id').references(() => dbUser.id)
 });
 
@@ -115,29 +139,41 @@ export const dbStaffChangeNotifRelations = relations(dbStaffChangeNotif, ({ one 
 }));
 
 // Notifies tournament staff members with the "MutateStaffMembers" permission when a tournament receives a new application from a user to join the staff team
-export const dbNewStaffAppSubmissionNotif = pgTable('new_staff_application_submission_notification', {
-  notificationId: bigint('notification_id', {
-    mode: 'number'
-  }).primaryKey().references(() => dbNotification.id, actions('cascade')),
-  staffAppSubmissionId: integer('staff_application_submission_id').references(() => dbStaffAppSubmission.id)
-});
+export const dbNewStaffAppSubmissionNotif = pgTable(
+  'new_staff_application_submission_notification',
+  {
+    notificationId: bigint('notification_id', {
+      mode: 'number'
+    })
+      .primaryKey()
+      .references(() => dbNotification.id, actions('cascade')),
+    staffAppSubmissionId: integer('staff_application_submission_id').references(
+      () => dbStaffAppSubmission.id
+    )
+  }
+);
 
-export const dbNewStaffAppSubmissionNotifRelations = relations(dbNewStaffAppSubmissionNotif, ({ one }) => ({
-  notification: one(dbNotification, {
-    fields: [dbNewStaffAppSubmissionNotif.notificationId],
-    references: [dbNotification.id]
-  }),
-  staffAppSubmission: one(dbStaffAppSubmission, {
-    fields: [dbNewStaffAppSubmissionNotif.staffAppSubmissionId],
-    references: [dbStaffAppSubmission.id]
+export const dbNewStaffAppSubmissionNotifRelations = relations(
+  dbNewStaffAppSubmissionNotif,
+  ({ one }) => ({
+    notification: one(dbNotification, {
+      fields: [dbNewStaffAppSubmissionNotif.notificationId],
+      references: [dbNotification.id]
+    }),
+    staffAppSubmission: one(dbStaffAppSubmission, {
+      fields: [dbNewStaffAppSubmissionNotif.staffAppSubmissionId],
+      references: [dbStaffAppSubmission.id]
+    })
   })
-}));
+);
 
 // Notifies a team captain when a player has requested to be a part of their team
 export const dbJoinTeamRequestNotif = pgTable('join_team_request_notification', {
   notificationId: bigint('notification_id', {
     mode: 'number'
-  }).primaryKey().references(() => dbNotification.id, actions('cascade')),
+  })
+    .primaryKey()
+    .references(() => dbNotification.id, actions('cascade')),
   requestId: integer('request_id').references(() => dbJoinTeamRequest.id)
 });
 
@@ -157,7 +193,9 @@ export const dbTeamChangeNotif = pgTable('team_change_notification', {
   action: dbTeamChangeNotifAction('action').notNull(),
   notificationId: bigint('notification_id', {
     mode: 'number'
-  }).primaryKey().references(() => dbNotification.id, actions('cascade')),
+  })
+    .primaryKey()
+    .references(() => dbNotification.id, actions('cascade')),
   teamId: integer('team_id').references(() => dbTeam.id),
   affectedUserId: integer('affected_user_id').references(() => dbUser.id),
   kickedById: integer('kicked_by_id').references(() => dbUser.id)
@@ -189,7 +227,9 @@ export const dbRoundPublicationNotif = pgTable('round_publication_notification',
   publicized: dbRoundPublicationNotifType('publicized').notNull(),
   notificationId: bigint('notification_id', {
     mode: 'number'
-  }).primaryKey().references(() => dbNotification.id, actions('cascade')),
+  })
+    .primaryKey()
+    .references(() => dbNotification.id, actions('cascade')),
   roundId: integer('round_id').references(() => dbRound.id)
 });
 

@@ -25,14 +25,9 @@ export const validationRouter = t.router({
       let round = await tryCatch(async () => {
         return findFirst(
           await db
-            .select(select(dbRound, [
-              'id'
-            ]))
+            .select(select(dbRound, ['id']))
             .from(dbRound)
-            .where(and(
-              eq(dbRound.name, name),
-              eq(dbRound.tournamentId, tournamentId)
-            ))
+            .where(and(eq(dbRound.name, name), eq(dbRound.tournamentId, tournamentId)))
             .limit(1)
         );
       }, "Can't get round to validate name uniqueness.");
@@ -50,14 +45,11 @@ export const validationRouter = t.router({
       let multiplier = await tryCatch(async () => {
         return findFirst(
           await db
-            .select(select(dbModMultiplier, [
-              'id'
-            ]))
+            .select(select(dbModMultiplier, ['id']))
             .from(dbModMultiplier)
-            .where(and(
-              eq(dbModMultiplier.mods, mods),
-              eq(dbModMultiplier.tournamentId, tournamentId)
-            ))
+            .where(
+              and(eq(dbModMultiplier.mods, mods), eq(dbModMultiplier.tournamentId, tournamentId))
+            )
             .limit(1)
         );
       }, "Can't get mod multiplier to validate mods uniqueness.");
@@ -75,14 +67,9 @@ export const validationRouter = t.router({
       let staffRole = await tryCatch(async () => {
         return findFirst(
           await db
-            .select(select(dbStaffRole, [
-              'id'
-            ]))
+            .select(select(dbStaffRole, ['id']))
             .from(dbStaffRole)
-            .where(and(
-              eq(dbStaffRole.name, name),
-              eq(dbStaffRole.tournamentId, tournamentId)
-            ))
+            .where(and(eq(dbStaffRole.name, name), eq(dbStaffRole.tournamentId, tournamentId)))
             .limit(1)
         );
       }, "Can't get staff role to validate name uniqueness.");

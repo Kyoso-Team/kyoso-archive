@@ -221,7 +221,7 @@
               <button class="btn btn-sm variant-filled" on:click={() => onUpdatePrize(prize)}
                 >Update</button
               >
-              <button class="variant-filled-error btn btn-sm" on:click={() => onDeletePrize(prize)}
+              <button class="btn btn-sm variant-filled-error" on:click={() => onDeletePrize(prize)}
                 >Delete</button
               >
             </Dropdown>
@@ -250,7 +250,7 @@
                   >Update</button
                 >
                 <button
-                  class="variant-filled-error btn btn-sm"
+                  class="btn btn-sm variant-filled-error"
                   on:click={() => onDeletePrize(prize)}>Delete</button
                 >
               </Dropdown>

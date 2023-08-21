@@ -196,7 +196,7 @@
               on:click={() => onUpdateMultiplier(multiplier)}>Update</button
             >
             <button
-              class="variant-filled-error btn btn-sm"
+              class="btn btn-sm variant-filled-error"
               on:click={() => onDeleteMultiplier(multiplier)}>Delete</button
             >
           </Dropdown>

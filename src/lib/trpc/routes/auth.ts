@@ -1,7 +1,14 @@
 import env from '$lib/env/server';
 import db from '$db';
 import DiscordOauth2 from 'discord-oauth2';
-import { dbCountry, dbStaffMember, dbStaffMemberToStaffRole, dbStaffRole, dbTournament, dbUser } from '$db/schema';
+import {
+  dbCountry,
+  dbStaffMember,
+  dbStaffMemberToStaffRole,
+  dbStaffRole,
+  dbTournament,
+  dbUser
+} from '$db/schema';
 import { t, tryCatch } from '$trpc';
 import { z } from 'zod';
 import { Auth as OsuAuth, Client } from 'osu-web.js';
@@ -51,28 +58,28 @@ function getData(
   },
   discordProfile: User
 ): {
-	user: Omit<InferModel<typeof dbUser, 'insert'>, 'id' | 'apiKey' | 'countryId'>;
-	country: Omit<InferModel<typeof dbCountry, 'insert'>, 'id'>;
+  user: Omit<InferModel<typeof dbUser, 'insert'>, 'id' | 'apiKey' | 'countryId'>;
+  country: Omit<InferModel<typeof dbCountry, 'insert'>, 'id'>;
 } {
   return {
     user: {
-			osuAccessToken: osuToken.access_token,
-			osuRefreshToken: osuToken.refresh_token,
-			discordAccesstoken: discordToken.access_token,
-			discordRefreshToken: discordToken.refresh_token,
-			discordDiscriminator: discordProfile.discriminator,
-			discordUserId: discordProfile.id,
-			discordUsername: discordProfile.username,
-			osuUserId: osuProfile.id,
-			osuUsername: osuProfile.username,
-			isRestricted: osuProfile.is_restricted,
+      osuAccessToken: osuToken.access_token,
+      osuRefreshToken: osuToken.refresh_token,
+      discordAccesstoken: discordToken.access_token,
+      discordRefreshToken: discordToken.refresh_token,
+      discordDiscriminator: discordProfile.discriminator,
+      discordUserId: discordProfile.id,
+      discordUsername: discordProfile.username,
+      osuUserId: osuProfile.id,
+      osuUsername: osuProfile.username,
+      isRestricted: osuProfile.is_restricted,
       rank: osuProfile.statistics.global_rank,
-			isAdmin: env.ADMIN_BY_DEFAULT.includes(osuProfile.id)
-		},
-		country: {
-			code: osuProfile.country.code,
-			name: osuProfile.country.name
-		}
+      isAdmin: env.ADMIN_BY_DEFAULT.includes(osuProfile.id)
+    },
+    country: {
+      code: osuProfile.country.code,
+      name: osuProfile.country.name
+    }
   };
 }
 
@@ -143,21 +150,29 @@ async function addUserToTournaments(user: { id: number }) {
     .innerJoin(dbStaffRole, eq(dbStaffRole.tournamentId, dbTournament.id))
     .where(eq(dbStaffRole.order, 0));
 
-  let staffMemberCount = await getRowCount(dbStaffMember, and(
-    inArray(dbStaffMember.tournamentId, tournaments.map(({ id }) => id)),
-    eq(dbStaffMember.userId, user.id)
-  ));
+  let staffMemberCount = await getRowCount(
+    dbStaffMember,
+    and(
+      inArray(
+        dbStaffMember.tournamentId,
+        tournaments.map(({ id }) => id)
+      ),
+      eq(dbStaffMember.userId, user.id)
+    )
+  );
 
   if (staffMemberCount > 0) return;
 
   await db.transaction(async (tx) => {
-    let staffMembers = await tx.insert(dbStaffMember).values(
-      tournaments.map(({ id }) => ({
-        tournamentId: id,
-        userId: user.id
-      }))
-    )
-    .returning({ id: dbStaffMember.id });
+    let staffMembers = await tx
+      .insert(dbStaffMember)
+      .values(
+        tournaments.map(({ id }) => ({
+          tournamentId: id,
+          userId: user.id
+        }))
+      )
+      .returning({ id: dbStaffMember.id });
 
     await tx.insert(dbStaffMemberToStaffRole).values(
       staffMembers.map(({ id }, i) => ({
@@ -171,20 +186,23 @@ async function addUserToTournaments(user: { id: number }) {
 async function createOrGetCountry(countryData: ReturnType<typeof getData>['country']) {
   return await db.transaction(async (tx) => {
     let country = findFirst(
-      await tx.insert(dbCountry).values(countryData)
-      .onConflictDoNothing({ target: dbCountry.code })
-      .returning({
-        id: dbCountry.id
-      })
-    );
-  
-    if (!country) {
-      country = findFirstOrThrow(
-        await tx.select({
+      await tx
+        .insert(dbCountry)
+        .values(countryData)
+        .onConflictDoNothing({ target: dbCountry.code })
+        .returning({
           id: dbCountry.id
         })
-        .from(dbCountry)
-        .where(eq(dbCountry.code, countryData.code)),
+    );
+
+    if (!country) {
+      country = findFirstOrThrow(
+        await tx
+          .select({
+            id: dbCountry.id
+          })
+          .from(dbCountry)
+          .where(eq(dbCountry.code, countryData.code)),
         'country'
       );
     }
@@ -204,18 +222,22 @@ async function login(osuToken: Token, discordToken: TokenRequestResult): Promise
   let user = await tryCatch(async () => {
     let country = await createOrGetCountry(data.country);
 
-		return findFirstOrThrow(
-      await db.insert(dbUser).values({
-        ...data.user,
-        apiKey,
-        countryId: country.id
-      }).onConflictDoUpdate({
-        target: dbUser.osuUserId,
-        set: {
+    return findFirstOrThrow(
+      await db
+        .insert(dbUser)
+        .values({
           ...data.user,
+          apiKey,
           countryId: country.id
-        }
-      }).returning(userSelect),
+        })
+        .onConflictDoUpdate({
+          target: dbUser.osuUserId,
+          set: {
+            ...data.user,
+            countryId: country.id
+          }
+        })
+        .returning(userSelect),
       'user'
     );
   }, "Can't create or update user.");
@@ -248,14 +270,15 @@ export const authRouter = t.router({
       userId = Number(tokenPayload.sub);
     }
 
-		let user = findFirst(
-			await db.select({
-				id: dbUser.id,
-				discordRefreshToken: dbUser.discordRefreshToken
-			})
-			.from(dbUser)
-			.where(eq(dbUser.osuUserId, userId))
-		);
+    let user = findFirst(
+      await db
+        .select({
+          id: dbUser.id,
+          discordRefreshToken: dbUser.discordRefreshToken
+        })
+        .from(dbUser)
+        .where(eq(dbUser.osuUserId, userId))
+    );
 
     try {
       // Avoid prompting user for discord auth if possible
@@ -319,17 +342,18 @@ export const authRouter = t.router({
       }
 
       let discordProfile = await getDiscordProfile(discordToken);
-			let updatedUser = findFirstOrThrow(
-        await db.update(dbUser)
-        .set({
-          discordAccesstoken: discordToken.access_token,
-          discordRefreshToken: discordToken.refresh_token,
-          discordUserId: discordProfile.id,
-          discordUsername: discordProfile.username,
-          discordDiscriminator: discordProfile.discriminator
-        })
-        .where(eq(dbUser.osuUserId, storedUser.osuUserId))
-        .returning(userSelect),
+      let updatedUser = findFirstOrThrow(
+        await db
+          .update(dbUser)
+          .set({
+            discordAccesstoken: discordToken.access_token,
+            discordRefreshToken: discordToken.refresh_token,
+            discordUserId: discordProfile.id,
+            discordUsername: discordProfile.username,
+            discordDiscriminator: discordProfile.discriminator
+          })
+          .where(eq(dbUser.osuUserId, storedUser.osuUserId))
+          .returning(userSelect),
         'user'
       );
 
@@ -359,14 +383,15 @@ export const authRouter = t.router({
     try {
       let user = await tryCatch(async () => {
         return findFirstOrThrow(
-          await db.select({
-            id: dbUser.id,
-            isAdmin: dbUser.isAdmin,
-            osuRefreshToken: dbUser.osuRefreshToken,
-            discordRefreshToken: dbUser.discordRefreshToken
-          })
-          .from(dbUser)
-          .where(eq(dbUser.id, storedUser?.id || 0)),
+          await db
+            .select({
+              id: dbUser.id,
+              isAdmin: dbUser.isAdmin,
+              osuRefreshToken: dbUser.osuRefreshToken,
+              discordRefreshToken: dbUser.discordRefreshToken
+            })
+            .from(dbUser)
+            .where(eq(dbUser.id, storedUser?.id || 0)),
           'user'
         );
       }, "Can't refresh user data.");
@@ -393,7 +418,8 @@ export const authRouter = t.router({
           let country = await createOrGetCountry(data.country);
 
           return findFirstOrThrow(
-            await db.update(dbUser)
+            await db
+              .update(dbUser)
               .set({
                 ...data.user,
                 countryId: country.id

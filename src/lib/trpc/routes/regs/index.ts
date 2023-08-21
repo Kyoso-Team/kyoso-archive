@@ -14,7 +14,7 @@ import { calc, hasPerms } from '$lib/utils';
 
 export const regsRouter = t.router({
   solo: soloRouter,
-  team: teamRouter,
+  team: teamRouter
   // Needs rework
   // updateOwnAvailability: t.procedure
   //   .use(getStoredUser)

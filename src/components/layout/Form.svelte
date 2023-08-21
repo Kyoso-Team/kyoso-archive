@@ -82,7 +82,7 @@
       <button type="submit" class="btn variant-filled-primary cursor-pointer" {disabled}
         >Submit</button
       >
-      <button type="button" class="variant-ringed-primary btn" on:click={onClose}>Cancel</button>
+      <button type="button" class="btn variant-ringed-primary" on:click={onClose}>Cancel</button>
     </div>
   </form>
 {/if}

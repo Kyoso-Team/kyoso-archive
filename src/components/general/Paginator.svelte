@@ -44,7 +44,7 @@
   <button class={arrowStyles} on:click={() => arrowBtnClick(page - 1)}>{'<'}</button>
   {#each new Array(last - first + 1) as _, i}
     {#if first + i === page}
-      <button class="variant-ghost-primary btn btn-sm">{first + i}</button>
+      <button class="btn btn-sm variant-ghost-primary">{first + i}</button>
     {:else}
       <button class="btn btn-sm variant-ghost-surface" on:click={() => change(first + i)}
         >{first + i}</button

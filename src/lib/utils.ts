@@ -203,7 +203,7 @@ export const byteUnit = {
 };
 
 /**
- * Returns an error message if the Zod schema didn't successfully parse the input  
+ * Returns an error message if the Zod schema didn't successfully parse the input
  */
 export function setSettingError<T extends string | number | null | undefined | Date>(
   parsed: SafeParseReturnType<T, T>
@@ -263,11 +263,13 @@ export function dateToHtmlInput(date: Date) {
  * Does a staff member meet certain permissions?
  */
 export function hasPerms(
-  staffMember: {
-    roles: {
-      permissions: StaffPermission[];
-    }[];
-  } | undefined,
+  staffMember:
+    | {
+        roles: {
+          permissions: StaffPermission[];
+        }[];
+      }
+    | undefined,
   necessaryPermissions: StaffPermission[] | StaffPermission
 ) {
   if (!staffMember) {
@@ -279,7 +281,7 @@ export function hasPerms(
   staffMember.roles.forEach((role) => {
     userPermissions.push(...role.permissions);
   });
-  
+
   userPermissions = [...new Set(userPermissions)];
 
   return Array.isArray(necessaryPermissions)

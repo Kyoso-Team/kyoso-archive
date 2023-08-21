@@ -13,7 +13,7 @@ function getLink(linkTo: string) {
   let builder: ((value: string) => string) | undefined;
   let column: AnyPgColumn = dbTournament.id;
 
-  switch(linkTo) {
+  switch (linkTo) {
     case 'forum':
       builder = (forumPostId: string) => buildLink.forumPost(Number(forumPostId));
       column = dbTournament.forumPostId;

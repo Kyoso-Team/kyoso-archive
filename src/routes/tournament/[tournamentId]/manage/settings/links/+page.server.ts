@@ -18,16 +18,18 @@ export const load = (async ({ parent }) => {
 
   let tournament = findFirstOrThrow(
     await db
-      .select(select(dbTournament, [
-        'forumPostId',
-        'discordInviteId',
-        'mainSheetId',
-        'twitchChannelName',
-        'youtubeChannelId',
-        'donationLink',
-        'websiteLink',
-        'twitterHandle'
-      ]))
+      .select(
+        select(dbTournament, [
+          'forumPostId',
+          'discordInviteId',
+          'mainSheetId',
+          'twitchChannelName',
+          'youtubeChannelId',
+          'donationLink',
+          'websiteLink',
+          'twitterHandle'
+        ])
+      )
       .from(dbTournament)
       .where(eq(dbTournament.id, data.tournament.id)),
     'tournament'

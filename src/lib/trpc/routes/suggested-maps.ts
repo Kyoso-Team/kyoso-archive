@@ -28,7 +28,12 @@ export const suggestedMapsRouter = t.router({
     .mutation(async ({ ctx, input }) => {
       isAllowed(
         ctx.user.isAdmin ||
-          hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug', 'mutate_pool_suggestions']),
+          hasPerms(ctx.staffMember, [
+            'mutate_tournament',
+            'host',
+            'debug',
+            'mutate_pool_suggestions'
+          ]),
         `create beatmap suggestion for tournament of ID ${input.tournamentId}`
       );
 
@@ -45,17 +50,15 @@ export const suggestedMapsRouter = t.router({
       let beatmap = await getOrCreateMap(db, ctx.user.osuAccessToken, osuBeatmapId, modpoolId);
 
       await tryCatch(async () => {
-        await db
-          .insert(dbSuggestedMap)
-          .values({
-            suggestedSkillsets,
-            tournamentId,
-            roundId,
-            modpoolId,
-            suggesterComment: comment,
-            beatmapId: beatmap.osuBeatmapId,
-            suggestedByStaffMemberId: ctx.staffMember.id
-          });
+        await db.insert(dbSuggestedMap).values({
+          suggestedSkillsets,
+          tournamentId,
+          roundId,
+          modpoolId,
+          suggesterComment: comment,
+          beatmapId: beatmap.osuBeatmapId,
+          suggestedByStaffMemberId: ctx.staffMember.id
+        });
       }, "Can't create beatmap suggestion.");
     }),
   updateMap: t.procedure
@@ -69,7 +72,12 @@ export const suggestedMapsRouter = t.router({
     .mutation(async ({ ctx, input }) => {
       isAllowed(
         ctx.user.isAdmin ||
-          hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug', 'mutate_pool_suggestions']),
+          hasPerms(ctx.staffMember, [
+            'mutate_tournament',
+            'host',
+            'debug',
+            'mutate_pool_suggestions'
+          ]),
         `update suggested beatmap of ID ${input.where.id}`
       );
 
@@ -102,7 +110,12 @@ export const suggestedMapsRouter = t.router({
     .mutation(async ({ ctx, input }) => {
       isAllowed(
         ctx.user.isAdmin ||
-          hasPerms(ctx.staffMember, ['mutate_tournament', 'host', 'debug', 'mutate_pool_suggestions']),
+          hasPerms(ctx.staffMember, [
+            'mutate_tournament',
+            'host',
+            'debug',
+            'mutate_pool_suggestions'
+          ]),
         `delete suggested beatmap of ID ${input.where.id}`
       );
 
@@ -112,9 +125,7 @@ export const suggestedMapsRouter = t.router({
       let { where } = input;
 
       await tryCatch(async () => {
-        await db
-          .delete(dbSuggestedMap)
-          .where(eq(dbSuggestedMap.id, where.id));
+        await db.delete(dbSuggestedMap).where(eq(dbSuggestedMap.id, where.id));
       }, `Can't delete suggested beatmap of ID ${where.id}.`);
     })
 });

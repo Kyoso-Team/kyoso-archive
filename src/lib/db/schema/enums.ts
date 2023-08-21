@@ -1,22 +1,10 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
 
-export const dbTournamentType = pgEnum('tournament_type', [
-  'teams',
-  'draft',
-  'solo'
-]);
+export const dbTournamentType = pgEnum('tournament_type', ['teams', 'draft', 'solo']);
 
-export const dbWinCondition = pgEnum('win_condition', [
-  'score',
-  'accuracy',
-  'combo',
-  'misses'
-]);
+export const dbWinCondition = pgEnum('win_condition', ['score', 'accuracy', 'combo', 'misses']);
 
-export const dbBanOrder = pgEnum('ban_oder', [
-  'ABABAB',
-  'ABBAAB'
-]);
+export const dbBanOrder = pgEnum('ban_oder', ['ABABAB', 'ABBAAB']);
 
 export const dbTournamentService = pgEnum('tournament_service', [
   'registrations', // Specifically player and staff registrations
@@ -26,15 +14,9 @@ export const dbTournamentService = pgEnum('tournament_service', [
   'pickems'
 ]);
 
-export const dbPrizeType = pgEnum('prize_type', [
-  'tournament',
-  'pickems'
-]);
+export const dbPrizeType = pgEnum('prize_type', ['tournament', 'pickems']);
 
-export const dbCashMetric = pgEnum('cash_metric', [
-  'fixed',
-  'percent'
-]);
+export const dbCashMetric = pgEnum('cash_metric', ['fixed', 'percent']);
 
 export const dbStageFormat = pgEnum('stage_format', [
   'groups',
@@ -45,11 +27,7 @@ export const dbStageFormat = pgEnum('stage_format', [
   'battle_royale'
 ]);
 
-export const dbMappoolState = pgEnum('mappool_state', [
-  'private',
-  'playtesting',
-  'public'
-]);
+export const dbMappoolState = pgEnum('mappool_state', ['private', 'playtesting', 'public']);
 
 export const dbQualifierRunsSummary = pgEnum('qualifier_runs_summary', [
   'average', // Calculate the average score for each map in all runs
@@ -127,17 +105,7 @@ export const dbJoinRequestStatus = pgEnum('join_request_status', [
   'rejected'
 ]);
 
-export const dbMod = pgEnum('mod', [
-  'ez',
-  'hd',
-  'hr',
-  'sd',
-  'dt',
-  'rx',
-  'ht',
-  'fl',
-  'pf'
-]);
+export const dbMod = pgEnum('mod', ['ez', 'hd', 'hr', 'sd', 'dt', 'rx', 'ht', 'fl', 'pf']);
 
 export const dbSkillset = pgEnum('skillset', [
   'consistency',
@@ -157,10 +125,7 @@ export const dbSkillset = pgEnum('skillset', [
   'jack_of_all_trades'
 ]);
 
-export const dbOpponent = pgEnum('opponent', [
-  'opponent1',
-  'opponent2'
-]);
+export const dbOpponent = pgEnum('opponent', ['opponent1', 'opponent2']);
 
 export const dbIssueType = pgEnum('issue_type', [
   'security', // Security vulnerability
@@ -170,10 +135,7 @@ export const dbIssueType = pgEnum('issue_type', [
   'user_behavior' // Inappropriate behavior from a user
 ]);
 
-export const dbIssueNotifType = pgEnum('issue_notification_type', [
-  'submission',
-  'resolved'
-]);
+export const dbIssueNotifType = pgEnum('issue_notification_type', ['submission', 'resolved']);
 
 export const dbStaffChangeNotifAction = pgEnum('staff_change_notification_action', [
   'added',

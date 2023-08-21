@@ -64,7 +64,7 @@
             class={`btn btn-sm ${user.isAdmin ? 'variant-filled-error' : 'variant-filled'}`}
             on:click={() => adminChange(user)}>{user.isAdmin ? 'Remove' : 'Make'} Admin</button
           >
-          <button class="variant-filled-error btn btn-sm" on:click={() => deleteUser(user)}
+          <button class="btn btn-sm variant-filled-error" on:click={() => deleteUser(user)}
             >Delete User</button
           >
         </Dropdown>

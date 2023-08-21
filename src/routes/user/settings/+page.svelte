@@ -76,7 +76,7 @@
     >
       Your Discord tag is {visibleDiscord ? '' : 'NOT '}visible!
     </SlideToggle>
-    <button on:click={confirmDiscordChange} class="variant-filled-error btn mt-4"
+    <button on:click={confirmDiscordChange} class="btn variant-filled-error mt-4"
       >CHANGE DISCORD ACCOUNT</button
     >
   </section>
@@ -102,6 +102,6 @@
     <button bind:this={apiReveal} on:click={revealApiKey} class="btn variant-filled-primary"
       >Reveal key</button
     >
-    <button on:click={confirmKeyReset} class="variant-filled-error btn">RESET KEY</button>
+    <button on:click={confirmKeyReset} class="btn variant-filled-error">RESET KEY</button>
   </section>
 </div>

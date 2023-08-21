@@ -40,10 +40,7 @@ export const load = (async ({ parent, url }) => {
         'discordUsername',
         'discordDiscriminator'
       ]),
-      country: select(dbCountry, [
-        'name',
-        'code'
-      ])
+      country: select(dbCountry, ['name', 'code'])
     })
     .from(dbUser)
     .where(search ? where : undefined)

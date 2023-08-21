@@ -43,11 +43,12 @@ async function createRound({
   standardRound,
   qualifierRound,
   battleRoyaleRound
-}: Omit<InferModel<typeof dbRound, 'insert'>, 'order'> & Partial<{
-  standardRound: Omit<InferModel<typeof dbStandardRound, 'insert'>, 'roundId'>;
-  qualifierRound: Omit<InferModel<typeof dbQualifierRound, 'insert'>, 'roundId'>;
-  battleRoyaleRound: Omit<InferModel<typeof dbBattleRoyaleRound, 'insert'>, 'roundId'>;
-}>) {
+}: Omit<InferModel<typeof dbRound, 'insert'>, 'order'> &
+  Partial<{
+    standardRound: Omit<InferModel<typeof dbStandardRound, 'insert'>, 'roundId'>;
+    qualifierRound: Omit<InferModel<typeof dbQualifierRound, 'insert'>, 'roundId'>;
+    battleRoyaleRound: Omit<InferModel<typeof dbBattleRoyaleRound, 'insert'>, 'roundId'>;
+  }>) {
   await tryCatch(async () => {
     await db.transaction(async (tx) => {
       let roundCount = await getRowCount(dbRound, eq(dbRound.stageId, stageId));
@@ -63,28 +64,22 @@ async function createRound({
         .returning({
           roundId: dbRound.id
         });
-  
+
       if (standardRound) {
-        await tx
-          .insert(dbStandardRound)
-          .values({
-            ...standardRound,
-            roundId
-          });
+        await tx.insert(dbStandardRound).values({
+          ...standardRound,
+          roundId
+        });
       } else if (qualifierRound) {
-        await tx
-          .insert(dbQualifierRound)
-          .values({
-            ...qualifierRound,
-            roundId
-          });
+        await tx.insert(dbQualifierRound).values({
+          ...qualifierRound,
+          roundId
+        });
       } else if (battleRoyaleRound) {
-        await tx
-          .insert(dbBattleRoyaleRound)
-          .values({
-            ...battleRoyaleRound,
-            roundId
-          });
+        await tx.insert(dbBattleRoyaleRound).values({
+          ...battleRoyaleRound,
+          roundId
+        });
       }
     });
   }, "Can't create round.");
@@ -106,24 +101,15 @@ async function updateRound(
 ) {
   await tryCatch(async () => {
     if (name) {
-      await db
-        .update(dbRound)
-        .set({ name })
-        .where(eq(dbRound.id, roundId));
+      await db.update(dbRound).set({ name }).where(eq(dbRound.id, roundId));
     }
 
     if (standardRound) {
-      await db
-        .update(dbStandardRound)
-        .set(standardRound);
+      await db.update(dbStandardRound).set(standardRound);
     } else if (qualifierRound) {
-      await db
-        .update(dbQualifierRound)
-        .set(qualifierRound);
+      await db.update(dbQualifierRound).set(qualifierRound);
     } else if (battleRoyaleRound) {
-      await db
-        .update(dbBattleRoyaleRound)
-        .set(battleRoyaleRound);
+      await db.update(dbBattleRoyaleRound).set(battleRoyaleRound);
     }
   }, `Can't update round of ID ${roundId}.`);
 }
@@ -358,19 +344,14 @@ export const roundsRouter = t.router({
 
       await tryCatch(async () => {
         await db.transaction(async (tx) => {
-          await tx
-            .delete(dbRound)
-            .where(eq(dbRound.id, id));
-          
+          await tx.delete(dbRound).where(eq(dbRound.id, id));
+
           await tx
             .update(dbRound)
             .set({
               order: sql`${dbRound.order} - 1`
             })
-            .where(and(
-              eq(dbRound.stageId, stageId),
-              gt(dbRound.order, order)
-            ));
+            .where(and(eq(dbRound.stageId, stageId), gt(dbRound.order, order)));
         });
       }, `Can't delete round of ID ${id}.`);
     })

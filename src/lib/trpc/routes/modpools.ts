@@ -44,17 +44,15 @@ export const modpoolsRouter = t.router({
       await tryCatch(async () => {
         let modpoolCount = await getRowCount(dbModpool, eq(dbModpool.roundId, roundId));
 
-        await db
-          .insert(dbModpool)
-          .values({
-            category,
-            isFreeMod,
-            isTieBreaker,
-            mapCount,
-            mods,
-            roundId,
-            order: modpoolCount + 1
-          });
+        await db.insert(dbModpool).values({
+          category,
+          isFreeMod,
+          isTieBreaker,
+          mapCount,
+          mods,
+          roundId,
+          order: modpoolCount + 1
+        });
       }, "Can't create modpool.");
     }),
   updateModpool: t.procedure
@@ -144,19 +142,14 @@ export const modpoolsRouter = t.router({
 
       await tryCatch(async () => {
         await db.transaction(async (tx) => {
-          await tx
-            .delete(dbModpool)
-            .where(eq(dbModpool.id, id));
-          
+          await tx.delete(dbModpool).where(eq(dbModpool.id, id));
+
           await tx
             .update(dbModpool)
             .set({
               order: sql`${dbModpool.order} - 1`
             })
-            .where(and(
-              eq(dbModpool.roundId, roundId),
-              gt(dbModpool.order, order)
-            ));
+            .where(and(eq(dbModpool.roundId, roundId), gt(dbModpool.order, order)));
         });
       }, `Can't delete modpool of ID ${id}.`);
     })

@@ -17,11 +17,7 @@ export const load = (async ({ parent }) => {
   }
 
   let modMultipliers = await db
-    .select(select(dbModMultiplier, [
-      'id',
-      'mods',
-      'value'
-    ]))
+    .select(select(dbModMultiplier, ['id', 'mods', 'value']))
     .from(dbModMultiplier)
     .where(eq(dbModMultiplier.tournamentId, data.tournament.id));
 

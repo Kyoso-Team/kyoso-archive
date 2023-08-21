@@ -61,7 +61,15 @@
     ]);
   }
 
-  if (hasPerms(data.staffMember, ['host', 'debug', 'mutate_tournament', 'view_staff_members', 'view_regs'])) {
+  if (
+    hasPerms(data.staffMember, [
+      'host',
+      'debug',
+      'mutate_tournament',
+      'view_staff_members',
+      'view_regs'
+    ])
+  ) {
     let regs = sidebar.setSection('Regs.', 'regs');
 
     if (hasPerms(data.staffMember, ['host', 'debug', 'mutate_tournament', 'view_staff_members'])) {
@@ -127,7 +135,15 @@
     }
   }
 
-  if (hasPerms(data.staffMember, ['host', 'debug', 'mutate_tournament', 'view_pool_suggestions', 'view_pooled_maps'])) {
+  if (
+    hasPerms(data.staffMember, [
+      'host',
+      'debug',
+      'mutate_tournament',
+      'view_pool_suggestions',
+      'view_pooled_maps'
+    ])
+  ) {
     // let pooling = sidebar.setSection('Pooling', 'pooling');
   }
 

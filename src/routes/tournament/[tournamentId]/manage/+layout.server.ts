@@ -21,17 +21,21 @@ export const load = (async ({ parent }) => {
       }
     })
     .from(dbStaffMemberToStaffRole)
-    .where(and(
-      eq(dbStaffMemberToStaffRole.staffMemberId, dbStaffMember.id),
-      eq(dbStaffMemberToStaffRole.staffRoleId, dbStaffRole.id)
-    ))
+    .where(
+      and(
+        eq(dbStaffMemberToStaffRole.staffMemberId, dbStaffMember.id),
+        eq(dbStaffMemberToStaffRole.staffRoleId, dbStaffRole.id)
+      )
+    )
     .innerJoin(dbStaffMember, eq(dbStaffMember.userId, user.id))
     .innerJoin(dbStaffRole, eq(dbStaffRole.tournamentId, tournament.id));
 
-  let staffMember = results[0] ? {
-    id: results[0].member.id,
-    roles: results.map(({ role }) => role)
-  } : undefined;
+  let staffMember = results[0]
+    ? {
+        id: results[0].member.id,
+        roles: results.map(({ role }) => role)
+      }
+    : undefined;
 
   if (!staffMember) {
     throw error(403, `You're not a staff member for tournament of ID ${tournament.id}.`);

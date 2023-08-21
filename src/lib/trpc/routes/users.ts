@@ -18,9 +18,7 @@ export const usersRouter = t.router({
             showDiscordTag: input
           })
           .where(eq(dbUser.id, storedUser.id))
-          .returning(select(dbUser, [
-            'showDiscordTag'
-          ])),
+          .returning(select(dbUser, ['showDiscordTag'])),
         'user'
       );
     }, "Can't update user data.");
@@ -47,9 +45,7 @@ export const usersRouter = t.router({
               isAdmin: input.toAdmin
             })
             .where(eq(dbUser.id, input.id))
-            .returning(select(dbUser, [
-              'isAdmin'
-            ])),
+            .returning(select(dbUser, ['isAdmin'])),
           'user'
         );
       }, "Can't change admin status of user.");
@@ -71,11 +67,8 @@ export const usersRouter = t.router({
           await db
             .delete(dbUser)
             .where(eq(dbUser.id, input))
-            .returning(select(dbUser, [
-              'id',
-              'osuUsername'
-            ])),
-            'user'
+            .returning(select(dbUser, ['id', 'osuUsername'])),
+          'user'
         );
       }, "Can't delete user.");
 

@@ -1,5 +1,43 @@
-import { pgTable, serial, varchar, timestamp, boolean, integer, smallint, text, char, real, unique } from 'drizzle-orm/pg-core';
-import { dbTournamentService, dbTournamentType, dbPurchase, dbBanOrder, dbWinCondition, dbPrizeType, dbCashMetric, dbStageFormat, dbMappoolState, dbQualifierRunsSummary, dbLobby, dbModpool, dbPickemUser, dbPlayer, dbPlayerScore, dbPooledMap, dbPotentialMatch, dbPredictionSubmission, dbRoundPublicationNotif, dbStaffMember, dbStaffRole, dbSuggestedMap, dbTeam, dbTeamScore, dbModMultiplier } from '.';
+import {
+  pgTable,
+  serial,
+  varchar,
+  timestamp,
+  boolean,
+  integer,
+  smallint,
+  text,
+  char,
+  real,
+  unique
+} from 'drizzle-orm/pg-core';
+import {
+  dbTournamentService,
+  dbTournamentType,
+  dbPurchase,
+  dbBanOrder,
+  dbWinCondition,
+  dbPrizeType,
+  dbCashMetric,
+  dbStageFormat,
+  dbMappoolState,
+  dbQualifierRunsSummary,
+  dbLobby,
+  dbModpool,
+  dbPickemUser,
+  dbPlayer,
+  dbPlayerScore,
+  dbPooledMap,
+  dbPotentialMatch,
+  dbPredictionSubmission,
+  dbRoundPublicationNotif,
+  dbStaffMember,
+  dbStaffRole,
+  dbSuggestedMap,
+  dbTeam,
+  dbTeamScore,
+  dbModMultiplier
+} from '.';
 import { timestampConfig, length, actions } from '../utils';
 import { relations } from 'drizzle-orm';
 
@@ -24,7 +62,10 @@ export const dbTournament = pgTable('tournament', {
   useBWS: boolean('use_bws').notNull(),
   rules: text('rules'), // Markdown
   type: dbTournamentType('type').notNull(),
-  services: dbTournamentService('services').array(dbTournamentService.enumValues.length).notNull().default([]),
+  services: dbTournamentService('services')
+    .array(dbTournamentService.enumValues.length)
+    .notNull()
+    .default([]),
   // Links
   forumPostId: integer('forum_post_id'),
   discordInviteId: varchar('discord_invite_id', length(12)),
@@ -77,7 +118,9 @@ export const dbPrize = pgTable('prize', {
   banner: boolean('banner').notNull(),
   additionalItems: varchar('additional_items', length(25)).array().notNull().default([]),
   monthsOsuSupporter: smallint('months_osu_supporter'),
-  tournamentId: integer('tournament_id').notNull().references(() => dbTournament.id, actions('cascade'))
+  tournamentId: integer('tournament_id')
+    .notNull()
+    .references(() => dbTournament.id, actions('cascade'))
 });
 
 export const dbPrizeRelations = relations(dbPrize, ({ one }) => ({
@@ -91,7 +134,9 @@ export const dbPrizeCash = pgTable('prize_cash', {
   value: real('value').notNull(),
   metric: dbCashMetric('metric').notNull(),
   currency: char('currency', length(3)).notNull(),
-  inPrizeId: integer('in_prize_id').primaryKey().references(() => dbPrize.id)
+  inPrizeId: integer('in_prize_id')
+    .primaryKey()
+    .references(() => dbPrize.id)
 });
 
 export const dbPrizeCashRelations = relations(dbPrizeCash, ({ one }) => ({
@@ -101,15 +146,21 @@ export const dbPrizeCashRelations = relations(dbPrizeCash, ({ one }) => ({
   })
 }));
 
-export const dbStage = pgTable('stage', {
-  id: serial('id').primaryKey(),
-  format: dbStageFormat('format').notNull(),
-  order: smallint('order').notNull(),
-  isMainStage: boolean('is_main_stage').notNull().default(false),
-  tournamentId: integer('tournament_id').notNull().references(() => dbTournament.id, actions('cascade'))
-}, (tbl) => ({
-  tournamentIdFormatKey: unique('stage_tournament_id_format_key').on(tbl.tournamentId, tbl.format)
-}));
+export const dbStage = pgTable(
+  'stage',
+  {
+    id: serial('id').primaryKey(),
+    format: dbStageFormat('format').notNull(),
+    order: smallint('order').notNull(),
+    isMainStage: boolean('is_main_stage').notNull().default(false),
+    tournamentId: integer('tournament_id')
+      .notNull()
+      .references(() => dbTournament.id, actions('cascade'))
+  },
+  (tbl) => ({
+    tournamentIdFormatKey: unique('stage_tournament_id_format_key').on(tbl.tournamentId, tbl.format)
+  })
+);
 
 export const dbStageRelations = relations(dbStage, ({ one, many }) => ({
   tournament: one(dbTournament, {
@@ -119,19 +170,27 @@ export const dbStageRelations = relations(dbStage, ({ one, many }) => ({
   rounds: many(dbRound)
 }));
 
-export const dbRound = pgTable('round', {
-  id: serial('id').primaryKey(),
-  name: varchar('name', length(20)).notNull(),
-  order: smallint('order').notNull(),
-  targetStarRating: real('target_star_rating'),
-  mappoolState: dbMappoolState('mappool_state').notNull().default('private'),
-  publishSchedules: boolean('publish_schedules').notNull().default(false),
-  publishStats: boolean('publish_stats').notNull().default(false),
-  stageId: integer('stage_id').notNull().references(() => dbStage.id, actions('cascade')),
-  tournamentId: integer('tournament_id').notNull().references(() => dbTournament.id, actions('cascade'))
-}, (tbl) => ({
-  nameTournamentIdKey: unique('round_name_tournament_id_key').on(tbl.name, tbl.tournamentId)
-}));
+export const dbRound = pgTable(
+  'round',
+  {
+    id: serial('id').primaryKey(),
+    name: varchar('name', length(20)).notNull(),
+    order: smallint('order').notNull(),
+    targetStarRating: real('target_star_rating'),
+    mappoolState: dbMappoolState('mappool_state').notNull().default('private'),
+    publishSchedules: boolean('publish_schedules').notNull().default(false),
+    publishStats: boolean('publish_stats').notNull().default(false),
+    stageId: integer('stage_id')
+      .notNull()
+      .references(() => dbStage.id, actions('cascade')),
+    tournamentId: integer('tournament_id')
+      .notNull()
+      .references(() => dbTournament.id, actions('cascade'))
+  },
+  (tbl) => ({
+    nameTournamentIdKey: unique('round_name_tournament_id_key').on(tbl.name, tbl.tournamentId)
+  })
+);
 
 export const dbRoundRelations = relations(dbRound, ({ one, many }) => ({
   stage: one(dbStage, {
@@ -159,7 +218,9 @@ export const dbRoundRelations = relations(dbRound, ({ one, many }) => ({
 export const dbStandardRound = pgTable('standard_round', {
   bestOf: smallint('best_of').notNull(),
   banCount: smallint('ban_count').notNull(),
-  roundId: integer('round_id').primaryKey().references(() => dbRound.id, actions('cascade'))
+  roundId: integer('round_id')
+    .primaryKey()
+    .references(() => dbRound.id, actions('cascade'))
 });
 
 export const dbStandardRoundRelations = relations(dbStandardRound, ({ one }) => ({
@@ -173,7 +234,9 @@ export const dbQualifierRound = pgTable('qualifier_round', {
   publishMpLinks: boolean('publish_mp_links').notNull().default(false),
   runCount: smallint('run_count').notNull(), // How many times will the mappool be played
   summarizeRunsAs: dbQualifierRunsSummary('summarize_runs_as').notNull().default('average'),
-  roundId: integer('round_id').primaryKey().references(() => dbRound.id, actions('cascade'))
+  roundId: integer('round_id')
+    .primaryKey()
+    .references(() => dbRound.id, actions('cascade'))
 });
 
 export const dbQualifierRoundRelations = relations(dbQualifierRound, ({ one }) => ({
@@ -185,7 +248,9 @@ export const dbQualifierRoundRelations = relations(dbQualifierRound, ({ one }) =
 
 export const dbBattleRoyaleRound = pgTable('battle_royale_round', {
   playersEliminatedPerMap: smallint('players_eliminated_per_map').notNull(),
-  roundId: integer('round_id').primaryKey().references(() => dbRound.id, actions('cascade'))
+  roundId: integer('round_id')
+    .primaryKey()
+    .references(() => dbRound.id, actions('cascade'))
 });
 
 export const dbBattleRoyaleRoundRelations = relations(dbBattleRoyaleRound, ({ one }) => ({

@@ -12,13 +12,7 @@ export const load = (async ({ parent, params }) => {
 
   let tournament = findFirst(
     await db
-      .select(select(dbTournament, [
-        'id',
-        'name',
-        'acronym',
-        'type',
-        'services'
-      ]))
+      .select(select(dbTournament, ['id', 'name', 'acronym', 'type', 'services']))
       .from(dbTournament)
       .where(eq(dbTournament.id, tournamentId))
   );

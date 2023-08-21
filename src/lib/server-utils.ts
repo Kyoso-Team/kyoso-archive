@@ -27,7 +27,7 @@ export const forbidIf = {
     }
   },
   /**
-   * Disallow if the tournament doesn't include certain services 
+   * Disallow if the tournament doesn't include certain services
    */
   doesntIncludeService: (
     tournament: {
@@ -158,20 +158,20 @@ export function paginate(page: number, elementsPerPage: number = 30) {
  * Finds the first value in a set of results in a Drizzle query
  */
 export function findFirst<T>(queryResults: T[]): T | undefined {
-	return queryResults.at(0);
+  return queryResults.at(0);
 }
 
 /**
  * Finds the first value in a set of results in a Drizzle query. Throws an error if the set is empty
  */
 export function findFirstOrThrow<T>(queryResults: T[], objectName: string): T {
-	let result = queryResults.at(0);
+  let result = queryResults.at(0);
 
-	if (!result) {
-		throw new Error(`Couldn't find ${objectName}`);
-	}
+  if (!result) {
+    throw new Error(`Couldn't find ${objectName}`);
+  }
 
-	return result;
+  return result;
 }
 
 /**
@@ -199,7 +199,7 @@ export function textSearch(...columns: AnyColumn[]) {
     query: (str: string) => {
       let sq = sql`'${str}'`;
       q.append(sq);
-      return q; 
+      return q;
     }
   };
 }
@@ -207,14 +207,13 @@ export function textSearch(...columns: AnyColumn[]) {
 /**
  * Get the amount of rows of a certain table.Optionally pass a where clause to filter
  */
-export async function getRowCount<T extends AnyPgTable>(
-  table: T,
-  where?: SQL | undefined
-) {
-  let q = db.select({
-    count: sql`count(*)::bigint`.mapWith(Number)
-  }).from(table);
-  
+export async function getRowCount<T extends AnyPgTable>(table: T, where?: SQL | undefined) {
+  let q = db
+    .select({
+      count: sql`count(*)::bigint`.mapWith(Number)
+    })
+    .from(table);
+
   if (where) {
     q.where(where);
   }
@@ -225,7 +224,7 @@ export async function getRowCount<T extends AnyPgTable>(
 /**
  * Maps the table's columns in a select clause to avoid writing verbose objects.
  * Example:
- * 
+ *
  * ```ts
  * // Without select
  * db.select({
@@ -249,7 +248,7 @@ export function select<
   I extends F
 >(table: T, fields: I[]) {
   let map = new Map<string, AnyPgColumn>([]);
- 
+
   for (let i = 0; i < fields.length; i++) {
     let column = table[fields[i]] as AnyPgColumn;
     map.set(fields[i].toString(), column);

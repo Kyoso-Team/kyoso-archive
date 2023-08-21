@@ -17,18 +17,9 @@ export const load = (async ({ parent }) => {
   }
 
   let roles = await db
-    .select(select(dbStaffRole, [
-      'id',
-      'name',
-      'order',
-      'permissions',
-      'color'
-    ]))
+    .select(select(dbStaffRole, ['id', 'name', 'order', 'permissions', 'color']))
     .from(dbStaffRole)
-    .where(and(
-      eq(dbStaffRole.tournamentId, data.tournament.id),
-      gt(dbStaffRole.order, 1)
-    ))
+    .where(and(eq(dbStaffRole.tournamentId, data.tournament.id), gt(dbStaffRole.order, 1)))
     .orderBy(asc(dbStaffRole.order));
 
   return {

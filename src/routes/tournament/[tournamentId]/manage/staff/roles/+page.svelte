@@ -233,14 +233,14 @@
         {#if data.roles.length > 1}
           <div class="mb-2 grid w-[9.75rem] grid-cols-[50%_50%] gap-1">
             <button
-              class="variant-ringed-secondary btn btn-sm py-1"
+              class="btn btn-sm variant-ringed-secondary py-1"
               disabled={selectedIndex === 0}
               on:click={() => onMoveRoleOrder('up', selectedRole, data.roles[selectedIndex - 1])}
             >
               <MoveUpIcon w={20} h={20} />
             </button>
             <button
-              class="variant-ringed-secondary btn btn-sm py-1"
+              class="btn btn-sm variant-ringed-secondary py-1"
               disabled={selectedIndex === data.roles.length - 1}
               on:click={() => onMoveRoleOrder('down', selectedRole, data.roles[selectedIndex + 1])}
             >
@@ -434,7 +434,10 @@
               permissionName="mutate_pool_suggestions"
               description="The user is able to create, view and update the mappool's beatmap suggestions for any round."
               disabled={disabled ||
-                hasPerms(selectedRole.permissions, ['mutate_tournament', 'delete_pool_suggestions'])}
+                hasPerms(selectedRole.permissions, [
+                  'mutate_tournament',
+                  'delete_pool_suggestions'
+                ])}
               bind:permissions={selectedRole.permissions}
             />
             <Permission
@@ -591,7 +594,7 @@
             disabled={isEqual(data.roles[selectedIndex], selectedRole)}
             on:click={() => onUpdateRole(selectedRole)}>Update</button
           >
-          <button class="variant-filled-error btn" on:click={() => onDeleteMultiplier(selectedRole)}
+          <button class="btn variant-filled-error" on:click={() => onDeleteMultiplier(selectedRole)}
             >Delete</button
           >
         </div>

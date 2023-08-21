@@ -18,19 +18,21 @@ export const load = (async ({ parent }) => {
 
   let tournament = findFirstOrThrow(
     await db
-      .select(select(dbTournament, [
-        'startTimerLength',
-        'pickTimerLength',
-        'doublePickAllowed',
-        'doubleBanAllowed',
-        'rollRules',
-        'freeModRules',
-        'warmupRules',
-        'lateProcedures',
-        'banOrder',
-        'alwaysForceNoFail',
-        'winCondition'
-      ]))
+      .select(
+        select(dbTournament, [
+          'startTimerLength',
+          'pickTimerLength',
+          'doublePickAllowed',
+          'doubleBanAllowed',
+          'rollRules',
+          'freeModRules',
+          'warmupRules',
+          'lateProcedures',
+          'banOrder',
+          'alwaysForceNoFail',
+          'winCondition'
+        ])
+      )
       .from(dbTournament)
       .where(eq(dbTournament.id, data.tournament.id)),
     'tournament'

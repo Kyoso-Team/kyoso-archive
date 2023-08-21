@@ -128,7 +128,7 @@
     </div>
     <div class="my-2 flex justify-end gap-2">
       <button class="btn variant-filled-primary" on:click={onChangeBanner}>Change</button>
-      <button class="variant-filled-error btn" disabled={!data.hasBanner} on:click={onDeleteBanner}
+      <button class="btn variant-filled-error" disabled={!data.hasBanner} on:click={onDeleteBanner}
         >Delete</button
       >
     </div>
@@ -143,7 +143,7 @@
     </div>
     <div class="mt-2 flex justify-end gap-2">
       <button class="btn variant-filled-primary" on:click={onChangeLogo}>Change</button>
-      <button class="variant-filled-error btn" disabled={!data.hasLogo} on:click={onDeleteLogo}
+      <button class="btn variant-filled-error" disabled={!data.hasLogo} on:click={onDeleteLogo}
         >Delete</button
       >
     </div>

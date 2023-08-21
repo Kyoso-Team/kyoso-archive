@@ -51,7 +51,7 @@ export const load = (async ({ parent }) => {
     },
     where: (stage, { eq }) => eq(stage.tournamentId, data.tournament.id),
     orderBy: (stage, { asc }) => asc(stage.order)
-  });;
+  });
 
   return {
     stages,

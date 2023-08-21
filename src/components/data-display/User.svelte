@@ -18,7 +18,7 @@
   export let showDiscordTag = false;
 </script>
 
-<div class="card w-64 p-4 bg-surface-backdrop-token sm:w-72 min-h-[113px]">
+<div class="card min-h-[113px] w-64 p-4 bg-surface-backdrop-token sm:w-72">
   <div class="grid grid-cols-[max-content_1fr_1fr_1fr] gap-0">
     <div class="row-span-2 mr-2 max-w-min">
       <Avatar src={buildUrl.userAvatar(user.osuUserId)} rounded="rounded-md" width="w-12" />
@@ -41,7 +41,7 @@
         <span class="badge variant-filled-secondary mx-auto">Admin</span>
       {/if}
       {#if user.isRestricted}
-        <span class="variant-filled-error badge mx-auto">Restricted</span>
+        <span class="badge variant-filled-error mx-auto">Restricted</span>
       {/if}
     </div>
   </div>

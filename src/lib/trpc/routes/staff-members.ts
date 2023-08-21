@@ -34,7 +34,7 @@ export const staffMembersRouter = t.router({
 
       await tryCatch(async () => {
         await db.transaction(async (tx) => {
-          let [{ staffMemberId }] =await tx
+          let [{ staffMemberId }] = await tx
             .insert(dbStaffMember)
             .values({
               userId,
@@ -43,15 +43,13 @@ export const staffMembersRouter = t.router({
             .returning({
               staffMemberId: dbStaffMember.id
             });
-          
-          await tx
-            .insert(dbStaffMemberToStaffRole)
-            .values(
-              roleIds.map((staffRoleId) => ({
-                staffMemberId,
-                staffRoleId
-              }))
-            );
+
+          await tx.insert(dbStaffMemberToStaffRole).values(
+            roleIds.map((staffRoleId) => ({
+              staffMemberId,
+              staffRoleId
+            }))
+          );
         });
       }, "Can't create staff member.");
     }),
@@ -85,10 +83,12 @@ export const staffMembersRouter = t.router({
         if (removeIds.length > 0) {
           await db
             .delete(dbStaffMemberToStaffRole)
-            .where(and(
-              eq(dbStaffMemberToStaffRole.staffMemberId, where.id),
-              inArray(dbStaffMemberToStaffRole.staffRoleId, removeIds)
-            ));
+            .where(
+              and(
+                eq(dbStaffMemberToStaffRole.staffMemberId, where.id),
+                inArray(dbStaffMemberToStaffRole.staffRoleId, removeIds)
+              )
+            );
         }
 
         if (addIds.length > 0) {
@@ -101,10 +101,7 @@ export const staffMembersRouter = t.router({
               }))
             )
             .onConflictDoNothing({
-              target: [
-                dbStaffMemberToStaffRole.staffMemberId,
-                dbStaffMemberToStaffRole.staffRoleId
-              ]
+              target: [dbStaffMemberToStaffRole.staffMemberId, dbStaffMemberToStaffRole.staffRoleId]
             });
         }
       }, `Can't update staff member of ID ${where.id}.`);
@@ -127,9 +124,7 @@ export const staffMembersRouter = t.router({
       let { where } = input;
 
       await tryCatch(async () => {
-        await db
-          .delete(dbStaffMember)
-          .where(eq(dbStaffMember.id, where.id));
+        await db.delete(dbStaffMember).where(eq(dbStaffMember.id, where.id));
       }, `Can't delete staff member of ID ${where.id}.`);
     })
 });

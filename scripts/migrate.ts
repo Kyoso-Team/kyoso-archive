@@ -3,7 +3,7 @@ import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { config } from 'dotenv';
 import { z } from 'zod';
- 
+
 config();
 const dbUrl = z.string().nonempty().parse(process.env.DATABASE_URL);
 
@@ -18,4 +18,4 @@ async function main() {
   console.log('Applied migrations successfully');
 }
 
-main().then(() => process.exit(0));;
+main().then(() => process.exit(0));

@@ -133,7 +133,7 @@ const users = await db
   .from(dbUser)
   .where(eq(dbUser.isRestricted, false))
   .orderBy(asc(dbUser.registeredAt))
-  .limit(30)
+  .limit(30);
 ```
 
 **RQB API**

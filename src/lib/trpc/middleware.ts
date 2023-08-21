@@ -1,5 +1,12 @@
 import db from '$db';
-import { dbUser, dbTournament, dbRound, dbStaffMemberToStaffRole, dbStaffRole, dbStaffMember } from '$db/schema';
+import {
+  dbUser,
+  dbTournament,
+  dbRound,
+  dbStaffMemberToStaffRole,
+  dbStaffRole,
+  dbStaffMember
+} from '$db/schema';
 import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
 import { verifyJWT } from '$lib/jwt';
@@ -32,16 +39,18 @@ export const getUser = t.middleware(async ({ ctx, next }) => {
   let storedUser = getStoredUserHelper(ctx);
   let user = findFirstOrThrow(
     await db
-      .select(select(dbUser, [
-        'id',
-        'isAdmin',
-        'osuUserId',
-        'osuUsername',
-        'discordUserId',
-        'discordDiscriminator',
-        'freeServicesLeft',
-        'osuAccessToken'
-      ]))
+      .select(
+        select(dbUser, [
+          'id',
+          'isAdmin',
+          'osuUserId',
+          'osuUsername',
+          'discordUserId',
+          'discordDiscriminator',
+          'freeServicesLeft',
+          'osuAccessToken'
+        ])
+      )
       .from(dbUser)
       .where(eq(dbUser.id, storedUser.id)),
     'user'
@@ -73,12 +82,7 @@ export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
 
   let user = findFirstOrThrow(
     await db
-      .select(select(dbUser, [
-        'id',
-        'isAdmin',
-        'osuUserId',
-        'osuAccessToken'
-      ]))
+      .select(select(dbUser, ['id', 'isAdmin', 'osuUserId', 'osuAccessToken']))
       .from(dbUser)
       .where(eq(dbUser.id, storedUser.id)),
     'user'
@@ -87,14 +91,16 @@ export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
   let tournament = await tryCatch(async () => {
     return findFirstOrThrow(
       await db
-        .select(select(dbTournament, [
-          'id',
-          'concludesOn',
-          'services',
-          'type',
-          'teamSize',
-          'teamPlaySize'
-        ]))
+        .select(
+          select(dbTournament, [
+            'id',
+            'concludesOn',
+            'services',
+            'type',
+            'teamSize',
+            'teamPlaySize'
+          ])
+        )
         .from(dbTournament)
         .where(eq(dbTournament.id, parsed.tournamentId)),
       'tournament'
@@ -112,20 +118,17 @@ export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
         }
       })
       .from(dbStaffMemberToStaffRole)
-      .where(and(
-        eq(dbStaffMember.userId, user.id),
-        eq(dbStaffMember.tournamentId, tournament.id)
-      ))
+      .where(and(eq(dbStaffMember.userId, user.id), eq(dbStaffMember.tournamentId, tournament.id)))
       .innerJoin(dbStaffMember, eq(dbStaffMember.id, dbStaffMemberToStaffRole.staffMemberId))
       .innerJoin(dbStaffRole, eq(dbStaffRole.id, dbStaffMemberToStaffRole.staffRoleId));
 
     if (!data[0]) {
-      throw new Error('Couldn\'t find staff member');
+      throw new Error("Couldn't find staff member");
     }
 
     return {
       id: data[0].staffMember.id,
-      roles: data.map(({ staffRole }) => staffRole)  
+      roles: data.map(({ staffRole }) => staffRole)
     };
   }, `Couldn't find staff member with user ID ${user.id} in tournament with ID ${tournament.id}.`);
 
@@ -158,10 +161,7 @@ export const getUserAsStaffWithRound = getUserAsStaff.unstable_pipe(
     let round = await tryCatch(async () => {
       return findFirstOrThrow(
         await db
-          .select(select(dbRound, [
-            'id',
-            'mappoolState'
-          ]))
+          .select(select(dbRound, ['id', 'mappoolState']))
           .from(dbRound)
           .where(eq(dbRound.id, parsed.roundId)),
         'round'

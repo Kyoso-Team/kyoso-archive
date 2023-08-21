@@ -276,13 +276,13 @@ async function seedteamTournament() {
   let [_debuggerRole, hostRole, refereeRole] = await db
     .insert(dbStaffRole)
     .values([
-			{
-				name: 'Debugger',
-				color: 'gray',
-				permissions: ['debug'],
-				order: 0,
-				tournamentId: tournament[0].id
-			},
+      {
+        name: 'Debugger',
+        color: 'gray',
+        permissions: ['debug'],
+        order: 0,
+        tournamentId: tournament[0].id
+      },
       {
         name: 'Host',
         color: 'red',

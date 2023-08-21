@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import { config } from 'dotenv';
 import { z } from 'zod';
 import { sql } from 'drizzle-orm';
- 
+
 config();
 const dbUrl = z.string().nonempty().parse(process.env.DATABASE_URL);
 
@@ -21,4 +21,4 @@ async function main() {
   console.log('Reset database successfully');
 }
 
-main().then(() => process.exit(0));;
+main().then(() => process.exit(0));

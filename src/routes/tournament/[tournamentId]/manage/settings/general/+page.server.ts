@@ -18,12 +18,9 @@ export const load = (async ({ parent }) => {
 
   let tournament = findFirstOrThrow(
     await db
-      .select(select(dbTournament, [
-        'lowerRankRange',
-        'upperRankRange',
-        'useBWS',
-        'useTeamBanners'
-      ]))
+      .select(
+        select(dbTournament, ['lowerRankRange', 'upperRankRange', 'useBWS', 'useTeamBanners'])
+      )
       .from(dbTournament)
       .where(eq(dbTournament.id, data.tournament.id)),
     'tournament'

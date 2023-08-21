@@ -44,7 +44,17 @@ export const prizesRouter = t.router({
 
       let {
         tournamentId,
-        data: { type, placements, trophy, medal, badge, banner, cash, additionalItems, monthsOsuSupporter }
+        data: {
+          type,
+          placements,
+          trophy,
+          medal,
+          badge,
+          banner,
+          cash,
+          additionalItems,
+          monthsOsuSupporter
+        }
       } = input;
 
       await tryCatch(async () => {
@@ -63,19 +73,15 @@ export const prizesRouter = t.router({
                 monthsOsuSupporter,
                 tournamentId
               })
-              .returning(select(dbPrize, [
-                'id'
-              ])),
+              .returning(select(dbPrize, ['id'])),
             'prize'
           );
 
           if (cash) {
-            await tx
-              .insert(dbPrizeCash)
-              .values({
-                ...cash,
-                inPrizeId: prize.id
-              });
+            await tx.insert(dbPrizeCash).values({
+              ...cash,
+              inPrizeId: prize.id
+            });
           }
         });
       }, "Can't create prize.");
@@ -99,7 +105,17 @@ export const prizesRouter = t.router({
       let {
         tournamentId,
         where,
-        data: { type, placements, trophy, medal, badge, banner, cash, additionalItems, monthsOsuSupporter }
+        data: {
+          type,
+          placements,
+          trophy,
+          medal,
+          badge,
+          banner,
+          cash,
+          additionalItems,
+          monthsOsuSupporter
+        }
       } = input;
 
       if (Object.keys(input.data).length === 0) return;
@@ -120,12 +136,9 @@ export const prizesRouter = t.router({
               tournamentId
             })
             .where(eq(dbPrize.id, where.id));
-          
+
           if (cash) {
-            await tx
-              .update(dbPrizeCash)
-              .set(cash)
-              .where(eq(dbPrizeCash.inPrizeId, where.id));
+            await tx.update(dbPrizeCash).set(cash).where(eq(dbPrizeCash.inPrizeId, where.id));
           }
         });
       }, `Can't update prize of ID ${where.id}.`);
@@ -148,9 +161,7 @@ export const prizesRouter = t.router({
       let { where } = input;
 
       await tryCatch(async () => {
-        await db
-          .delete(dbPrize)
-          .where(eq(dbPrize.id, where.id));
+        await db.delete(dbPrize).where(eq(dbPrize.id, where.id));
       }, `Can't delete prize of ID ${where.id}.`);
     })
 });

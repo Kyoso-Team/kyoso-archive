@@ -29,11 +29,7 @@ export const load = (async ({ parent }) => {
         'additionalItems',
         'monthsOsuSupporter'
       ]),
-      cash: select(dbPrizeCash, [
-        'currency',
-        'metric',
-        'value'
-      ])
+      cash: select(dbPrizeCash, ['currency', 'metric', 'value'])
     })
     .from(dbPrize)
     .where(eq(dbPrize.tournamentId, data.tournament.id))

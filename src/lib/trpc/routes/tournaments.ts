@@ -1,7 +1,14 @@
 import db from '$db';
 import paypalClient, { money } from '$paypal';
 import paypal from '@paypal/checkout-server-sdk';
-import { dbPurchase, dbStaffMember, dbStaffMemberToStaffRole, dbStaffRole, dbTournament, dbUser } from '$db/schema';
+import {
+  dbPurchase,
+  dbStaffMember,
+  dbStaffMemberToStaffRole,
+  dbStaffRole,
+  dbTournament,
+  dbUser
+} from '$db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { t, tryCatch } from '$trpc';
@@ -61,22 +68,18 @@ async function createTournament(
             teamSize: type === 'teams' ? teamSize : 1,
             teamPlaySize: type === 'teams' ? teamPlaySize : 1
           })
-          .returning(select(dbTournament, [
-            'id'
-          ])),
+          .returning(select(dbTournament, ['id'])),
         'tournament'
       );
-      
+
       if (order) {
-        await tx
-          .insert(dbPurchase)
-          .values({
-            services,
-            cost: order.purchase_units[0].amount.value,
-            payPalOrderId: order.id,
-            purchasedById: user.id,
-            forTournamentId: tournament.id
-          });
+        await tx.insert(dbPurchase).values({
+          services,
+          cost: order.purchase_units[0].amount.value,
+          payPalOrderId: order.id,
+          purchasedById: user.id,
+          forTournamentId: tournament.id
+        });
       }
 
       let host = findFirstOrThrow(
@@ -86,43 +89,41 @@ async function createTournament(
             userId: user.id,
             tournamentId: tournament.id
           })
-          .returning(select(dbStaffMember, [
-            'id'
-          ])),
+          .returning(select(dbStaffMember, ['id'])),
         'staff member (host)'
       );
 
       let [_debuggerRole, hostRole] = await tx
         .insert(dbStaffRole)
-        .values([{
-          name: 'Debugger',
-          color: 'gray',
-          permissions: ['debug'],
-          order: 0,
-          tournamentId: tournament.id
-        }, {
-          name: 'Host',
-          color: 'red',
-          permissions: ['host'],
-          order: 1,
-          tournamentId: tournament.id
-        }])
-        .returning(select(dbStaffRole, [
-          'id'
-        ]));
-      
-      await tx
-        .insert(dbStaffMemberToStaffRole)
-        .values({
-          staffMemberId: host.id,
-          staffRoleId: hostRole.id
-        });
-      
+        .values([
+          {
+            name: 'Debugger',
+            color: 'gray',
+            permissions: ['debug'],
+            order: 0,
+            tournamentId: tournament.id
+          },
+          {
+            name: 'Host',
+            color: 'red',
+            permissions: ['host'],
+            order: 1,
+            tournamentId: tournament.id
+          }
+        ])
+        .returning(select(dbStaffRole, ['id']));
+
+      await tx.insert(dbStaffMemberToStaffRole).values({
+        staffMemberId: host.id,
+        staffRoleId: hostRole.id
+      });
+
       if (user.freeServicesLeft > 0) {
         await tx
           .update(dbUser)
           .set({
-            freeServicesLeft: services.length < 0 ? 0 : sql`${dbUser.freeServicesLeft} - ${services.length}`
+            freeServicesLeft:
+              services.length < 0 ? 0 : sql`${dbUser.freeServicesLeft} - ${services.length}`
           })
           .where(eq(dbUser.id, user.id));
       }
@@ -395,9 +396,7 @@ export const tournamentRouter = t.router({
       );
 
       await tryCatch(async () => {
-        await db
-          .delete(dbTournament)
-          .where(eq(dbTournament.id, input.id));
+        await db.delete(dbTournament).where(eq(dbTournament.id, input.id));
       }, `Can't delete tournament with ID ${ctx.tournament.id}.`);
     })
 });

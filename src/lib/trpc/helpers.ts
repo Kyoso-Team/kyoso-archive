@@ -19,18 +19,14 @@ export async function getOrCreateMap(
 
   let beatmap = findFirst(
     await db
-      .select(select(dbBeatmap, [
-        'osuBeatmapId'
-      ]))
+      .select(select(dbBeatmap, ['osuBeatmapId']))
       .from(dbBeatmap)
       .where(eq(dbBeatmap.osuBeatmapId, osuBeatmapId))
   );
 
   let modpool = findFirstOrThrow(
     await db
-      .select(select(dbModpool, [
-        'mods'
-      ]))
+      .select(select(dbModpool, ['mods']))
       .from(dbModpool)
       .where(eq(dbModpool.id, modpoolId)),
     'modpool'
@@ -41,17 +37,18 @@ export async function getOrCreateMap(
   } | null = null;
 
   if (beatmap) {
-    starRating = findFirst(
-      await db
-        .select(select(dbStarRating, [
-          'id'
-        ]))
-        .from(dbStarRating)
-        .where(and(
-          eq(dbStarRating.mods, modpool.mods),
-          eq(dbStarRating.beatmapId, beatmap.osuBeatmapId)
-        ))
-    ) || null;
+    starRating =
+      findFirst(
+        await db
+          .select(select(dbStarRating, ['id']))
+          .from(dbStarRating)
+          .where(
+            and(
+              eq(dbStarRating.mods, modpool.mods),
+              eq(dbStarRating.beatmapId, beatmap.osuBeatmapId)
+            )
+          )
+      ) || null;
   }
 
   if (!beatmap) {
@@ -72,15 +69,11 @@ export async function getOrCreateMap(
                 username: data.beatmapset.creator
               }
             })
-            .returning(select(dbMapper, [
-              'osuUserId'
-            ])),
+            .returning(select(dbMapper, ['osuUserId'])),
           'mapper'
         );
 
-        let selectBeatmapset = select(dbBeatmapset, [
-          'osuBeatmapsetId'
-        ]);
+        let selectBeatmapset = select(dbBeatmapset, ['osuBeatmapsetId']);
 
         let mapset = findFirst(
           await tx
@@ -122,9 +115,7 @@ export async function getOrCreateMap(
               hp: data.drain,
               beatmapsetId: mapset.osuBeatmapsetId
             })
-            .returning(select(dbBeatmap, [
-              'osuBeatmapId'
-            ])),
+            .returning(select(dbBeatmap, ['osuBeatmapId'])),
           'beatmap'
         );
       });
@@ -140,13 +131,11 @@ export async function getOrCreateMap(
 
     await tryCatch(async () => {
       if (beatmap) {
-        await db
-          .insert(dbStarRating)
-          .values({
-            value: data.star_rating,
-            beatmapId: beatmap.osuBeatmapId,
-            mods: modpool.mods
-          });
+        await db.insert(dbStarRating).values({
+          value: data.star_rating,
+          beatmapId: beatmap.osuBeatmapId,
+          mods: modpool.mods
+        });
       } else {
         throw new Error('Somehow about to create a star rating without creating the beatmap');
       }
@@ -171,35 +160,38 @@ export async function getDiscordUser(discordUserId: string) {
   return user as DiscordUser;
 }
 
-export async function swapOrder<T extends PgTableWithColumns<{
-  name: string;
-  dialect: 'pg';
-  schema: undefined;
-  columns: C;
-}>, C extends {
-  id: PgColumn<{
-    name: 'id';
-    tableName: string;
-    dataType: 'number';
-    columnType: 'PgSerial';
-    data: number;
-    driverParam: number;
-    enumValues: undefined;
-    hasDefault: boolean;
-    notNull: boolean;
-  }>;
-  order: PgColumn<{
-    name: 'order';
-    tableName: string;
-    dataType: 'number';
-    columnType: 'PgSmallInt';
-    data: number;
-    driverParam: string | number;
-    enumValues: undefined;
-    hasDefault: boolean;
-    notNull: boolean;
-  }>;
-}>(
+export async function swapOrder<
+  T extends PgTableWithColumns<{
+    name: string;
+    dialect: 'pg';
+    schema: undefined;
+    columns: C;
+  }>,
+  C extends {
+    id: PgColumn<{
+      name: 'id';
+      tableName: string;
+      dataType: 'number';
+      columnType: 'PgSerial';
+      data: number;
+      driverParam: number;
+      enumValues: undefined;
+      hasDefault: boolean;
+      notNull: boolean;
+    }>;
+    order: PgColumn<{
+      name: 'order';
+      tableName: string;
+      dataType: 'number';
+      columnType: 'PgSmallInt';
+      data: number;
+      driverParam: string | number;
+      enumValues: undefined;
+      hasDefault: boolean;
+      notNull: boolean;
+    }>;
+  }
+>(
   db: typeof dbInstance,
   table: T,
   value1: {

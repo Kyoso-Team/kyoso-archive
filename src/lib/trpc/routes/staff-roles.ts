@@ -86,15 +86,13 @@ export const staffRolesRouter = t.router({
       await tryCatch(async () => {
         let roleCount = await getRowCount(dbStaffRole, eq(dbStaffRole.tournamentId, tournamentId));
 
-        await db
-          .insert(dbStaffRole)
-          .values({
-            name,
-            color,
-            permissions,
-            tournamentId,
-            order: roleCount
-          });
+        await db.insert(dbStaffRole).values({
+          name,
+          color,
+          permissions,
+          tournamentId,
+          order: roleCount
+        });
       }, "Can't create staff role.");
     }),
   updateRole: t.procedure
@@ -186,19 +184,14 @@ export const staffRolesRouter = t.router({
 
       await tryCatch(async () => {
         await db.transaction(async (tx) => {
-          await tx
-            .delete(dbStaffRole)
-            .where(eq(dbStaffRole.id, id));
-          
+          await tx.delete(dbStaffRole).where(eq(dbStaffRole.id, id));
+
           await tx
             .update(dbStaffRole)
             .set({
               order: sql`${dbStaffRole.order} - 1`
             })
-            .where(and(
-              eq(dbStaffRole.tournamentId, tournamentId),
-              gt(dbStaffRole.order, order)
-            ));
+            .where(and(eq(dbStaffRole.tournamentId, tournamentId), gt(dbStaffRole.order, order)));
         });
       }, `Can't delete staff role of ID ${id}.`);
     })
