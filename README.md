@@ -29,9 +29,14 @@ Scripts present in the package.json file. Each script must be prepended with `pn
 - `check` & `check:watch`: Updates svelte routes with correct type definitions, either with or without watch mode.
 - `lint`: Code linting.
 - `fmt`: Code formatting.
-- `db:generate`: Generate a new migration file. Must be used after making changes to the schema (`src/lib/db/schema` folder).
-- `db:migrate`: Apply generated migrations.
 - `review`: Runs `fmt`, `lint` and `check`, one after the other.
+- `db:generate`: Generate a new migration file. Must be used after making changes to the schema (`src/lib/db/schema` folder).
+- `db:generate-custom`: Generate a new blank migration file. Usually used to apply queries in `sql/unsupported.sql`.
+- `db:migrate`: Apply generated migrations.
+- `db:reset`: Resets the database schema (deletes all rows, drops all tables, views, functions, triggers, etc.)
+- `db:push`: Push changes without generating a migration file (CURRENTLY BROKEN).
+- `db:seed`: Seed the database with data, for which is resets the database and reapplies migrations to do so.
+- `db:studio`: Open a UI to manage the database's data.
 
 ## Node Version
 
