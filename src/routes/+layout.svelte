@@ -6,7 +6,7 @@
   import env from '$lib/env/client';
   import { buildUrl } from 'osu-web.js';
   import { goto } from '$app/navigation';
-  import { form, paypal, error, upload, sidebar } from '$stores';
+  import { form, paypal, error, upload } from '$stores';
   import { onMount } from 'svelte';
   import {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -22,6 +22,7 @@
   } from '@skeletonlabs/skeleton';
   import { page } from '$app/stores';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
+  import { Sidebar } from '$components';
   import type { Form, Error, Upload } from '$components';
   import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
@@ -111,7 +112,7 @@
   }
 
   async function loadUploadComponent() {
-    let upload = await import('$components/layout/Sidebar.svelte');
+    let upload = await import('$components/layout/Upload.svelte');
     uploadComponent = upload.default;
   }
 
@@ -189,11 +190,7 @@
     </AppBar>
   </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
-    <div class="grid h-full grid-cols-[auto_auto] fill-white">
-      {#if $sidebar}
-        <svelte:component this={$sidebar} />
-      {/if}
-    </div>
+    <Sidebar />
   </svelte:fragment>
   <Modal />
   <Toast />

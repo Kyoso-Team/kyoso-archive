@@ -237,14 +237,14 @@
               disabled={selectedIndex === 0}
               on:click={() => onMoveRoleOrder('up', selectedRole, data.roles[selectedIndex - 1])}
             >
-              <MoveUpIcon w={20} h={20} />
+              <MoveUpIcon w={20} h={20} styles="fill-white" />
             </button>
             <button
               class="btn btn-sm variant-ringed-secondary py-1"
               disabled={selectedIndex === data.roles.length - 1}
               on:click={() => onMoveRoleOrder('down', selectedRole, data.roles[selectedIndex + 1])}
             >
-              <MoveDownIcon w={20} h={20} />
+              <MoveDownIcon w={20} h={20} styles="fill-white" />
             </button>
           </div>
         {/if}

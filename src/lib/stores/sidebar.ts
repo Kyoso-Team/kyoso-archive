@@ -4,10 +4,13 @@ import { writable } from 'svelte/store';
 type Any = any;
 
 function createSidebar() {
-  const { subscribe, set } = writable<Any | undefined>();
+  const { subscribe, set } = writable<{
+    component: Any;
+    columns: 1 | 2;
+  } | undefined>();
 
-  function create(component: Any) {
-    set(component);
+  function create(component: Any, columns: 1 | 2) {
+    set({ component, columns });
   }
 
   function destroy() {
