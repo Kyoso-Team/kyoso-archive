@@ -1,7 +1,7 @@
 <script lang="ts">
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
-  import { error, sidebar } from '$stores';
+  import { error, tournamentSidebar } from '$stores';
   import { onMount } from 'svelte';
   import { Converter } from 'showdown';
   import { SEO } from '$components';
@@ -13,7 +13,7 @@
   let preview = false;
 
   onMount(() => {
-    sidebar.setSelected('Settings', 'Referee', 'Rules');
+    tournamentSidebar.setSelected('Settings', 'Referee', 'Rules');
   });
 
   function onUndoChanges() {

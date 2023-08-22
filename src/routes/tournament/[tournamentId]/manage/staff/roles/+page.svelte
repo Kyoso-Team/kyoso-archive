@@ -2,7 +2,7 @@
   import isEqual from 'lodash.isequal';
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
-  import { error, sidebar, form } from '$stores';
+  import { error, tournamentSidebar, form } from '$stores';
   import { onMount } from 'svelte';
   import { invalidateAll } from '$app/navigation';
   import { modal, twColors } from '$lib/utils';
@@ -34,7 +34,7 @@
   let disabled = false;
 
   onMount(() => {
-    sidebar.setSelected('Regs.', 'Staff', 'Roles');
+    tournamentSidebar.setSelected('Regs.', 'Staff', 'Roles');
   });
 
   function hasPerms(permissions: StaffPermission[], required: StaffPermission[]) {

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
-  import { error, sidebar, form } from '$stores';
+  import { error, tournamentSidebar, form } from '$stores';
   import { onMount } from 'svelte';
   import { invalidateAll } from '$app/navigation';
   import { modal, format } from '$lib/utils';
@@ -30,7 +30,7 @@
   let pickemsPrizes: typeof data.prizes = [];
 
   onMount(() => {
-    sidebar.setSelected('Settings', 'Settings', 'Prizes');
+    tournamentSidebar.setSelected('Settings', 'Settings', 'Prizes');
   });
 
   function mutatePrize(

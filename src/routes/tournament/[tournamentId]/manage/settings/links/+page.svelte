@@ -4,7 +4,7 @@
   import { setSettingError, trimStringValues } from '$lib/utils';
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
-  import { error, sidebar } from '$stores';
+  import { error, tournamentSidebar } from '$stores';
   import { onMount } from 'svelte';
   import type { PageServerData } from './$types';
 
@@ -25,7 +25,7 @@
   > = {};
 
   onMount(() => {
-    sidebar.setSelected('Settings', 'Settings', 'Links');
+    tournamentSidebar.setSelected('Settings', 'Settings', 'Links');
   });
 
   $: {

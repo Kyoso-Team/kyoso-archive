@@ -1,7 +1,7 @@
 <script lang="ts">
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
-  import { sidebar, upload, error } from '$stores';
+  import { tournamentSidebar, upload, error } from '$stores';
   import { onMount } from 'svelte';
   import { getFileUrl, format, modal } from '$lib/utils';
   import { invalidateAll } from '$app/navigation';
@@ -12,14 +12,14 @@
   export let data: PageServerData;
 
   let bannerUrl = data.hasBanner
-    ? getFileUrl($page, `tournament-banners/${format.digits(data.id, 5)}-full.jpeg`)
+    ? getFileUrl($page, `tournament-banners/${format.digits(data.id, 8)}-full.jpeg`)
     : undefined;
   let logoUrl = data.hasLogo
-    ? getFileUrl($page, `tournament-logos/${format.digits(data.id, 5)}-full.jpeg`)
+    ? getFileUrl($page, `tournament-logos/${format.digits(data.id, 8)}-full.jpeg`)
     : undefined;
 
   onMount(() => {
-    sidebar.setSelected('Settings', 'Settings', 'Graphics');
+    tournamentSidebar.setSelected('Settings', 'Settings', 'Graphics');
   });
 
   function onChangeBanner() {
@@ -104,10 +104,10 @@
 
   $: {
     bannerUrl = data.hasBanner
-      ? getFileUrl($page, `tournament-banners/${format.digits(data.id, 5)}-full.jpeg`)
+      ? getFileUrl($page, `tournament-banners/${format.digits(data.id, 8)}-full.jpeg`)
       : undefined;
     logoUrl = data.hasLogo
-      ? getFileUrl($page, `tournament-logos/${format.digits(data.id, 5)}-full.jpeg`)
+      ? getFileUrl($page, `tournament-logos/${format.digits(data.id, 8)}-full.jpeg`)
       : undefined;
   }
 </script>

@@ -6,7 +6,7 @@
   import env from '$lib/env/client';
   import { buildUrl } from 'osu-web.js';
   import { goto } from '$app/navigation';
-  import { form, paypal, error, upload } from '$stores';
+  import { form, paypal, error, upload, sidebar } from '$stores';
   import { onMount } from 'svelte';
   import {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -21,14 +21,16 @@
     Toast
   } from '@skeletonlabs/skeleton';
   import { page } from '$app/stores';
-  import type { Form, Error, Sidebar, Upload } from '$components';
+  import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
+  import type { Form, Error, Upload } from '$components';
   import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
+
+  storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
   export let data: LayoutServerData;
   let formComponent: typeof Form | undefined;
   let errorComponent: typeof Error | undefined;
-  let sidebarComponent: typeof Sidebar | undefined;
   let uploadComponent: typeof Upload | undefined;
 
   const navLinks = [
@@ -75,9 +77,7 @@
     loadHighlightJs();
     loadFormComponent();
     loadErrorComponent();
-    loadSidebarComponent();
     loadUploadComponent();
-    loadPopupConfig();
   });
 
   async function loadPayPalScript() {
@@ -110,21 +110,9 @@
     errorComponent = error.default;
   }
 
-  async function loadSidebarComponent() {
-    let sidebar = await import('$components/layout/Sidebar.svelte');
-    sidebarComponent = sidebar.default;
-  }
-
   async function loadUploadComponent() {
     let upload = await import('$components/layout/Sidebar.svelte');
     uploadComponent = upload.default;
-  }
-
-  async function loadPopupConfig() {
-    const { computePosition, autoUpdate, flip, shift, offset, arrow } = await import(
-      '@floating-ui/dom'
-    );
-    storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
   }
 
   function onLogoutClick() {
@@ -201,9 +189,11 @@
     </AppBar>
   </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
-    {#if sidebarComponent}
-      <svelte:component this={sidebarComponent} />
-    {/if}
+    <div class="grid h-full grid-cols-[auto_auto] fill-white">
+      {#if $sidebar}
+        <svelte:component this={$sidebar} />
+      {/if}
+    </div>
   </svelte:fragment>
   <Modal />
   <Toast />

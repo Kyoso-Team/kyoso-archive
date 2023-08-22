@@ -6,7 +6,7 @@
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { SEO, CloseIcon } from '$components';
+  import { SEO, CloseIcon, Tournament } from '$components';
   import type { PageServerData } from './$types';
   import type { TournamentFormData, TournamentType, TournamentService } from '$types';
   import type { PayPalButtonsComponent } from '@paypal/paypal-js';

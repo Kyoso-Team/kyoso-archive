@@ -4,7 +4,7 @@
   import { setSettingError, trimStringValues } from '$lib/utils';
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
-  import { error, sidebar } from '$stores';
+  import { error, tournamentSidebar } from '$stores';
   import { onMount } from 'svelte';
   import type { PageServerData } from './$types';
   import type { NullPartial } from '$types';
@@ -19,7 +19,7 @@
   let errors: Partial<Record<Exclude<keyof PageServerData, 'useBWS' | 'id'>, string>> = {};
 
   onMount(() => {
-    sidebar.setSelected('Settings', 'Settings', 'General');
+    tournamentSidebar.setSelected('Settings', 'Settings', 'General');
   });
 
   $: {

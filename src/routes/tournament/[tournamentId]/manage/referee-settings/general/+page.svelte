@@ -4,7 +4,7 @@
   import { setSettingError, trimStringValues } from '$lib/utils';
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
-  import { error, sidebar } from '$stores';
+  import { error, tournamentSidebar } from '$stores';
   import { onMount } from 'svelte';
   import type { NullPartial } from '$types';
   import type { PageServerData } from './$types';
@@ -20,7 +20,7 @@
   let errors: Partial<Record<'pickTime' | 'startTime', string>> = {};
 
   onMount(() => {
-    sidebar.setSelected('Settings', 'Referee', 'General');
+    tournamentSidebar.setSelected('Settings', 'Referee', 'General');
   });
 
   $: {

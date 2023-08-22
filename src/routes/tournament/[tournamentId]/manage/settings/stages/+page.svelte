@@ -1,7 +1,7 @@
 <script lang="ts">
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
-  import { error, sidebar, form } from '$stores';
+  import { error, tournamentSidebar, form } from '$stores';
   import { onMount } from 'svelte';
   import { invalidateAll } from '$app/navigation';
   import { modal } from '$lib/utils';
@@ -27,7 +27,7 @@
   export let data: PageServerData;
 
   onMount(() => {
-    sidebar.setSelected('Settings', 'Settings', 'Stages');
+    tournamentSidebar.setSelected('Settings', 'Settings', 'Stages');
   });
 
   function mapReadableFormat(format: StageFormat) {

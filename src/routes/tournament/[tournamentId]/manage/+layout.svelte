@@ -1,20 +1,20 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { hasPerms } from '$lib/utils';
-  import { sidebar } from '$stores';
+  import { tournamentSidebar, sidebar } from '$stores';
   import type { LayoutServerData } from './$types';
 
   export let data: LayoutServerData;
 
   onDestroy(() => {
-    sidebar.destroy();
+    tournamentSidebar.destroy(sidebar);
   });
 
-  sidebar.create();
+  tournamentSidebar.create(sidebar);
   let basePath = `/tournament/${data.tournament.id}/manage/`;
 
   if (hasPerms(data.staffMember, ['host', 'debug', 'mutate_tournament'])) {
-    let settings = sidebar.setSection('Settings', 'settings');
+    let settings = tournamentSidebar.setSection('Settings', 'settings');
 
     let settingsPath = `${basePath}settings/`;
     settings.setSubsection('Settings', [
@@ -70,7 +70,7 @@
       'view_regs'
     ])
   ) {
-    let regs = sidebar.setSection('Regs.', 'regs');
+    let regs = tournamentSidebar.setSection('Regs.', 'regs');
 
     if (hasPerms(data.staffMember, ['host', 'debug', 'mutate_tournament', 'view_staff_members'])) {
       let staffPath = `${basePath}staff/`;
