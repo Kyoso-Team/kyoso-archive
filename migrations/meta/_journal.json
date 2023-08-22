@@ -64,6 +64,13 @@
       "when": 1692550138793,
       "tag": "0008_wet_bug",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1692737441683,
+      "tag": "0009_cuddly_patriot",
+      "breakpoints": true
     }
   ]
 }

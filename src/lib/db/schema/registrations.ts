@@ -80,6 +80,7 @@ export const dbStaffMember = pgTable(
   'staff_member',
   {
     id: serial('id').primaryKey(),
+    joinedStaffAt: timestamp('joined_staff_at', timestampConfig).notNull().defaultNow(),
     userId: integer('user_id')
       .notNull()
       .references(() => dbUser.id, actions('cascade')),
@@ -157,6 +158,7 @@ export const dbStaffAppRoleRelations = relations(dbStaffAppRole, ({ one }) => ({
 
 export const dbStaffAppSubmission = pgTable('staff_application_submission', {
   id: serial('id').primaryKey(),
+  submittedAt: timestamp('submitted_at', timestampConfig).notNull().defaultNow(),
   applyingFor: varchar('applying_for', length(25)).array().notNull().default([]),
   status: dbJoinRequestStatus('status').notNull().default('pending'),
   staffingExperience: text('staffing_experience').notNull(),
