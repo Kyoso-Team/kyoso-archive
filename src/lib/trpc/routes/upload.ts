@@ -144,7 +144,7 @@ export const uploadRouter = t.router({
         });
 
         let buffer = await file.arrayBuffer();
-        let fileName = format.digits(tournamentId, 5);
+        let fileName = format.digits(tournamentId, 8);
 
         let fullImgBuffer = await sharp(buffer)
           .resize({
@@ -200,7 +200,7 @@ export const uploadRouter = t.router({
         });
 
         let buffer = await file.arrayBuffer();
-        let fileName = format.digits(tournamentId, 5);
+        let fileName = format.digits(tournamentId, 8);
 
         let fullImgBuffer = await sharp(buffer)
           .resize({
@@ -249,8 +249,8 @@ export const uploadRouter = t.router({
         );
 
         await tryCatch(async () => {
-          await destroy('tournament-banners', `${format.digits(tournamentId, 5)}-full.jpeg`);
-          await destroy('tournament-banners', `${format.digits(tournamentId, 5)}-thumb.jpeg`);
+          await destroy('tournament-banners', `${format.digits(tournamentId, 8)}-full.jpeg`);
+          await destroy('tournament-banners', `${format.digits(tournamentId, 8)}-thumb.jpeg`);
 
           await db
             .update(dbTournament)
@@ -271,8 +271,8 @@ export const uploadRouter = t.router({
         );
 
         await tryCatch(async () => {
-          await destroy('tournament-logos', `${format.digits(tournamentId, 5)}-full.jpeg`);
-          await destroy('tournament-logos', `${format.digits(tournamentId, 5)}-icon.jpeg`);
+          await destroy('tournament-logos', `${format.digits(tournamentId, 8)}-full.jpeg`);
+          await destroy('tournament-logos', `${format.digits(tournamentId, 8)}-icon.jpeg`);
 
           await db
             .update(dbTournament)
