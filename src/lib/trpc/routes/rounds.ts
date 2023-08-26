@@ -24,7 +24,8 @@ const standardSchema = baseSchema.extend({
     .int()
     .gte(1)
     .refine((n: number) => n % 2 !== 0, 'Input must be odd'),
-  banCount: z.number().int().gte(0)
+  banCount: z.number().int().gte(0),
+  protectCount: z.number().int().gte(0)
 });
 
 const qualifierSchema = baseSchema.extend({
@@ -132,7 +133,7 @@ export const roundsRouter = t.router({
 
       let {
         tournamentId,
-        data: { name, stageId, bestOf, banCount }
+        data: { name, stageId, bestOf, banCount, protectCount }
       } = input;
 
       await createRound({
@@ -141,7 +142,8 @@ export const roundsRouter = t.router({
         stageId,
         standardRound: {
           bestOf,
-          banCount
+          banCount,
+          protectCount
         }
       });
     }),
@@ -224,14 +226,15 @@ export const roundsRouter = t.router({
       if (Object.keys(input.data).length === 0) return;
 
       let {
-        data: { name, bestOf, banCount }
+        data: { name, bestOf, banCount, protectCount }
       } = input;
 
       await updateRound(input.where.id, {
         name,
         standardRound: {
           banCount,
-          bestOf
+          bestOf,
+          protectCount
         }
       });
     }),

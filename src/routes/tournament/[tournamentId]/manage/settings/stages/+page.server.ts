@@ -31,7 +31,8 @@ export const load = (async ({ parent }) => {
           standardRound: {
             columns: {
               bestOf: true,
-              banCount: true
+              banCount: true,
+              protectCount: true
             }
           },
           qualifierRound: {

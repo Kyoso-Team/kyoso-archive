@@ -22,6 +22,7 @@
     name: string;
     bestOf: number;
     banCount: number;
+    protectCount: number;
   };
 
   export let data: PageServerData;
@@ -361,6 +362,9 @@
         }),
         field('Number of bans', 'banCount', 'number', {
           validation: (z) => z.int().gte(0)
+        }),
+        field('Number of protects', 'protectCount', 'number', {
+          validation: (z) => z.int().gte(0)
         })
       ],
       onSubmit: async (round) => {
@@ -560,13 +564,20 @@
                         </span>
                       {/if}
                     {:else if round.standardRound}
-                      <span class="badge variant-filled mr-1">
+                      <span class="badge variant-filled">
                         Best of {round.standardRound.bestOf}
                       </span>
-                      <span class="badge variant-filled">
+                      <span class="badge variant-filled mx-1">
                         {round.standardRound.banCount > 0 ? round.standardRound.banCount : 'No'}
                         {round.standardRound.banCount > 0 ? 'B' : 'b'}an{round.standardRound
                           .banCount === 1
+                          ? ''
+                          : 's'}
+                      </span>
+                      <span class="badge variant-filled mx-1">
+                        {round.standardRound.protectCount > 0 ? round.standardRound.protectCount : 'No'}
+                        {round.standardRound.protectCount > 0 ? 'P' : 'p'}rotect{round.standardRound
+                          .protectCount === 1
                           ? ''
                           : 's'}
                       </span>
