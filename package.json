@@ -16,7 +16,7 @@
     "db:migrate": "node --loader ts-node/esm scripts/migrate.ts",
     "db:reset": "node --loader ts-node/esm scripts/reset.ts",
     "db:push": "npx drizzle-kit push:pg",
-    "db:seed": "pnpm db:reset && pnpm db:migrate && node --experimental-specifier-resolution=node --loader ts-node/esm scripts/seed.ts",
+    "db:seed": "node --experimental-specifier-resolution=node --loader ts-node/esm scripts/seed/index.ts",
     "db:studio": "npx drizzle-kit studio"
   },
   "engines": {

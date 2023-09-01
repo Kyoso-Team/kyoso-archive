@@ -48,8 +48,8 @@ export const dbTournament = pgTable('tournament', {
   // when lowerRankRange and upperRankRange are set to -1, then the tournament is open rank
   lowerRankRange: integer('lower_rank_range').notNull(),
   upperRankRange: integer('upper_rank_range').notNull(), // Date in which the tournament will be displayed on the site for anyone to view
-  goPublicOn: timestamp('go_public_on', timestampConfig), // Date in which the tournament can no longer be modified (its settings, pools, schedules, etc.)
-  concludesOn: timestamp('concludes_on', timestampConfig),
+  goPublicOn: timestamp('go_public_on', timestampConfig),
+  concludesOn: timestamp('concludes_on', timestampConfig), // Date in which the tournament can no longer be modified (its settings, pools, schedules, etc.)
   playerRegsOpenOn: timestamp('player_regs_open_on', timestampConfig),
   playerRegsCloseOn: timestamp('player_regs_close_on', timestampConfig),
   staffRegsOpenOn: timestamp('staff_regs_open_on', timestampConfig),
@@ -116,7 +116,7 @@ export const dbPrize = pgTable('prize', {
   medal: boolean('medal').notNull(),
   badge: boolean('badge').notNull(),
   banner: boolean('banner').notNull(),
-  additionalItems: varchar('additional_items', length(25)).array().notNull().default([]),
+  additionalItems: varchar('additional_items', length(65)).array().notNull().default([]),
   monthsOsuSupporter: smallint('months_osu_supporter'),
   tournamentId: integer('tournament_id')
     .notNull()
@@ -218,6 +218,7 @@ export const dbRoundRelations = relations(dbRound, ({ one, many }) => ({
 export const dbStandardRound = pgTable('standard_round', {
   bestOf: smallint('best_of').notNull(),
   banCount: smallint('ban_count').notNull(),
+  protectCount: smallint('protect_count').notNull(),
   roundId: integer('round_id')
     .primaryKey()
     .references(() => dbRound.id, actions('cascade'))

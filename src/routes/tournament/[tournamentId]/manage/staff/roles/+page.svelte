@@ -90,7 +90,7 @@
     }
   }
 
-  function onDeleteMultiplier(role?: Omit<StaffRole, 'tournamentId'>) {
+  function onDeleteRole(role?: Omit<StaffRole, 'tournamentId'>) {
     if (!role) return;
 
     modal.yesNo(
@@ -127,7 +127,7 @@
       title: 'Create Staff Role',
       fields: ({ field }) => [
         field('Role name', 'name', 'string', {
-          validation: (z) => z.max(25)
+          validation: (z) => z.max(45)
         })
       ],
       onSubmit: async ({ name }) => {
@@ -594,7 +594,7 @@
             disabled={isEqual(data.roles[selectedIndex], selectedRole)}
             on:click={() => onUpdateRole(selectedRole)}>Update</button
           >
-          <button class="btn variant-filled-error" on:click={() => onDeleteMultiplier(selectedRole)}
+          <button class="btn variant-filled-error" on:click={() => onDeleteRole(selectedRole)}
             >Delete</button
           >
         </div>

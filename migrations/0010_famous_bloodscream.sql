@@ -1,1 +1,0 @@
-ALTER TABLE "standard_round" ADD COLUMN "protect_count" smallint NOT NULL;

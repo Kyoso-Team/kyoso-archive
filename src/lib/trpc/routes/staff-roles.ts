@@ -10,7 +10,7 @@ import { hasPerms } from '$lib/utils';
 import { swapOrder } from '$trpc/helpers';
 
 const staffRoleMutationSchema = z.object({
-  name: z.string().max(25),
+  name: z.string().max(45),
   color: z.union([
     z.literal('slate'),
     z.literal('gray'),

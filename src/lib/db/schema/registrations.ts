@@ -52,7 +52,7 @@ export const dbStaffRole = pgTable(
   'staff_role',
   {
     id: serial('id').primaryKey(),
-    name: varchar('name', length(25)).notNull(),
+    name: varchar('name', length(45)).notNull(),
     color: dbStaffColor('color').notNull().default('slate'),
     order: smallint('order').notNull(),
     permissions: dbStaffPermission('permissions')
@@ -116,7 +116,7 @@ export const dbStaffMemberRelations = relations(dbStaffMember, ({ one, many }) =
 }));
 
 export const dbStaffApplication = pgTable('staff_application', {
-  title: varchar('title', length(75)).notNull(),
+  title: varchar('title', length(90)).notNull(),
   description: text('description'),
   forTournamentId: integer('tournament_id')
     .primaryKey()
@@ -136,7 +136,7 @@ export const dbStaffAppRole = pgTable(
   'staff_application_role',
   {
     id: serial('id').primaryKey(),
-    name: varchar('name', length(25)).notNull(),
+    name: varchar('name', length(45)).notNull(),
     description: text('description'),
     staffApplicationId: integer('staff_application_id')
       .notNull()
@@ -159,7 +159,7 @@ export const dbStaffAppRoleRelations = relations(dbStaffAppRole, ({ one }) => ({
 export const dbStaffAppSubmission = pgTable('staff_application_submission', {
   id: serial('id').primaryKey(),
   submittedAt: timestamp('submitted_at', timestampConfig).notNull().defaultNow(),
-  applyingFor: varchar('applying_for', length(25)).array().notNull().default([]),
+  applyingFor: varchar('applying_for', length(45)).array().notNull().default([]),
   status: dbJoinRequestStatus('status').notNull().default('pending'),
   staffingExperience: text('staffing_experience').notNull(),
   additionalComments: text('additional_comments'),

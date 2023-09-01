@@ -82,7 +82,7 @@
         field('Additional prizes', 'additionalItems', 'string', {
           optional: true,
           list: true,
-          validation: (z) => z.max(25)
+          validation: (z) => z.max(65)
         })
       ],
       onSubmit: async (prize) => {

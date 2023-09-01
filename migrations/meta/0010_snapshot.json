@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "pg",
-  "id": "e41a5848-451f-49ec-80c9-c0835022d095",
+  "id": "41ee0a3e-05b0-46bf-bc81-aa6463d9becf",
   "prevId": "c6be69b1-6e8f-4193-96a0-79bda7b4ce16",
   "tables": {
     "country": {
@@ -442,7 +442,7 @@
         },
         "additional_items": {
           "name": "additional_items",
-          "type": "varchar(25)[]",
+          "type": "varchar(65)[]",
           "primaryKey": false,
           "notNull": true,
           "default": []
@@ -1234,7 +1234,7 @@
         },
         "name": {
           "name": "name",
-          "type": "varchar(25)",
+          "type": "varchar(45)",
           "primaryKey": false,
           "notNull": true
         },
@@ -1298,7 +1298,7 @@
         },
         "applying_for": {
           "name": "applying_for",
-          "type": "varchar(25)[]",
+          "type": "varchar(45)[]",
           "primaryKey": false,
           "notNull": true,
           "default": []
@@ -1373,7 +1373,7 @@
       "columns": {
         "title": {
           "name": "title",
-          "type": "varchar(75)",
+          "type": "varchar(90)",
           "primaryKey": false,
           "notNull": true
         },
@@ -1492,7 +1492,7 @@
         },
         "name": {
           "name": "name",
-          "type": "varchar(25)",
+          "type": "varchar(45)",
           "primaryKey": false,
           "notNull": true
         },
@@ -2728,7 +2728,7 @@
           "name": "map_count",
           "type": "smallint",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "round_id": {
           "name": "round_id",

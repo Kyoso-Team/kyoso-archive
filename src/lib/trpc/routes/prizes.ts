@@ -22,7 +22,7 @@ const prizeMutationSchema = z.object({
       currency: z.string().length(3)
     })
     .optional(),
-  additionalItems: z.array(z.string().max(25)).default([]),
+  additionalItems: z.array(z.string().max(65)).default([]),
   monthsOsuSupporter: z.number().int().nullish().default(0)
 });
 
