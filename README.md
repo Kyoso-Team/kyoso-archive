@@ -38,15 +38,6 @@ Scripts present in the package.json file. Each script must be prepended with `pn
 - `db:seed`: Seed the database with data, for which is resets the database and reapplies migrations to do so.
 - `db:studio`: Open a UI to manage the database's data.
 
-## Node Version
-
-Currently, Kyoso is deployed on [Render](https://render.com), which comes with NodeJS v14 by default. SvelteKit requires at least Node v16 to run. Setting the `engines.node` attribute in `package.json` to `>16.x` means that you can run any Node version above 16, but upon deploying, Render will install Node v20 which SvelteKit doesn't support.
-
-What does this mean? Well, for development, there's two solutions:
-
-1- Changing `engines.node` to `>16.x` (or your desired version equal or above 16) and developing with that version, but not changing the version in commits.
-2- Use NodeJS version 16. I recommend installing [NVM](https://github.com/nvm-sh/nvm) which can be used to switch between Node versions in case downgrading to v16 is not an option for you.
-
 ## Component Structure
 
 Structure to follow when writing Svelte components or pages.
