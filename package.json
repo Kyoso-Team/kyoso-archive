@@ -17,7 +17,8 @@
     "db:reset": "node --loader ts-node/esm scripts/reset.ts",
     "db:push": "npx drizzle-kit push:pg",
     "db:seed": "node --experimental-specifier-resolution=node --loader ts-node/esm scripts/seed/index.ts",
-    "db:studio": "npx drizzle-kit studio"
+    "db:studio": "npx drizzle-kit studio",
+    "db:dbml": "node --experimental-specifier-resolution=node --loader ts-node/esm scripts/dbml.ts"
   },
   "engines": {
     "node": ">=18.x"
@@ -34,10 +35,12 @@
     "@types/showdown": "^2.0.1",
     "@typescript-eslint/eslint-plugin": "^5.45.0",
     "@typescript-eslint/parser": "^5.45.0",
+    "@web-std/file": "^3.0.3",
     "autoprefixer": "^10.4.14",
     "dotenv": "^16.0.3",
+    "drizzle-dbml-generator": "^0.1.0",
     "drizzle-kit": "^0.19.13",
-    "drizzle-orm": "^0.28.2",
+    "drizzle-orm": "^0.28.5",
     "eslint": "^8.28.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-svelte": "^2.32.4",

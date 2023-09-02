@@ -3,6 +3,7 @@ import {
   dbUser
 } from '../../src/lib/db/schema';
 import { eq, inArray, sql } from 'drizzle-orm';
+import { File, Blob } from '@web-std/file';
 import type { Client as OsuClient } from 'osu-web.js';
 import type { User as DiscordUser } from 'discord-oauth2';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
