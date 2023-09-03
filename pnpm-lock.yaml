@@ -104,8 +104,8 @@ devDependencies:
     specifier: ^16.0.3
     version: 16.3.0
   drizzle-dbml-generator:
-    specifier: ^0.1.0
-    version: 0.1.0(pg@8.11.2)(postgres@3.3.5)
+    specifier: ^0.2.1
+    version: 0.2.1(pg@8.11.2)(postgres@3.3.5)
   drizzle-kit:
     specifier: ^0.19.13
     version: 0.19.13
@@ -1579,8 +1579,8 @@ packages:
       wordwrap: 1.0.0
     dev: true
 
-  /drizzle-dbml-generator@0.1.0(pg@8.11.2)(postgres@3.3.5):
-    resolution: {integrity: sha512-ydrsQPUhUi20AsjhGzon7b6jchODOzyPtoGYAYrIlYnKH5Tp9sPFAJGlnCtrFrM3YX9doKVxP/KnB5k0yQfCcg==}
+  /drizzle-dbml-generator@0.2.1(pg@8.11.2)(postgres@3.3.5):
+    resolution: {integrity: sha512-PnAKXPzdlnq5j3s2dlVfCNS6IOVZYN18y9A4Zrqe4YlGesH4IUMe0vLK56QIgY79lzhtzjPr0cdqHtuPaFaVZg==}
     dependencies:
       drizzle-orm: 0.28.5(pg@8.11.2)(postgres@3.3.5)
     transitivePeerDependencies:

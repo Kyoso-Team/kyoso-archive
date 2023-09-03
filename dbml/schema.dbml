@@ -1,0 +1,1162 @@
+enum ban_oder {
+  ABABAB
+  ABBAAB
+}
+
+enum cash_metric {
+  fixed
+  percent
+}
+
+enum issue_notification_type {
+  submission
+  resolved
+}
+
+enum issue_type {
+  security
+  enhancement
+  new_feature
+  bug
+  user_behavior
+}
+
+enum join_request_status {
+  pending
+  accepted
+  rejected
+}
+
+enum mappool_state {
+  private
+  playtesting
+  public
+}
+
+enum mod {
+  ez
+  hd
+  hr
+  sd
+  dt
+  rx
+  ht
+  fl
+  pf
+}
+
+enum opponent {
+  opponent1
+  opponent2
+}
+
+enum prize_type {
+  tournament
+  pickems
+}
+
+enum qualifier_runs_summary {
+  average
+  sum
+  best
+}
+
+enum round_publication_notification_type {
+  mappool
+  schedules
+  statistics
+}
+
+enum skillset {
+  consistency
+  streams
+  tech
+  alt
+  speed
+  gimmick
+  rhythm
+  aim
+  awkward_aim
+  flow_aim
+  reading
+  precision
+  stamina
+  finger_control
+  jack_of_all_trades
+}
+
+enum staff_change_notification_action {
+  added
+  removed
+}
+
+enum staff_color {
+  slate
+  gray
+  red
+  orange
+  yellow
+  lime
+  green
+  emerald
+  cyan
+  blue
+  indigo
+  purple
+  fuchsia
+  pink
+}
+
+enum staff_permission {
+  host
+  debug
+  mutate_tournament
+  view_staff_members
+  mutate_staff_members
+  delete_staff_members
+  view_regs
+  mutate_regs
+  delete_regs
+  mutate_pool_structure
+  view_pool_suggestions
+  mutate_pool_suggestions
+  delete_pool_suggestions
+  view_pooled_maps
+  mutate_pooled_maps
+  delete_pooled_maps
+  can_playtest
+  view_matches
+  mutate_matches
+  delete_matches
+  ref_matches
+  commentate_matches
+  stream_matches
+  view_stats
+  mutate_stats
+  delete_stats
+  can_play
+}
+
+enum stage_format {
+  groups
+  swiss
+  qualifiers
+  single_elim
+  double_elim
+  battle_royale
+}
+
+enum team_change_notification_action {
+  joined
+  left
+  kicked
+}
+
+enum tournament_service {
+  registrations
+  mappooling
+  referee
+  stats
+  pickems
+}
+
+enum tournament_type {
+  teams
+  draft
+  solo
+}
+
+enum win_condition {
+  score
+  accuracy
+  combo
+  misses
+}
+
+table banned_map {
+  id serial [pk, not null, increment]
+  banned_by opponent [not null]
+  pooled_map_id integer
+  match_id integer [not null]
+}
+
+table battle_royale_round {
+  players_eliminated_per_map smallint [not null]
+  round_id integer [pk, not null]
+}
+
+table beatmap {
+  osu_beatmap_id integer [pk, not null]
+  difficulty_name varchar(75) [not null]
+  max_combo smallint [not null]
+  bpm real [not null]
+  length real [not null]
+  circle_size real [not null]
+  approach_rate real [not null]
+  overall_difficulty real [not null]
+  health_points real [not null]
+  beatmapset_id integer [not null]
+}
+
+table beatmapset {
+  osu_beatmapset_id integer [pk, not null]
+  artist varchar(70) [not null]
+  title varchar(180) [not null]
+  mapper_id integer [not null]
+}
+
+table country {
+  id serial [pk, not null, increment]
+  name varchar(35) [not null]
+  code char(2) [not null, unique]
+}
+
+table granted_tournament_host_notification {
+  notification_id bigint [pk, not null]
+  tournament_id integer
+  previous_host_id integer
+  new_host_id integer
+}
+
+table issue {
+  id serial [pk, not null, increment]
+  submitted_on "timestamp (3) with time zone" [not null, default: `now()`]
+  title varchar(35) [not null]
+  body text [not null]
+  type issue_type [not null]
+  image_count smallint [not null, default: 0]
+  can_contact boolean [not null, default: false]
+  resolved boolean [not null, default: false]
+  submitted_by_id integer
+}
+
+table issue_notification {
+  notification_type issue_notification_type [not null]
+  notification_id bigint [pk, not null]
+  issue_id integer
+}
+
+table join_team_request {
+  id serial [pk, not null, increment]
+  requested_at "timestamp (3) with time zone" [not null, default: `now()`]
+  status join_request_status [not null, default: 'pending']
+  sent_by_id integer [not null]
+  team_id integer [not null]
+}
+
+table join_team_request_notification {
+  notification_id bigint [pk, not null]
+  request_id integer
+}
+
+table knockout_lobby {
+  lobby_id integer [pk, not null]
+}
+
+table knockout_lobby_to_player {
+  knockout_lobby_id integer [not null]
+  player_id integer [not null]
+
+  indexes {
+    (knockout_lobby_id, player_id) [pk]
+  }
+}
+
+table knockout_lobby_to_team {
+  knockout_lobby_id integer [not null]
+  team_id integer [not null]
+
+  indexes {
+    (knockout_lobby_id, team_id) [pk]
+  }
+}
+
+table lobby {
+  id serial [pk, not null, increment]
+  local_id varchar(5)
+  date "timestamp (3) with time zone"
+  referee_notes text
+  osu_mp_ids integer[] [not null, default: `[]`]
+  tournament_id integer [not null]
+  round_id integer [not null]
+
+  indexes {
+    (local_id, tournament_id) [name: 'lobby_local_id_tournament_id_key', unique]
+  }
+}
+
+table lobby_to_staff_member_as_commentator {
+  lobby_id integer [not null]
+  staff_member_id integer [not null]
+
+  indexes {
+    (staff_member_id, lobby_id) [pk]
+  }
+}
+
+table lobby_to_staff_member_as_referee {
+  lobby_id integer [not null]
+  staff_member_id integer [not null]
+
+  indexes {
+    (staff_member_id, lobby_id) [pk]
+  }
+}
+
+table lobby_to_staff_member_as_streamer {
+  lobby_id integer [not null]
+  staff_member_id integer [not null]
+
+  indexes {
+    (staff_member_id, lobby_id) [pk]
+  }
+}
+
+table mapper {
+  osu_user_id integer [pk, not null]
+  username varchar(16) [not null]
+}
+
+table match {
+  roll_winner opponent
+  ban_first opponent
+  pick_first opponent
+  forfeit_from opponent
+  winner opponent
+  lobby_id integer [pk, not null]
+  player_1_id integer
+  player_2_id integer
+  team_1_id integer
+  team_2_id integer
+}
+
+table match_prediction {
+  id serial [pk, not null, increment]
+  predicted_winner opponent [not null]
+  match_id integer [not null]
+  submission_id integer [not null]
+
+  indexes {
+    (match_id, submission_id) [name: 'match_prediction_match_id_submission_id_key', unique]
+  }
+}
+
+table mod_multiplier {
+  id serial [pk, not null, increment]
+  mods mod[4] [not null, default: `[]`]
+  value real [not null]
+  tournament_id integer [not null]
+
+  indexes {
+    (tournament_id, mods) [name: 'mod_multiplier_tournament_id_mods_key', unique]
+  }
+}
+
+table modpool {
+  id serial [pk, not null, increment]
+  category varchar(3) [not null]
+  mods mod[4] [not null, default: `[]`]
+  is_free_mod boolean [not null]
+  is_tie_breaker boolean [not null]
+  order smallint [not null]
+  map_count smallint [not null]
+  round_id integer [not null]
+
+  indexes {
+    (round_id, category) [name: 'modpool_round_id_category_key', unique]
+  }
+}
+
+table new_staff_application_submission_notification {
+  notification_id bigint [pk, not null]
+  staff_application_submission_id integer
+}
+
+table notification {
+  id bigserial [pk, not null, increment]
+  notified_at "timestamp (3) with time zone" [not null, default: `now()`]
+}
+
+table pickem_user {
+  id serial [pk, not null, increment]
+  points smallint [not null, default: 0]
+  user_id integer [not null]
+  tournament_id integer [not null]
+
+  indexes {
+    (user_id, tournament_id) [name: 'pickem_user_user_id_tournament_id_key', unique]
+  }
+}
+
+table played_knockout_map {
+  id serial [pk, not null, increment]
+  knockout_lobby_id integer [not null]
+  pooled_map_id integer [not null]
+}
+
+table played_knockout_map_to_player_as_knocked_out {
+  played_knockout_map_id integer [not null]
+  player_id integer [not null]
+
+  indexes {
+    (played_knockout_map_id, player_id) [pk]
+  }
+}
+
+table played_knockout_map_to_player_as_played {
+  played_knockout_map_id integer [not null]
+  player_id integer [not null]
+
+  indexes {
+    (played_knockout_map_id, player_id) [pk]
+  }
+}
+
+table played_knockout_map_to_team_as_knocked_out {
+  played_knockout_map_id integer [not null]
+  team_id integer [not null]
+
+  indexes {
+    (played_knockout_map_id, team_id) [pk]
+  }
+}
+
+table played_knockout_map_to_team_as_played {
+  played_knockout_map_id integer [not null]
+  team_id integer [not null]
+
+  indexes {
+    (played_knockout_map_id, team_id) [pk]
+  }
+}
+
+table played_map {
+  id serial [pk, not null, increment]
+  winner opponent [not null]
+  picked_by opponent [not null]
+  pooled_map_id integer
+  match_id integer [not null]
+}
+
+table played_qualifier_map {
+  id serial [pk, not null, increment]
+  qualifier_lobby_id integer [not null]
+  pooled_map_id integer
+}
+
+table played_qualifier_map_to_player {
+  played_qualifier_map_id integer [not null]
+  player_id integer [not null]
+
+  indexes {
+    (played_qualifier_map_id, player_id) [pk]
+  }
+}
+
+table played_qualifier_map_to_team {
+  played_qualifier_map_id integer [not null]
+  team_id integer [not null]
+
+  indexes {
+    (played_qualifier_map_id, team_id) [pk]
+  }
+}
+
+table player {
+  id serial [pk, not null, increment]
+  registered_at "timestamp (3) with time zone" [not null, default: `now()`]
+  bws_rank integer
+  tournament_id integer [not null]
+  user_id integer [not null]
+  team_id integer
+
+  indexes {
+    (user_id, tournament_id) [name: 'player_user_id_tournament_id_key', unique]
+  }
+}
+
+table player_score {
+  id serial [pk, not null, increment]
+  score integer [not null]
+  accuracy real [not null]
+  combo smallint [not null]
+  count_300 smallint [not null]
+  count_100 smallint [not null]
+  count_50 smallint [not null]
+  misses smallint [not null]
+  relative_score "double precision" [not null, default: 0]
+  z_score "double precision" [not null, default: 0]
+  mods mod[4] [not null, default: `[]`]
+  on_pooled_map_id integer [not null]
+  round_id integer [not null]
+  team_score_id integer [not null]
+  player_id integer
+}
+
+table pooled_map {
+  id serial [pk, not null, increment]
+  slot smallint [not null]
+  skillsets skillset[3] [not null, default: `[]`]
+  pooler_comment text
+  has_beatmap_file boolean [not null, default: false]
+  has_replay boolean [not null, default: false]
+  tournament_id integer [not null]
+  round_id integer [not null]
+  modpool_id integer [not null]
+  beatmap_id integer [not null]
+  suggested_by_staff_member_id integer
+  pooled_by_staff_member_id integer
+
+  indexes {
+    (modpool_id, beatmap_id) [name: 'pooled_map_modpool_id_beatmap_id_key', unique]
+  }
+}
+
+table pooled_map_rating {
+  id serial [pk, not null, increment]
+  rating "numeric(3, 1)" [not null]
+  pooled_map_id integer [not null]
+  rated_by_id integer
+
+  indexes {
+    (rated_by_id, pooled_map_id) [name: 'pooled_map_rating_rated_by_id_pooled_by_id_key', unique]
+  }
+}
+
+table potential_match {
+  id serial [pk, not null, increment]
+  local_id varchar(5)
+  date "timestamp (3) with time zone"
+  match_id integer [not null]
+  tournament_id integer [not null]
+  player_1_id integer
+  player_2_id integer
+  team_1_id integer
+  team_2_id integer
+
+  indexes {
+    (local_id, tournament_id) [name: 'potential_match_local_id_tournament_id_key', unique]
+  }
+}
+
+table potential_match_prediction {
+  id serial [pk, not null, increment]
+  predicted_winner opponent [not null]
+  potential_match_id integer [not null]
+  submission_id integer [not null]
+
+  indexes {
+    (potential_match_id, submission_id) [name: 'potential_match_prediction_potential_match_id_submission_id_key', unique]
+  }
+}
+
+table prediction_submission {
+  id serial [pk, not null, increment]
+  submitted_at "timestamp (3) with time zone" [not null, default: `now()`]
+  tournament_id integer [not null]
+  round_id integer [not null]
+  submitted_by_pickem_user_id integer [not null]
+
+  indexes {
+    (round_id, submitted_by_pickem_user_id) [name: 'prediction_submission_round_id_submitted_by_pickem_user_id_key', unique]
+  }
+}
+
+table prize {
+  id serial [pk, not null, increment]
+  type prize_type [not null]
+  positons smallint[] [not null, default: `[]`]
+  trophy boolean [not null]
+  medal boolean [not null]
+  badge boolean [not null]
+  banner boolean [not null]
+  additional_items "varchar(65)[]" [not null, default: `[]`]
+  months_osu_supporter smallint
+  tournament_id integer [not null]
+}
+
+table prize_cash {
+  value real [not null]
+  metric cash_metric [not null]
+  currency char(3) [not null]
+  in_prize_id integer [pk, not null]
+}
+
+table purchase {
+  id serial [pk, not null, increment]
+  purchased_at "timestamp (3) with time zone" [not null, default: `now()`]
+  cost "numeric(4, 2)" [not null]
+  paypal_order_id varchar(20) [not null]
+  services tournament_service[5] [not null, default: `[]`]
+  purchased_by_id integer [not null]
+  for_tournament_id integer
+}
+
+table qualifier_lobby {
+  lobby_id integer [pk, not null]
+}
+
+table qualifier_lobby_to_player {
+  qualifier_lobby_id integer [not null]
+  player_id integer [not null]
+
+  indexes {
+    (qualifier_lobby_id, player_id) [pk]
+  }
+}
+
+table qualifier_lobby_to_team {
+  qualifier_lobby_id integer [not null]
+  team_id integer [not null]
+
+  indexes {
+    (qualifier_lobby_id, team_id) [pk]
+  }
+}
+
+table qualifier_predictions {
+  id serial [pk, not null, increment]
+  predicted_position smallint [not null]
+  submission_id integer [not null]
+  player_id integer
+  team_id integer
+}
+
+table qualifier_round {
+  publish_mp_links boolean [not null, default: false]
+  run_count smallint [not null]
+  summarize_runs_as qualifier_runs_summary [not null, default: 'average']
+  round_id integer [pk, not null]
+}
+
+table round {
+  id serial [pk, not null, increment]
+  name varchar(20) [not null]
+  order smallint [not null]
+  target_star_rating real
+  mappool_state mappool_state [not null, default: 'private']
+  publish_schedules boolean [not null, default: false]
+  publish_stats boolean [not null, default: false]
+  stage_id integer [not null]
+  tournament_id integer [not null]
+
+  indexes {
+    (name, tournament_id) [name: 'round_name_tournament_id_key', unique]
+  }
+}
+
+table round_publication_notification {
+  publicized round_publication_notification_type [not null]
+  notification_id bigint [pk, not null]
+  round_id integer
+}
+
+table staff_application_role {
+  id serial [pk, not null, increment]
+  name varchar(45) [not null]
+  description text
+  staff_application_id integer [not null]
+
+  indexes {
+    (name, staff_application_id) [name: 'staff_application_role_name_staff_application_id_key', unique]
+  }
+}
+
+table staff_application_submission {
+  id serial [pk, not null, increment]
+  submitted_at "timestamp (3) with time zone" [not null, default: `now()`]
+  applying_for "varchar(45)[]" [not null, default: `[]`]
+  status join_request_status [not null, default: 'pending']
+  staffing_experience text [not null]
+  additional_comments text
+  staff_application_id integer [not null]
+  submitted_by_id integer [not null]
+}
+
+table staff_application {
+  title varchar(90) [not null]
+  description text
+  tournament_id integer [pk, not null]
+}
+
+table staff_change_notification {
+  action staff_change_notification_action [not null]
+  added_with_roles "varchar(25)[]" [not null, default: `[]`]
+  notification_id bigint [pk, not null]
+  user_id integer
+}
+
+table staff_member {
+  id serial [pk, not null, increment]
+  joined_staff_at "timestamp (3) with time zone" [not null, default: `now()`]
+  user_id integer [not null]
+  tournament_id integer [not null]
+
+  indexes {
+    (user_id, tournament_id) [name: 'staff_member_user_id_tournament_id_key', unique]
+  }
+}
+
+table staff_member_to_staff_role {
+  staff_member_id integer [not null]
+  staff_role_id integer [not null]
+
+  indexes {
+    (staff_member_id, staff_role_id) [pk]
+  }
+}
+
+table staff_role {
+  id serial [pk, not null, increment]
+  name varchar(45) [not null]
+  color staff_color [not null, default: 'slate']
+  order smallint [not null]
+  permissions staff_permission[27] [not null, default: `[]`]
+  tournament_id integer [not null]
+
+  indexes {
+    (name, tournament_id) [name: 'staff_role_name_tournament_id_key', unique]
+  }
+}
+
+table stage {
+  id serial [pk, not null, increment]
+  format stage_format [not null]
+  order smallint [not null]
+  is_main_stage boolean [not null, default: false]
+  tournament_id integer [not null]
+
+  indexes {
+    (tournament_id, format) [name: 'stage_tournament_id_format_key', unique]
+  }
+}
+
+table standard_round {
+  best_of smallint [not null]
+  ban_count smallint [not null]
+  protect_count smallint [not null]
+  round_id integer [pk, not null]
+}
+
+table star_rating {
+  id serial [pk, not null, increment]
+  mods mod[4] [not null, default: `[]`]
+  value real [not null]
+  beatmap_id integer [not null]
+
+  indexes {
+    (mods, beatmap_id) [name: 'star_rating_mods_beatmap_id_key', unique]
+  }
+}
+
+table suggested_map {
+  id serial [pk, not null, increment]
+  suggested_skillset skillset[3] [not null, default: `[]`]
+  suggester_comment text
+  tournament_id integer [not null]
+  round_id integer [not null]
+  modpool_id integer [not null]
+  beatmap_id integer [not null]
+  suggested_by_staff_member_id integer
+
+  indexes {
+    (beatmap_id, modpool_id) [name: 'suggested_map_beatmap_id_modpool_id_key', unique]
+  }
+}
+
+table team {
+  id serial [pk, not null, increment]
+  registered_at "timestamp (3) with time zone" [not null, default: `now()`]
+  name varchar(20) [not null]
+  invite_id char(8) [not null, unique]
+  has_banner boolean [not null, default: false]
+  average_rank real [not null]
+  average_bws_rank real [not null]
+  tournament_id integer [not null]
+  captain_id integer [not null, unique]
+
+  indexes {
+    (name, tournament_id) [name: 'team_name_tournament_id_key', unique]
+  }
+}
+
+table team_change_notification {
+  action team_change_notification_action [not null]
+  notification_id bigint [pk, not null]
+  team_id integer
+  affected_user_id integer
+  kicked_by_id integer
+}
+
+table team_score {
+  id serial [pk, not null, increment]
+  on_pooled_map_id integer [not null]
+  round_id integer [not null]
+  team_id integer
+}
+
+table tournament {
+  id serial [pk, not null, increment]
+  name varchar(50) [not null, unique]
+  acronym varchar(8) [not null]
+  lower_rank_range integer [not null]
+  upper_rank_range integer [not null]
+  go_public_on "timestamp (3) with time zone"
+  concludes_on "timestamp (3) with time zone"
+  player_regs_open_on "timestamp (3) with time zone"
+  player_regs_close_on "timestamp (3) with time zone"
+  staff_regs_open_on "timestamp (3) with time zone"
+  staff_regs_close_on "timestamp (3) with time zone"
+  team_size smallint [not null, default: 1]
+  team_play_size smallint [not null, default: 1]
+  has_banner boolean [default: false]
+  has_logo boolean [default: false]
+  use_team_banners boolean [not null, default: true]
+  use_bws boolean [not null]
+  rules text
+  type tournament_type [not null]
+  services tournament_service[5] [not null, default: `[]`]
+  forum_post_id integer
+  discord_invite_id varchar(12)
+  main_sheet_id varchar(45)
+  twitch_channel_name varchar(25)
+  youtube_channel_id varchar(25)
+  twitter_handle varchar(15)
+  donation_link varchar(100)
+  website_link varchar(100)
+  pick_timer_length smallint [not null, default: 120]
+  start_timer_length smallint [not null, default: 10]
+  double_pick_allowed boolean [not null, default: false]
+  double_ban_allowed boolean [not null, default: false]
+  always_force_nofail boolean [not null, default: true]
+  roll_rules text
+  free_mod_rules text
+  warmup_rules text
+  late_procedures text
+  ban_order ban_oder [not null, default: 'ABABAB']
+  win_condition win_condition [not null, default: 'score']
+}
+
+table tournament_deleted_notification {
+  tournament_name varchar(50) [not null]
+  notification_id bigint [pk, not null]
+  hosted_by_id integer
+}
+
+table user {
+  id serial [pk, not null, increment]
+  registered_at "timestamp (3) with time zone" [not null, default: `now()`]
+  updated_api_data_at "timestamp (3) with time zone" [not null, default: `now()`]
+  last_notification_at "timestamp (3) with time zone" [not null, default: `now()`]
+  is_admin boolean [not null, default: false]
+  osu_user_id integer [not null, unique]
+  osu_username varchar(16) [not null, unique]
+  is_restricted boolean [not null]
+  rank integer [not null]
+  discord_user_id varchar(19) [not null, unique]
+  discord_username varchar(32) [not null]
+  discord_discriminator char(4) [not null]
+  api_key varchar(24) [not null, unique]
+  free_services_left smallint [not null, default: 3]
+  show_discord_tag boolean [not null, default: true]
+  osu_access_token text [not null]
+  osu_refresh_token text [not null]
+  discord_access_token text [not null]
+  discord_refresh_token text [not null]
+  country_id integer [not null]
+
+  indexes {
+    (discord_username, discord_discriminator) [name: 'user_discord_username_discord_discriminator_key', unique]
+  }
+}
+
+table user_player_info {
+  updated_at "timestamp (3) with time zone" [not null, default: `now()`]
+  availability char(99) [not null]
+  badge_count integer [not null]
+  user_id integer [pk, not null]
+}
+
+table user_to_notification {
+  user_id integer [not null]
+  notification_id integer [not null]
+  read boolean [not null, default: false]
+
+  indexes {
+    (user_id, notification_id) [pk]
+  }
+}
+
+ref: banned_map.pooled_map_id > pooled_map.id
+
+ref: banned_map.match_id > match.lobby_id
+
+ref: battle_royale_round.round_id - round.id
+
+ref: beatmap.beatmapset_id > beatmapset.osu_beatmapset_id
+
+ref: beatmapset.mapper_id > mapper.osu_user_id
+
+ref: granted_tournament_host_notification.notification_id - notification.id
+
+ref: granted_tournament_host_notification.tournament_id - tournament.id
+
+ref: granted_tournament_host_notification.previous_host_id > user.id
+
+ref: granted_tournament_host_notification.new_host_id > user.id
+
+ref: issue_notification.notification_id - notification.id
+
+ref: issue_notification.issue_id > issue.id
+
+ref: issue.submitted_by_id > user.id
+
+ref: join_team_request_notification.notification_id - notification.id
+
+ref: join_team_request_notification.request_id > join_team_request.id
+
+ref: join_team_request.sent_by_id > player.id
+
+ref: join_team_request.team_id - team.id
+
+ref: knockout_lobby.lobby_id - lobby.id
+
+ref: knockout_lobby_to_player.knockout_lobby_id > knockout_lobby.lobby_id
+
+ref: knockout_lobby_to_player.player_id > player.id
+
+ref: knockout_lobby_to_team.knockout_lobby_id > knockout_lobby.lobby_id
+
+ref: knockout_lobby_to_team.team_id > team.id
+
+ref: lobby.tournament_id > tournament.id
+
+ref: lobby.round_id > round.id
+
+ref: lobby_to_staff_member_as_commentator.lobby_id > lobby.id
+
+ref: lobby_to_staff_member_as_commentator.staff_member_id > staff_member.id
+
+ref: lobby_to_staff_member_as_referee.lobby_id > lobby.id
+
+ref: lobby_to_staff_member_as_referee.staff_member_id > staff_member.id
+
+ref: lobby_to_staff_member_as_streamer.lobby_id > lobby.id
+
+ref: lobby_to_staff_member_as_streamer.staff_member_id > staff_member.id
+
+ref: match_prediction.match_id > match.lobby_id
+
+ref: match_prediction.submission_id > prediction_submission.id
+
+ref: match.lobby_id - lobby.id
+
+ref: match.player_1_id > player.id
+
+ref: match.player_2_id > player.id
+
+ref: match.team_1_id > team.id
+
+ref: match.team_2_id > team.id
+
+ref: mod_multiplier.tournament_id > tournament.id
+
+ref: modpool.round_id > round.id
+
+ref: new_staff_application_submission_notification.notification_id - notification.id
+
+ref: new_staff_application_submission_notification.staff_application_submission_id > staff_application_submission.id
+
+ref: pickem_user.user_id > user.id
+
+ref: pickem_user.tournament_id > tournament.id
+
+ref: played_knockout_map.knockout_lobby_id > knockout_lobby.lobby_id
+
+ref: played_knockout_map.pooled_map_id > pooled_map.id
+
+ref: played_knockout_map_to_player_as_knocked_out.played_knockout_map_id > played_knockout_map.id
+
+ref: played_knockout_map_to_player_as_knocked_out.player_id > player.id
+
+ref: played_knockout_map_to_player_as_played.played_knockout_map_id > played_knockout_map.id
+
+ref: played_knockout_map_to_player_as_played.player_id > player.id
+
+ref: played_knockout_map_to_team_as_knocked_out.played_knockout_map_id > played_knockout_map.id
+
+ref: played_knockout_map_to_team_as_knocked_out.team_id > team.id
+
+ref: played_knockout_map_to_team_as_played.played_knockout_map_id > played_knockout_map.id
+
+ref: played_knockout_map_to_team_as_played.team_id > team.id
+
+ref: played_map.pooled_map_id > pooled_map.id
+
+ref: played_map.match_id > match.lobby_id
+
+ref: played_qualifier_map.qualifier_lobby_id > qualifier_lobby.lobby_id
+
+ref: played_qualifier_map.pooled_map_id > pooled_map.id
+
+ref: played_qualifier_map_to_player.played_qualifier_map_id > played_qualifier_map.id
+
+ref: played_qualifier_map_to_player.player_id > player.id
+
+ref: played_qualifier_map_to_team.played_qualifier_map_id > played_qualifier_map.id
+
+ref: played_qualifier_map_to_team.team_id > team.id
+
+ref: player.tournament_id > tournament.id
+
+ref: player.user_id > user.id
+
+ref: player.team_id > team.id
+
+ref: player_score.on_pooled_map_id > pooled_map.id
+
+ref: player_score.round_id > round.id
+
+ref: player_score.player_id > player.id
+
+ref: player_score.team_score_id > team_score.id
+
+ref: pooled_map_rating.pooled_map_id > pooled_map.id
+
+ref: pooled_map_rating.rated_by_id > staff_member.id
+
+ref: pooled_map.tournament_id > tournament.id
+
+ref: pooled_map.round_id > round.id
+
+ref: pooled_map.modpool_id > modpool.id
+
+ref: pooled_map.beatmap_id > beatmap.osu_beatmap_id
+
+ref: pooled_map.suggested_by_staff_member_id > staff_member.id
+
+ref: pooled_map.pooled_by_staff_member_id > staff_member.id
+
+ref: potential_match_prediction.potential_match_id > potential_match.id
+
+ref: potential_match_prediction.submission_id > prediction_submission.id
+
+ref: potential_match.match_id > match.lobby_id
+
+ref: potential_match.tournament_id > tournament.id
+
+ref: potential_match.player_1_id > player.id
+
+ref: potential_match.player_2_id > player.id
+
+ref: potential_match.team_1_id > team.id
+
+ref: potential_match.team_2_id > team.id
+
+ref: prediction_submission.tournament_id > tournament.id
+
+ref: prediction_submission.round_id > round.id
+
+ref: prediction_submission.submitted_by_pickem_user_id > pickem_user.id
+
+ref: prize_cash.in_prize_id - prize.id
+
+ref: prize.tournament_id > tournament.id
+
+ref: purchase.purchased_by_id > user.id
+
+ref: purchase.for_tournament_id > tournament.id
+
+ref: qualifier_lobby.lobby_id - lobby.id
+
+ref: qualifier_lobby_to_player.qualifier_lobby_id > qualifier_lobby.lobby_id
+
+ref: qualifier_lobby_to_player.player_id > player.id
+
+ref: qualifier_lobby_to_team.qualifier_lobby_id > qualifier_lobby.lobby_id
+
+ref: qualifier_lobby_to_team.team_id > team.id
+
+ref: qualifier_predictions.submission_id > prediction_submission.id
+
+ref: qualifier_predictions.player_id > player.id
+
+ref: qualifier_predictions.team_id > team.id
+
+ref: qualifier_round.round_id - round.id
+
+ref: round_publication_notification.notification_id - notification.id
+
+ref: round_publication_notification.round_id > round.id
+
+ref: round.stage_id > stage.id
+
+ref: round.tournament_id > tournament.id
+
+ref: staff_application_role.id > staff_application.tournament_id
+
+ref: staff_application_submission.staff_application_id > staff_application.tournament_id
+
+ref: staff_application_submission.submitted_by_id > user.id
+
+ref: staff_application.tournament_id - tournament.id
+
+ref: staff_change_notification.notification_id - notification.id
+
+ref: staff_change_notification.user_id > user.id
+
+ref: staff_member.user_id > user.id
+
+ref: staff_member.tournament_id > tournament.id
+
+ref: staff_member_to_staff_role.staff_member_id > staff_member.id
+
+ref: staff_member_to_staff_role.staff_role_id > staff_role.id
+
+ref: staff_role.tournament_id > tournament.id
+
+ref: stage.tournament_id > tournament.id
+
+ref: standard_round.round_id - round.id
+
+ref: star_rating.beatmap_id > beatmap.osu_beatmap_id
+
+ref: suggested_map.tournament_id > tournament.id
+
+ref: suggested_map.round_id > round.id
+
+ref: suggested_map.modpool_id > modpool.id
+
+ref: suggested_map.beatmap_id > beatmap.osu_beatmap_id
+
+ref: suggested_map.suggested_by_staff_member_id > staff_member.id
+
+ref: team_change_notification.notification_id - notification.id
+
+ref: team_change_notification.team_id > team.id
+
+ref: team_change_notification.affected_user_id > user.id
+
+ref: team_change_notification.kicked_by_id > user.id
+
+ref: team.tournament_id > tournament.id
+
+ref: team.captain_id - player.id
+
+ref: team_score.on_pooled_map_id > pooled_map.id
+
+ref: team_score.round_id > round.id
+
+ref: team_score.team_id > team.id
+
+ref: tournament_deleted_notification.notification_id - notification.id
+
+ref: tournament_deleted_notification.hosted_by_id > user.id
+
+ref: user_player_info.user_id - user.id
+
+ref: user.country_id > country.id
+
+ref: user_to_notification.user_id > user.id
+
+ref: user_to_notification.notification_id > notification.id

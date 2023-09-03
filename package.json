@@ -38,7 +38,7 @@
     "@web-std/file": "^3.0.3",
     "autoprefixer": "^10.4.14",
     "dotenv": "^16.0.3",
-    "drizzle-dbml-generator": "^0.1.0",
+    "drizzle-dbml-generator": "^0.2.1",
     "drizzle-kit": "^0.19.13",
     "drizzle-orm": "^0.28.5",
     "eslint": "^8.28.0",
