@@ -12,12 +12,12 @@
     Tooltip
   } from '$components';
   import type { dbPrize, dbPrizeCash } from '$db/schema';
-  import type { InferModel } from 'drizzle-orm';
+  import type { InferSelectModel } from 'drizzle-orm';
 
   const badgeStyles = 'badge variant-ghost !bg-surface-900 h-7';
   const spanStyles = 'text-white font-black text-base tracking-wide block relative';
-  export let prize: Omit<InferModel<typeof dbPrize>, 'tournamentId'> & {
-    cash: Omit<InferModel<typeof dbPrizeCash>, 'inPrizeId'> | null;
+  export let prize: Omit<InferSelectModel<typeof dbPrize>, 'tournamentId'> & {
+    cash: Omit<InferSelectModel<typeof dbPrizeCash>, 'inPrizeId'> | null;
   };
   let tooltips = {
     trophy: `prize-trophy-${prize.id}`,

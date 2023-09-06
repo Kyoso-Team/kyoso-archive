@@ -16,7 +16,7 @@ import { bufferToFile, fetchUserData, id, upload } from './utils';
 import { createSpinner } from 'nanospinner';
 import { readFile } from 'fs/promises';
 import { resolve } from 'path';
-import type { InferModel } from 'drizzle-orm';
+import type { InferInsertModel } from 'drizzle-orm';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import type { Client as OsuClient } from 'osu-web.js';
 
@@ -312,7 +312,7 @@ async function setStagesAndRounds(db: PostgresJsDatabase, tournamentId: number) 
 }
 
 async function setModpools(db: PostgresJsDatabase, id: Record<'quals' | 'ro32' | 'ro16' | 'qf' | 'sf' | 'f' | 'gf', number>) {
-  const qualsModpools: InferModel<typeof dbModpool, 'insert'>[] = [{
+  const qualsModpools: InferInsertModel<typeof dbModpool>[] = [{
     category: 'NM',
     isFreeMod: false,
     isTieBreaker: false,
@@ -859,7 +859,7 @@ async function setStaffMembersAndRoles(db: PostgresJsDatabase, tournamentId: num
     id(11658236, '701196843387715655')
   ];
   let users = await fetchUserData(userIds, db, osuClient, discordBotToken);
-  let insertStaffMembers: (InferModel<typeof dbStaffMember, 'insert'> & {
+  let insertStaffMembers: (InferInsertModel<typeof dbStaffMember> & {
     staffRoleId: number;
   })[] = [];
 
@@ -950,7 +950,7 @@ async function setStaffMembersAndRoles(db: PostgresJsDatabase, tournamentId: num
       id: dbStaffMember.id
     });
 
-  let relations: InferModel<typeof dbStaffMemberToStaffRole, 'insert'>[] = [];
+  let relations: InferInsertModel<typeof dbStaffMemberToStaffRole>[] = [];
 
 
   for (let i = 0; i < staffMembers.length; i++) {
