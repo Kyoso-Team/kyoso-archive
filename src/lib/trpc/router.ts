@@ -12,7 +12,8 @@ import {
   staffRolesRouter,
   modpoolsRouter,
   pooledMapsRouter,
-  suggestedMapsRouter
+  suggestedMapsRouter,
+  markdownRouter
 } from './routes';
 import { t } from '$trpc';
 
@@ -30,7 +31,8 @@ export const router = t.router({
   staffRoles: staffRolesRouter,
   modpools: modpoolsRouter,
   pooledMaps: pooledMapsRouter,
-  suggestedMaps: suggestedMapsRouter
+  suggestedMaps: suggestedMapsRouter,
+  markdown: markdownRouter
 });
 
 export type Router = typeof router;

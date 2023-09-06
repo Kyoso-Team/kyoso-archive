@@ -3,7 +3,6 @@
   import { page } from '$app/stores';
   import { error, tournamentSidebar } from '$stores';
   import { onMount } from 'svelte';
-  import { Converter } from 'showdown';
   import { SEO } from '$components';
   import type { PageServerData } from './$types';
 
@@ -22,13 +21,15 @@
 
   async function onUpdate() {
     try {
+      const sanitizedMarkdown = await sanitize(markdown.trim());
+
       await trpc($page).tournaments.updateTournament.mutate({
         tournamentId: data.id,
         where: {
           id: data.id
         },
         data: {
-          rules: markdown === '' ? null : markdown.trim().replace(/\n{3,}\s*/g, '\n\n')
+          rules: markdown === '' ? null : sanitizedMarkdown
         }
       });
 
@@ -41,6 +42,15 @@
 
   function togglePreview() {
     preview = !preview;
+  }
+
+  async function sanitize(input: string): Promise<string | undefined> {
+    try {
+      return await trpc($page).markdown.sanitize.query(input);
+    } catch (err) {
+      console.error(err);
+      error.set($error, err, 'close', true);
+    }
   }
 
   $: {
@@ -67,9 +77,9 @@
     }`}
   >
     {#if preview}
-      {@html new Converter({
-        ghCodeBlocks: true
-      }).makeHtml(markdown)}
+      {#await sanitize(markdown.trim()) then value}
+        {@html value}
+      {/await}
     {:else}
       <textarea class="input h-full w-full resize-none px-2 py-1" bind:value={markdown} />
     {/if}
