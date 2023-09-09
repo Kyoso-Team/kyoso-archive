@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'VioletSans Regular';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/VioletSans-Regular.ttf');
+}
+
 html,
 body {
   @apply h-full overflow-hidden;
@@ -40,4 +47,8 @@ ul {
 
 .center-content {
   @apply flex flex-col items-center p-10;
+}
+
+.font-violet-sans {
+  font-family: 'VioletSans Regular';
 }
