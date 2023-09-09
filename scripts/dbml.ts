@@ -7,7 +7,7 @@ function main() {
     out: './dbml/schema.dbml'
   });
 
-  console.log('Generated DBML successfully at \'dbml/schema.dbml\'');
+  console.log("Generated DBML successfully at 'dbml/schema.dbml'");
   process.exit(0);
 }
 

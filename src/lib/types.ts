@@ -18,9 +18,11 @@ import type { ZodBoolean, ZodDate, ZodNumber, ZodString } from 'zod';
 import type { Page } from '@sveltejs/kit';
 import type { InferSelectModel } from 'drizzle-orm';
 
-export type InferEnum<T extends {
-  enumValues: string[];
-}> = T['enumValues'][number];
+export type InferEnum<
+  T extends {
+    enumValues: string[];
+  }
+> = T['enumValues'][number];
 export type MappoolState = InferEnum<typeof dbMappoolState>;
 export type TournamentService = InferEnum<typeof dbTournamentService>;
 export type Mod = InferEnum<typeof dbMod>;

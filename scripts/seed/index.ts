@@ -13,10 +13,7 @@ import { seedRealTournament } from './real-tournament';
 config();
 
 async function main() {
-  console.log(
-    '\nBegin database seeding',
-    '\nGrab a cup of coffee, this might take a minute ☕\n'
-  );
+  console.log('\nBegin database seeding', '\nGrab a cup of coffee, this might take a minute ☕\n');
 
   let spinner = createSpinner('Setup').start();
 
@@ -39,10 +36,10 @@ async function main() {
       storageEndpoint: process.env.STORAGE_ENDPOINT,
       storagePassword: process.env.STORAGE_PASSWORD
     });
-  
+
   let pg = postgres(env.databaseUrl, { max: 1 });
   let db = drizzle(pg);
-  
+
   let osuAuth = new OsuAuth(env.osuClientId, env.osuClientSecret, env.osuRedirectUri);
   let osuToken = await osuAuth.clientCredentialsGrant();
   let osuClient = new OsuClient(osuToken.access_token);
@@ -83,7 +80,13 @@ async function main() {
 
   let userCount = await seedUsers(db, osuClient, env.discordBotToken);
   await seedTeamTournament(db, osuClient, env.discordBotToken, userCount);
-  await seedRealTournament(db, osuClient, env.discordBotToken, env.storageEndpoint, env.storagePassword);
+  await seedRealTournament(
+    db,
+    osuClient,
+    env.discordBotToken,
+    env.storageEndpoint,
+    env.storagePassword
+  );
 
   console.log('Database seeded successfully!');
 }

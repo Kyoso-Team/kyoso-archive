@@ -24,12 +24,14 @@ export const load = (async ({ parent, url }) => {
   );
   let { offset, limit } = paginate(page);
   let where = or(
-    search ? textSearch(
-      dbTournament.name,
-      dbTournament.acronym,
-      dbUser.osuUsername,
-      dbUser.discordUsername
-    ).query(search) : undefined,
+    search
+      ? textSearch(
+          dbTournament.name,
+          dbTournament.acronym,
+          dbUser.osuUsername,
+          dbUser.discordUsername
+        ).query(search)
+      : undefined,
     eq(dbPurchase.payPalOrderId, search)
   );
 

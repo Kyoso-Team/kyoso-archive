@@ -28,7 +28,12 @@
   let btns: PayPalButtonsComponent | undefined;
 
   onMount(() => {
-    dashboardSidebar.create(sidebar, data.tournamentsPlaying, data.tournamentsStaffing, showStepper);
+    dashboardSidebar.create(
+      sidebar,
+      data.tournamentsPlaying,
+      data.tournamentsStaffing,
+      showStepper
+    );
   });
 
   onDestroy(() => {

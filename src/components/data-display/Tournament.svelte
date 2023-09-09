@@ -10,5 +10,5 @@
 </script>
 
 <div class="aspect-[21/9] w-80">
-  <img class="" src="" alt="">
+  <img class="" src="" alt="" />
 </div>

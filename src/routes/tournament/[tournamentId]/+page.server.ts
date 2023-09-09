@@ -105,54 +105,56 @@ export const load = (async (event) => {
     .orderBy(desc(dbPrize.placements))
     .prepare('prizes');
 
-  let stagesQuery = db.query.dbStage.findMany({
-    columns: {
-      id: true,
-      format: true,
-      isMainStage: true
-    },
-    with: {
-      rounds: {
-        columns: {
-          name: true,
-          targetStarRating: true,
-          // The below fields are to determine if stats, schedules and/or mappool from a round should be linked to
-          mappoolState: true,
-          publishSchedules: true,
-          publishStats: true
-        },
-        with: {
-          standardRound: {
-            columns: {
-              bestOf: true,
-              banCount: true,
-              protectCount: true
+  let stagesQuery = db.query.dbStage
+    .findMany({
+      columns: {
+        id: true,
+        format: true,
+        isMainStage: true
+      },
+      with: {
+        rounds: {
+          columns: {
+            name: true,
+            targetStarRating: true,
+            // The below fields are to determine if stats, schedules and/or mappool from a round should be linked to
+            mappoolState: true,
+            publishSchedules: true,
+            publishStats: true
+          },
+          with: {
+            standardRound: {
+              columns: {
+                bestOf: true,
+                banCount: true,
+                protectCount: true
+              }
+            },
+            qualifierRound: {
+              columns: {
+                runCount: true,
+                summarizeRunsAs: true
+              }
+            },
+            battleRoyaleRound: {
+              columns: {
+                playersEliminatedPerMap: true
+              }
+            },
+            modpools: {
+              columns: {
+                category: true,
+                mapCount: true
+              }
             }
           },
-          qualifierRound: {
-            columns: {
-              runCount: true,
-              summarizeRunsAs: true
-            }
-          },
-          battleRoyaleRound: {
-            columns: {
-              playersEliminatedPerMap: true
-            }
-          },
-          modpools: {
-            columns: {
-              category: true,
-              mapCount: true
-            }
-          }
-        },
-        orderBy: (round) => asc(round.order)
-      }
-    },
-    where: (stage) => eq(stage.tournamentId, sql.placeholder('tournamentId')),
-    orderBy: (stage) => asc(stage.order)
-  }).prepare('stages');
+          orderBy: (round) => asc(round.order)
+        }
+      },
+      where: (stage) => eq(stage.tournamentId, sql.placeholder('tournamentId')),
+      orderBy: (stage) => asc(stage.order)
+    })
+    .prepare('stages');
 
   let staffMembersQuery = db
     .select({
@@ -167,14 +169,11 @@ export const load = (async (event) => {
     .innerJoin(dbUser, eq(dbUser.id, dbStaffMember.userId))
     .innerJoin(dbCountry, eq(dbCountry.id, dbUser.countryId))
     .prepare('staffMembers');
-  
+
   let placeholderValues = {
     tournamentId: data.tournament.id
   };
-  let tournament = findFirstOrThrow(
-    await tournamentQuery.execute(placeholderValues),
-    'tournament'
-  );
+  let tournament = findFirstOrThrow(await tournamentQuery.execute(placeholderValues), 'tournament');
 
   return {
     general: tournament.general,

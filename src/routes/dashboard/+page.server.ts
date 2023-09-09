@@ -31,14 +31,8 @@ export const load = (async (event) => {
     .from(dbTournament)
     .where(
       and(
-        or(
-          eq(dbStaffMember.userId, storedUser.id),
-          eq(dbPlayer.userId, storedUser.id)
-        ),
-        or(
-          gt(dbTournament.concludesOn, new Date()),
-          isNull(dbTournament.concludesOn)
-        )
+        or(eq(dbStaffMember.userId, storedUser.id), eq(dbPlayer.userId, storedUser.id)),
+        or(gt(dbTournament.concludesOn, new Date()), isNull(dbTournament.concludesOn))
       )
     )
     .leftJoin(dbStaffMember, eq(dbStaffMember.tournamentId, dbTournament.id))

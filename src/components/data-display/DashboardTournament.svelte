@@ -14,19 +14,24 @@
 
 <a
   href={`/tournament/${tournament.id}/manage`}
-  class="block w-full h-[4.5rem] !no-underline rounded-md relative overflow-hidden border border-primary-500 !hover:filter-none"
+  class="!hover:filter-none relative block h-[4.5rem] w-full overflow-hidden rounded-md border border-primary-500 !no-underline"
 >
-  <div class="relative z-[2] flex justify-center items-center h-full">
+  <div class="relative z-[2] flex h-full items-center justify-center">
     <img
       src={bannerUrl}
       alt={`banner-${tournament.id}`}
-      class="absolute inset-0 w-full aspect-[21/9] -mt-3"
+      class="absolute inset-0 -mt-3 aspect-[21/9] w-full"
     />
     {#if !tournament.hasBanner}
-      <span class="relative font-violet-sans z-[3] text-white text-xs inline-block -mt-2 tracking-wide">{tournament.name}</span>
+      <span
+        class="font-violet-sans relative z-[3] -mt-2 inline-block text-xs tracking-wide text-white"
+        >{tournament.name}</span
+      >
     {/if}
   </div>
-  <div class="absolute inset-0 z-[4] flex justify-center items-center h-full opacity-0 hover:opacity-100 duration-150 bg-[rgba(0,0,0,0.75)]">
-    <span class="text-white font-semibold px-4">{tournament.name}</span>
+  <div
+    class="absolute inset-0 z-[4] flex h-full items-center justify-center bg-[rgba(0,0,0,0.75)] opacity-0 duration-150 hover:opacity-100"
+  >
+    <span class="px-4 font-semibold text-white">{tournament.name}</span>
   </div>
 </a>

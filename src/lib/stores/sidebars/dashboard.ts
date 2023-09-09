@@ -18,7 +18,12 @@ function createDashboardSidebar() {
     | undefined
   >();
 
-  function create(globalSidebar: typeof sidebar, tournamentsPlaying: Tournament[], tournamentsStaffing: Tournament[], onCreateTournament: () => void) {
+  function create(
+    globalSidebar: typeof sidebar,
+    tournamentsPlaying: Tournament[],
+    tournamentsStaffing: Tournament[],
+    onCreateTournament: () => void
+  ) {
     globalSidebar.create(DashboardSidebar, 1);
 
     set({

@@ -11,7 +11,12 @@ import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import type { Client as OsuClient } from 'osu-web.js';
 
 // Seriously needs a rework...
-export async function seedTeamTournament(db: PostgresJsDatabase, osuClient: OsuClient, discordBotToken: string, userCount: number) {
+export async function seedTeamTournament(
+  db: PostgresJsDatabase,
+  osuClient: OsuClient,
+  discordBotToken: string,
+  userCount: number
+) {
   let spinner = createSpinner('Seed team tournament').start();
   let isOpenRank = r.boolean();
 
