@@ -26,7 +26,7 @@
 
   async function onUpdate() {
     try {
-      const sanitizedMarkdown = await sanitize(markdown.trim());
+      const sanitizedMarkdown = await sanitize(markdown);
 
       await trpc($page).tournaments.updateTournament.mutate({
         tournamentId: data.id,
@@ -52,7 +52,7 @@
   async function sanitize(input: string): Promise<string | undefined> {
     try {
       delayTimer = setTimeout(() => (showLoader = true), 800);
-      const sanitizedHtml = await trpc($page).markdown.sanitize.query(input);
+      const sanitizedHtml = await trpc($page).markdown.sanitize.query(`${input.trim()}\n\n`);
 
       clearTimeout(delayTimer);
       return sanitizedHtml;
@@ -81,14 +81,14 @@
     Rules are written in <a href="https://www.markdownguide.org/cheat-sheet">Markdown</a>.
   </p>
   <div
-    class={`relative mt-4 w-[42rem] ${
+    class={`mt-4 w-[42rem] ${
       preview
         ? 'document min-h-[18rem] rounded-md px-8 py-4 text-left bg-surface-100-800-token'
         : 'h-72'
     }`}
   >
     {#if preview}
-      {#await sanitize(markdown.trim())}
+      {#await sanitize(markdown)}
         {#if showLoader}
           <span>Loading Markdown...</span>
           <ProgressBar />

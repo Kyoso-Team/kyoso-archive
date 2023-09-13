@@ -37,13 +37,12 @@
 
   function insertFormatting(value?: string, endValue?: string) {
     const { selectionStart, selectionEnd } = textareaRef;
-    const content = textareaRef.value;
     const updatedContent =
-      content.substring(0, selectionStart) +
+      markdown.substring(0, selectionStart) +
       value +
-      content.substring(selectionStart, selectionEnd) +
+      markdown.substring(selectionStart, selectionEnd) +
       (endValue ?? value) +
-      content.substring(selectionEnd);
+      markdown.substring(selectionEnd);
 
     markdown = updatedContent;
   }
