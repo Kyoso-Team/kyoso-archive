@@ -124,6 +124,7 @@
 <svelte:head>
   {@html `<script>(${setInitialClassState.toString()})();</script>`}
 </svelte:head>
+<Modal />
 <AppShell regionPage="relative" slotPageHeader="sticky top-0 z-10">
   <svelte:fragment slot="header">
     <AppBar padding="py-3 px-6">

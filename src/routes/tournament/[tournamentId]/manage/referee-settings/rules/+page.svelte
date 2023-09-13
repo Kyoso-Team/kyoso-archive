@@ -5,11 +5,16 @@
   import { onMount } from 'svelte';
   import { SEO } from '$components';
   import type { PageServerData } from './$types';
+  import { ProgressBar } from '@skeletonlabs/skeleton';
+  import FormatButtons from '$components/general/FormatButtons.svelte';
 
   export let data: PageServerData;
   let markdown = data.rules || '';
+  let textareaRef: HTMLTextAreaElement;
   let btnsDisabled = true;
   let preview = false;
+  let showLoader = false;
+  let delayTimer: NodeJS.Timeout | null = null;
 
   onMount(() => {
     tournamentSidebar.setSelected('Settings', 'Referee', 'Rules');
@@ -46,16 +51,22 @@
 
   async function sanitize(input: string): Promise<string | undefined> {
     try {
-      return await trpc($page).markdown.sanitize.query(input);
+      delayTimer = setTimeout(() => (showLoader = true), 800);
+      const sanitizedHtml = await trpc($page).markdown.sanitize.query(input);
+
+      clearTimeout(delayTimer);
+      return sanitizedHtml;
     } catch (err) {
+      showLoader = false;
+      if (delayTimer) clearTimeout(delayTimer);
+
       console.error(err);
       error.set($error, err, 'close', true);
     }
   }
 
-  $: {
-    btnsDisabled = markdown === (data.rules || '');
-  }
+  $: btnsDisabled = markdown === (data.rules || '') || preview;
+  $: if (!preview && textareaRef) textareaRef.focus();
 </script>
 
 <SEO
@@ -70,21 +81,34 @@
     Rules are written in <a href="https://www.markdownguide.org/cheat-sheet">Markdown</a>.
   </p>
   <div
-    class={`mt-4 w-[42rem] ${
+    class={`relative mt-4 w-[42rem] ${
       preview
         ? 'document min-h-[18rem] rounded-md px-8 py-4 text-left bg-surface-100-800-token'
         : 'h-72'
     }`}
   >
     {#if preview}
-      {#await sanitize(markdown.trim()) then value}
+      {#await sanitize(markdown.trim())}
+        {#if showLoader}
+          <span>Loading Markdown...</span>
+          <ProgressBar />
+        {/if}
+      {:then value}
         {@html value}
+      {:catch}
+        <span>Failed to load preview.</span>
       {/await}
     {:else}
-      <textarea class="input h-full w-full resize-none px-2 py-1" bind:value={markdown} />
+      <FormatButtons bind:markdown {textareaRef} />
+
+      <textarea
+        class="input h-full w-full resize-none px-2 py-1"
+        bind:value={markdown}
+        bind:this={textareaRef}
+      />
     {/if}
   </div>
-  <div class="mt-4 grid w-[42rem] grid-cols-[auto_auto]">
+  <div class="mt-10 grid w-[42rem] grid-cols-[auto_auto]">
     <div>
       <button
         class="btn variant-filled-secondary"
@@ -98,8 +122,10 @@
       <button class="btn variant-ringed-primary" disabled={btnsDisabled} on:click={onUndoChanges}
         >Undo Changes</button
       >
-      <button class="btn variant-filled-primary" disabled={btnsDisabled} on:click={onUpdate}
-        >Update</button
+      <button
+        class="btn variant-filled-primary"
+        disabled={btnsDisabled && !preview}
+        on:click={onUpdate}>Update</button
       >
     </div>
   </div>
