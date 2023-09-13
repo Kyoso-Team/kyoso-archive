@@ -193,7 +193,6 @@
   <svelte:fragment slot="sidebarLeft">
     <Sidebar />
   </svelte:fragment>
-  <Modal />
   <Toast />
   {#if $form && formComponent}
     <div class="fixed inset-0 z-20 h-screen w-screen bg-surface-backdrop-token">
