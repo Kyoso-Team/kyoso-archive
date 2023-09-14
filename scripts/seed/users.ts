@@ -3,7 +3,11 @@ import { createSpinner } from 'nanospinner';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import type { Client as OsuClient } from 'osu-web.js';
 
-export async function seedUsers(db: PostgresJsDatabase, osuClient: OsuClient, discordBotToken: string) {
+export async function seedUsers(
+  db: PostgresJsDatabase,
+  osuClient: OsuClient,
+  discordBotToken: string
+) {
   console.log('');
   let spinner = createSpinner('Seed users').start();
   // Feel free to add more users

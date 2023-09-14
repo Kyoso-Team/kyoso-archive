@@ -1,7 +1,7 @@
 import db from '$db';
-import { dbUser } from '$db/schema';
-import { eq } from 'drizzle-orm';
-import { getStoredUser, findFirstOrThrow } from '$lib/server-utils';
+import { dbTournament, dbUser, dbPlayer, dbStaffMember } from '$db/schema';
+import { and, eq, or, sql, gt, isNull } from 'drizzle-orm';
+import { getStoredUser, findFirstOrThrow, select } from '$lib/server-utils';
 import type { PageServerLoad } from './$types';
 
 export const load = (async (event) => {
@@ -17,7 +17,49 @@ export const load = (async (event) => {
     'user'
   );
 
+  let tournaments = await db
+    .select({
+      ...select(dbTournament, ['id', 'name', 'hasBanner']),
+      as: sql<'staff' | 'player' | 'staff & player'>`case
+        when ${dbStaffMember.userId} = ${storedUser.id} and ${dbPlayer.userId} = ${storedUser.id}
+          then 'staff & player'
+        when ${dbStaffMember.userId} = ${storedUser.id}
+          then 'staff'
+        else 'player'
+      end`
+    })
+    .from(dbTournament)
+    .where(
+      and(
+        or(eq(dbStaffMember.userId, storedUser.id), eq(dbPlayer.userId, storedUser.id)),
+        or(gt(dbTournament.concludesOn, new Date()), isNull(dbTournament.concludesOn))
+      )
+    )
+    .leftJoin(dbStaffMember, eq(dbStaffMember.tournamentId, dbTournament.id))
+    .leftJoin(dbPlayer, eq(dbPlayer.tournamentId, dbTournament.id));
+
+  let tournamentsPlaying: Omit<(typeof tournaments)[number], 'as'>[] = [];
+  let tournamentsStaffing: typeof tournamentsPlaying = [];
+
+  tournaments.forEach((tournament) => {
+    let data = {
+      id: tournament.id,
+      name: tournament.name,
+      hasBanner: tournament.hasBanner
+    };
+
+    if (tournament.as.includes('staff')) {
+      tournamentsStaffing.push(data);
+    }
+
+    if (tournament.as.includes('player')) {
+      tournamentsPlaying.push(data);
+    }
+  });
+
   return {
-    user
+    user,
+    tournamentsPlaying,
+    tournamentsStaffing
   };
 }) satisfies PageServerLoad;

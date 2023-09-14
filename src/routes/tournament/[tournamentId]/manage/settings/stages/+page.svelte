@@ -575,7 +575,9 @@
                           : 's'}
                       </span>
                       <span class="badge variant-filled mx-1">
-                        {round.standardRound.protectCount > 0 ? round.standardRound.protectCount : 'No'}
+                        {round.standardRound.protectCount > 0
+                          ? round.standardRound.protectCount
+                          : 'No'}
                         {round.standardRound.protectCount > 0 ? 'P' : 'p'}rotect{round.standardRound
                           .protectCount === 1
                           ? ''

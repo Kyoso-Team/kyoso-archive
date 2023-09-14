@@ -7,8 +7,8 @@ import { getUserAsStaff } from '$trpc/middleware';
 import { whereIdSchema, withTournamentSchema } from '$lib/schemas';
 import { forbidIf, getRowCount, isAllowed } from '$lib/server-utils';
 import { hasPerms } from '$lib/utils';
-import type { InferModel } from 'drizzle-orm';
 import { swapOrder } from '$trpc/helpers';
+import type { InferInsertModel } from 'drizzle-orm';
 
 const baseSchema = z.object({
   name: z.string().max(20)
@@ -44,11 +44,11 @@ async function createRound({
   standardRound,
   qualifierRound,
   battleRoyaleRound
-}: Omit<InferModel<typeof dbRound, 'insert'>, 'order'> &
+}: Omit<InferInsertModel<typeof dbRound>, 'order'> &
   Partial<{
-    standardRound: Omit<InferModel<typeof dbStandardRound, 'insert'>, 'roundId'>;
-    qualifierRound: Omit<InferModel<typeof dbQualifierRound, 'insert'>, 'roundId'>;
-    battleRoyaleRound: Omit<InferModel<typeof dbBattleRoyaleRound, 'insert'>, 'roundId'>;
+    standardRound: Omit<InferInsertModel<typeof dbStandardRound>, 'roundId'>;
+    qualifierRound: Omit<InferInsertModel<typeof dbQualifierRound>, 'roundId'>;
+    battleRoyaleRound: Omit<InferInsertModel<typeof dbBattleRoyaleRound>, 'roundId'>;
   }>) {
   await tryCatch(async () => {
     await db.transaction(async (tx) => {
@@ -95,9 +95,9 @@ async function updateRound(
     battleRoyaleRound
   }: Partial<{
     name: string;
-    standardRound: Partial<InferModel<typeof dbStandardRound, 'insert'>>;
-    qualifierRound: Partial<InferModel<typeof dbQualifierRound, 'insert'>>;
-    battleRoyaleRound: Partial<InferModel<typeof dbBattleRoyaleRound, 'insert'>>;
+    standardRound: Partial<InferInsertModel<typeof dbStandardRound>>;
+    qualifierRound: Partial<InferInsertModel<typeof dbQualifierRound>>;
+    battleRoyaleRound: Partial<InferInsertModel<typeof dbBattleRoyaleRound>>;
   }>
 ) {
   await tryCatch(async () => {

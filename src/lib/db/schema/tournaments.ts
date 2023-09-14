@@ -56,8 +56,8 @@ export const dbTournament = pgTable('tournament', {
   staffRegsCloseOn: timestamp('staff_regs_close_on', timestampConfig),
   teamSize: smallint('team_size').notNull().default(1),
   teamPlaySize: smallint('team_play_size').notNull().default(1),
-  hasBanner: boolean('has_banner').default(false),
-  hasLogo: boolean('has_logo').default(false),
+  hasBanner: boolean('has_banner').notNull().default(false),
+  hasLogo: boolean('has_logo').notNull().default(false),
   useTeamBanners: boolean('use_team_banners').notNull().default(true),
   useBWS: boolean('use_bws').notNull(),
   rules: text('rules'), // Markdown

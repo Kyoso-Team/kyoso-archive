@@ -1,12 +1,13 @@
 <script lang="ts">
-  import { form, paypal, error } from '$stores';
+  import { form, paypal, error, sidebar, dashboardSidebar } from '$stores';
   import { Stepper, Step, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
   import { format } from '$lib/utils';
   import { services } from '$lib/constants';
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { SEO, CloseIcon, Tournament } from '$components';
+  import { SEO, CloseIcon } from '$components';
+  import { onMount, onDestroy } from 'svelte';
   import type { PageServerData } from './$types';
   import type { TournamentFormData, TournamentType, TournamentService } from '$types';
   import type { PayPalButtonsComponent } from '@paypal/paypal-js';
@@ -25,6 +26,21 @@
   let selectedServices: TournamentService[] = [];
   let paypalBtnsContainer: HTMLElement | null = null;
   let btns: PayPalButtonsComponent | undefined;
+
+  onMount(() => {
+    dashboardSidebar.create(
+      sidebar,
+      data.tournamentsPlaying,
+      data.tournamentsStaffing,
+      showStepper
+    );
+  });
+
+  onDestroy(() => {
+    if ($dashboardSidebar) {
+      dashboardSidebar.destroy(sidebar);
+    }
+  });
 
   function showStepper() {
     createTournament.showStepper = true;
@@ -312,4 +328,3 @@
     </div>
   </div>
 {/if}
-<button class="btn variant-filled-primary" on:click={showStepper}> Create Tournament </button>

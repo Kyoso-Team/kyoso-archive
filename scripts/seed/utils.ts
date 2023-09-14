@@ -1,7 +1,4 @@
-import {
-  dbCountry,
-  dbUser
-} from '../../src/lib/db/schema';
+import { dbCountry, dbUser } from '../../src/lib/db/schema';
 import { eq, inArray, sql } from 'drizzle-orm';
 import { File, Blob } from '@web-std/file';
 import type { Client as OsuClient } from 'osu-web.js';
@@ -42,10 +39,15 @@ export function id(osu: number, discord: string) {
   return { osu, discord };
 }
 
-export async function fetchUserData(ids: {
-  osu: number;
-  discord: string;
-}[], db: PostgresJsDatabase, osuClient: OsuClient, discordBotToken: string) {
+export async function fetchUserData(
+  ids: {
+    osu: number;
+    discord: string;
+  }[],
+  db: PostgresJsDatabase,
+  osuClient: OsuClient,
+  discordBotToken: string
+) {
   let splitIds: (typeof ids)[] = [];
 
   for (let i = 0; i < ids.length; i++) {
@@ -122,12 +124,9 @@ export async function fetchUserData(ids: {
     await sleep(1000);
   }
 
-  await db
-    .insert(dbCountry)
-    .values(countries)
-    .onConflictDoNothing({
-      target: dbCountry.code
-    });
+  await db.insert(dbCountry).values(countries).onConflictDoNothing({
+    target: dbCountry.code
+  });
 
   let userSelect = {
     id: dbUser.id,
@@ -140,7 +139,7 @@ export async function fetchUserData(ids: {
       users.map((user) => {
         let countryQuery = db
           .select({
-            id: dbCountry.id 
+            id: dbCountry.id
           })
           .from(dbCountry)
           .where(eq(dbCountry.code, user.countryCode));
@@ -163,12 +162,14 @@ export async function fetchUserData(ids: {
   let conflictingUsers = await db
     .select(userSelect)
     .from(dbUser)
-    .where(inArray(dbUser.id, insertedUsers.map((user) => user.id)));
+    .where(
+      inArray(
+        dbUser.id,
+        insertedUsers.map((user) => user.id)
+      )
+    );
 
-  return [
-    ...insertedUsers,
-    ...conflictingUsers
-  ];
+  return [...insertedUsers, ...conflictingUsers];
 }
 
 export function bufferToFile(buffer: Buffer, fileName: string) {
@@ -177,7 +178,12 @@ export function bufferToFile(buffer: Buffer, fileName: string) {
   });
 }
 
-export async function upload(storageEndpoint: string, storagePassword: string, path: string, file: File) {
+export async function upload(
+  storageEndpoint: string,
+  storagePassword: string,
+  path: string,
+  file: File
+) {
   await fetch(`${storageEndpoint}/${path}`, {
     method: 'PUT',
     headers: {

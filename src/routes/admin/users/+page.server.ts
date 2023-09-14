@@ -49,7 +49,7 @@ export const load = (async ({ parent, url }) => {
     .offset(offset)
     .limit(limit);
 
-  let qUserCount = getRowCount(dbUser, where);
+  let qUserCount = getRowCount(dbUser, search ? where : undefined);
   let [users, userCount] = await Promise.all([qUsers, qUserCount]);
 
   return {

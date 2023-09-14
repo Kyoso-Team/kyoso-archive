@@ -17,7 +17,7 @@ import { TRPCError } from '@trpc/server';
 import { customAlphabet } from 'nanoid';
 import { and, eq, inArray } from 'drizzle-orm';
 import { findFirst, findFirstOrThrow, getRowCount } from '$lib/server-utils';
-import type { InferModel } from 'drizzle-orm';
+import type { InferInsertModel } from 'drizzle-orm';
 import type { TokenRequestResult, User } from 'discord-oauth2';
 import type { SessionUser } from '$types';
 import type { Cookies } from '@sveltejs/kit';
@@ -58,8 +58,8 @@ function getData(
   },
   discordProfile: User
 ): {
-  user: Omit<InferModel<typeof dbUser, 'insert'>, 'id' | 'apiKey' | 'countryId'>;
-  country: Omit<InferModel<typeof dbCountry, 'insert'>, 'id'>;
+  user: Omit<InferInsertModel<typeof dbUser>, 'id' | 'apiKey' | 'countryId'>;
+  country: Omit<InferInsertModel<typeof dbCountry>, 'id'>;
 } {
   return {
     user: {

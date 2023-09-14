@@ -15,11 +15,14 @@ import type {
   dbStageFormat
 } from '$db/schema';
 import type { ZodBoolean, ZodDate, ZodNumber, ZodString } from 'zod';
-import type { PgEnum } from 'drizzle-orm/pg-core';
 import type { Page } from '@sveltejs/kit';
-import type { InferModel } from 'drizzle-orm';
+import type { InferSelectModel } from 'drizzle-orm';
 
-export type InferEnum<T extends PgEnum<[string, ...string[]]>> = T['enumValues'][number];
+export type InferEnum<
+  T extends {
+    enumValues: string[];
+  }
+> = T['enumValues'][number];
 export type MappoolState = InferEnum<typeof dbMappoolState>;
 export type TournamentService = InferEnum<typeof dbTournamentService>;
 export type Mod = InferEnum<typeof dbMod>;
@@ -33,8 +36,8 @@ export type CashMetric = InferEnum<typeof dbCashMetric>;
 export type QualifierRunsSummary = InferEnum<typeof dbQualifierRunsSummary>;
 export type StageFormat = InferEnum<typeof dbStageFormat>;
 
-export type ModMultiplier = InferModel<typeof dbModMultiplier>;
-export type StaffRole = InferModel<typeof dbStaffRole>;
+export type ModMultiplier = InferSelectModel<typeof dbModMultiplier>;
+export type StaffRole = InferSelectModel<typeof dbStaffRole>;
 
 export type FormInputType = 'string' | 'number' | 'boolean' | 'date' | 'id';
 export type Sort = 'asc' | 'desc';
