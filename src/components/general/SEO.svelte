@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { MetaTags } from 'svelte-meta-tags';
   import type { PageStore } from '$types';
 
   export let title: string;
@@ -18,25 +17,26 @@
 </script>
 
 <svelte:head>
-  <MetaTags
-    {title}
-    {description}
-    noindex={noIndex}
-    canonical={page.url.href}
-    openGraph={{
-      title,
-      description,
-      url: page.url.href,
-      site_name: 'Kyoso',
-      images: image ? [image] : []
-    }}
-    twitter={{
-      title,
-      description,
-      cardType: image?.twitterCardType,
-      site: '@kyoso_tournaments',
-      image: image?.url,
-      imageAlt: image?.alt
-    }}
-  />
+  <link rel="canonical" href={page.url.href} />
+  <meta name="description" content={description} />
+  <meta property="og:url" content={page.url.href} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:site_name" content="Kyoso" />
+  {#if image}
+    <meta property="og:image" content={image.url} />
+    <meta property="og:image:alt" content={image.alt} />
+    <meta property="og:image:width" content={image.width.toString()} />
+    <meta property="og:image:height" content={image.height.toString()} />
+    <meta name="twitter:card" content={image.twitterCardType} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image.url} />
+    <meta name="twitter:image:alt" content={image.alt} />
+    <meta name="twitter:site" content="@kyoso_tournaments" />
+  {/if}
+  {#if noIndex}
+    <meta name="robots" content="noindex" />
+  {/if}
+  <title>{title}</title>
 </svelte:head>
