@@ -14,6 +14,7 @@
   let btnsDisabled = true;
   let preview = false;
   let showLoader = false;
+  // eslint-disable-next-line no-undef
   let delayTimer: NodeJS.Timeout | null = null;
 
   onMount(() => {

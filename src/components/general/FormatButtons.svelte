@@ -71,7 +71,11 @@
 
 <div class="w-full space-x-3">
   {#each formats as format}
-    <button on:mousedown={(e) => e.preventDefault()} on:click={() => handleClick(format)}>
+    <button
+      on:mousedown={(e) => e.preventDefault()}
+      on:click={() => handleClick(format)}
+      class="transform transition-transform hover:text-[#b4b1b4] active:scale-95"
+    >
       <Tooltip target={format.label} label={format.label} />
       <div use:popup={tooltip(format.label)}>
         <svelte:component this={format.icon} w={20} h={20} />
