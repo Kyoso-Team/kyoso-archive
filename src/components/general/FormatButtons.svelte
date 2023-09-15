@@ -13,6 +13,7 @@
     StrikethroughIcon
   } from '$components/icons';
   import type { ComponentType } from 'svelte';
+  import type { LinkModalResponse } from '$types';
 
   export let markdown: string;
   export let textareaRef: HTMLTextAreaElement;
@@ -58,10 +59,10 @@
         });
       case 'Link':
         return modalStore.trigger({
-          type: 'prompt',
-          title: 'Add URL',
-          body: 'Please input a url.',
-          response: (link: string) => link && insertFormatting(`[link](${link})`, '')
+          type: 'component',
+          component: 'linkModal',
+          response: (r: LinkModalResponse) =>
+            r && insertFormatting(`[${r.displayText}](${r.link})`, '')
         });
       default:
         insertFormatting(format.value, format.endValue);

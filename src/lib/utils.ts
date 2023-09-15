@@ -356,3 +356,15 @@ export function colorByMod(
 export function hasTournamentConcluded(tournament: { concludesOn: Date | null }) {
   return !!tournament.concludesOn && tournament.concludesOn.getTime() > new Date().getTime();
 }
+
+/**
+ * Checks if valid http url
+ */
+export function isUrl(url: string): boolean {
+  try {
+    const newUrl = new URL(url);
+    return newUrl.protocol === 'http:' || newUrl.protocol === 'https:';
+  } catch (_) {
+    return false;
+  }
+}

@@ -23,6 +23,7 @@
   import { page } from '$app/stores';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
   import { Sidebar } from '$components';
+  import { modalRegistry } from '$lib/modal-registry';
   import type { Form, Error, Upload } from '$components';
   import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
@@ -124,7 +125,7 @@
 <svelte:head>
   {@html `<script>(${setInitialClassState.toString()})();</script>`}
 </svelte:head>
-<Modal />
+<Modal components={modalRegistry} />
 <AppShell regionPage="relative" slotPageHeader="sticky top-0 z-10">
   <svelte:fragment slot="header">
     <AppBar padding="py-3 px-6">
