@@ -22,6 +22,13 @@ import BannerIcon from './Banner.svelte';
 import HeartIcon from './Heart.svelte';
 import MoneyIcon from './Money.svelte';
 import AdditionIcon from './Addition.svelte';
+import BoldIcon from './Bold.svelte';
+import ItalicsIcon from './Italics.svelte';
+import StrikethroughIcon from './Strikethrough.svelte';
+import CodeIcon from './Code.svelte';
+import CodeBlockIcon from './CodeBlock.svelte';
+import BlockQuoteIcon from './BlockQuote.svelte';
+import ImageIcon from './Image.svelte';
 
 export {
   SettingsIcon,
@@ -47,5 +54,12 @@ export {
   BannerIcon,
   HeartIcon,
   MoneyIcon,
-  AdditionIcon
+  AdditionIcon,
+  BoldIcon,
+  ItalicsIcon,
+  StrikethroughIcon,
+  CodeIcon,
+  CodeBlockIcon,
+  BlockQuoteIcon,
+  ImageIcon
 };
