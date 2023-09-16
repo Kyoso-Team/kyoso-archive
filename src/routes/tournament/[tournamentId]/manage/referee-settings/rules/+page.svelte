@@ -3,10 +3,9 @@
   import { page } from '$app/stores';
   import { error, tournamentSidebar } from '$stores';
   import { onMount } from 'svelte';
-  import { SEO } from '$components';
-  import type { PageServerData } from './$types';
+  import { SEO, FormatButtons } from '$components';
   import { ProgressBar } from '@skeletonlabs/skeleton';
-  import FormatButtons from '$components/general/FormatButtons.svelte';
+  import type { PageServerData } from './$types';
 
   export let data: PageServerData;
   let markdown = data.rules || '';
