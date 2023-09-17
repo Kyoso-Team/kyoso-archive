@@ -35,6 +35,9 @@ dependencies:
   lodash.isequal:
     specifier: ^4.5.0
     version: 4.5.0
+  lucide-svelte:
+    specifier: ^0.279.0
+    version: 0.279.0(svelte@4.0.0)
   nanoid:
     specifier: ^4.0.2
     version: 4.0.2
@@ -2655,6 +2658,14 @@ packages:
     dependencies:
       es5-ext: 0.10.62
     dev: true
+
+  /lucide-svelte@0.279.0(svelte@4.0.0):
+    resolution: {integrity: sha512-u9j8tMPxWsv5iXJvrUU/jpyML/k49flr7440UE8QM9V3u0OZt5+qaY5TMiPDTVRMdEELBg4d4ueW1+3Mo3VT4A==}
+    peerDependencies:
+      svelte: '>=3 <5'
+    dependencies:
+      svelte: 4.0.0
+    dev: false
 
   /magic-string@0.27.0:
     resolution: {integrity: sha512-8UnnX2PeRAPZuN12svgR9j7M1uWMovg/CEnIwIG0LFkXSJJe4PdfUGiTGl8V9bsBHFUtfVINcSyYxd7q+kx9fA==}

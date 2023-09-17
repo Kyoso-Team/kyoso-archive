@@ -1,15 +1,8 @@
 <script lang="ts">
   import { RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
   import { paginate } from '$stores';
-  import {
-    SEO,
-    SearchBar,
-    Paginator,
-    Purchase,
-    AscendingIcon,
-    DescendingIcon,
-    SearchResults
-  } from '$components';
+  import { SEO, SearchBar, Paginator, Purchase, SearchResults } from '$components';
+  import { ArrowDownWideNarrow, ArrowUpNarrowWide } from 'lucide-svelte';
   import { page } from '$app/stores';
   import type { PageServerData } from './$types';
   import type { Sort } from '$types';
@@ -40,7 +33,7 @@
         <span class="pl-1 font-bold">Date</span>
         <RadioGroup active="variant-filled-secondary" hover="hover:variant-soft-secondary">
           <RadioItem name="sortPurchasedAt" value="asc" title="Ascending" bind:group={purchasedAt}>
-            <AscendingIcon w={20} h={20} styles="fill-white" />
+            <ArrowUpNarrowWide size={20} />
           </RadioItem>
           <RadioItem
             name="sortPurchasedAt"
@@ -48,7 +41,7 @@
             title="Descending"
             bind:group={purchasedAt}
           >
-            <DescendingIcon w={20} h={20} styles="fill-white" />
+            <ArrowDownWideNarrow size={20} />
           </RadioItem>
         </RadioGroup>
       </section>

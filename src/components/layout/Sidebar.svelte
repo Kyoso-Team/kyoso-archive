@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { MoveUpIcon } from '$components';
   import { sidebar } from '$stores';
+  import { ChevronUp } from 'lucide-svelte';
 
   let showResponsive = false;
 
@@ -25,7 +25,7 @@
     class="flex h-full w-8 items-center justify-center border-r border-surface-500/50 bg-black bg-opacity-20 duration-150 hover:bg-opacity-30 2lg:hidden"
     on:click={onShowResponsive}
   >
-    <MoveUpIcon w={20} h={20} styles="rotate-90 fill-primary-500" />
+    <ChevronUp size={20} class="rotate-90 fill-primary-500" />
   </button>
   {#if showResponsive}
     <div
@@ -42,7 +42,7 @@
           class="flex h-full w-8 items-center justify-center bg-black bg-opacity-20 duration-150 hover:bg-opacity-30"
           on:click={onHideResponsive}
         >
-          <MoveUpIcon w={20} h={20} styles="rotate-[270deg] fill-primary-500" />
+          <ChevronUp size={20} class="rotate-[270deg] fill-primary-500" />
         </button>
       </div>
     </div>
