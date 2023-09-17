@@ -1,12 +1,13 @@
 <script lang="ts">
   import type { PageServerData } from './$types';
   import { SEO } from '$components';
-  import { SlideToggle, Table, modalStore } from '@skeletonlabs/skeleton';
+  import { SlideToggle, Table, getModalStore } from '@skeletonlabs/skeleton';
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
 
   export let data: PageServerData;
   let user = data.user;
+  let modalStore = getModalStore();
 
   // Discord
   $: visibleDiscord = user.showDiscordTag;
@@ -76,7 +77,7 @@
     >
       Your Discord tag is {visibleDiscord ? '' : 'NOT '}visible!
     </SlideToggle>
-    <button on:click={confirmDiscordChange} class="btn variant-filled-error mt-4"
+    <button on:click={confirmDiscordChange} class="variant-filled-error btn mt-4"
       >CHANGE DISCORD ACCOUNT</button
     >
   </section>
@@ -99,9 +100,9 @@
       value={user.apiKey}
       readonly
     />
-    <button bind:this={apiReveal} on:click={revealApiKey} class="btn variant-filled-primary"
+    <button bind:this={apiReveal} on:click={revealApiKey} class="variant-filled-primary btn"
       >Reveal key</button
     >
-    <button on:click={confirmKeyReset} class="btn variant-filled-error">RESET KEY</button>
+    <button on:click={confirmKeyReset} class="variant-filled-error btn">RESET KEY</button>
   </section>
 </div>

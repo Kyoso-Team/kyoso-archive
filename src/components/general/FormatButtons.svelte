@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { modalStore, popup } from '@skeletonlabs/skeleton';
+  import { getModalStore, popup } from '@skeletonlabs/skeleton';
   import { tooltip } from '$lib/utils';
   import Tooltip from './Tooltip.svelte';
   import {
@@ -17,6 +17,7 @@
 
   export let markdown: string;
   export let textareaRef: HTMLTextAreaElement;
+  let modalStore = getModalStore();
 
   interface Format {
     label: string;
