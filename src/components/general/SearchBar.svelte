@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { SearchIcon } from '$components';
+  import { Search } from 'lucide-svelte';
 
   const dispatcher = createEventDispatcher<{
     search: string | null;
@@ -21,7 +21,7 @@
       class="input-group input-group-divider w-max grid-cols-[max-content_12rem_max-content] md:grid-cols-[max-content_24rem_max-content]"
     >
       <div class="input-group-shim">
-        <SearchIcon w={30} h={30} styles="fill-white" />
+        <Search size={30} />
       </div>
       <input
         type="text"

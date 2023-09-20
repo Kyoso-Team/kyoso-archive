@@ -1,14 +1,8 @@
 <script lang="ts">
   import { tournamentSidebar } from '$stores';
   import { AppRail, AppRailTile } from '@skeletonlabs/skeleton';
-  import {
-    SettingsIcon,
-    PickemsIcon,
-    PoolingIcon,
-    RefereeIcon,
-    RegistrationsIcon,
-    StatsIcon
-  } from '$components';
+  import { PickemsIcon, PoolingIcon, RefereeIcon, RegistrationsIcon, StatsIcon } from '$components';
+  import { Settings } from 'lucide-svelte';
 
   let currentTile = '';
   let defaultSet = true;
@@ -40,7 +34,7 @@
       >
         <svelte:fragment slot="lead">
           {#if icon === 'settings'}
-            <SettingsIcon w={30} h={30} />
+            <Settings size={30} />
           {:else if icon === 'pickems'}
             <PickemsIcon w={42} h={30} />
           {:else if icon === 'pooling'}

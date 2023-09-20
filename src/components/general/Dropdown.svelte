@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { EditIcon } from '$components';
   import { popup } from '@skeletonlabs/skeleton';
+  import { Pencil } from 'lucide-svelte';
   import type { PopupSettings } from '@skeletonlabs/skeleton';
 
   export let name: string;
@@ -18,7 +18,7 @@
   use:popup={menuPopup}
 >
   <slot name="btn">
-    <EditIcon w={15} h={15} styles="fill-black" />
+    <Pencil size={15} color="#000" />
   </slot>
 </button>
 <div

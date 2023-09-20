@@ -3,15 +3,15 @@
   import { tooltip } from '$lib/utils';
   import Tooltip from './Tooltip.svelte';
   import {
-    BlockQuoteIcon,
-    BoldIcon,
-    CodeBlockIcon,
-    CodeIcon,
-    ImageIcon,
-    ItalicsIcon,
-    LinkIcon,
-    StrikethroughIcon
-  } from '$components/icons';
+    Bold,
+    Italic,
+    Strikethrough,
+    Code,
+    Image,
+    Link,
+    TextQuote,
+    FileJson
+  } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
   import type { LinkModalResponse } from '$types';
 
@@ -26,14 +26,14 @@
   }
 
   let formats: Format[] = [
-    { label: 'Bold', value: '**', icon: BoldIcon },
-    { label: 'Italics', value: '_', icon: ItalicsIcon },
-    { label: 'Strikethrough', value: '~~', icon: StrikethroughIcon },
-    { label: 'Inline Code', value: '`', icon: CodeIcon },
-    { label: 'Code Block', value: '```\n', endValue: '\n```', icon: CodeBlockIcon },
-    { label: 'Block Quote', value: '>', endValue: '', icon: BlockQuoteIcon },
-    { label: 'Image', icon: ImageIcon },
-    { label: 'Link', icon: LinkIcon }
+    { label: 'Bold', value: '**', icon: Bold },
+    { label: 'Italics', value: '_', icon: Italic },
+    { label: 'Strikethrough', value: '~~', icon: Strikethrough },
+    { label: 'Inline Code', value: '`', icon: Code },
+    { label: 'Code Block', value: '```\n', endValue: '\n```', icon: FileJson },
+    { label: 'Block Quote', value: '>', endValue: '', icon: TextQuote },
+    { label: 'Image', icon: Image },
+    { label: 'Link', icon: Link }
   ];
 
   function insertFormatting(value?: string, endValue?: string) {
@@ -79,7 +79,7 @@
     >
       <Tooltip target={format.label} label={format.label} />
       <div use:popup={tooltip(format.label)}>
-        <svelte:component this={format.icon} w={20} h={20} />
+        <svelte:component this={format.icon} size={20} />
       </div>
     </button>
   {/each}

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { NoSearchResultsIcon } from '$components';
+  import { SearchX } from 'lucide-svelte';
 
   export let label: string;
   export let resultCount: number;
@@ -11,7 +11,7 @@
   <div class="card mb-2 flex min-w-[18.5rem] max-w-5xl flex-wrap justify-center gap-4 p-4">
     {#if resultCount === 0}
       <div class="flex flex-col items-center">
-        <NoSearchResultsIcon w={75} h={75} styles="fill-primary-500" />
+        <SearchX size={75} class="text-primary-500" />
         No results found
       </div>
     {:else}
