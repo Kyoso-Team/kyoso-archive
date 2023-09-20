@@ -1,8 +1,8 @@
 <script lang="ts">
   import { format, tooltip } from '$lib/utils';
   import { popup } from '@skeletonlabs/skeleton';
-  import { BadgeIcon, BannerIcon, Tooltip } from '$components';
-  import { Trophy, Medal, Heart, Plus, DollarSign } from 'lucide-svelte';
+  import { Tooltip } from '$components';
+  import { Trophy, Medal, Heart, Plus, DollarSign, Award, FileBadge2 } from 'lucide-svelte';
   import type { dbPrize, dbPrizeCash } from '$db/schema';
   import type { InferSelectModel } from 'drizzle-orm';
 
@@ -52,13 +52,13 @@
     {/if}
     {#if prize.badge}
       <span class={`${badgeStyles} w-[52px]`} use:popup={tooltip(tooltips.badge)}>
-        <BadgeIcon h={20} styles="fill-white" />
+        <Award size={18} />
       </span>
       <Tooltip target={tooltips.badge} label="Profile badge" />
     {/if}
     {#if prize.banner}
       <span class={`${badgeStyles} w-[52px]`} use:popup={tooltip(tooltips.banner)}>
-        <BannerIcon h={24} styles="fill-white" />
+        <FileBadge2 size={18} />
       </span>
       <Tooltip target={tooltips.banner} label="Profile banner" />
     {/if}
