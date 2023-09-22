@@ -1,8 +1,11 @@
 import colors from 'tailwindcss/colors';
 import { modalStore } from '@skeletonlabs/skeleton';
+import { error } from '$stores';
+import { get } from 'svelte/store';
 import type { PopupSettings } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
 import type { PageStore, ParseInt, Mod, StaffPermission } from '$types';
+import type { MaybePromise } from '@sveltejs/kit';
 
 /**
  * Tailwind's default colors as a record
@@ -355,4 +358,20 @@ export function colorByMod(
  */
 export function hasTournamentConcluded(tournament: { concludesOn: Date | null }) {
   return !!tournament.concludesOn && tournament.concludesOn.getTime() > new Date().getTime();
+}
+
+/**
+ * Show an expected error upon form submission to the client, reopening the form upon closing the error modal
+ */
+export function showFormError(options: {
+  message: string;
+  reopenForm: () => MaybePromise<void>;
+}) {
+  error.set(
+    get(error),
+    options.message,
+    'close',
+    false,
+    options.reopenForm
+  );
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
-  import { error, tournamentSidebar, form } from '$stores';
+  import { error, tournamentSidebar, legacyForm } from '$stores';
   import { onMount } from 'svelte';
   import { invalidateAll } from '$app/navigation';
   import { modal, format } from '$lib/utils';
@@ -39,7 +39,7 @@
     defaultValue?: MutatePrize,
     prizeId?: number
   ) {
-    form.create<MutatePrize>({
+    legacyForm.create<MutatePrize>({
       defaultValue,
       title: `${operation === 'create' ? 'Create' : 'Update'} ${
         prizeType === 'pickems' ? 'Pickem' : 'Tournament'

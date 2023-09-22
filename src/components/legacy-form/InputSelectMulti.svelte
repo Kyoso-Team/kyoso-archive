@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { form } from '$stores';
+  import { legacyForm } from '$stores';
   import { ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
   import type { Field } from '$types';
 
@@ -10,7 +10,7 @@
   let field: Field | undefined;
 
   onMount(() => {
-    let defaultValues = $form?.defaultValue?.[key];
+    let defaultValues = $legacyForm?.defaultValue?.[key];
 
     if (Array.isArray(defaultValues)) {
       values = defaultValues;
@@ -18,18 +18,18 @@
   });
 
   $: {
-    if ($form) {
-      field = form.getFieldByKey($form, key);
+    if ($legacyForm) {
+      field = legacyForm.getFieldByKey($legacyForm, key);
     }
   }
 
   $: {
-    form.setKeyValue(key, values);
+    legacyForm.setKeyValue(key, values);
   }
 
   $: {
-    if (field?.disableIf && $form) {
-      disabled = field.disableIf($form.currentValue);
+    if (field?.disableIf && $legacyForm) {
+      disabled = field.disableIf($legacyForm.currentValue);
     }
   }
 </script>
@@ -42,7 +42,7 @@
     <ListBox padding="px-4 py-1" multiple>
       {#each field?.values || [] as fieldValue}
         <ListBoxItem
-          name={`${$form?.title.toLowerCase().replaceAll(' ', '-')} ${field?.mapToKey}`}
+          name={`${$legacyForm?.title.toLowerCase().replaceAll(' ', '-')} ${field?.mapToKey}`}
           value={fieldValue.value}
           active={`duration-200 ${disabled ? '' : 'variant-filled-primary'}`}
           hover={disabled ? '' : 'hover:variant-soft-primary'}

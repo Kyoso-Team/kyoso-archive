@@ -1,7 +1,7 @@
 <script lang="ts">
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
-  import { error, tournamentSidebar, form } from '$stores';
+  import { error, tournamentSidebar, legacyForm } from '$stores';
   import { onMount } from 'svelte';
   import { invalidateAll } from '$app/navigation';
   import { modal } from '$lib/utils';
@@ -47,7 +47,7 @@
   }
 
   function onCreateStage() {
-    form.create<{
+    legacyForm.create<{
       format: StageFormat;
     }>({
       title: 'Create Stage',
@@ -188,7 +188,7 @@
     defaultValue?: BattleRoyaleDefault,
     roundId?: number
   ) {
-    form.create<BattleRoyaleDefault>({
+    legacyForm.create<BattleRoyaleDefault>({
       defaultValue,
       title: `${operation[0].toUpperCase()}${operation.substring(1)} Round`,
       fields: ({ field }) => [
@@ -259,7 +259,7 @@
     defaultValue?: QualifierDefault,
     roundId?: number
   ) {
-    form.create<QualifierDefault>({
+    legacyForm.create<QualifierDefault>({
       defaultValue,
       title: `${operation[0].toUpperCase()}${operation.substring(1)} Round`,
       fields: ({ field, select }) => [
@@ -346,7 +346,7 @@
     defaultValue?: StandardDefault,
     roundId?: number
   ) {
-    form.create<StandardDefault>({
+    legacyForm.create<StandardDefault>({
       defaultValue,
       title: `${operation[0].toUpperCase()}${operation.substring(1)} Round`,
       fields: ({ field }) => [

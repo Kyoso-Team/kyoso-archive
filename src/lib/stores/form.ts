@@ -1,208 +1,114 @@
 import { writable } from 'svelte/store';
-import { ZodEffects, ZodOptional, z } from 'zod';
-import type { Field, FormInputType, MapResult, AssignFieldType } from '$types';
-import type { ZodString, ZodNumber, ZodBoolean, ZodDate, ZodAny } from 'zod';
+import type { MaybePromise } from '@sveltejs/kit';
+import type { FormRegistry } from '$forms';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FormComponent = any;
 
 function createForm() {
-  const { subscribe, set, update } = writable<
-    | {
-        title: string;
-        fields: Field[];
-        description?: string;
-        defaultValue?: Record<string, unknown>;
-        currentValue: Record<string, unknown>;
-        onSubmit: (value: Record<string, unknown>) => void | Promise<void>;
-        onClose?: () => void | Promise<void>;
-      }
-    | undefined
-  >();
+  const blank = {
+    component: undefined,
+    errorCounts: {},
+    context: {},
+    requiredFields: [],
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    onSubmit: () => {}
+  };
 
-  function create<T extends Record<string, unknown>>({
-    title,
-    fields,
-    onSubmit,
-    defaultValue,
-    description,
-    onClose
-  }: {
-    title: string;
-    fields: (createField: {
-      field: typeof field;
-      asyncField: typeof asyncField;
-      select: typeof select;
-    }) => Field[];
-    onSubmit: (value: T) => void | Promise<void>;
-    onClose?: () => void | Promise<void>;
-    defaultValue?: T;
-    description?: string;
+  const { subscribe, set, update } = writable<{
+    component: FormComponent;
+    errorCounts: Record<string, number>;
+    requiredFields: string[];
+    onFormReopen?: (value: Record<string, unknown>) => void;
+    context: Record<string, unknown>;
+    defaultValue?: Record<string, unknown>;
+    onClose?: () => MaybePromise<void>;
+    afterSubmit?: (value: Record<string, unknown>) => MaybePromise<void>;
+  }>(blank);
+
+  /**
+   * Mount a form component
+   * @param component The component to mount as a form (components within the `$forms` path alias) 
+   * @param options Additional options and configuration
+   */
+  function create<
+    FormComponent,
+    SubmitValue extends Record<string, unknown>,
+    DefaultValue extends Record<string, unknown> | undefined,
+    Ctx extends Record<string, unknown> | undefined
+  >(component: FormComponent, options: {
+    /**
+     * The default value for the form
+     */
+    defaultValue?: DefaultValue;
+    /**
+     * Function to execute upon closing the form (executes upon cancelling the form and after `onSubmit` in if does get submitted)
+     */
+    onClose?: () => MaybePromise<void>;
+    /**
+     * Additional context to pass to the form
+     */
+    context?: Ctx;
+    /**
+     * Function to execute upon closing an eror and reopening the form
+     */
+    onFormReopen?: (value: SubmitValue) => void;
+    /**
+     * Function to execute after the `submit` function executes successfully
+     */
+    afterSubmit?: (value: SubmitValue) => MaybePromise<void>;
   }) {
-    function field<
-      I extends FormInputType,
-      K extends keyof T,
-      Z extends AssignFieldType<T, K, ZodString, ZodNumber, ZodBoolean, ZodDate, ZodAny>
-    >(
-      label: string,
-      mapToKey: K,
-      type: AssignFieldType<
-        T,
-        K,
-        'string',
-        'number',
-        'boolean',
-        'date',
-        Exclude<FormInputType, 'id'>
-      >,
-      options?: I extends 'string' | 'number'
-        ? {
-            list?: boolean;
-            validation?: (z: Z) => Z | ZodOptional<Z> | ZodEffects<Z, unknown, unknown>;
-            disableIf?: (currentValue: Partial<T>) => boolean;
-            optional?: boolean;
-            fromValues?: {
-              values: () => {
-                value: string | number;
-                label: string;
-              }[];
-              selectMultiple?:
-                | boolean
-                | {
-                    atLeast: number;
-                  };
-            };
-          }
-        : undefined
-    ): Field {
-      let err = {
-        required_error: 'This field is required'
+    let { onFormReopen, afterSubmit, defaultValue, onClose, context } = options;
+
+    update((current) => {
+      current = {
+        ... current,
+        component,
+        defaultValue,
+        onClose,
+        context: context || {},
+        afterSubmit: afterSubmit as (value: Record<string, unknown>) => MaybePromise<void>,
+        onFormReopen: onFormReopen as (value: Record<string, unknown>) => void
       };
 
-      let schema =
-        type === 'string'
-          ? z.string(err)
-          : type === 'number'
-          ? z.number(err)
-          : type === 'boolean'
-          ? z.boolean(err)
-          : z.date(err);
-      let validation = options?.validation?.(schema as Z) as ZodString;
-
-      return {
-        validation: (options?.optional ? validation?.optional() : validation) as ZodString,
-        disableIf: options?.disableIf as
-          | ((currentValue: Record<string, unknown>) => boolean)
-          | undefined,
-        mapToKey: mapToKey as string,
-        optional: options?.optional,
-        errorCount: 0,
-        multipleValues: !!options?.fromValues,
-        values: options?.fromValues?.values() || [],
-        selectMultiple: options?.fromValues?.selectMultiple,
-        list: options?.list,
-        label,
-        type
-      };
-    }
-
-    function asyncField<I extends Record<string, unknown>>(
-      label: string,
-      mapToKey: keyof T,
-      onSearch: () => Promise<Record<string, unknown>>,
-      mapResult: {
-        label: (result: I) => string;
-        imgRef?: (result: I) => string;
-      },
-      optional?: boolean
-    ): Field {
-      return {
-        values: [],
-        type: 'id',
-        mapToKey: mapToKey as string,
-        mapResult: mapResult as MapResult,
-        errorCount: 0,
-        optional,
-        label,
-        onSearch
-      };
-    }
-
-    function select<V extends string | number>() {
-      return (value: V, label?: string) => ({
-        value,
-        label: label || value.toString()
-      });
-    }
-
-    set({
-      title,
-      defaultValue,
-      description,
-      onClose,
-      currentValue: {},
-      onSubmit: onSubmit as (value: Record<string, unknown>) => void | Promise<void>,
-      fields: fields({
-        field,
-        asyncField,
-        select
-      })
+      return Object.assign({}, current);
     });
   }
 
+  /**
+   * Unmounts the active form component
+   */
   function destroy() {
-    set(undefined);
+    set(blank);
   }
 
-  function setKeyValue(key: string, value: unknown) {
+  /**
+   * Set the amount of errors found within a field due to validation
+   * @param fieldKey The key (name) of the field to use as reference
+   * @param errorCount The amount of errors found
+   */
+  function setFieldErrorCount(fieldKey: string, errorCount: number) {
     update((current) => {
-      if (current) {
-        current.currentValue[key] = value;
-      }
-
+      current.errorCounts[fieldKey] = errorCount;
       return Object.assign({}, current);
     });
   }
 
-  function getFieldByKey(
-    form: {
-      title: string;
-      fields: Field[];
-    },
-    key: string
-  ): Field {
-    let field = form.fields.find(({ mapToKey }) => mapToKey === key);
-
-    if (!field) {
-      throw new Error(`Can't find field with key "${key}" inside form titled "${form.title}`);
+  const init = new Proxy({} as FormRegistry, {
+    get () {
+      return create;
     }
-
-    return field;
-  }
-
-  function setFieldErrorCount(fieldKey: string, errCount: number) {
-    update((current) => {
-      if (current) {
-        let field = current.fields.find(({ mapToKey }) => mapToKey === fieldKey);
-
-        if (!field) {
-          throw new Error(
-            `Can't find field with key "${fieldKey}" inside form titled "${current.title}`
-          );
-        }
-
-        field.errorCount = errCount;
-      }
-
-      return Object.assign({}, current);
-    });
-  }
+  });
 
   return {
     subscribe,
-    create,
     destroy,
-    setKeyValue,
-    getFieldByKey,
-    setFieldErrorCount
+    setFieldErrorCount,
+    init
   };
 }
 
+/**
+ * Store used to handle dynamic forms
+ */
 export const form = createForm();

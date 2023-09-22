@@ -23,14 +23,14 @@
   import { page } from '$app/stores';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
   import { Sidebar } from '$components';
-  import type { Form, Error, Upload } from '$components';
+  import type { LegacyForm, Error, Upload } from '$components';
   import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
 
   storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
   export let data: LayoutServerData;
-  let formComponent: typeof Form | undefined;
+  let formComponent: typeof LegacyForm | undefined;
   let errorComponent: typeof Error | undefined;
   let uploadComponent: typeof Upload | undefined;
 
@@ -194,9 +194,9 @@
   </svelte:fragment>
   <Modal />
   <Toast />
-  {#if $form && formComponent}
+  {#if $form?.component}
     <div class="fixed inset-0 z-20 h-screen w-screen bg-surface-backdrop-token">
-      <svelte:component this={formComponent} />
+      <svelte:component this={$form.component} />
     </div>
   {/if}
   {#if $upload && uploadComponent}

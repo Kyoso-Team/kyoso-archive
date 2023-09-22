@@ -16,7 +16,8 @@ const config = {
       $components: `${src}components`,
       $paypal: `${lib}paypal`,
       $classes: `${lib}classes`,
-      $db: `${lib}db`
+      $db: `${lib}db`,
+      $forms: `${src}forms`
     }
   }
 };

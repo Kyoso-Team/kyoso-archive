@@ -1,3 +1,4 @@
+export * from './legacy-form';
 export * from './form';
 export * from './paypal';
 export * from './error';

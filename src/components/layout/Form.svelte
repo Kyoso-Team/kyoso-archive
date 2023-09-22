@@ -1,43 +1,43 @@
 <script lang="ts">
   import isEqual from 'lodash.isequal';
-  import { form } from '$stores';
+  import { legacyForm } from '$stores';
   import { focusTrap } from '@skeletonlabs/skeleton';
   import { Input, InputSelect, InputSelectMulti } from '$components';
 
   let disabled = false;
 
   function onClose() {
-    if ($form?.onClose) {
-      $form.onClose();
+    if ($legacyForm?.onClose) {
+      $legacyForm.onClose();
     }
 
-    form.destroy();
+    legacyForm.destroy();
   }
 
   function onSubmit() {
-    if (!$form) return;
-    $form.onSubmit($form.currentValue);
+    if (!$legacyForm) return;
+    $legacyForm.onSubmit($legacyForm.currentValue);
     onClose();
   }
 
   $: {
-    if ($form) {
-      let hasErrors = !!$form.fields.find(({ errorCount }) => errorCount > 0);
-      let isEmptyObject = Object.keys($form.currentValue).length === 0;
-      let requiredFieldIsUndefined = !!$form.fields.find(({ optional, mapToKey, disableIf }) => {
-        return !optional && $form?.currentValue && !disableIf?.($form.currentValue)
-          ? $form?.currentValue?.[mapToKey] === undefined
+    if ($legacyForm) {
+      let hasErrors = !!$legacyForm.fields.find(({ errorCount }) => errorCount > 0);
+      let isEmptyObject = Object.keys($legacyForm.currentValue).length === 0;
+      let requiredFieldIsUndefined = !!$legacyForm.fields.find(({ optional, mapToKey, disableIf }) => {
+        return !optional && $legacyForm?.currentValue && !disableIf?.($legacyForm.currentValue)
+          ? $legacyForm?.currentValue?.[mapToKey] === undefined
           : false;
       });
-      let isUnmodified = isEqual($form.currentValue, $form.defaultValue);
-      let multiSelectDoesntHaveAtLeast = !!$form.fields.find(
+      let isUnmodified = isEqual($legacyForm.currentValue, $legacyForm.defaultValue);
+      let multiSelectDoesntHaveAtLeast = !!$legacyForm.fields.find(
         ({ mapToKey, disableIf, selectMultiple }) => {
           return (
-            $form?.currentValue &&
-            !disableIf?.($form.currentValue) &&
+            $legacyForm?.currentValue &&
+            !disableIf?.($legacyForm.currentValue) &&
             typeof selectMultiple === 'object' &&
-            (Array.isArray($form?.currentValue?.[mapToKey])
-              ? ($form?.currentValue?.[mapToKey] as unknown[]).length
+            (Array.isArray($legacyForm?.currentValue?.[mapToKey])
+              ? ($legacyForm?.currentValue?.[mapToKey] as unknown[]).length
               : 0) <= selectMultiple.atLeast
           );
         }
@@ -53,20 +53,20 @@
   }
 </script>
 
-{#if $form}
+{#if $legacyForm}
   <form
     on:submit|preventDefault={onSubmit}
     use:focusTrap={true}
     class="h-screen max-h-screen w-[28rem] overflow-y-scroll bg-surface-800 p-6"
   >
     <header>
-      <h2>{$form.title}</h2>
-      {#if $form.description}
-        <p>{$form.description}</p>
+      <h2>{$legacyForm.title}</h2>
+      {#if $legacyForm.description}
+        <p>{$legacyForm.description}</p>
       {/if}
     </header>
     <div class="flex flex-col gap-4 py-8">
-      {#each $form.fields as { mapToKey, multipleValues, type, values, selectMultiple, list, optional }}
+      {#each $legacyForm.fields as { mapToKey, multipleValues, type, values, selectMultiple, list, optional }}
         {#if multipleValues && (type === 'string' || type === 'number')}
           {#if selectMultiple}
             <InputSelectMulti key={mapToKey} />

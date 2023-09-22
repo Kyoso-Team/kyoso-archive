@@ -1,5 +1,6 @@
-import Input from './Input.svelte';
-import InputSelect from './InputSelect.svelte';
-import InputSelectMulti from './InputSelectMulti.svelte';
+import Form from './Form.svelte';
+import Text from './Text.svelte';
+import Number from './Number.svelte';
+import SlideToggle from './SlideToggle.svelte';
 
-export { Input, InputSelect, InputSelectMulti };
+export { Form, Text, Number, SlideToggle };

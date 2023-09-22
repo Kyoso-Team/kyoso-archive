@@ -13,7 +13,7 @@
   }
 </script>
 
-{#if $sidebar?.component}
+{#if $sidebar}
   <div
     class={`hidden h-full fill-white 2lg:grid ${
       $sidebar.columns === 1 ? 'grid-cols-[auto]' : 'grid-cols-[auto_auto]'

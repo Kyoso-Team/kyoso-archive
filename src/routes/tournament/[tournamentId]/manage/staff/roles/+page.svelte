@@ -7,6 +7,8 @@
   import { invalidateAll } from '$app/navigation';
   import { modal, twColors } from '$lib/utils';
   import { SEO, Permission, CheckIcon, AdditionIcon, MoveUpIcon, MoveDownIcon } from '$components';
+  import { CreateStaffRoleForm } from '$forms';
+  import type { CreateStaffRole } from '$forms';
   import type { StaffPermission, StaffColor, StaffRole } from '$types';
   import type { PageServerData } from './$types';
 
@@ -119,54 +121,17 @@
     );
   }
 
-  async function onCreateRole(defaultValue?: { name: string }) {
-    form.create<{
-      name: string;
-    }>({
+  async function onCreateRole(defaultValue?: CreateStaffRole) {
+    form.init.createStaffRole(CreateStaffRoleForm, {
       defaultValue,
-      title: 'Create Staff Role',
-      fields: ({ field }) => [
-        field('Role name', 'name', 'string', {
-          validation: (z) => z.max(45)
-        })
-      ],
-      onSubmit: async ({ name }) => {
-        try {
-          let isNameUnique = await trpc($page).validation.isStaffRoleNameUniqueInTournament.query({
-            name,
-            tournamentId: data.tournament.id
-          });
-
-          if (!isNameUnique) {
-            error.set(
-              $error,
-              `Staff role "${name}" already exists in this tournament.`,
-              'close',
-              false,
-              () => {
-                onCreateRole({ name });
-              }
-            );
-
-            return;
-          }
-
-          await trpc($page).staffRoles.createRole.mutate({
-            tournamentId: data.tournament.id,
-            data: {
-              name,
-              color: 'red'
-            }
-          });
-
-          await invalidateAll();
-          selectedIndex = data.roles.length - 1;
-          selectedRole = Object.assign({}, data.roles[selectedIndex]);
-        } catch (err) {
-          console.error(err);
-          error.set($error, err, 'close');
-        }
-      }
+      afterSubmit: () => {
+        selectedIndex = data.roles.length - 1;
+        selectedRole = Object.assign({}, data.roles[selectedIndex]);
+      },
+      context: {
+        tournamentId: data.tournament.id
+      },
+      onFormReopen: (value) => onCreateRole(value)
     });
   }
 

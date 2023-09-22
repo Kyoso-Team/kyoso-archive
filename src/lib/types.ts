@@ -14,9 +14,10 @@ import type {
   dbQualifierRunsSummary,
   dbStageFormat
 } from '$db/schema';
-import type { ZodBoolean, ZodDate, ZodNumber, ZodString } from 'zod';
-import type { Page } from '@sveltejs/kit';
+import type { ZodBoolean, ZodDate, ZodNumber, ZodObject, ZodRawShape, ZodString, z } from 'zod';
+import type { MaybePromise, Page } from '@sveltejs/kit';
 import type { InferSelectModel } from 'drizzle-orm';
+import type { trpc } from '$trpc/client';
 
 export type InferEnum<
   T extends {
@@ -95,6 +96,34 @@ export type AssignFieldType<
 
 export type PageStore = Page<Record<string, string>, string | null>;
 export type ParseInt<T> = T extends `${infer N extends number}` ? N : never;
+export type FormValue<T extends ZodRawShape> = z.infer<ZodObject<T>>;
+
+export type FormSubmit<
+  Value extends Record<string, unknown>,
+  Ctx extends Record<string, unknown> | undefined
+> = (value: Value, utils: {
+  trpc: typeof trpc;
+  page: PageStore;
+  invalidateAll: () => Promise<void>;
+  showFormError: (options: {
+    message: string;
+    value: Value;
+  }) => void;
+  ctx: Ctx;
+}) => MaybePromise<void>;
+
+export type FormCreate<
+  FormComponent,
+  SubmitValue extends Record<string, unknown>,
+  DefaultValue extends Record<string, unknown> | undefined,
+  Ctx extends Record<string, unknown> | undefined
+> = (component: FormComponent, options: {
+  onFormReopen?: (value: SubmitValue) => void;
+  defaultValue?: DefaultValue;
+  onClose?: () => MaybePromise<void>;
+  context?: Ctx;
+  afterSubmit?: (value: Record<string, unknown>) => MaybePromise<void>;
+}) => void;
 
 export interface SessionUser {
   id: number;

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
-  import { error, tournamentSidebar, form } from '$stores';
+  import { error, tournamentSidebar, legacyForm } from '$stores';
   import { onMount } from 'svelte';
   import { invalidateAll } from '$app/navigation';
   import { colorByMod, modal } from '$lib/utils';
@@ -26,7 +26,7 @@
     defaultValue?: MutateModMultiplier,
     multiplierId?: number
   ) {
-    form.create<MutateModMultiplier>({
+    legacyForm.create<MutateModMultiplier>({
       defaultValue,
       title: `${operation === 'create' ? 'Create' : 'Update'} Multiplier`,
       fields: ({ field, select }) => [

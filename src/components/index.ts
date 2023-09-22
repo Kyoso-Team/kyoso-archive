@@ -1,4 +1,4 @@
-export * from './form';
+export * from './legacy-form';
 export * from './layout';
 export * from './general';
 export * from './data-display';

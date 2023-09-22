@@ -2,7 +2,7 @@
   import isEqual from 'lodash.isequal';
   import { onMount } from 'svelte';
   import { SlideToggle } from '@skeletonlabs/skeleton';
-  import { form } from '$stores';
+  import { legacyForm } from '$stores';
   import type { Field, FormInputType } from '$types';
 
   export let key: string;
@@ -15,7 +15,7 @@
   let field: Field | undefined;
 
   onMount(() => {
-    let defaultValue = $form?.defaultValue?.[key];
+    let defaultValue = $legacyForm?.defaultValue?.[key];
 
     if (list && Array.isArray(defaultValue) && defaultValue.length > 0) {
       value = defaultValue.reduce((str, value) => `${str},${value}`, '').substring(1);
@@ -29,8 +29,8 @@
   });
 
   $: {
-    if ($form) {
-      field = form.getFieldByKey($form, key);
+    if ($legacyForm) {
+      field = legacyForm.getFieldByKey($legacyForm, key);
     }
   }
 
@@ -52,7 +52,7 @@
       currentValue = value;
     }
 
-    if (!isEqual($form?.currentValue[key], currentValue) && field) {
+    if (!isEqual($legacyForm?.currentValue[key], currentValue) && field) {
       if (field.validation && Array.isArray(currentValue)) {
         if (currentValue.length === 0 && !optional) {
           errors = ['This field is required'];
@@ -76,19 +76,19 @@
         errors = parsed.success ? [] : parsed.error.issues.map(({ message }) => message);
       }
 
-      form.setKeyValue(key, currentValue);
+      legacyForm.setKeyValue(key, currentValue);
     }
   }
 
   $: {
-    if ($form && field?.errorCount !== errors.length) {
-      form.setFieldErrorCount(key, errors.length);
+    if ($legacyForm && field?.errorCount !== errors.length) {
+      legacyForm.setFieldErrorCount(key, errors.length);
     }
   }
 
   $: {
-    if (field?.disableIf && $form) {
-      disabled = field.disableIf($form.currentValue);
+    if (field?.disableIf && $legacyForm) {
+      disabled = field.disableIf($legacyForm.currentValue);
     }
   }
 </script>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { form, paypal, error, sidebar, dashboardSidebar } from '$stores';
+  import { legacyForm, paypal, error, sidebar, dashboardSidebar } from '$stores';
   import { Stepper, Step, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
   import { format } from '$lib/utils';
   import { services } from '$lib/constants';
@@ -55,7 +55,7 @@
   function onFillForm() {
     hideStepper();
 
-    form.create<TournamentFormData>({
+    legacyForm.create<TournamentFormData>({
       title: 'Create Tournament',
       fields: ({ field, select }) => [
         field('Name', 'name', 'string', {
