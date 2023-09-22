@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { SEO } from '$components';
+  import SEO from '../components/general/SEO.svelte';
 </script>
 
 <SEO

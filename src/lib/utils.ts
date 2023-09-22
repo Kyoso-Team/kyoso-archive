@@ -1,8 +1,7 @@
 import colors from 'tailwindcss/colors';
-import { modalStore } from '@skeletonlabs/skeleton';
 import { error } from '$stores';
 import { get } from 'svelte/store';
-import type { PopupSettings } from '@skeletonlabs/skeleton';
+import type { PopupSettings, getModalStore } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
 import type { PageStore, ParseInt, Mod, StaffPermission } from '$types';
 import type { MaybePromise } from '@sveltejs/kit';
@@ -165,6 +164,8 @@ export const modal = {
     onYes: () => void | Promise<void>,
     onNo?: () => void | Promise<void>
   ) => {
+    let modalStore = getModalStore();
+
     modalStore.trigger({
       title,
       type: 'confirm',
@@ -374,4 +375,16 @@ export function showFormError(options: {
     false,
     options.reopenForm
   );
+}
+
+/**
+ * Checks if its a valid HTTP/HTTPS URL
+ */
+export function isUrl(url: string): boolean {
+  try {
+    const newUrl = new URL(url);
+    return newUrl.protocol === 'http:' || newUrl.protocol === 'https:';
+  } catch (_) {
+    return false;
+  }
 }

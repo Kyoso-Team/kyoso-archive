@@ -1,7 +1,8 @@
 <script lang="ts">
   import { SlideToggle, popup } from '@skeletonlabs/skeleton';
   import { tooltip, dateToHtmlInput } from '$lib/utils';
-  import { Tooltip, LinkIcon } from '$components';
+  import { Tooltip } from '$components';
+  import { Link } from 'lucide-svelte';
 
   export let value: string | number | boolean | undefined | null | Date;
   export let type: 'string' | 'text' | 'number' | 'boolean' | 'select' | 'date';
@@ -69,7 +70,7 @@
           use:popup={tooltip(linkTooltipTarget)}
           target={link ? '_blank' : undefined}
         >
-          <LinkIcon w={18} h={18} styles="fill-primary-500" />
+          <Link size={18} class="text-primary-500" />
         </a>
         <Tooltip label="Open in new tab" target={linkTooltipTarget} />
       {/if}

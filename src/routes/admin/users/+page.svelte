@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { toastStore } from '@skeletonlabs/skeleton';
+  import { getToastStore } from '@skeletonlabs/skeleton';
   import { paginate } from '$stores';
   import { SEO, SearchBar, Paginator, User, Dropdown, SearchResults } from '$components';
   import { page } from '$app/stores';
@@ -9,6 +9,7 @@
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
+  let toastStore = getToastStore();
 
   function onSearch({ detail }: CustomEvent<string | null>) {
     paginate.setSearch($page, detail);
@@ -64,7 +65,7 @@
             class={`btn btn-sm ${user.isAdmin ? 'variant-filled-error' : 'variant-filled'}`}
             on:click={() => adminChange(user)}>{user.isAdmin ? 'Remove' : 'Make'} Admin</button
           >
-          <button class="btn btn-sm variant-filled-error" on:click={() => deleteUser(user)}
+          <button class="variant-filled-error btn btn-sm" on:click={() => deleteUser(user)}
             >Delete User</button
           >
         </Dropdown>

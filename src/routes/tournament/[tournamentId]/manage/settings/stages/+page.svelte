@@ -5,7 +5,8 @@
   import { onMount } from 'svelte';
   import { invalidateAll } from '$app/navigation';
   import { modal } from '$lib/utils';
-  import { SEO, MoveUpIcon, MoveDownIcon } from '$components';
+  import { SEO } from '$components';
+  import { ChevronDown, ChevronUp } from 'lucide-svelte';
   import type { StageFormat, QualifierRunsSummary } from '$types';
   import type { PageServerData } from './$types';
 
@@ -515,7 +516,7 @@
                 on:click={() =>
                   onMoveStageOrder(id, order, data.stages[i - 1].id, data.stages[i - 1].order)}
               >
-                <MoveUpIcon w={20} h={20} styles="fill-white" />
+                <ChevronUp size={20} />
               </button>
             {/if}
             {#if i !== data.stages.length - 1}
@@ -524,7 +525,7 @@
                 on:click={() =>
                   onMoveStageOrder(id, order, data.stages[i + 1].id, data.stages[i + 1].order)}
               >
-                <MoveDownIcon w={20} h={20} styles="fill-white" />
+                <ChevronDown size={20} />
               </button>
             {/if}
             {#if !isMainStage}
@@ -597,7 +598,7 @@
                             rounds[j - 1].order
                           )}
                       >
-                        <MoveUpIcon w={20} h={20} styles="fill-white" />
+                        <ChevronUp size={20} />
                       </button>
                     {/if}
                     {#if j !== rounds.length - 1}
@@ -611,7 +612,7 @@
                             rounds[j + 1].order
                           )}
                       >
-                        <MoveDownIcon w={20} h={20} styles="fill-white" />
+                        <ChevronUp size={20} />
                       </button>
                     {/if}
                   </div>

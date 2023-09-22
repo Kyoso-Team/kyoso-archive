@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { LoadingIcon, CheckIcon, Tooltip } from '$components';
+  import { Tooltip } from '$components';
   import { FileButton, popup } from '@skeletonlabs/skeleton';
   import { upload, error } from '$stores';
   import { tooltip } from '$lib/utils';
+  import { Check, Loader2 } from 'lucide-svelte';
 
   let fileNameTooltipTarget = 'full-file-name';
   let files: FileList | undefined;
@@ -67,10 +68,10 @@
           <div class="max-w-full"><span class="text-error-500">Error:</span> {errMsg}</div>
         {:else if hasUploaded}
           <div class="min-w-max">File uploaded</div>
-          <CheckIcon w={25} h={25} styles="fill-tertiary-500" />
+          <Check size={25} class="text-tertiary-500" />
         {:else}
           <div class="min-w-max">Uploading file...</div>
-          <LoadingIcon w={25} h={25} styles="fill-tertiary-500" />
+          <Loader2 size={25} class="animate-spin text-tertiary-500" />
         {/if}
       </div>
       {#if hasUploaded || errMsg}

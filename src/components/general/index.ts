@@ -7,6 +7,7 @@ import Dropdown from './Dropdown.svelte';
 import SearchResults from './SearchResults.svelte';
 import Permission from './Permission.svelte';
 import SEO from './SEO.svelte';
+import FormatButtons from './FormatButtons.svelte';
 
 export {
   SearchBar,
@@ -17,5 +18,6 @@ export {
   Dropdown,
   SearchResults,
   Permission,
-  SEO
+  SEO,
+  FormatButtons
 };

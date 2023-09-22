@@ -6,7 +6,8 @@
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { SEO, CloseIcon } from '$components';
+  import { SEO } from '$components';
+  import { X } from 'lucide-svelte';
   import { onMount, onDestroy } from 'svelte';
   import type { PageServerData } from './$types';
   import type { TournamentFormData, TournamentType, TournamentService } from '$types';
@@ -190,7 +191,7 @@
         on:click={onExit}
         class="btn variant-filled-primary absolute right-6 top-6 flex gap-1 px-3 py-1"
       >
-        <CloseIcon w={15} h={15} styles="fill-black" /> Close
+        <X size={15} color="#000" /> Close
       </button>
       <Stepper
         active="variant-filled-secondary"

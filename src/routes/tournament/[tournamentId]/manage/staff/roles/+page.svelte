@@ -6,7 +6,8 @@
   import { onMount } from 'svelte';
   import { invalidateAll } from '$app/navigation';
   import { modal, twColors } from '$lib/utils';
-  import { SEO, Permission, CheckIcon, AdditionIcon, MoveUpIcon, MoveDownIcon } from '$components';
+  import { Check, Plus, ChevronUp, ChevronDown } from 'lucide-svelte';
+  import { SEO, Permission } from '$components';
   import { CreateStaffRoleForm } from '$forms';
   import type { CreateStaffRole } from '$forms';
   import type { StaffPermission, StaffColor, StaffRole } from '$types';
@@ -202,14 +203,14 @@
               disabled={selectedIndex === 0}
               on:click={() => onMoveRoleOrder('up', selectedRole, data.roles[selectedIndex - 1])}
             >
-              <MoveUpIcon w={20} h={20} styles="fill-white" />
+              <ChevronUp size={20} />
             </button>
             <button
               class="btn btn-sm variant-ringed-secondary py-1"
               disabled={selectedIndex === data.roles.length - 1}
               on:click={() => onMoveRoleOrder('down', selectedRole, data.roles[selectedIndex + 1])}
             >
-              <MoveDownIcon w={20} h={20} styles="fill-white" />
+              <ChevronDown size={20} />
             </button>
           </div>
         {/if}
@@ -231,7 +232,7 @@
           class="btn btn-sm variant-filled-primary mt-2 w-40 justify-start"
           on:click={() => onCreateRole()}
         >
-          <AdditionIcon w={12} h={12} />
+          <Plus size={13} color="#000" />
           <span class="block overflow-hidden text-ellipsis">Create Role</span>
         </button>
       </div>
@@ -259,7 +260,7 @@
                       on:click={() => onColorChange(color)}
                     >
                       {#if color === selectedRole.color}
-                        <CheckIcon w={18} h={18} />
+                        <Check size={18} color="#000" />
                       {/if}
                     </button>
                   {/each}

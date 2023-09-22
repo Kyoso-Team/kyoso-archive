@@ -1,7 +1,5 @@
 <script lang="ts">
-  import '../theme.css';
-  import '@skeletonlabs/skeleton/styles/all.css';
-  import '../main.css';
+  import '../app.postcss';
   import 'highlight.js/styles/atom-one-dark.css';
   import env from '$lib/env/client';
   import { buildUrl } from 'osu-web.js';
@@ -9,7 +7,7 @@
   import { form, paypal, error, upload } from '$stores';
   import { onMount } from 'svelte';
   import {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    initializeStores,
     setInitialClassState,
     AppShell,
     AppBar,
@@ -23,7 +21,8 @@
   import { page } from '$app/stores';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
   import { Sidebar } from '$components';
-  import type { LegacyForm, Error, Upload } from '$components';
+  import { modalRegistry } from '$lib/modal-registry';
+  import type { Form, Error, Upload } from '$components';
   import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
 
@@ -72,6 +71,8 @@
       offset: 24
     }
   };
+
+  initializeStores();
 
   onMount(() => {
     loadPayPalScript();
@@ -124,6 +125,8 @@
 <svelte:head>
   {@html `<script>(${setInitialClassState.toString()})();</script>`}
 </svelte:head>
+<Modal components={modalRegistry} />
+<Toast />
 <AppShell regionPage="relative" slotPageHeader="sticky top-0 z-10">
   <svelte:fragment slot="header">
     <AppBar padding="py-3 px-6">
@@ -183,7 +186,7 @@
               </nav>
             </div>
           {:else}
-            <a href="/auth/login" class="btn variant-filled-primary">Login</a>
+            <a href="/auth/login" class="variant-filled-primary btn">Login</a>
           {/if}
         </div>
       </svelte:fragment>
@@ -192,23 +195,21 @@
   <svelte:fragment slot="sidebarLeft">
     <Sidebar />
   </svelte:fragment>
-  <Modal />
-  <Toast />
-  {#if $form?.component}
-    <div class="fixed inset-0 z-20 h-screen w-screen bg-surface-backdrop-token">
-      <svelte:component this={$form.component} />
+  {#if $form && formComponent}
+    <div class="bg-surface-backdrop-token fixed inset-0 z-20 h-screen w-screen">
+      <svelte:component this={formComponent} />
     </div>
   {/if}
   {#if $upload && uploadComponent}
     <div
-      class="fixed inset-0 z-20 flex h-screen w-screen items-center justify-center bg-surface-backdrop-token"
+      class="bg-surface-backdrop-token fixed inset-0 z-20 flex h-screen w-screen items-center justify-center"
     >
       <svelte:component this={uploadComponent} />
     </div>
   {/if}
   {#if $error && errorComponent}
     <div
-      class="fixed inset-0 z-30 flex h-screen w-screen items-center justify-center bg-surface-backdrop-token"
+      class="bg-surface-backdrop-token fixed inset-0 z-30 flex h-screen w-screen items-center justify-center"
     >
       <svelte:component this={errorComponent} />
     </div>

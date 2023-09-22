@@ -198,3 +198,8 @@ export interface Post {
 export interface ExtendedPost extends Post {
   body_html: string;
 }
+
+export interface LinkModalResponse {
+  displayText: string;
+  link: string;
+}
