@@ -1,7 +1,8 @@
 import colors from 'tailwindcss/colors';
 import { error } from '$stores';
 import { get } from 'svelte/store';
-import type { PopupSettings, getModalStore } from '@skeletonlabs/skeleton';
+import { getModalStore } from '@skeletonlabs/skeleton';
+import type { PopupSettings } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
 import type { PageStore, ParseInt, Mod, StaffPermission } from '$types';
 import type { MaybePromise } from '@sveltejs/kit';

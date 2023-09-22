@@ -22,14 +22,13 @@
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
   import { Sidebar } from '$components';
   import { modalRegistry } from '$lib/modal-registry';
-  import type { Form, Error, Upload } from '$components';
+  import type { Error, Upload } from '$components';
   import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
 
   storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
   export let data: LayoutServerData;
-  let formComponent: typeof LegacyForm | undefined;
   let errorComponent: typeof Error | undefined;
   let uploadComponent: typeof Upload | undefined;
 
@@ -77,7 +76,6 @@
   onMount(() => {
     loadPayPalScript();
     loadHighlightJs();
-    loadFormComponent();
     loadErrorComponent();
     loadUploadComponent();
   });
@@ -100,11 +98,6 @@
   async function loadHighlightJs() {
     let hljs = await import('highlight.js');
     storeHighlightJs.set(hljs);
-  }
-
-  async function loadFormComponent() {
-    let form = await import('$components/layout/Form.svelte');
-    formComponent = form.default;
   }
 
   async function loadErrorComponent() {
@@ -195,9 +188,9 @@
   <svelte:fragment slot="sidebarLeft">
     <Sidebar />
   </svelte:fragment>
-  {#if $form && formComponent}
+  {#if $form?.component}
     <div class="bg-surface-backdrop-token fixed inset-0 z-20 h-screen w-screen">
-      <svelte:component this={formComponent} />
+      <svelte:component this={$form.component} />
     </div>
   {/if}
   {#if $upload && uploadComponent}
