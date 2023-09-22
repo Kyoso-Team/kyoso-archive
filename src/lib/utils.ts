@@ -1,5 +1,5 @@
 import colors from 'tailwindcss/colors';
-import { modalStore } from '@skeletonlabs/skeleton';
+import { getModalStore } from '@skeletonlabs/skeleton';
 import type { PopupSettings } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
 import type { PageStore, ParseInt, Mod, StaffPermission } from '$types';
@@ -162,6 +162,8 @@ export const modal = {
     onYes: () => void | Promise<void>,
     onNo?: () => void | Promise<void>
   ) => {
+    let modalStore = getModalStore();
+
     modalStore.trigger({
       title,
       type: 'confirm',
