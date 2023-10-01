@@ -43,7 +43,7 @@ Structure to follow when writing Svelte components or pages.
 
   // Type definitions
   interface Example {
-    ...
+    // ...
   }
 
   // Constants
@@ -52,22 +52,22 @@ Structure to follow when writing Svelte components or pages.
   export let page: PageServerData;
   // Variables
   let object: Example = {
-    ...
+    // ...
   };
 
   // Lifecycle events
   onMount(() => {
-    ...
+    // ...
   });
 
   // Functions
   function onClick() {
-    ...
+    // ...
   }
 
   // Reactive statements
   $: {
-    ...
+    // ...
   }
 </script>
 ```

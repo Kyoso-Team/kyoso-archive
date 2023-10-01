@@ -1,18 +1,16 @@
 import { writable } from 'svelte/store';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Any = any;
+import type { AnyComponent } from '$types';
 
 function createSidebar() {
   const { subscribe, set } = writable<
     | {
-        component: Any;
+        component: AnyComponent;
         columns: 1 | 2;
       }
     | undefined
   >();
 
-  function create(component: Any, columns: 1 | 2) {
+  function create(component: AnyComponent, columns: 1 | 2) {
     set({ component, columns });
   }
 
