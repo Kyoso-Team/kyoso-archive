@@ -1,16 +1,19 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import { Search } from 'lucide-svelte';
+  import type { MaybePromise } from '@sveltejs/kit';
 
-  const dispatcher = createEventDispatcher<{
-    search: string | null;
-  }>();
   export let label: string = 'Search';
   export let center: boolean = false;
-  let input: string | undefined;
+  export let onSearch: (query: string | null) => MaybePromise<void>;
+  let input: string | null = null;
 
   function search() {
-    dispatcher('search', input === '' ? null : input);
+    onSearch(input === '' ? null : input);
+  }
+
+  function onEnterKey(e: KeyboardEvent) {
+    if (e.key === 'Enter') return;
+    search();
   }
 </script>
 
@@ -27,11 +30,7 @@
         type="text"
         placeholder="Search..."
         bind:value={input}
-        on:keydown={(event) => {
-          if (event.key === 'Enter') {
-            search();
-          }
-        }}
+        on:keydown={onEnterKey}
       />
       <button class="variant-filled-primary" on:click={search}>Search</button>
     </div>

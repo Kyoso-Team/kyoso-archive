@@ -1,4 +1,4 @@
-import * as schema from '../src/lib/db/schema';
+import * as schema from '../src/db/schema';
 import { pgGenerate } from 'drizzle-dbml-generator';
 
 function main() {

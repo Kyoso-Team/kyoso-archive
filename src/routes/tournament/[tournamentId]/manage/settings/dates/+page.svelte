@@ -85,7 +85,7 @@
 />
 <div class="center-content">
   <h1>Dates</h1>
-  <Settings on:undo={onUndo} on:update={onUpdate} {currentObj} {originalObj} {errors}>
+  <Settings {onUndo} {onUpdate} {currentObj} {originalObj} {errors}>
     <Setting label="Make information public on" type="date" bind:value={currentObj.goPublicOn} />
     <Setting label="Conclude tournament on" type="date" bind:value={currentObj.concludesOn} />
     <Setting

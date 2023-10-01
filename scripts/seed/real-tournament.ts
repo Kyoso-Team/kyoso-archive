@@ -11,7 +11,7 @@ import {
   dbStage,
   dbStandardRound,
   dbTournament
-} from '../../src/lib/db/schema';
+} from '../../src/db/schema';
 import { bufferToFile, fetchUserData, id, upload } from './utils';
 import { createSpinner } from 'nanospinner';
 import { readFile } from 'fs/promises';
@@ -949,7 +949,6 @@ async function setStaffMembersAndRoles(
     id(12904237, '322164853064204289'),
     id(16287466, '606319353163546634'),
     id(6221425, '168283763258687488'),
-    id(10976903, '204135451135705089'),
     id(11234706, '341180317651959811'),
     id(14309415, '295245302707781633'),
     id(18087655, '933547578946113546'),
@@ -1037,14 +1036,13 @@ async function setStaffMembersAndRoles(
 
   let replayerUserIds = [
     654296, 14806365, 4420014, 10224047, 8150535, 8443945, 12904237, 16287466, 12016150, 12139352,
-    6221425, 10976903, 9405745, 11310892, 9047729, 12058601, 8191845, 9074108, 8401053, 6471972,
-    6843383, 11234706, 7516954
+    6221425, 9405745, 11310892, 9047729, 12058601, 8191845, 9074108, 8401053, 6471972, 6843383,
+    11234706, 7516954
   ];
   let replayers = map(users, replayerUserIds, replayerRole.id);
 
   let streamerUserIds = [
-    13175102, 16060432, 6675367, 4420014, 14309415, 4722369, 2916205, 6221425, 18087655, 12455868,
-    10976903
+    13175102, 16060432, 6675367, 4420014, 14309415, 4722369, 2916205, 6221425, 18087655, 12455868
   ];
   let streamers = map(users, streamerUserIds, streamerRole.id);
 

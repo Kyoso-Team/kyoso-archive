@@ -4,7 +4,7 @@ import {
   dbStaffMemberToStaffRole,
   dbStaffRole,
   dbTournament
-} from '../../src/lib/db/schema';
+} from '../../src/db/schema';
 import { r } from './utils';
 import { createSpinner } from 'nanospinner';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';

@@ -1,23 +1,17 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import type { MaybePromise } from '@sveltejs/kit';
 
-  const dispatcher = createEventDispatcher<{
-    change: number;
-  }>();
   export let page = 1;
   export let elementsPerPage = 30;
   export let count: number;
+  export let onPageChange: (page: number) => MaybePromise<void>;
   let arrowStyles = 'btn btn-sm variant-filled-primary';
   let first = 0;
   let last = 0;
 
-  function change(newPage: number) {
-    dispatcher('change', newPage);
-  }
-
   function arrowBtnClick(newPage: number) {
     if (newPage >= first && newPage <= last) {
-      change(newPage);
+      onPageChange(newPage);
     }
   }
 
@@ -46,7 +40,7 @@
     {#if first + i === page}
       <button class="btn btn-sm variant-ghost-primary">{first + i}</button>
     {:else}
-      <button class="btn btn-sm variant-ghost-surface" on:click={() => change(first + i)}
+      <button class="btn btn-sm variant-ghost-surface" on:click={() => onPageChange(first + i)}
         >{first + i}</button
       >
     {/if}

@@ -1,9 +1,9 @@
 <script lang="ts">
   import { getModalStore } from '@skeletonlabs/skeleton';
   import { isUrl } from '$lib/utils';
-  import type { LinkModalResponse } from '$types';
+  import type { AnyComponent, LinkModalResponse } from '$types';
 
-  export let parent: any;
+  export let parent: AnyComponent;
   let modalStore = getModalStore();
   let displayText = '';
   let link = '';
