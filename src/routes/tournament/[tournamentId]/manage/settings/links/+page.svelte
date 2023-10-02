@@ -133,7 +133,7 @@
 />
 <div class="center-content">
   <h1>Links</h1>
-  <Settings on:undo={onUndo} on:update={onUpdate} {currentObj} {originalObj} {errors}>
+  <Settings {onUndo} {onUpdate} {currentObj} {originalObj} {errors}>
     <svelte:fragment slot="header">
       <span class="mb-1 block text-center text-sm">
         <strong>Note:</strong> Full links are supported as input.

@@ -1,8 +1,9 @@
 import adapter from '@sveltejs/adapter-node';
 import { vitePreprocess } from '@sveltejs/kit/vite';
 
-const src = `${process.cwd()}/src/`;
-const lib = `${src}lib/`;
+function src(path) {
+  return `${process.cwd()}/src/${path}`;
+}
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -10,14 +11,12 @@ const config = {
   kit: {
     adapter: adapter(),
     alias: {
-      $trpc: `${lib}trpc`,
-      $stores: `${lib}stores`,
-      $types: `${lib}types`,
-      $components: `${src}components`,
-      $paypal: `${lib}paypal`,
-      $classes: `${lib}classes`,
-      $db: `${lib}db`,
-      $forms: `${src}forms`
+      $trpc: src('trpc'),
+      $stores: src('stores'),
+      $types: src('lib/types'),
+      $components: src('components'),
+      $classes: src('classes'),
+      $db: src('db')
     }
   }
 };

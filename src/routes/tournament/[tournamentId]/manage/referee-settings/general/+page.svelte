@@ -83,7 +83,7 @@
 />
 <div class="center-content">
   <h1>Referee Settings</h1>
-  <Settings on:undo={onUndo} on:update={onUpdate} {currentObj} {originalObj} {errors}>
+  <Settings {onUndo} {onUpdate} {currentObj} {originalObj} {errors}>
     <Setting
       label="Start timer length"
       type="number"

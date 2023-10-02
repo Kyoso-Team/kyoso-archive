@@ -1,4 +1,4 @@
-import { dbCountry, dbUser } from '../../src/lib/db/schema';
+import { dbCountry, dbUser } from '../../src/db/schema';
 import { eq, inArray, sql } from 'drizzle-orm';
 import { File, Blob } from '@web-std/file';
 import type { Client as OsuClient } from 'osu-web.js';

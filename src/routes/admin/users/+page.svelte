@@ -11,12 +11,12 @@
   export let data: PageServerData;
   let toastStore = getToastStore();
 
-  function onSearch({ detail }: CustomEvent<string | null>) {
-    paginate.setSearch($page, detail);
+  function onSearch(query: string | null) {
+    paginate.setSearch($page, query);
   }
 
-  function onPageChange({ detail }: CustomEvent<number>) {
-    paginate.setPage($page, detail);
+  function onPageChange(pageNum: number) {
+    paginate.setPage($page, pageNum);
   }
 
   export function adminChange(user: { id: number; isAdmin: boolean; osuUsername: string }) {
@@ -55,7 +55,7 @@
 
 <SEO page={$page} title="Users - Admin" description="Manage users" noIndex />
 <div class="center-content">
-  <SearchBar label="Search Users" on:search={onSearch} />
+  <SearchBar label="Search Users" {onSearch} />
   <SearchResults label="Users" resultCount={data.userCount}>
     {#each data.users as user}
       <div class="relative">
@@ -72,7 +72,7 @@
       </div>
     {/each}
     <svelte:fragment slot="footer">
-      <Paginator count={data.userCount} page={data.page} on:change={onPageChange} />
+      <Paginator count={data.userCount} page={data.page} {onPageChange} />
     </svelte:fragment>
   </SearchResults>
 </div>

@@ -10,12 +10,12 @@
   export let data: PageServerData;
   let purchasedAt: Sort = 'desc';
 
-  function onSearch({ detail }: CustomEvent<string | null>) {
-    paginate.setSearch($page, detail);
+  function onSearch(query: string | null) {
+    paginate.setSearch($page, query);
   }
 
-  function onPageChange({ detail }: CustomEvent<number>) {
-    paginate.setPage($page, detail);
+  function onPageChange(pageNum: number) {
+    paginate.setPage($page, pageNum);
   }
 
   $: {
@@ -25,7 +25,7 @@
 
 <SEO page={$page} title="Purchases - Admin" description="Manage purchases" noIndex />
 <div class="center-content">
-  <SearchBar label="Search Purchases" on:search={onSearch} />
+  <SearchBar label="Search Purchases" {onSearch} />
   <div class="mb-6">
     <h2 class="pb-1 pl-1">Sorting</h2>
     <div class="card flex min-w-[18.5rem] max-w-3xl justify-center p-4">
@@ -52,7 +52,7 @@
       <Purchase {purchase} />
     {/each}
     <svelte:fragment slot="footer">
-      <Paginator count={data.purchaseCount} page={data.page} on:change={onPageChange} />
+      <Paginator count={data.purchaseCount} page={data.page} {onPageChange} />
     </svelte:fragment>
   </SearchResults>
 </div>

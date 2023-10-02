@@ -116,7 +116,7 @@
 </script>
 
 <svelte:head>
-  {@html `<script>(${setInitialClassState.toString()})();</script>`}
+  {@html `<\u{73}cript nonce="%sveltekit.nonce%">(${setInitialClassState.toString()})();</script>`}
 </svelte:head>
 <Modal components={modalRegistry} />
 <Toast />

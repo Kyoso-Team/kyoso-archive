@@ -1,5 +1,5 @@
 import db from '$db';
-import paypalClient, { money } from '$paypal';
+import paypalClient, { money } from '$lib/paypal';
 import paypal from '@paypal/checkout-server-sdk';
 import {
   dbPurchase,

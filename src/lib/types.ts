@@ -19,6 +19,10 @@ import type { MaybePromise, Page } from '@sveltejs/kit';
 import type { InferSelectModel } from 'drizzle-orm';
 import type { trpc } from '$trpc/client';
 
+// Alias for any which refers to specifically any Svelte component. I (Mario564) dont' know how to use Svelte component classes as generics in function and variable type definitions
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyComponent = any;
+
 export type InferEnum<
   T extends {
     enumValues: string[];
