@@ -3,14 +3,22 @@
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
   import { invalidateAll } from '$app/navigation';
-  import { showFormError as showFormErrorUtil } from '$lib/utils';
   import { form, error } from '$stores';
   import { focusTrap } from '@skeletonlabs/skeleton';
+  import { FormError } from '$classes';
+  import { X } from 'lucide-svelte';
   import type { FormSubmit } from '$types';
 
+  const submitUtils = {
+    trpc,
+    invalidateAll,
+    page: $page,
+    ctx: $form.context
+  };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export let submit: FormSubmit<any, any>;
   export let value: Record<string, unknown>;
+  let currentError = '';
   let disabled = false;
 
   function onCloseBtnClick() {
@@ -22,40 +30,31 @@
   }
 
   async function onSubmitBtnClick() {
-    await onSubmit();
-    onCloseBtnClick();
+    const { close } = await onSubmit();
+
+    if (close) {
+      onCloseBtnClick();
+    }
   }
 
-  function showFormError(options: {
-    message: string;
-    value: Record<string, unknown>;
-  }) {
-    showFormErrorUtil({
-      message: options.message,
-      reopenForm: () => {
-        if ($form.onFormReopen) {
-          $form.onFormReopen(options.value);
-        }
-      }
-    });
-  }
-
-  async function onSubmit() {
+  async function onSubmit(): Promise<{ close: boolean }> {
     try {
-      await submit(value, {
-        trpc,
-        invalidateAll,
-        showFormError,
-        page: $page,
-        ctx: $form.context
-      });
+      await submit(value, submitUtils);
 
       if ($form.afterSubmit) {
         await $form.afterSubmit(value);
       }
+
+      return { close: true };
     } catch(err) {
+      if (err instanceof FormError) {
+        currentError = err.message;
+        return { close: false };
+      }
+
       console.error(err);
       error.set($error, err, 'close');
+      return { close: true };
     }
   }
 
@@ -93,6 +92,15 @@
   <div class="flex flex-col gap-4 py-8">
     <slot />
   </div>
+  {#if currentError}
+    <div class="bg-error-500/10 border border-error-500/30 rounded-md p-2 mb-8">
+      <div class="flex gap-1 items-center">
+        <X class="stroke-error-500 w-6 h-6" />
+        <span class="block text-error-500 font-medium">Form submission error</span>
+      </div>
+      <span class="block mt-2 text-sm px-1">{currentError}</span>
+    </div>
+  {/if}
   <div class="flex gap-2">
     <button
       type="submit"

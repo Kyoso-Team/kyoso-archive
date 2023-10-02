@@ -9,7 +9,7 @@
   import { Check, Plus, ChevronUp, ChevronDown } from 'lucide-svelte';
   import { SEO, Permission } from '$components';
   import { CreateStaffRoleForm } from '$forms';
-  import type { CreateStaffRole } from '$forms';
+  import type { CreateStaffRoleValue } from '$forms';
   import type { StaffPermission, StaffColor, StaffRole } from '$types';
   import type { PageServerData } from './$types';
 
@@ -122,7 +122,7 @@
     );
   }
 
-  async function onCreateRole(defaultValue?: CreateStaffRole) {
+  async function onCreateRole(defaultValue?: CreateStaffRoleValue) {
     form.init.createStaffRole(CreateStaffRoleForm, {
       defaultValue,
       afterSubmit: () => {
@@ -131,8 +131,7 @@
       },
       context: {
         tournamentId: data.tournament.id
-      },
-      onFormReopen: (value) => onCreateRole(value)
+      }
     });
   }
 

@@ -1,9 +1,10 @@
 import { writable } from 'svelte/store';
 import type { MaybePromise } from '@sveltejs/kit';
 import type { FormRegistry } from '$forms';
+import type { AnyComponent } from '$types';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type FormComponent = any;
+// Alias just for the sake of readability
+type FormComponent = AnyComponent;
 
 function createForm() {
   const blank = {
@@ -19,7 +20,6 @@ function createForm() {
     component: FormComponent;
     errorCounts: Record<string, number>;
     requiredFields: string[];
-    onFormReopen?: (value: Record<string, unknown>) => void;
     context: Record<string, unknown>;
     defaultValue?: Record<string, unknown>;
     onClose?: () => MaybePromise<void>;
@@ -28,7 +28,7 @@ function createForm() {
 
   /**
    * Mount a form component
-   * @param component The component to mount as a form (components within the `$forms` path alias) 
+   * @param component The component to mount as a form (components within the `$forms` path alias)
    * @param options Additional options and configuration
    */
   function create<
@@ -36,39 +36,37 @@ function createForm() {
     SubmitValue extends Record<string, unknown>,
     DefaultValue extends Record<string, unknown> | undefined,
     Ctx extends Record<string, unknown> | undefined
-  >(component: FormComponent, options: {
-    /**
-     * The default value for the form
-     */
-    defaultValue?: DefaultValue;
-    /**
-     * Function to execute upon closing the form (executes upon cancelling the form and after `onSubmit` in if does get submitted)
-     */
-    onClose?: () => MaybePromise<void>;
-    /**
-     * Additional context to pass to the form
-     */
-    context?: Ctx;
-    /**
-     * Function to execute upon closing an eror and reopening the form
-     */
-    onFormReopen?: (value: SubmitValue) => void;
-    /**
-     * Function to execute after the `submit` function executes successfully
-     */
-    afterSubmit?: (value: SubmitValue) => MaybePromise<void>;
-  }) {
-    let { onFormReopen, afterSubmit, defaultValue, onClose, context } = options;
+  >(
+    component: FormComponent,
+    options: {
+      /**
+       * The default value for the form
+       */
+      defaultValue?: DefaultValue;
+      /**
+       * Function to execute upon closing the form (executes upon cancelling the form and after `onSubmit` in if does get submitted)
+       */
+      onClose?: () => MaybePromise<void>;
+      /**
+       * Additional context to pass to the form
+       */
+      context?: Ctx;
+      /**
+       * Function to execute after the `submit` function executes successfully
+       */
+      afterSubmit?: (value: SubmitValue) => MaybePromise<void>;
+    }
+  ) {
+    let { afterSubmit, defaultValue, onClose, context } = options;
 
     update((current) => {
       current = {
-        ... current,
+        ...current,
         component,
         defaultValue,
         onClose,
         context: context || {},
-        afterSubmit: afterSubmit as (value: Record<string, unknown>) => MaybePromise<void>,
-        onFormReopen: onFormReopen as (value: Record<string, unknown>) => void
+        afterSubmit: afterSubmit as (value: Record<string, unknown>) => MaybePromise<void>
       };
 
       return Object.assign({}, current);
@@ -95,7 +93,7 @@ function createForm() {
   }
 
   const init = new Proxy({} as FormRegistry, {
-    get () {
+    get() {
       return create;
     }
   });

@@ -105,29 +105,30 @@ export type FormValue<T extends ZodRawShape> = z.infer<ZodObject<T>>;
 export type FormSubmit<
   Value extends Record<string, unknown>,
   Ctx extends Record<string, unknown> | undefined
-> = (value: Value, utils: {
-  trpc: typeof trpc;
-  page: PageStore;
-  invalidateAll: () => Promise<void>;
-  showFormError: (options: {
-    message: string;
-    value: Value;
-  }) => void;
-  ctx: Ctx;
-}) => MaybePromise<void>;
+> = (
+  value: Value,
+  utils: {
+    trpc: typeof trpc;
+    page: PageStore;
+    invalidateAll: () => Promise<void>;
+    ctx: Ctx;
+  }
+) => MaybePromise<void>;
 
 export type FormCreate<
   FormComponent,
   SubmitValue extends Record<string, unknown>,
   DefaultValue extends Record<string, unknown> | undefined,
   Ctx extends Record<string, unknown> | undefined
-> = (component: FormComponent, options: {
-  onFormReopen?: (value: SubmitValue) => void;
-  defaultValue?: DefaultValue;
-  onClose?: () => MaybePromise<void>;
-  context?: Ctx;
-  afterSubmit?: (value: Record<string, unknown>) => MaybePromise<void>;
-}) => void;
+> = (
+  component: FormComponent,
+  options: {
+    defaultValue?: DefaultValue;
+    onClose?: () => MaybePromise<void>;
+    context?: Ctx;
+    afterSubmit?: (value: SubmitValue) => MaybePromise<void>;
+  }
+) => void;
 
 export interface SessionUser {
   id: number;

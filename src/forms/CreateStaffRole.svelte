@@ -6,33 +6,28 @@
     name: z.string().max(45)
   };
 
-  export type CreateStaffRole = FormValue<typeof createStaffRoleSchemas>
+  export type CreateStaffRoleValue = FormValue<typeof createStaffRoleSchemas>
   export type CreateStaffRoleCtx = {
     tournamentId: number;
   };
 </script>
 <script lang="ts">
   import { Form, Text } from '$components/form';
+  import { FormError } from '$classes';
 
-  let value: Partial<CreateStaffRole> = {};
+  let value: Partial<CreateStaffRoleValue> = {};
 
   const submit: FormSubmit<
-    CreateStaffRole,
+    CreateStaffRoleValue,
     CreateStaffRoleCtx
-  > = async (value, { ctx, trpc, page, showFormError, invalidateAll }) => {
+  > = async (value, { ctx, trpc, page, invalidateAll }) => {
     let isNameUnique = await trpc(page).validation.isStaffRoleNameUniqueInTournament.query({
       name: value.name,
       tournamentId: ctx.tournamentId
     });
 
     if (!isNameUnique) {
-      showFormError({
-        message: `Staff role "${value.name}" already exists in this tournament.`,
-        value: {
-          name: value.name
-        }
-      });
-      return;
+      throw new FormError(`Staff role "${value.name}" already exists in this tournament.`);
     }
 
     await trpc(page).staffRoles.createRole.mutate({

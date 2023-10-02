@@ -16,7 +16,8 @@ const config = {
       $types: src('lib/types'),
       $components: src('components'),
       $classes: src('classes'),
-      $db: src('db')
+      $db: src('db'),
+      $forms: src('forms')
     }
   }
 };
