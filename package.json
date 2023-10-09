@@ -47,7 +47,7 @@
     "eslint-plugin-svelte": "^2.32.4",
     "nanospinner": "^1.1.0",
     "pg": "^8.11.2",
-    "postcss": "^8.4.21",
+    "postcss": "^8.4.31",
     "prettier": "^3.0.3",
     "prettier-plugin-svelte": "^3.0.3",
     "prettier-plugin-tailwindcss": "^0.5.4",
