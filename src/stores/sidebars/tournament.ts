@@ -1,107 +1,107 @@
-import { writable } from 'svelte/store';
-import { TournamentSidebar } from '$components';
-import type { sidebar } from '..';
+// import { writable } from 'svelte/store';
+// import { TournamentSidebar } from '$components';
+// import type { sidebar } from '..';
 
-type SectionIcon = 'settings' | 'pooling' | 'referee' | 'stats calc' | 'pickems' | 'regs';
+// type SectionIcon = 'settings' | 'pooling' | 'referee' | 'stats calc' | 'pickems' | 'regs';
 
-function createTournamentSidebar() {
-  const { subscribe, update, set } = writable<
-    | {
-        selectedLink?: {
-          inSection: string;
-          inSubsection: string;
-          label: string;
-        };
-        sections: Map<
-          string,
-          {
-            icon: SectionIcon;
-            subsections: Map<
-              string,
-              {
-                label: string;
-                path: string;
-              }[]
-            >;
-          }
-        >;
-      }
-    | undefined
-  >();
-  const selectedSection = writable<string | undefined>();
+// function createTournamentSidebar() {
+//   const { subscribe, update, set } = writable<
+//     | {
+//         selectedLink?: {
+//           inSection: string;
+//           inSubsection: string;
+//           label: string;
+//         };
+//         sections: Map<
+//           string,
+//           {
+//             icon: SectionIcon;
+//             subsections: Map<
+//               string,
+//               {
+//                 label: string;
+//                 path: string;
+//               }[]
+//             >;
+//           }
+//         >;
+//       }
+//     | undefined
+//   >();
+//   const selectedSection = writable<string | undefined>();
 
-  function create(globalSidebar: typeof sidebar) {
-    globalSidebar.create(TournamentSidebar, 2);
+//   function create(globalSidebar: typeof sidebar) {
+//     globalSidebar.create(TournamentSidebar, 2);
 
-    set({
-      sections: new Map()
-    });
-  }
+//     set({
+//       sections: new Map()
+//     });
+//   }
 
-  function destroy(globalSidebar: typeof sidebar) {
-    globalSidebar.destroy();
-    set(undefined);
-  }
+//   function destroy(globalSidebar: typeof sidebar) {
+//     globalSidebar.destroy();
+//     set(undefined);
+//   }
 
-  function setSection(sectionLabel: string, icon: SectionIcon) {
-    update((sidebar) => {
-      if (!sidebar) return sidebar;
+//   function setSection(sectionLabel: string, icon: SectionIcon) {
+//     update((sidebar) => {
+//       if (!sidebar) return sidebar;
 
-      sidebar.sections.set(sectionLabel, {
-        icon,
-        subsections: new Map()
-      });
+//       sidebar.sections.set(sectionLabel, {
+//         icon,
+//         subsections: new Map()
+//       });
 
-      return Object.assign(sidebar);
-    });
+//       return Object.assign(sidebar);
+//     });
 
-    function setSubsection(
-      label: string,
-      links: {
-        label: string;
-        path: string;
-      }[]
-    ) {
-      update((sidebar) => {
-        if (!sidebar) return sidebar;
+//     function setSubsection(
+//       label: string,
+//       links: {
+//         label: string;
+//         path: string;
+//       }[]
+//     ) {
+//       update((sidebar) => {
+//         if (!sidebar) return sidebar;
 
-        let section = sidebar.sections.get(sectionLabel);
-        if (!section) return;
+//         let section = sidebar.sections.get(sectionLabel);
+//         if (!section) return;
 
-        section.subsections.set(label, links);
-        return Object.assign(sidebar);
-      });
-    }
+//         section.subsections.set(label, links);
+//         return Object.assign(sidebar);
+//       });
+//     }
 
-    return {
-      setSubsection
-    };
-  }
+//     return {
+//       setSubsection
+//     };
+//   }
 
-  function setSelected(sectionLabel: string, subsectionLabel: string, linkLabel: string) {
-    selectedSection.set(sectionLabel);
+//   function setSelected(sectionLabel: string, subsectionLabel: string, linkLabel: string) {
+//     selectedSection.set(sectionLabel);
 
-    update((sidebar) => {
-      if (!sidebar) return sidebar;
+//     update((sidebar) => {
+//       if (!sidebar) return sidebar;
 
-      sidebar.selectedLink = {
-        inSection: sectionLabel,
-        inSubsection: subsectionLabel,
-        label: linkLabel
-      };
+//       sidebar.selectedLink = {
+//         inSection: sectionLabel,
+//         inSubsection: subsectionLabel,
+//         label: linkLabel
+//       };
 
-      return Object.assign(sidebar);
-    });
-  }
+//       return Object.assign(sidebar);
+//     });
+//   }
 
-  return {
-    subscribe,
-    create,
-    destroy,
-    setSection,
-    selectedSection,
-    setSelected
-  };
-}
+//   return {
+//     subscribe,
+//     create,
+//     destroy,
+//     setSection,
+//     selectedSection,
+//     setSelected
+//   };
+// }
 
-export const tournamentSidebar = createTournamentSidebar();
+// export const tournamentSidebar = createTournamentSidebar();
