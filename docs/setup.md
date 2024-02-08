@@ -36,10 +36,6 @@ Discord OAuth related variables. Log into your Discord account in a browser and 
 
 Storage related variables. Log into your Bunny.net account and [create a storage zone](https://dash.bunny.net/storage). Once the storage zone is selected, head to `FTP & API Access` and there you'll find `Username` and `Hostname` from which you can use to create the `STORAGE_ENDPOINT` variable. The `STORAGE_PASSWORD` corresponds to the `Password` shown in the same page as `Username` and `Hostname`.
 
-- **PUBLIC_PAYPAL_CLIENT_ID** & **PAYPAL_CLIENT_SECRET**
-
-Ignore these variables for now and set them to randome strings, reason being that they may be completely removed.
-
 - **ADMIN_BY_DEFAULT**
 
 Array of osu! user IDs that correspond to users who should be admin by default. In development, this would be an array of a single value (which corresponds to your osu! user ID) since having additional IDs is pointless.

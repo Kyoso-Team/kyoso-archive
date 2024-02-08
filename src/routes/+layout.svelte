@@ -1,10 +1,9 @@
 <script lang="ts">
   import '../app.postcss';
   import 'highlight.js/styles/atom-one-dark.css';
-  import env from '$lib/env/client';
   import { buildUrl } from 'osu-web.js';
   import { goto } from '$app/navigation';
-  import { form, paypal, error, upload } from '$stores';
+  import { form, error, upload } from '$stores';
   import { onMount } from 'svelte';
   import {
     initializeStores,
@@ -75,45 +74,29 @@
   initializeStores();
 
   onMount(() => {
-    loadPayPalScript();
     loadHighlightJs();
     loadFormComponent();
     loadErrorComponent();
     loadUploadComponent();
   });
 
-  async function loadPayPalScript() {
-    try {
-      let { loadScript } = await import('@paypal/paypal-js');
-      let paypalScript = await loadScript({
-        'client-id': env.PUBLIC_PAYPAL_CLIENT_ID,
-        'currency': 'USD'
-      });
-
-      paypal.set(paypalScript);
-    } catch (err) {
-      console.error('An error ocurred while loading the PayPal SDK script');
-      console.error(err);
-    }
-  }
-
   async function loadHighlightJs() {
-    let hljs = await import('highlight.js');
+    const hljs = await import('highlight.js');
     storeHighlightJs.set(hljs);
   }
 
   async function loadFormComponent() {
-    let form = await import('$components/layout/Form.svelte');
+    const form = await import('$components/layout/Form.svelte');
     formComponent = form.default;
   }
 
   async function loadErrorComponent() {
-    let error = await import('$components/layout/Error.svelte');
+    const error = await import('$components/layout/Error.svelte');
     errorComponent = error.default;
   }
 
   async function loadUploadComponent() {
-    let upload = await import('$components/layout/Upload.svelte');
+    const upload = await import('$components/layout/Upload.svelte');
     uploadComponent = upload.default;
   }
 

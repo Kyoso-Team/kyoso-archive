@@ -12,7 +12,6 @@ Repository for the Kyoso website.
 - [tRPC](https://trpc.io): Backend / API
 - [Taiwind](https://tailwindcss.com): Styling
 - [Skeleton](https://www.skeleton.dev): UI library
-- [Paypal](https://developer.paypal.com): Payment processing
 - [Bunny](https://bunny.net): File storage
 
 ## Scripts

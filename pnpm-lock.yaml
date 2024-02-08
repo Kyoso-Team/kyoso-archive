@@ -8,12 +8,6 @@ dependencies:
   '@floating-ui/dom':
     specifier: ^1.2.7
     version: 1.5.3
-  '@paypal/checkout-server-sdk':
-    specifier: ^1.0.3
-    version: 1.0.3
-  '@paypal/paypal-js':
-    specifier: ^5.1.6
-    version: 5.1.6
   '@trpc/client':
     specifier: ^10.37.1
     version: 10.38.3(@trpc/server@10.38.3)
@@ -88,9 +82,6 @@ devDependencies:
   '@types/node':
     specifier: ^18.15.7
     version: 18.17.17
-  '@types/paypal__checkout-server-sdk':
-    specifier: ^1.0.5
-    version: 1.0.5
   '@types/showdown':
     specifier: ^2.0.1
     version: 2.0.1
@@ -726,24 +717,6 @@ packages:
       fastq: 1.15.0
     dev: true
 
-  /@paypal/checkout-server-sdk@1.0.3:
-    resolution: {integrity: sha512-UEdq8akEdMz0Vs4qoQFU2gMp8PpyE/HKyMwiZuK4vIWUKl8jfd1fWKjQN5cDFm9NkFUIp5U7h++rdMOVj9WMNA==}
-    engines: {node: '>=8'}
-    dependencies:
-      '@paypal/paypalhttp': 1.0.1
-    dev: false
-
-  /@paypal/paypal-js@5.1.6:
-    resolution: {integrity: sha512-1upF06pv0AUtTftRVSra44p8ibqGa3ruKLArvdhpZla25zcrND7R+nDUIMrJ0iteVYZowhujZStFs6NoruExfg==}
-    dependencies:
-      promise-polyfill: 8.3.0
-    dev: false
-
-  /@paypal/paypalhttp@1.0.1:
-    resolution: {integrity: sha512-DC7AHxTT7drF6dUi3YaFdPVuT15sIkpD5H2eHmdtFgxM4UanS1o1ZDfMhR9mpxd8o+X6pz2r+EZVRRq+n1cssQ==}
-    engines: {node: '>=4'}
-    dev: false
-
   /@polka/url@1.0.0-next.23:
     resolution: {integrity: sha512-C16M+IYz0rgRhWZdCmK+h58JMv8vijAA61gmz2rspCSwKwzBebpdcsiUmwrtJRdphuY30i6BSLEOP8ppbNLyLg==}
 
@@ -972,18 +945,6 @@ packages:
 
   /@types/node@18.17.17:
     resolution: {integrity: sha512-cOxcXsQ2sxiwkykdJqvyFS+MLQPLvIdwh5l6gNg8qF6s+C7XSkEWOZjK+XhUZd+mYvHV/180g2cnCcIl4l06Pw==}
-
-  /@types/paypal__checkout-server-sdk@1.0.5:
-    resolution: {integrity: sha512-pGpESvscnVi26tPOZGEXzr1PQXgNW8aaKtMSB2C8K41+4UW3kT28MCMLmKJkSkkNaJ4LHKEOzfun/c2ntC416g==}
-    dependencies:
-      '@types/paypal__paypalhttp': 1.0.0
-    dev: true
-
-  /@types/paypal__paypalhttp@1.0.0:
-    resolution: {integrity: sha512-JSrGEKWT+VnMNNkOFPYRcBdv/W5FuDP0ZDp9KxExZVEtX8xZTO4NFfkG9gkQ+g/RnEbVZnFwrQ04LH5HLio5Gw==}
-    dependencies:
-      '@types/node': 18.17.17
-    dev: true
 
   /@types/pug@2.0.6:
     resolution: {integrity: sha512-SnHmG9wN1UVmagJOnyo/qkk0Z7gejYxOYYmaAwr5u2yFYfsupN3sg10kyzN8Hep/2zbHxCnsumxOoRIRMBwKCg==}
@@ -3406,10 +3367,6 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
     dev: true
-
-  /promise-polyfill@8.3.0:
-    resolution: {integrity: sha512-H5oELycFml5yto/atYqmjyigJoAo3+OXwolYiH7OfQuYlAqhxNvTfiNMbV9hsC6Yp83yE5r2KTVmtrG6R9i6Pg==}
-    dev: false
 
   /psl@1.9.0:
     resolution: {integrity: sha512-E/ZsdU4HLs/68gYzgGTkMicWTLPdAftJLfJFlLUAAKZGkStNU72sZjT66SnMDVOfOWY/YAoiD7Jxa9iHvngcag==}
