@@ -1,178 +1,178 @@
-import db from '$db';
-import {
-  dbUser,
-  dbTournament,
-  dbRound,
-  dbStaffMemberToStaffRole,
-  dbStaffRole,
-  dbStaffMember
-} from '$db/schema';
-import { eq, and } from 'drizzle-orm';
-import { z } from 'zod';
-import { verifyJWT } from '$lib/jwt';
-import { t, tryCatch } from '$trpc';
-import { TRPCError } from '@trpc/server';
-import { findFirstOrThrow, select } from '$lib/server-utils';
-import type { SessionUser } from '$types';
-import type { Context } from '$trpc/context';
+// import db from '$db';
+// import {
+//   User,
+//   dbTournament,
+//   dbRound,
+//   dbStaffMemberToStaffRole,
+//   dbStaffRole,
+//   dbStaffMember
+// } from '$db/schema';
+// import { eq, and } from 'drizzle-orm';
+// import { z } from 'zod';
+// import { verifyJWT } from '$lib/jwt';
+// import { t, tryCatch } from '$trpc';
+// import { TRPCError } from '@trpc/server';
+// import { findFirstOrThrow, pick } from '$lib/server-utils';
+// import type { SessionUser } from '$types';
+// import type { Context } from '$trpc/context';
 
-function getStoredUserHelper(ctx: Context) {
-  if (!ctx.cookies.get('session')) {
-    throw new TRPCError({
-      code: 'UNAUTHORIZED',
-      message: "User isn't logged in."
-    });
-  }
+// function getStoredUserHelper(ctx: Context) {
+//   if (!ctx.cookies.get('session')) {
+//     throw new TRPCError({
+//       code: 'UNAUTHORIZED',
+//       message: "User isn't logged in."
+//     });
+//   }
 
-  return verifyJWT<SessionUser>(ctx.cookies.get('session')) as SessionUser;
-}
+//   return verifyJWT<SessionUser>(ctx.cookies.get('session')) as SessionUser;
+// }
 
-export const getStoredUser = t.middleware(({ ctx, next }) => {
-  return next({
-    ctx: {
-      user: getStoredUserHelper(ctx)
-    }
-  });
-});
+// export const getStoredUser = t.middleware(({ ctx, next }) => {
+//   return next({
+//     ctx: {
+//       user: getStoredUserHelper(ctx)
+//     }
+//   });
+// });
 
-export const getUser = t.middleware(async ({ ctx, next }) => {
-  let storedUser = getStoredUserHelper(ctx);
-  let user = findFirstOrThrow(
-    await db
-      .select(
-        select(dbUser, [
-          'id',
-          'isAdmin',
-          'osuUserId',
-          'osuUsername',
-          'discordUserId',
-          'discordDiscriminator',
-          'freeServicesLeft',
-          'osuAccessToken'
-        ])
-      )
-      .from(dbUser)
-      .where(eq(dbUser.id, storedUser.id)),
-    'user'
-  );
+// export const getUser = t.middleware(async ({ ctx, next }) => {
+//   let storedUser = getStoredUserHelper(ctx);
+//   let user = findFirstOrThrow(
+//     await db
+//       .select(
+//         pick(User, [
+//           'id',
+//           'isAdmin',
+//           'osuUserId',
+//           'osuUsername',
+//           'discordUserId',
+//           'discordDiscriminator',
+//           'freeServicesLeft',
+//           'osuAccessToken'
+//         ])
+//       )
+//       .from(User)
+//       .where(eq(User.id, storedUser.id)),
+//     'user'
+//   );
 
-  return next({
-    ctx: {
-      user
-    }
-  });
-});
+//   return next({
+//     ctx: {
+//       user
+//     }
+//   });
+// });
 
-export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
-  let parse = z
-    .object({
-      tournamentId: z.number().int()
-    })
-    .safeParse(rawInput);
+// export const getUserAsStaff = t.middleware(async ({ ctx, next, rawInput }) => {
+//   let parse = z
+//     .object({
+//       tournamentId: z.number().int()
+//     })
+//     .safeParse(rawInput);
 
-  if (!parse.success) {
-    throw new TRPCError({
-      code: 'BAD_REQUEST',
-      message: '"tournamentId" is invalid'
-    });
-  }
+//   if (!parse.success) {
+//     throw new TRPCError({
+//       code: 'BAD_REQUEST',
+//       message: '"tournamentId" is invalid'
+//     });
+//   }
 
-  let parsed = parse.data;
-  let storedUser = getStoredUserHelper(ctx);
+//   let parsed = parse.data;
+//   let storedUser = getStoredUserHelper(ctx);
 
-  let user = findFirstOrThrow(
-    await db
-      .select(select(dbUser, ['id', 'isAdmin', 'osuUserId', 'osuAccessToken']))
-      .from(dbUser)
-      .where(eq(dbUser.id, storedUser.id)),
-    'user'
-  );
+//   let user = findFirstOrThrow(
+//     await db
+//       .select(pick(User, ['id', 'isAdmin', 'osuUserId', 'osuAccessToken']))
+//       .from(User)
+//       .where(eq(User.id, storedUser.id)),
+//     'user'
+//   );
 
-  let tournament = await tryCatch(async () => {
-    return findFirstOrThrow(
-      await db
-        .select(
-          select(dbTournament, [
-            'id',
-            'concludesOn',
-            'services',
-            'type',
-            'teamSize',
-            'teamPlaySize'
-          ])
-        )
-        .from(dbTournament)
-        .where(eq(dbTournament.id, parsed.tournamentId)),
-      'tournament'
-    );
-  }, `Couldn't find tournament with ID ${parsed.tournamentId}.`);
+//   let tournament = await tryCatch(async () => {
+//     return findFirstOrThrow(
+//       await db
+//         .select(
+//           pick(dbTournament, [
+//             'id',
+//             'concludesOn',
+//             'services',
+//             'type',
+//             'teamSize',
+//             'teamPlaySize'
+//           ])
+//         )
+//         .from(dbTournament)
+//         .where(eq(dbTournament.id, parsed.tournamentId)),
+//       'tournament'
+//     );
+//   }, `Couldn't find tournament with ID ${parsed.tournamentId}.`);
 
-  let staffMember = await tryCatch(async () => {
-    let data = await db
-      .select({
-        staffMember: {
-          id: dbStaffMemberToStaffRole.staffMemberId
-        },
-        staffRole: {
-          permissions: dbStaffRole.permissions
-        }
-      })
-      .from(dbStaffMemberToStaffRole)
-      .where(and(eq(dbStaffMember.userId, user.id), eq(dbStaffMember.tournamentId, tournament.id)))
-      .innerJoin(dbStaffMember, eq(dbStaffMember.id, dbStaffMemberToStaffRole.staffMemberId))
-      .innerJoin(dbStaffRole, eq(dbStaffRole.id, dbStaffMemberToStaffRole.staffRoleId));
+//   let staffMember = await tryCatch(async () => {
+//     let data = await db
+//       .select({
+//         staffMember: {
+//           id: dbStaffMemberToStaffRole.staffMemberId
+//         },
+//         staffRole: {
+//           permissions: dbStaffRole.permissions
+//         }
+//       })
+//       .from(dbStaffMemberToStaffRole)
+//       .where(and(eq(dbStaffMember.userId, user.id), eq(dbStaffMember.tournamentId, tournament.id)))
+//       .innerJoin(dbStaffMember, eq(dbStaffMember.id, dbStaffMemberToStaffRole.staffMemberId))
+//       .innerJoin(dbStaffRole, eq(dbStaffRole.id, dbStaffMemberToStaffRole.staffRoleId));
 
-    if (!data[0]) {
-      throw new Error("Couldn't find staff member");
-    }
+//     if (!data[0]) {
+//       throw new Error("Couldn't find staff member");
+//     }
 
-    return {
-      id: data[0].staffMember.id,
-      roles: data.map(({ staffRole }) => staffRole)
-    };
-  }, `Couldn't find staff member with user ID ${user.id} in tournament with ID ${tournament.id}.`);
+//     return {
+//       id: data[0].staffMember.id,
+//       roles: data.map(({ staffRole }) => staffRole)
+//     };
+//   }, `Couldn't find staff member with user ID ${user.id} in tournament with ID ${tournament.id}.`);
 
-  return next({
-    ctx: {
-      user,
-      tournament,
-      staffMember
-    }
-  });
-});
+//   return next({
+//     ctx: {
+//       user,
+//       tournament,
+//       staffMember
+//     }
+//   });
+// });
 
-export const getUserAsStaffWithRound = getUserAsStaff.unstable_pipe(
-  async ({ ctx, next, rawInput }) => {
-    let parse = z
-      .object({
-        roundId: z.number().int()
-      })
-      .safeParse(rawInput);
+// export const getUserAsStaffWithRound = getUserAsStaff.unstable_pipe(
+//   async ({ ctx, next, rawInput }) => {
+//     let parse = z
+//       .object({
+//         roundId: z.number().int()
+//       })
+//       .safeParse(rawInput);
 
-    if (!parse.success) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: '"roundId" is invalid'
-      });
-    }
+//     if (!parse.success) {
+//       throw new TRPCError({
+//         code: 'BAD_REQUEST',
+//         message: '"roundId" is invalid'
+//       });
+//     }
 
-    let parsed = parse.data;
+//     let parsed = parse.data;
 
-    let round = await tryCatch(async () => {
-      return findFirstOrThrow(
-        await db
-          .select(select(dbRound, ['id', 'mappoolState']))
-          .from(dbRound)
-          .where(eq(dbRound.id, parsed.roundId)),
-        'round'
-      );
-    }, `Couldn't find round with ID ${parsed.roundId}.`);
+//     let round = await tryCatch(async () => {
+//       return findFirstOrThrow(
+//         await db
+//           .select(pick(dbRound, ['id', 'mappoolState']))
+//           .from(dbRound)
+//           .where(eq(dbRound.id, parsed.roundId)),
+//         'round'
+//       );
+//     }, `Couldn't find round with ID ${parsed.roundId}.`);
 
-    return next({
-      ctx: {
-        ...ctx,
-        round
-      }
-    });
-  }
-);
+//     return next({
+//       ctx: {
+//         ...ctx,
+//         round
+//       }
+//     });
+//   }
+// );

@@ -4,8 +4,8 @@
 // import { whereIdSchema, withTournamentSchema } from '$lib/schemas';
 // import { isAllowed } from '$lib/server-utils';
 // import { hasPerms } from '$lib/utils';
-import { t } from '$trpc';
+// import { t } from '$trpc';
 
-const teamRouter = t.router({});
+// const teamRouter = t.router({});
 
-export default teamRouter;
+// export default teamRouter;
