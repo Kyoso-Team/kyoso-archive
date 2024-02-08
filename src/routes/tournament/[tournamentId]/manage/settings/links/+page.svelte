@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { SEO, Setting, Settings } from '$components';
   import { z } from 'zod';
   import { setSettingError, trimStringValues } from '$lib/utils';
@@ -205,4 +205,4 @@
       bind:value={currentObj.websiteLink}
     />
   </Settings>
-</div>
+</div> -->

@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
   import { paginate } from '$stores';
   import { SEO, SearchBar, Paginator, Purchase, SearchResults } from '$components';
@@ -55,4 +55,4 @@
       <Paginator count={data.purchaseCount} page={data.page} {onPageChange} />
     </svelte:fragment>
   </SearchResults>
-</div>
+</div> -->

@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { form, paypal, error, sidebar, dashboardSidebar } from '$stores';
   import { Stepper, Step, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
   import { format } from '$lib/utils';
@@ -328,4 +328,4 @@
       </Stepper>
     </div>
   </div>
-{/if}
+{/if} -->

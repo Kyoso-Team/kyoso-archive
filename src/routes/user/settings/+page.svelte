@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import type { PageServerData } from './$types';
   import { SEO } from '$components';
   import { SlideToggle, Table, getModalStore } from '@skeletonlabs/skeleton';
@@ -105,4 +105,4 @@
     >
     <button on:click={confirmKeyReset} class="variant-filled-error btn">RESET KEY</button>
   </section>
-</div>
+</div> -->

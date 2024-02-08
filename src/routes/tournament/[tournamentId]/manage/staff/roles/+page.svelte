@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import isEqual from 'lodash.isequal';
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
@@ -602,4 +602,4 @@
       </div>
     {/if}
   </div>
-</div>
+</div> -->

@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { onDestroy } from 'svelte';
   import { hasPerms } from '$lib/utils';
   import { tournamentSidebar, sidebar } from '$stores';
@@ -160,4 +160,4 @@
   }
 </script>
 
-<slot />
+<slot /> -->

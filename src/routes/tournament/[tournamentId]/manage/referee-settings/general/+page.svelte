@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { SEO, Setting, Settings } from '$components';
   import { z } from 'zod';
   import { setSettingError, trimStringValues } from '$lib/utils';
@@ -146,4 +146,4 @@
     <Setting label="Warmup rules" type="text" bind:value={currentObj.warmupRules} />
     <Setting label="Late procedures" type="text" final bind:value={currentObj.lateProcedures} />
   </Settings>
-</div>
+</div> -->

@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { SEO, Setting, Settings } from '$components';
   import { z } from 'zod';
   import { setSettingError, trimStringValues } from '$lib/utils';
@@ -149,4 +149,4 @@
     {/if}
     <Setting label="Use BWS formula?" type="boolean" final bind:value={currentObj.useBWS} />
   </Settings>
-</div>
+</div> -->

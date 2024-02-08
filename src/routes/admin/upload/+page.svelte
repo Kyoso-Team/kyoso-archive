@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   let uploadedImage: string;
   let form: HTMLFormElement;
   let img: HTMLImageElement;
@@ -34,7 +34,6 @@
     </div>
   {/if}
   <button>Submit</button>
-</form>
+</form> -->
 
-<!-- svelte-ignore a11y-img-redundant-alt -->
-<img id="uploadedImage" bind:this={img} alt="The image should appear here once uploaded!" />
+<!-- <img id="uploadedImage" bind:this={img} alt="The image should appear here once uploaded!" /> -->

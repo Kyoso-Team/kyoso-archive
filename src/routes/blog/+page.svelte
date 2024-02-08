@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { format } from '$lib/utils';
   import { firsBlogPostTimestmap } from '$lib/constants';
   import { page } from '$app/stores';
@@ -7,14 +7,14 @@
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
+  const posts = data.posts;
   let lastPage = 1;
-  let posts = data.posts;
   let morePosts = data.morePosts;
 
   async function onLoadMore() {
     lastPage = lastPage + 1;
 
-    let resp = await fetch(`https://dev.to/api/articles/latest?username=kyoso&page=${lastPage}`);
+    const resp = await fetch(`https://dev.to/api/articles/latest?username=kyoso&page=${lastPage}`);
     let fetchedPosts = (await resp.json()) as Post[];
     fetchedPosts = fetchedPosts.map(({ id, title, published_at, cover_image, description }) => {
       return { id, title, published_at, cover_image, description };
@@ -60,4 +60,4 @@
   {#if morePosts}
     <button on:click={onLoadMore} class="btn variant-filled-primary mt-4"> Load More </button>
   {/if}
-</div>
+</div> -->

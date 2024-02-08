@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
@@ -26,4 +26,4 @@
   Loading staff members...
 {:then staffMembers}
   {JSON.stringify(staffMembers)}
-{/await}
+{/await} -->

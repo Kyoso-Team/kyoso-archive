@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { SEO, Setting, Settings } from '$components';
   import { z } from 'zod';
   import { setSettingError } from '$lib/utils';
@@ -116,4 +116,4 @@
       bind:value={currentObj.staffRegsCloseOn}
     />
   </Settings>
-</div>
+</div> -->

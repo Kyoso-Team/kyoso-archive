@@ -144,15 +144,15 @@
           {#if data.user}
             <div use:popup={{ ...navbarPopup, target: 'avatarPopup' }}>
               <Avatar
-                src={buildUrl.userAvatar(data.user.osuUserId)}
+                src={buildUrl.userAvatar(data.user.osu.id)}
                 width="w-10"
                 cursor="cursor-pointer"
               />
             </div>
             <div class="card absolute right-4 top-[5rem] w-52 py-2" data-popup="avatarPopup">
               <section class="flex flex-col px-6">
-                <div class="font-bold">{data.user.username}</div>
-                <div class="text-sm">{data.user.discordTag}</div>
+                <div class="font-bold">{data.user.osu.username}</div>
+                <div class="text-sm">{data.user.discord.username}</div>
               </section>
               <nav class="mt-2 flex flex-col gap-1 px-2">
                 <a

@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { trpc } from '$trpc/client';
   import { page } from '$app/stores';
   import { tournamentSidebar, upload, error } from '$stores';
@@ -148,4 +148,4 @@
       >
     </div>
   </div>
-</div>
+</div> -->

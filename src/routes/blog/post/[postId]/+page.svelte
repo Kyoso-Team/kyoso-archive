@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { page } from '$app/stores';
   import { SEO } from '$components';
   import { format } from '$lib/utils';
@@ -29,4 +29,4 @@
       {@html data.body_html}
     </div>
   </div>
-</div>
+</div> -->

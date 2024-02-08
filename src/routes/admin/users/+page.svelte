@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { paginate } from '$stores';
   import { SEO, SearchBar, Paginator, User, Dropdown, SearchResults } from '$components';
@@ -75,4 +75,4 @@
       <Paginator count={data.userCount} page={data.page} {onPageChange} />
     </svelte:fragment>
   </SearchResults>
-</div>
+</div> -->
