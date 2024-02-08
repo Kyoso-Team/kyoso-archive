@@ -6,14 +6,17 @@ export const timestampConfig: PgTimestampConfig = {
   precision: 3
 };
 
+/** @deprecated */
 export function length(length: number) {
   return { length };
 }
 
+/** @deprecated */
 export function relation(relationName: string) {
   return { relationName };
 }
 
+/** @deprecated */
 export function actions(onDelete: UpdateDeleteAction, onUpdate?: UpdateDeleteAction) {
   return {
     onDelete,
