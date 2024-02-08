@@ -7,7 +7,6 @@ import {
   DISCORD_BOT_TOKEN,
   STORAGE_ENDPOINT,
   STORAGE_PASSWORD,
-  PAYPAL_CLIENT_SECRET,
   ADMIN_BY_DEFAULT,
   DATABASE_URL
 } from '$env/static/private';
@@ -22,7 +21,6 @@ const serverEnvSchema = z
     DISCORD_BOT_TOKEN: z.string().nonempty(),
     STORAGE_ENDPOINT: z.string().nonempty(),
     STORAGE_PASSWORD: z.string().nonempty(),
-    PAYPAL_CLIENT_SECRET: z.string().nonempty(),
     DATABASE_URL: z.string().nonempty(),
     ADMIN_BY_DEFAULT: z.array(z.number().int())
   })
@@ -37,13 +35,12 @@ const serverEnv = {
   DISCORD_BOT_TOKEN,
   STORAGE_ENDPOINT,
   STORAGE_PASSWORD,
-  PAYPAL_CLIENT_SECRET,
   DATABASE_URL,
   ADMIN_BY_DEFAULT: (JSON.parse(ADMIN_BY_DEFAULT) as string[]).map((id) => Number(id))
 };
 
 function env() {
-  let parsed = serverEnvSchema.safeParse(serverEnv);
+  const parsed = serverEnvSchema.safeParse(serverEnv);
 
   if (!parsed.success) {
     console.error('Invalid environment variables:', parsed.error.flatten().fieldErrors);
