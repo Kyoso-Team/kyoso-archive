@@ -1,2 +1,0 @@
-ALTER TABLE "staff_application_submission" ADD COLUMN "submitted_at" timestamp (3) with time zone DEFAULT now() NOT NULL;--> statement-breakpoint
-ALTER TABLE "staff_member" ADD COLUMN "joined_staff_at" timestamp (3) with time zone DEFAULT now() NOT NULL;
