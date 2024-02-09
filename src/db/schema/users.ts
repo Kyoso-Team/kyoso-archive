@@ -20,10 +20,10 @@ export const User = pgTable('user', {
     length: 24
   }).notNull().unique('uni_user_api_key'),
   // Relations
-  osuUserId: integer('osu_user_id').notNull().references(() => OsuUser.osuUserId),
+  osuUserId: integer('osu_user_id').notNull().unique('uni_user_osu_user_id').references(() => OsuUser.osuUserId),
   discordUserId: varchar('discord_user_id', {
     length: 19
-  }).notNull().references(() => DiscordUser.discordUserId)
+  }).notNull().unique('uni_user_discord_user_id').references(() => DiscordUser.discordUserId)
 }); 
 
 export const OsuUser = pgTable('osu_user', {

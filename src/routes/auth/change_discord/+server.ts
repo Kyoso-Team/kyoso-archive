@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import { getSession, signJWT } from '$lib/server-utils';
 import { discordAuth } from '$lib/constants';
-import type { AuthUser } from '$types';
+import type { Session } from '$types';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, cookies }) => {
@@ -13,7 +13,7 @@ export const GET = (async ({ url, cookies }) => {
     state: redirectUri ? encodeURI(redirectUri) : undefined
   });
 
-  const osuProfile: AuthUser['osu'] = {
+  const osuProfile: Session['osu'] = {
     id: user.osu.id,
     username: user.osu.username
   };

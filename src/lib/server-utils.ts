@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import postgres from 'postgres';
 import { error } from '@sveltejs/kit';
 import { isOsuJSError } from 'osu-web.js';
-import type { AuthUser } from '$types';
+import type { Session } from '$types';
 import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
 import type { Cookies } from '@sveltejs/kit';
 
@@ -83,14 +83,14 @@ export function verifyJWT<T>(token?: string) {
 export function getSession<T extends boolean>(
   cookies: Cookies,
   mustBeSignedIn: T
-): T extends true ? AuthUser : AuthUser | undefined {
-  const user = verifyJWT<AuthUser>(cookies.get('session'));
+): T extends true ? Session : Session | undefined {
+  const user = verifyJWT<Session>(cookies.get('session'));
 
   if (mustBeSignedIn && !user) {
     throw error(401, 'Not logged in');
   }
 
-  return user as AuthUser;
+  return user as Session;
 }
 
 /**
@@ -276,11 +276,10 @@ export function pick<
   return Object.fromEntries(map) as Omit<T, Exclude<F, I> | 'getSQL' | '_' | '$inferSelect' | '$inferInsert'>;
 }
 
-export async function kyosoError(err: unknown, when: string, route: { id: string }) {
+export async function kyosoError(err: unknown, when: string, route: { id: string | null }) {
   let message = 'Unknown error';
   let osuJSResp: Response | undefined;
   let query: string | undefined;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let queryParams: any[] | undefined;
 
   if (isOsuJSError(err)) {

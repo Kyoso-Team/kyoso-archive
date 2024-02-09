@@ -1,11 +1,13 @@
 import env from '$lib/env/server';
 import { error, redirect } from '@sveltejs/kit';
 import { kyosoError, pick, signJWT, verifyJWT } from '$lib/server-utils';
-import { DiscordUser, User, db } from '$db';
+import { User, db } from '$db';
 import { customAlphabet } from 'nanoid';
 import { discordAuth, discordAuthOptions } from '$lib/constants';
-import type DiscordOauth2 from 'discord-oauth2';
-import type { AuthUser } from '$types';
+import { sql } from 'drizzle-orm';
+import { upsertDiscordUser } from '$lib/helpers';
+import type DiscordOAuth2 from 'discord-oauth2';
+import type { Session } from '$types';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, route, cookies }) => {
@@ -17,7 +19,7 @@ export const GET = (async ({ url, route, cookies }) => {
     throw error(400, 'Log into osu! before logging into Discord');
   }
 
-  const osuProfile = verifyJWT<AuthUser['osu']>(osuProfileCookie);
+  const osuProfile = verifyJWT<Session['osu']>(osuProfileCookie);
 
   if (!osuProfile) {
     throw error(500, '"temp_osu_profile" cookie is an invalid JWT string. Try logging in with osu! again');
@@ -27,7 +29,7 @@ export const GET = (async ({ url, route, cookies }) => {
     throw error(400, '"code" query param is undefined');
   }
 
-  let token: DiscordOauth2.TokenRequestResult | undefined;
+  let token: DiscordOAuth2.TokenRequestResult | undefined;
 
   try {
     token = await discordAuth.tokenRequest({
@@ -42,36 +44,7 @@ export const GET = (async ({ url, route, cookies }) => {
 
   if (!token) return new Response(null);
 
-  let discordUser: Awaited<ReturnType<DiscordOauth2['getUser']>> | undefined;
-
-  try {
-    discordUser = await discordAuth.getUser(token.access_token);
-  } catch (err) {
-    throw kyosoError(err, 'Getting the user\'s Discord data', route);
-  }
-
-  if (!discordUser) return new Response(null);
-
-  try {
-    await db
-      .insert(DiscordUser)
-      .values({
-        accesstoken: token.access_token,
-        discordUserId: discordUser.id,
-        refreshToken: token.refresh_token,
-        username: discordUser.username
-      })
-      .onConflictDoUpdate({
-        target: [DiscordUser.discordUserId],
-        set: {
-          accesstoken: token.access_token,
-          refreshToken: token.refresh_token,
-          username: discordUser.username
-        }
-      });
-  } catch (err) {
-    throw kyosoError(err, 'Upserting the user\'s Discord data', route);
-  }
+  const discordUser = await upsertDiscordUser(token, route);
 
   let kyosoUser: {
     id: number;
@@ -92,10 +65,11 @@ export const GET = (async ({ url, route, cookies }) => {
         isAdmin: env.ADMIN_BY_DEFAULT.includes(osuProfile.id)
       })
       .onConflictDoUpdate({
-        target: [User.discordUserId, User.osuUserId],
+        target: [User.osuUserId],
         set: {
           discordUserId: discordUser.id,
-          osuUserId: osuProfile.id
+          isAdmin: env.ADMIN_BY_DEFAULT.includes(osuProfile.id),
+          updatedApiDataAt: sql`now()`
         }
       })
       .returning(pick(User, ['id', 'updatedApiDataAt', 'isAdmin']))
@@ -106,8 +80,8 @@ export const GET = (async ({ url, route, cookies }) => {
 
   if (!kyosoUser) return new Response(null);
 
-  const kyosoProfile: AuthUser = {
-    id: kyosoUser.id,
+  const kyosoProfile: Session = {
+    userId: kyosoUser.id,
     isAdmin: kyosoUser.isAdmin,
     updatedAt: kyosoUser.updatedApiDataAt.getTime(),
     discord: {

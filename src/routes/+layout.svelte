@@ -156,7 +156,7 @@
               </section>
               <nav class="mt-2 flex flex-col gap-1 px-2">
                 <a
-                  href={`/user/${data.user.id}`}
+                  href={`/user/${data.user.userId}`}
                   class="btn justify-start py-1 hover:variant-soft-primary">Profile</a
                 >
                 <a href="/user/settings" class="btn justify-start py-1 hover:variant-soft-primary"
@@ -169,7 +169,7 @@
               </nav>
             </div>
           {:else}
-            <a href="/auth/login" class="variant-filled-primary btn">Login</a>
+            <a href={`/auth/login?redirect_uri=${encodeURI($page.url.toString())}`} class="variant-filled-primary btn">Login</a>
           {/if}
         </div>
       </svelte:fragment>

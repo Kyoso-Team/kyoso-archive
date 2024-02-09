@@ -1,6 +1,6 @@
 {
-  "id": "f3e5755b-0772-492e-bb5b-8c9ee2ce9558",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "88cfd7e9-c457-40b9-8e50-88eae0bd34cb",
+  "prevId": "f3e5755b-0772-492e-bb5b-8c9ee2ce9558",
   "version": "5",
   "dialect": "pg",
   "tables": {
@@ -305,6 +305,20 @@
           "nullsNotDistinct": false,
           "columns": [
             "api_key"
+          ]
+        },
+        "uni_user_osu_user_id": {
+          "name": "uni_user_osu_user_id",
+          "nullsNotDistinct": false,
+          "columns": [
+            "osu_user_id"
+          ]
+        },
+        "uni_user_discord_user_id": {
+          "name": "uni_user_discord_user_id",
+          "nullsNotDistinct": false,
+          "columns": [
+            "discord_user_id"
           ]
         }
       }

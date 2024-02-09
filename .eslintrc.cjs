@@ -41,6 +41,7 @@ module.exports = {
     'comma-dangle': ['warn', 'never'],
     'default-case': 'error',
     'prefer-const': 'warn',
+    '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-inferrable-types': 'off',
     'quote-props': ['warn', 'consistent'],
     '@typescript-eslint/no-unused-vars': [
