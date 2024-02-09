@@ -3,7 +3,7 @@
   import 'highlight.js/styles/atom-one-dark.css';
   import { buildUrl } from 'osu-web.js';
   import { goto } from '$app/navigation';
-  import { form, error, upload } from '$stores';
+  //import { form, error, upload } from '$stores';
   import { onMount } from 'svelte';
   import {
     initializeStores,
@@ -19,18 +19,18 @@
   } from '@skeletonlabs/skeleton';
   import { page } from '$app/stores';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-  import { Sidebar } from '$components';
+  //import { Sidebar } from '$components';
   import { modalRegistry } from '$lib/modal-registry';
-  import type { Form, Error, Upload } from '$components';
+  //import type { Form, Error, Upload } from '$components';
   import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
 
   storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
   export let data: LayoutServerData;
-  let formComponent: typeof Form | undefined;
-  let errorComponent: typeof Error | undefined;
-  let uploadComponent: typeof Upload | undefined;
+  //let formComponent: typeof Form | undefined;
+  //let errorComponent: typeof Error | undefined;
+  //let uploadComponent: typeof Upload | undefined;
 
   const navLinks = [
     {
@@ -75,9 +75,9 @@
 
   onMount(() => {
     loadHighlightJs();
-    loadFormComponent();
-    loadErrorComponent();
-    loadUploadComponent();
+    // loadFormComponent();
+    // loadErrorComponent();
+    // loadUploadComponent();
   });
 
   async function loadHighlightJs() {
@@ -85,20 +85,20 @@
     storeHighlightJs.set(hljs);
   }
 
-  async function loadFormComponent() {
-    const form = await import('$components/layout/Form.svelte');
-    formComponent = form.default;
-  }
+  // async function loadFormComponent() {
+  //   const form = await import('$components/layout/Form.svelte');
+  //   formComponent = form.default;
+  // }
 
-  async function loadErrorComponent() {
-    const error = await import('$components/layout/Error.svelte');
-    errorComponent = error.default;
-  }
+  // async function loadErrorComponent() {
+  //   const error = await import('$components/layout/Error.svelte');
+  //   errorComponent = error.default;
+  // }
 
-  async function loadUploadComponent() {
-    const upload = await import('$components/layout/Upload.svelte');
-    uploadComponent = upload.default;
-  }
+  // async function loadUploadComponent() {
+  //   const upload = await import('$components/layout/Upload.svelte');
+  //   uploadComponent = upload.default;
+  // }
 
   function onLogoutClick() {
     goto('/auth/logout');
@@ -176,8 +176,9 @@
     </AppBar>
   </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
-    <Sidebar />
+    <!-- <Sidebar /> -->
   </svelte:fragment>
+  <!--
   {#if $form && formComponent}
     <div class="bg-surface-backdrop-token fixed inset-0 z-20 h-screen w-screen">
       <svelte:component this={formComponent} />
@@ -197,5 +198,6 @@
       <svelte:component this={errorComponent} />
     </div>
   {/if}
+  -->
   <slot />
 </AppShell>

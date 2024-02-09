@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import isEqual from 'lodash.isequal';
   import { SlideToggle } from '@skeletonlabs/skeleton';
   import type { StaffPermission } from '$types';
@@ -49,4 +49,4 @@
   {#if !noBorder}
     <div class="mt-4 w-full border-b border-surface-500/50" />
   {/if}
-</div>
+</div> -->

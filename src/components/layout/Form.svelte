@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import isEqual from 'lodash.isequal';
   import { form } from '$stores';
   import { focusTrap } from '@skeletonlabs/skeleton';
@@ -85,4 +85,4 @@
       <button type="button" class="btn variant-ringed-primary" on:click={onClose}>Cancel</button>
     </div>
   </form>
-{/if}
+{/if} -->

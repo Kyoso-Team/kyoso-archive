@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { tournamentSidebar } from '$stores';
   import { AppRail, AppRailTile } from '@skeletonlabs/skeleton';
   import { PickemsIcon, PoolingIcon, RefereeIcon, RegistrationsIcon, StatsIcon } from '$components';
@@ -80,4 +80,4 @@
       {/each}
     {/if}
   </nav>
-{/if}
+{/if} -->

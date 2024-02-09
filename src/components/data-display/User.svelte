@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { Avatar } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
 
@@ -45,4 +45,4 @@
       {/if}
     </div>
   </div>
-</div>
+</div> -->

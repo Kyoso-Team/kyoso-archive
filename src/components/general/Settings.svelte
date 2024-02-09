@@ -10,8 +10,8 @@
   let btnsDisabled = false;
 
   $: {
-    let hasNotChanged = isEqual(originalObj, currentObj);
-    let hasErrors = !!Object.values(errors).find((v) => typeof v === 'string');
+    const hasNotChanged = isEqual(originalObj, currentObj);
+    const hasErrors = !!Object.values(errors).find((v) => typeof v === 'string');
 
     btnsDisabled = hasNotChanged || hasErrors;
   }

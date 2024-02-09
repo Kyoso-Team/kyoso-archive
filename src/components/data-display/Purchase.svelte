@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { format, tooltip } from '$lib/utils';
   import { Avatar } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
@@ -28,7 +28,6 @@
 </script>
 
 <div class="card w-64 p-4 bg-surface-backdrop-token md:w-96">
-  <!-- TODO: Handle case where purchasedBy is undefined -->
   {#if purchase.purchasedBy}
     <div class="grid grid-cols-[auto] md:grid-cols-[auto_auto]">
       <div class="mr-2 hidden md:block">
@@ -73,4 +72,4 @@
     {/each}
   </div>
   <span class="text-sm">PayPal Order ID: {purchase.payPalOrderId}</span>
-</div>
+</div> -->

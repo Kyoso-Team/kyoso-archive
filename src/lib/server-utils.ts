@@ -1,8 +1,8 @@
 import env from '$lib/env/server';
 import jwt from 'jsonwebtoken';
+import postgres from 'postgres';
 import { error } from '@sveltejs/kit';
 import { isOsuJSError } from 'osu-web.js';
-import { PostgresError } from 'postgres';
 import type { AuthUser } from '$types';
 import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
 import type { Cookies } from '@sveltejs/kit';
@@ -289,7 +289,7 @@ export async function kyosoError(err: unknown, when: string, route: { id: string
     if (err.type === 'unexpected_response') {
       osuJSResp = err.response();
     }
-  } else if (err instanceof PostgresError) {
+  } else if (err instanceof postgres.PostgresError) {
     message = err.message;
     query = err.query;
     queryParams = err.parameters;

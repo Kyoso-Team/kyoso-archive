@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { Tooltip } from '$components';
   import { FileButton, popup } from '@skeletonlabs/skeleton';
   import { upload, error } from '$stores';
@@ -140,4 +140,4 @@
       </div>
     {/if}
   </div>
-{/if}
+{/if} -->

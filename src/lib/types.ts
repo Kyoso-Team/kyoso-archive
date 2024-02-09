@@ -15,7 +15,7 @@
 //   dbStageFormat
 // } from '$db/schema';
 // import type { ZodBoolean, ZodDate, ZodNumber, ZodString } from 'zod';
-// import type { Page } from '@sveltejs/kit';
+import type { Page } from '@sveltejs/kit';
 // import type { InferSelectModel } from 'drizzle-orm';
 
 // Alias for any which refers to specifically any Svelte component. I (Mario564) dont' know how to use Svelte component classes as generics in function and variable type definitions
@@ -97,7 +97,7 @@ export type AnyComponent = any;
 //   ? DateTime
 //   : Default;
 
-// export type PageStore = Page<Record<string, string>, string | null>;
+export type PageStore = Page<Record<string, string>, string | null>;
 // export type ParseInt<T> = T extends `${infer N extends number}` ? N : never;
 
 export interface AuthUser {

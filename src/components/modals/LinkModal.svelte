@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { getModalStore } from '@skeletonlabs/skeleton';
   import { isUrl } from '$lib/utils';
   import type { AnyComponent, LinkModalResponse } from '$types';
@@ -56,4 +56,4 @@
     >
     <button on:click={onSubmit} {disabled} class="btn {parent.buttonPositive}">Submit</button>
   </footer>
-</div>
+</div> -->

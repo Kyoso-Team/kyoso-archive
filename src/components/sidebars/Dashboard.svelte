@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { DashboardTournament as Tournament } from '$components';
   import { dashboardSidebar } from '$stores';
 </script>
@@ -42,4 +42,4 @@
       >
     </div>
   </nav>
-{/if}
+{/if} -->

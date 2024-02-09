@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { getModalStore, popup } from '@skeletonlabs/skeleton';
   import { tooltip } from '$lib/utils';
   import Tooltip from './Tooltip.svelte';
@@ -84,4 +84,4 @@
       </div>
     </button>
   {/each}
-</div>
+</div> -->

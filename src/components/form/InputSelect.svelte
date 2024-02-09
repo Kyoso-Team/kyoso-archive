@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { onMount } from 'svelte';
   import { form } from '$stores';
   import { ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
@@ -63,4 +63,4 @@
       {/each}
     </ListBox>
   </div>
-</label>
+</label> -->

@@ -5,7 +5,7 @@
   export let elementsPerPage = 30;
   export let count: number;
   export let onPageChange: (page: number) => MaybePromise<void>;
-  let arrowStyles = 'btn btn-sm variant-filled-primary';
+  const arrowStyles = 'btn btn-sm variant-filled-primary';
   let first = 0;
   let last = 0;
 
@@ -16,7 +16,7 @@
   }
 
   $: {
-    let totalPages = Math.ceil(count / elementsPerPage);
+    const totalPages = Math.ceil(count / elementsPerPage);
 
     if (totalPages <= 7) {
       first = 1;

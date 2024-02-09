@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   // export let tournament: {
   //   id: number;
   //   name: string;
@@ -11,4 +11,4 @@
 
 <div class="aspect-[21/9] w-80">
   <img class="" src="" alt="" />
-</div>
+</div> -->

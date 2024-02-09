@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { SlideToggle, popup } from '@skeletonlabs/skeleton';
   import { tooltip, dateToHtmlInput } from '$lib/utils';
   import { Tooltip } from '$components';
@@ -21,8 +21,8 @@
   export let sub: string | undefined = undefined;
   export let link: string | undefined = undefined;
 
-  let dateString = type === 'date' && value instanceof Date ? dateToHtmlInput(value) : '';
-  let linkTooltipTarget = `link-${label.toLowerCase().replaceAll(' ', '-')}`;
+  const dateString = type === 'date' && value instanceof Date ? dateToHtmlInput(value) : '';
+  const linkTooltipTarget = `link-${label.toLowerCase().replaceAll(' ', '-')}`;
 
   $: {
     if (type === 'date') {
@@ -82,4 +82,4 @@
   {#if error}
     <span class="col-span-2 mt-2 block text-sm text-error-600">{error}</span>
   {/if}
-</div>
+</div> -->

@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { error } from '$stores';
   import { CodeBlock } from '@skeletonlabs/skeleton';
   import { page } from '$app/stores';
@@ -16,8 +16,9 @@
 
     error.destroy();
   }
-</script>
+</script> -->
 
+<!--
 {#if $error}
   <div class="card variant-filled-error w-80 sm:w-[32rem]">
     <header class="card-header text-2xl font-bold">Error</header>
@@ -36,7 +37,6 @@
     <footer class="card-footer flex">
       {#if $error.canSubmitIssue}
         <div class="w-max">
-          <!-- TODO: Submit issue -->
           <button class="btn variant-filled-surface">Submit Issue</button>
         </div>
       {/if}
@@ -50,3 +50,4 @@
     </footer>
   </div>
 {/if}
+-->

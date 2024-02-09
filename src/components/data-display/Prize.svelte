@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { format, tooltip } from '$lib/utils';
   import { popup } from '@skeletonlabs/skeleton';
   import { Tooltip } from '$components';
@@ -93,4 +93,4 @@
       <Tooltip target={tooltips.items} label={format.listArray(prize.additionalItems)} />
     {/if}
   </div>
-</div>
+</div> -->

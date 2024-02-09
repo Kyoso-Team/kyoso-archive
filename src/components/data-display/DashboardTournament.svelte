@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { page } from '$app/stores';
   import { getFileUrl, format } from '$lib/utils';
 
@@ -34,4 +34,4 @@
   >
     <span class="px-4 font-semibold text-white">{tournament.name}</span>
   </div>
-</a>
+</a> -->

@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { sidebar } from '$stores';
   import { ChevronUp } from 'lucide-svelte';
 
@@ -47,4 +47,4 @@
       </div>
     </div>
   {/if}
-{/if}
+{/if} -->

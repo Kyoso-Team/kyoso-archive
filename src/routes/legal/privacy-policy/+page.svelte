@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import env from '$lib/env/client';
   import { SEO } from '$components';
   import { page } from '$app/stores';
@@ -120,4 +120,4 @@
     <br />
     <p><b>Last updated: April 18th, 2023.</b></p>
   </div>
-</div>
+</div> -->

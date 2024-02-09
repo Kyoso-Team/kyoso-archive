@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import isEqual from 'lodash.isequal';
   import { onMount } from 'svelte';
   import { SlideToggle } from '@skeletonlabs/skeleton';
@@ -139,4 +139,4 @@
       {field ? field.label : ''}
     </SlideToggle>
   {/if}
-</label>
+</label> -->
