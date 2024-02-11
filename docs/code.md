@@ -16,9 +16,9 @@ Structure to follow when writing Svelte components or pages.
 
   // Type definitions
 
-  // Constants
   // Props
   // Variables
+  // Constants
 
   // Lifecycle events
 

@@ -1,27 +1,22 @@
 <script lang="ts">
   import '../app.postcss';
   import 'highlight.js/styles/atom-one-dark.css';
-  import { buildUrl } from 'osu-web.js';
+  import { NavBar } from '$components/layout';
   //import { form, error, upload } from '$stores';
   import { onMount } from 'svelte';
   import {
     initializeStores,
     setInitialClassState,
     AppShell,
-    AppBar,
-    Avatar,
     storeHighlightJs,
     storePopup,
     Modal,
-    popup,
     Toast
   } from '@skeletonlabs/skeleton';
-  import { page } from '$app/stores';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
   //import { Sidebar } from '$components';
   import { modalRegistry } from '$lib/modal-registry';
   //import type { Form, Error, Upload } from '$components';
-  import type { PopupSettings } from '@skeletonlabs/skeleton';
   import type { LayoutServerData } from './$types';
 
   storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
@@ -30,45 +25,6 @@
   //let formComponent: typeof Form | undefined;
   //let errorComponent: typeof Error | undefined;
   //let uploadComponent: typeof Upload | undefined;
-
-  const navLinks = [
-    {
-      href: 'dashboard',
-      label: 'Dashboard'
-    },
-    {
-      href: 'tournaments',
-      label: 'Tournaments'
-    },
-    {
-      href: 'blog',
-      label: 'Blog'
-    }
-  ];
-
-  const adminNavLinks = [
-    {
-      href: 'users',
-      label: 'Users'
-    },
-    {
-      href: 'purchases',
-      label: 'Purchases'
-    },
-    {
-      href: 'upload',
-      label: 'Upload'
-    }
-  ];
-
-  const navbarPopup: PopupSettings = {
-    event: 'click',
-    placement: 'bottom',
-    target: '',
-    middleware: {
-      offset: 24
-    }
-  };
 
   initializeStores();
 
@@ -107,68 +63,7 @@
 <Toast />
 <AppShell regionPage="relative" slotPageHeader="sticky top-0 z-10">
   <svelte:fragment slot="header">
-    <AppBar padding="py-3 px-6">
-      <svelte:fragment slot="lead">
-        <nav class="flex items-center gap-2">
-          <a href="/">
-            <img src={`${$page.url.origin}/logo-hybrid.svg`} alt="logo-hybrid" class="mr-4 h-7" />
-          </a>
-          {#if data.user && data.user.isAdmin}
-            <button
-              class="btn hover:variant-soft-primary"
-              use:popup={{ ...navbarPopup, target: 'adminPopup' }}>Admin</button
-            >
-            <div class="card absolute left-4 top-[5rem] w-52 py-2" data-popup="adminPopup">
-              <nav class="flex flex-col gap-1 px-2">
-                {#each adminNavLinks as { href, label }}
-                  <a
-                    href={`/admin/${href}`}
-                    class="btn justify-start py-1 hover:variant-soft-primary">{label}</a
-                  >
-                {/each}
-              </nav>
-            </div>
-          {/if}
-          {#each navLinks as { href, label }}
-            <a href={`/${href}`} class="btn hover:variant-soft-primary">{label}</a>
-          {/each}
-        </nav>
-      </svelte:fragment>
-      <svelte:fragment slot="trail">
-        <div>
-          {#if data.user}
-            <div use:popup={{ ...navbarPopup, target: 'avatarPopup' }}>
-              <Avatar
-                src={buildUrl.userAvatar(data.user.osu.id)}
-                width="w-10"
-                cursor="cursor-pointer"
-              />
-            </div>
-            <div class="card absolute right-4 top-[5rem] w-52 py-2" data-popup="avatarPopup">
-              <section class="flex flex-col px-6">
-                <div class="font-bold">{data.user.osu.username}</div>
-                <div class="text-sm">{data.user.discord.username}</div>
-              </section>
-              <nav class="mt-2 flex flex-col gap-1 px-2">
-                <a
-                  href={`/user/${data.user.userId}`}
-                  class="btn justify-start py-1 hover:variant-soft-primary">Profile</a
-                >
-                <a href="/user/settings" class="btn justify-start py-1 hover:variant-soft-primary"
-                  >Settings</a
-                >
-                <a
-                  href={`/auth/logout?redirect_uri=${encodeURI($page.url.toString())}`}
-                  class="btn justify-start py-1 hover:variant-soft-primary">Log Out</a
-                >
-              </nav>
-            </div>
-          {:else}
-            <a href={`/auth/login?redirect_uri=${encodeURI($page.url.toString())}`} class="variant-filled-primary btn">Log In</a>
-          {/if}
-        </div>
-      </svelte:fragment>
-    </AppBar>
+    <NavBar user={data.user} />
   </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
     <!-- <Sidebar /> -->
