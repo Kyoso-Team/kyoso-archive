@@ -2,7 +2,6 @@
   import '../app.postcss';
   import 'highlight.js/styles/atom-one-dark.css';
   import { buildUrl } from 'osu-web.js';
-  import { goto } from '$app/navigation';
   //import { form, error, upload } from '$stores';
   import { onMount } from 'svelte';
   import {
@@ -99,10 +98,6 @@
   //   const upload = await import('$components/layout/Upload.svelte');
   //   uploadComponent = upload.default;
   // }
-
-  function onLogoutClick() {
-    goto('/auth/logout');
-  }
 </script>
 
 <svelte:head>
@@ -162,14 +157,14 @@
                 <a href="/user/settings" class="btn justify-start py-1 hover:variant-soft-primary"
                   >Settings</a
                 >
-                <button
-                  on:click={onLogoutClick}
-                  class="btn justify-start py-1 hover:variant-soft-primary">Logout</button
+                <a
+                  href={`/auth/logout?redirect_uri=${encodeURI($page.url.toString())}`}
+                  class="btn justify-start py-1 hover:variant-soft-primary">Log Out</a
                 >
               </nav>
             </div>
           {:else}
-            <a href={`/auth/login?redirect_uri=${encodeURI($page.url.toString())}`} class="variant-filled-primary btn">Login</a>
+            <a href={`/auth/login?redirect_uri=${encodeURI($page.url.toString())}`} class="variant-filled-primary btn">Log In</a>
           {/if}
         </div>
       </svelte:fragment>
