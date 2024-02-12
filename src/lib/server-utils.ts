@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import postgres from 'postgres';
 import { error } from '@sveltejs/kit';
 import { isOsuJSError } from 'osu-web.js';
+import { TRPCError } from '@trpc/server';
 import type { Session } from '$types';
 import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
 import type { Cookies } from '@sveltejs/kit';
@@ -276,7 +277,7 @@ export function pick<
   return Object.fromEntries(map) as Omit<T, Exclude<F, I> | 'getSQL' | '_' | '$inferSelect' | '$inferInsert'>;
 }
 
-export async function kyosoError(err: unknown, when: string, route: { id: string | null }) {
+export async function logError(err: unknown, when: string, from: string | null) {
   let message = 'Unknown error';
   let osuJSResp: Response | undefined;
   let query: string | undefined;
@@ -295,7 +296,7 @@ export async function kyosoError(err: unknown, when: string, route: { id: string
   }
   
   message = `${message}. Error thrown when: ${when}`;
-  console.error(`${new Date().toUTCString()} - ${route.id} - $${message}`);
+  console.error(`${new Date().toUTCString()} - ${from} - ${message}`);
 
   if (osuJSResp) {
     const data = await osuJSResp.text();
@@ -307,5 +308,18 @@ export async function kyosoError(err: unknown, when: string, route: { id: string
     console.log(`Query parameters: ${JSON.stringify(queryParams)}`);
   }
 
+  return message;
+}
+
+export async function kyosoError(err: unknown, when: string, route: { id: string | null }) {
+  const message = await logError(err, when, route.id);
   return error(500, message);
+}
+
+export function trpcError(err: unknown, when: string) {
+  return new TRPCError({
+    code: 'INTERNAL_SERVER_ERROR',
+    message: when,
+    cause: err
+  });
 }
