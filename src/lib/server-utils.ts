@@ -245,15 +245,15 @@ export function getSession<T extends boolean>(
  * Example:
  *
  * ```ts
- * // Without select
+ * // Without pick
  * db.select({
- *  id: dbTournament.id,
- *  name: dbTournament.name,
- *  acronym: dbTournament.acronym,
- *  useBWS: dbTournament.useBWS
+ *  id: Tournament.id,
+ *  name: Tournament.name,
+ *  acronym: Tournament.acronym,
+ *  useBWS: Tournament.useBWS
  * })
- * // With select
- * db.select(pic(dbTournament, [
+ * // With pick
+ * db.select(pick(Tournament, [
  *  'id',
  *  'name',
  *  'acronym',

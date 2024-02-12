@@ -1,45 +1,23 @@
-// import db from '$db';
-// import { getSession } from '$lib/server-utils';
-// import { error } from '@sveltejs/kit';
-// import type { PageServerLoad } from './$types';
+import { User, db } from '$db';
+import { getSession, kyosoError, pick } from '$lib/server-utils';
+import { eq } from 'drizzle-orm';
+import type { PageServerLoad } from './$types';
 
-// export const load = (async (event) => {
-//   let storedUser = getSession(event, true);
+export const load = (async ({ cookies, route }) => {
+  const session = getSession(cookies, true);
 
-//   let user = await db.query.dbUser.findFirst({
-//     columns: {
-//       id: true,
-//       discordUserId: true,
-//       showDiscordTag: true,
-//       apiKey: true
-//     },
-//     where: (user, { eq }) => eq(user.id, storedUser.id)
-//   });
+  let user!: Pick<typeof User.$inferSelect, 'apiKey'>;
 
-//   if (!user) {
-//     throw error(404, 'User not found');
-//   }
+  try {
+    user = await db
+      .select(pick(User, ['apiKey']))
+      .from(User)
+      .where(eq(User.id, session.userId))
+      .limit(1)
+      .then((rows) => rows[0]);
+  } catch (err) {
+    throw kyosoError(err, 'Getting the user', route);
+  }
 
-//   let purchases = await db.query.dbPurchase.findMany({
-//     columns: {
-//       payPalOrderId: true,
-//       purchasedAt: true,
-//       cost: true,
-//       services: true
-//     },
-//     with: {
-//       forTournament: {
-//         columns: {
-//           id: true,
-//           name: true
-//         }
-//       }
-//     },
-//     where: (purchase, { eq }) => eq(purchase.purchasedById, user?.id || 0)
-//   });
-
-//   return {
-//     user,
-//     purchases
-//   };
-// }) satisfies PageServerLoad;
+  return { user };
+}) satisfies PageServerLoad;

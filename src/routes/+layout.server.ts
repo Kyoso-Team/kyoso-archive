@@ -12,10 +12,10 @@ import type { LayoutServerLoad } from './$types';
 import type { Cookies } from '@sveltejs/kit';
 
 async function updateUser(session: Session, cookies: Cookies, route: Parameters<LayoutServerLoad>['0']['route']) {
-  let refreshTokens: {
+  let refreshTokens!: {
     osu: string;
     discord: string;
-  } | undefined;
+  };
 
   const osuRefreshTokenQuery = db
     .select(pick(OsuUser, ['refreshToken']))
@@ -39,10 +39,8 @@ async function updateUser(session: Session, cookies: Cookies, route: Parameters<
     throw kyosoError(err, 'Getting the osu! and Discord refresh tokens', route);
   }
 
-  if (!refreshTokens) return;
-
-  let osuToken: Token | undefined;
-  let discordToken: DiscordOAuth2.TokenRequestResult | undefined;
+  let osuToken!: Token;
+  let discordToken!: DiscordOAuth2.TokenRequestResult;
 
   try {
     osuToken = await osuAuth.refreshToken(refreshTokens.osu);
@@ -68,11 +66,11 @@ async function updateUser(session: Session, cookies: Cookies, route: Parameters<
     discordUserId: session.discord.id
   });
 
-  let kyosoUser: {
+  let kyosoUser!: {
     id: number;
     isAdmin: boolean;
     updatedApiDataAt: Date;
-  } | undefined;
+  };
 
   try {
     kyosoUser = await db
@@ -87,8 +85,6 @@ async function updateUser(session: Session, cookies: Cookies, route: Parameters<
   } catch (err) {
     throw kyosoError(err, 'Updating the user', route);
   }
-
-  if (!kyosoUser) return;
 
   const kyosoProfile: Session = {
     userId: kyosoUser.id,

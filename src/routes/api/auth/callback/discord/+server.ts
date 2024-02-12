@@ -29,7 +29,7 @@ export const GET = (async ({ url, route, cookies }) => {
     throw error(400, '"code" query param is undefined');
   }
 
-  let token: DiscordOAuth2.TokenRequestResult | undefined;
+  let token!: DiscordOAuth2.TokenRequestResult;
 
   try {
     token = await discordAuth.tokenRequest({
@@ -42,15 +42,9 @@ export const GET = (async ({ url, route, cookies }) => {
     throw kyosoError(err, 'Getting the Discord OAuth token', route);
   }
 
-  if (!token) return new Response(null);
-
   const discordUser = await upsertDiscordUser(token, route);
 
-  let kyosoUser: {
-    id: number;
-    isAdmin: boolean;
-    updatedApiDataAt: Date;
-  } | undefined;
+  let kyosoUser!: Pick<typeof User.$inferSelect, 'id' | 'updatedApiDataAt' | 'isAdmin'>;
 
   try {
     kyosoUser = await db
@@ -77,8 +71,6 @@ export const GET = (async ({ url, route, cookies }) => {
   } catch (err) {
     throw kyosoError(err, 'Upserting the user', route);
   }
-
-  if (!kyosoUser) return new Response(null);
 
   const kyosoProfile: Session = {
     userId: kyosoUser.id,

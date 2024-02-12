@@ -14,15 +14,13 @@ export const GET = (async ({ url, route, cookies }) => {
     throw error(400, 'URL search parameter "code" is undefined');
   }
 
-  let token: Token | undefined;
+  let token!: Token;
   
   try {
     token = await osuAuth.requestToken(code);
   } catch (err) {
     throw kyosoError(err, 'Getting the osu! OAuth token', route);
   }
-
-  if (!token) return new Response(null);
 
   const osuUser = await upsertOsuUser(token, route);
 

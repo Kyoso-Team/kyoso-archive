@@ -8,8 +8,8 @@ import type { Token } from 'osu-web.js';
 
 export async function upsertDiscordUser(token: DiscordOAuth2.TokenRequestResult, route: { id: string | null; }, update?: {
   discordUserId: string;
-}): ReturnType<DiscordOAuth2['getUser']> {
-  let user: Awaited<ReturnType<DiscordOAuth2['getUser']>> | undefined;
+}) {
+  let user!: Awaited<ReturnType<DiscordOAuth2['getUser']>>;
 
   try {
     user = await discordAuth.getUser(token.access_token);
@@ -50,9 +50,9 @@ export async function upsertDiscordUser(token: DiscordOAuth2.TokenRequestResult,
 
 export async function upsertOsuUser(token: Token, route: { id: string | null; }, update?: {
   osuUserId: number;
-}): ReturnType<Client['users']['getSelf']> {
+}) {
   const osu = new Client(token.access_token);
-  let user: Awaited<ReturnType<Client['users']['getSelf']>> | undefined;
+  let user!: Awaited<ReturnType<Client['users']['getSelf']>>;
 
   try {
     user = await osu.users.getSelf({

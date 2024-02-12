@@ -1,10 +1,10 @@
-// import db from '$db';
-// import { User } from '$db/schema';
-// import { eq } from 'drizzle-orm';
-// import { t, tryCatch } from '$trpc';
-// import { z } from 'zod';
-// import { getSession, isAllowed, pick, findFirstOrThrow } from '$lib/server-utils';
-// import { getUser } from '$trpc/middleware';
+// // import db from '$db';
+// // import { User } from '$db/schema';
+// // import { eq } from 'drizzle-orm';
+// // import { t, tryCatch } from '$trpc';
+// // import { z } from 'zod';
+// // import { getSession, isAllowed, pick, findFirstOrThrow } from '$lib/server-utils';
+// // import { getUser } from '$trpc/middleware';
 
 // export const usersRouter = t.router({
 //   changeDiscordVisibility: t.procedure.input(z.boolean()).mutation(async ({ ctx, input }) => {
