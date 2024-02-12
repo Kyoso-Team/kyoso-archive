@@ -1,6 +1,6 @@
 import env from '$lib/env/server';
 import { discordAuth, osuAuth, discordAuthOptions } from '$lib/constants';
-import { kyosoError, pick, signJWT, verifyJWT } from '$lib/server-utils';
+import { sveltekitError, pick, signJWT, verifyJWT } from '$lib/server-utils';
 import { DiscordUser, OsuUser, User, db } from '$db';
 import { eq, sql } from 'drizzle-orm';
 import { union } from 'drizzle-orm/pg-core';
@@ -36,7 +36,7 @@ async function updateUser(session: Session, cookies: Cookies, route: Parameters<
         discord: rows[1].refreshToken
       }));
   } catch (err) {
-    throw kyosoError(err, 'Getting the osu! and Discord refresh tokens', route);
+    throw await sveltekitError(err, 'Getting the osu! and Discord refresh tokens', route);
   }
 
   let osuToken!: Token;
@@ -45,7 +45,7 @@ async function updateUser(session: Session, cookies: Cookies, route: Parameters<
   try {
     osuToken = await osuAuth.refreshToken(refreshTokens.osu);
   } catch (err) {
-    throw kyosoError(err, 'Getting the osu! access token', route);
+    throw await sveltekitError(err, 'Getting the osu! access token', route);
   }
 
   try {
@@ -56,7 +56,7 @@ async function updateUser(session: Session, cookies: Cookies, route: Parameters<
       refreshToken: refreshTokens.discord
     });
   } catch (err) {
-    throw kyosoError(err, 'Getting the Discord access token', route);
+    throw await sveltekitError(err, 'Getting the Discord access token', route);
   }
 
   const osuUser = await upsertOsuUser(osuToken, route, {
@@ -83,7 +83,7 @@ async function updateUser(session: Session, cookies: Cookies, route: Parameters<
       .returning(pick(User, ['id', 'updatedApiDataAt', 'isAdmin']))
       .then((user) => user[0]);
   } catch (err) {
-    throw kyosoError(err, 'Updating the user', route);
+    throw await sveltekitError(err, 'Updating the user', route);
   }
 
   const kyosoProfile: Session = {

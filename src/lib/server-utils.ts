@@ -311,7 +311,7 @@ export async function logError(err: unknown, when: string, from: string | null) 
   return message;
 }
 
-export async function kyosoError(err: unknown, when: string, route: { id: string | null }) {
+export async function sveltekitError(err: unknown, when: string, route: { id: string | null }) {
   const message = await logError(err, when, route.id);
   return error(500, message);
 }

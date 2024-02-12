@@ -1,5 +1,5 @@
 import { error, redirect } from '@sveltejs/kit';
-import { kyosoError, signJWT } from '$lib/server-utils';
+import { sveltekitError, signJWT } from '$lib/server-utils';
 import { discordAuth, osuAuth } from '$lib/constants';
 import { upsertOsuUser } from '$lib/helpers';
 import type { Token } from 'osu-web.js';
@@ -19,7 +19,7 @@ export const GET = (async ({ url, route, cookies }) => {
   try {
     token = await osuAuth.requestToken(code);
   } catch (err) {
-    throw kyosoError(err, 'Getting the osu! OAuth token', route);
+    throw await sveltekitError(err, 'Getting the osu! OAuth token', route);
   }
 
   const osuUser = await upsertOsuUser(token, route);

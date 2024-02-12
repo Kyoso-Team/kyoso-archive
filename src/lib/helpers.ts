@@ -1,6 +1,6 @@
 import { Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, db } from '$db';
 import { discordAuth } from './constants';
-import { kyosoError } from './server-utils';
+import { sveltekitError } from './server-utils';
 import { Client } from 'osu-web.js';
 import { eq } from 'drizzle-orm';
 import type DiscordOAuth2 from 'discord-oauth2';
@@ -14,7 +14,7 @@ export async function upsertDiscordUser(token: DiscordOAuth2.TokenRequestResult,
   try {
     user = await discordAuth.getUser(token.access_token);
   } catch (err) {
-    throw kyosoError(err, 'Getting the user\'s Discord data', route);
+    throw await sveltekitError(err, 'Getting the user\'s Discord data', route);
   }
 
   const set = {
@@ -42,7 +42,7 @@ export async function upsertDiscordUser(token: DiscordOAuth2.TokenRequestResult,
         });
     }
   } catch (err) {
-    throw kyosoError(err, `${update ? 'Updating': 'Upserting'} the user's Discord data`, route);
+    throw await sveltekitError(err, `${update ? 'Updating': 'Upserting'} the user's Discord data`, route);
   }
 
   return user;
@@ -61,7 +61,7 @@ export async function upsertOsuUser(token: Token, route: { id: string | null; },
       }
     });
   } catch (err) {
-    throw kyosoError(err, 'Getting the user\'s osu! data', route);
+    throw await sveltekitError(err, 'Getting the user\'s osu! data', route);
   }
 
   if (!user) {
@@ -79,7 +79,7 @@ export async function upsertOsuUser(token: Token, route: { id: string | null; },
         target: [Country.code]
       });
   } catch (err) {
-    throw kyosoError(err, 'Creating the user\'s country', route);
+    throw await sveltekitError(err, 'Creating the user\'s country', route);
   }
 
   const badges: typeof OsuBadge.$inferInsert[] = user.badges.map((badge) => ({
@@ -96,7 +96,7 @@ export async function upsertOsuUser(token: Token, route: { id: string | null; },
           target: [OsuBadge.imgFileName]
         });
     } catch (err) {
-      throw kyosoError(err, 'Creating the user\'s badges', route);
+      throw await sveltekitError(err, 'Creating the user\'s badges', route);
     }
   }
 
@@ -129,7 +129,7 @@ export async function upsertOsuUser(token: Token, route: { id: string | null; },
         });
     }
   } catch (err) {
-    throw kyosoError(err, `${update ? 'Updating': 'Upserting'} the user's osu! data`, route);
+    throw await sveltekitError(err, `${update ? 'Updating': 'Upserting'} the user's osu! data`, route);
   }
 
   // NOTE: If a badge has been removed from the user, this case isn't hadled due to the very high unlikelyhood of this happening
@@ -149,7 +149,7 @@ export async function upsertOsuUser(token: Token, route: { id: string | null; },
           target: [OsuUserAwardedBadge.osuBadgeImgFileName, OsuUserAwardedBadge.osuUserId]
         });
     } catch (err) {
-      throw kyosoError(err, 'Linking the user and their awarded badges', route);
+      throw await sveltekitError(err, 'Linking the user and their awarded badges', route);
     }
   }
 

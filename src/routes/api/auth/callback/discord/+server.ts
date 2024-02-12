@@ -1,6 +1,6 @@
 import env from '$lib/env/server';
 import { error, redirect } from '@sveltejs/kit';
-import { kyosoError, pick, signJWT, verifyJWT } from '$lib/server-utils';
+import { sveltekitError, pick, signJWT, verifyJWT } from '$lib/server-utils';
 import { User, db } from '$db';
 import { customAlphabet } from 'nanoid';
 import { discordAuth, discordAuthOptions } from '$lib/constants';
@@ -39,7 +39,7 @@ export const GET = (async ({ url, route, cookies }) => {
       code
     });;
   } catch (err) {
-    throw kyosoError(err, 'Getting the Discord OAuth token', route);
+    throw await sveltekitError(err, 'Getting the Discord OAuth token', route);
   }
 
   const discordUser = await upsertDiscordUser(token, route);
@@ -69,7 +69,7 @@ export const GET = (async ({ url, route, cookies }) => {
       .returning(pick(User, ['id', 'updatedApiDataAt', 'isAdmin']))
       .then((user) => user[0]);
   } catch (err) {
-    throw kyosoError(err, 'Upserting the user', route);
+    throw await sveltekitError(err, 'Upserting the user', route);
   }
 
   const kyosoProfile: Session = {

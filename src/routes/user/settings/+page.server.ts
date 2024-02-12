@@ -1,5 +1,5 @@
 import { User, db } from '$db';
-import { getSession, kyosoError, pick } from '$lib/server-utils';
+import { getSession, sveltekitError, pick } from '$lib/server-utils';
 import { eq } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
@@ -16,7 +16,7 @@ export const load = (async ({ cookies, route }) => {
       .limit(1)
       .then((rows) => rows[0]);
   } catch (err) {
-    throw kyosoError(err, 'Getting the user', route);
+    throw await sveltekitError(err, 'Getting the user', route);
   }
 
   return { user };
