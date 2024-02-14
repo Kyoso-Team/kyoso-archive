@@ -7,6 +7,8 @@ export const handle = createTRPCHandle({
   router,
   createContext,
   onError: async ({ error, path }) => {
-    await logError(error.cause, error.message, `trpc.${path}`);
+    if (error.code === 'INTERNAL_SERVER_ERROR') {
+      await logError(error.cause, error.message.split('when: ')[1], `trpc.${path}`);
+    }
   }
 });

@@ -2,7 +2,7 @@ import { db } from '$db';
 import { User } from '$db/schema';
 import { eq } from 'drizzle-orm';
 import { t } from '$trpc';
-import { getSession, pick, trpcError } from '$lib/server-utils';
+import { getSession, pick, trpcUnknownError } from '$lib/server-utils';
 import { customAlphabet } from 'nanoid';
 
 const updateSelf = t
@@ -25,7 +25,7 @@ const updateSelf = t
         .returning(pick(User, ['apiKey']))
         .then((rows) => rows[0]);
     } catch (err) {
-      throw trpcError(err, 'Updating the user');
+      throw trpcUnknownError(err, 'Updating the user');
     }
 
     return user;

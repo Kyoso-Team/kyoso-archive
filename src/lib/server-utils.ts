@@ -7,6 +7,8 @@ import { TRPCError } from '@trpc/server';
 import type { Session } from '$types';
 import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
 import type { Cookies } from '@sveltejs/kit';
+import type { TRPC_ERROR_CODE_KEY } from '@trpc/server/rpc';
+import { getHTTPStatusCodeFromError } from '@trpc/server/http';
 
 export function signJWT<T>(data: T) {
   return jwt.sign(data as string | object | Buffer, env.JWT_SECRET, {
@@ -317,10 +319,25 @@ export async function sveltekitError(err: unknown, when: string, route: { id: st
   return error(500, message);
 }
 
-export function trpcError(err: unknown, when: string) {
+export function trpcUnknownError(err: unknown, when: string) {
   return new TRPCError({
     code: 'INTERNAL_SERVER_ERROR',
-    message: when,
+    message: `500 - Internal Server Error. Error thrown when: ${when}`,
+    cause: err
+  });
+}
+
+export function trpcError(code: TRPC_ERROR_CODE_KEY, err: unknown, message: string) {
+  const httpStatusCode = getHTTPStatusCodeFromError({ code } as TRPCError);
+  const formattedCode = code
+    .toLowerCase()
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join();
+  
+  return new TRPCError({
+    code,
+    message: `${httpStatusCode} - ${formattedCode}. ${message}`,
     cause: err
   });
 }

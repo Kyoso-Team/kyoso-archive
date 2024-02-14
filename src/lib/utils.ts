@@ -1,6 +1,6 @@
 import colors from 'tailwindcss/colors';
 import { getModalStore } from '@skeletonlabs/skeleton';
-import type { PopupSettings } from '@skeletonlabs/skeleton';
+import type { PopupSettings, ToastSettings, ToastStore } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
 import type { PageStore, ParseInt, Mod, StaffPermission } from '$types';
 
@@ -369,4 +369,25 @@ export function isUrl(url: string): boolean {
   } catch (_) {
     return false;
   }
+}
+
+export function toastSuccess(toast: ToastStore, message: string) {
+  toast.trigger({
+    message,
+    background: 'bg-success-500/10',
+    classes: 'relative border-l-4 border-success-500 text-white before:bg-surface-900 before:w-full before:h-full before:absolute before:inset-0 before:-z-[1] before:rounded-md',
+    hideDismiss: true,
+    timeout: 3000
+  });
+}
+
+export function toastError(toast: ToastStore, message: string) {
+  toast.trigger({
+    message,
+    background: 'bg-error-500/10',
+    classes: 'relative border-l-4 border-error-500 text-white before:bg-surface-900 before:w-full before:h-full before:absolute before:inset-0 before:-z-[1] before:rounded-md',
+    hideDismiss: true,
+    hoverable: true,
+    timeout: 3000
+  });
 }

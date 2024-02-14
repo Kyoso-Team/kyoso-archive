@@ -57,7 +57,7 @@
 <svelte:head>
   {@html `<\u{73}cript nonce="%sveltekit.nonce%">(${setInitialClassState.toString()})();</script>`}
 </svelte:head>
-<Toast />
+<Toast position="bl" />
 <AppShell regionPage="relative" slotPageHeader="sticky top-0 z-10">
   <svelte:fragment slot="header">
     <NavBar user={data.user} />
