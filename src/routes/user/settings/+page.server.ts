@@ -19,5 +19,10 @@ export const load = (async ({ cookies, route }) => {
     throw await sveltekitError(err, 'Getting the user', route);
   }
 
-  return { user };
+  return {
+    user: {
+      ...user,
+      ...session
+    }
+  };
 }) satisfies PageServerLoad;

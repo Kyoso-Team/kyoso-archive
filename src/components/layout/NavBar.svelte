@@ -93,14 +93,14 @@
               >Settings</a
             >
             <a
-              href={`/auth/logout?redirect_uri=${encodeURI($page.url.toString())}`}
+              href={`/api/auth/logout?redirect_uri=${encodeURI($page.url.toString())}`}
               class="btn justify-start py-1 hover:variant-soft-primary">Log Out</a
             >
           </nav>
         </div>
       {:else}
         <a
-          href={`/auth/login?redirect_uri=${encodeURI($page.url.toString())}`}
+          href={`/api/auth/login?redirect_uri=${encodeURI($page.url.toString())}`}
           class="variant-filled-primary btn">Log In</a
         >
       {/if}

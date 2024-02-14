@@ -308,6 +308,7 @@ export async function logError(err: unknown, when: string, from: string | null) 
     console.log(`Query parameters: ${JSON.stringify(queryParams)}`);
   }
 
+  console.log(err);
   return message;
 }
 

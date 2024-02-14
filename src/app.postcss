@@ -26,31 +26,30 @@ h3 {
 }
 
 h1 {
-  @apply h1;
+  @apply text-3xl font-medium leading-none mb-8;
 }
 
 h2 {
-  @apply h2;
+  @apply text-2xl font-medium leading-8 mb-2;
 }
 
 h3 {
-  @apply h3;
+  @apply text-xl font-medium leading-7;
 }
 
 .document h1 {
-  @apply pb-4;
+  @apply h1 pb-4;
 }
 
 .document h2 {
-  @apply pb-4 pt-8;
+  @apply h2 pb-4 pt-8;
 }
 
 .document h3 {
-  @apply pb-2 pt-6;
+  @apply h3 pb-2 pt-6;
 }
 
-.document p,
-ul {
+.document p, .document ul {
   @apply py-2;
 }
 
@@ -62,10 +61,22 @@ ul {
   @apply text-left;
 }
 
-.center-content {
-  @apply flex flex-col items-center p-10;
-}
-
 .font-violet-sans {
   font-family: 'VioletSans Regular';
+}
+
+.backdrop {
+  @apply bg-surface-backdrop-token fixed inset-0 h-screen w-screen;
+}
+
+.modal {
+  @apply card p-8 shadow-md min-w-[330px] max-w-[590px] m-4;
+}
+
+.modal .title {
+  @apply inline-block font-medium text-2xl mb-4;
+}
+
+.modal .actions {
+  @apply flex gap-2 mt-4;
 }

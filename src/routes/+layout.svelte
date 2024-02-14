@@ -10,12 +10,10 @@
     AppShell,
     storeHighlightJs,
     storePopup,
-    Modal,
     Toast
   } from '@skeletonlabs/skeleton';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
   //import { Sidebar } from '$components';
-  import { modalRegistry } from '$lib/modal-registry';
   //import type { Form, Error, Upload } from '$components';
   import type { LayoutServerData } from './$types';
 
@@ -59,7 +57,6 @@
 <svelte:head>
   {@html `<\u{73}cript nonce="%sveltekit.nonce%">(${setInitialClassState.toString()})();</script>`}
 </svelte:head>
-<Modal components={modalRegistry} />
 <Toast />
 <AppShell regionPage="relative" slotPageHeader="sticky top-0 z-10">
   <svelte:fragment slot="header">
