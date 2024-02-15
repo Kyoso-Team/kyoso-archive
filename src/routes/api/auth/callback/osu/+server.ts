@@ -11,7 +11,7 @@ export const GET = (async ({ url, route, cookies }) => {
   const code = url.searchParams.get('code');
 
   if (!code) {
-    throw error(400, 'URL search parameter "code" is undefined');
+    error(400, 'URL search parameter "code" is undefined');
   }
 
   let token!: Token;
@@ -38,5 +38,5 @@ export const GET = (async ({ url, route, cookies }) => {
     path: '/'
   });
 
-  throw redirect(302, discordAuthUrl);
+  redirect(302, discordAuthUrl);
 }) satisfies RequestHandler;

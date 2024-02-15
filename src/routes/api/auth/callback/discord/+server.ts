@@ -16,17 +16,17 @@ export const GET = (async ({ url, route, cookies }) => {
   const osuProfileCookie = cookies.get('temp_osu_profile');
 
   if (!osuProfileCookie) {
-    throw error(400, 'Log into osu! before logging into Discord');
+    error(400, 'Log into osu! before logging into Discord');
   }
 
   const osuProfile = verifyJWT<Session['osu']>(osuProfileCookie);
 
   if (!osuProfile) {
-    throw error(500, '"temp_osu_profile" cookie is an invalid JWT string. Try logging in with osu! again');
+    error(500, '"temp_osu_profile" cookie is an invalid JWT string. Try logging in with osu! again');
   }
 
   if (!code) {
-    throw error(400, '"code" query param is undefined');
+    error(400, '"code" query param is undefined');
   }
 
   let token!: DiscordOAuth2.TokenRequestResult;
@@ -95,8 +95,8 @@ export const GET = (async ({ url, route, cookies }) => {
   });
 
   if (redirectUri) {
-    throw redirect(302, decodeURI(redirectUri));
+    redirect(302, decodeURI(redirectUri));
   }
 
-  throw redirect(302, '/');
+  redirect(302, '/');
 }) satisfies RequestHandler;

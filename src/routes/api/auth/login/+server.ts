@@ -18,5 +18,5 @@ export const GET = (async ({ url, cookies }) => {
     'public'
   ], redirectUri);
 
-  throw redirect(302, osuAuthUrl);
+  redirect(302, osuAuthUrl);
 }) satisfies RequestHandler;

@@ -22,5 +22,5 @@ export const GET = (async ({ url, cookies }) => {
     path: '/'
   });
 
-  throw redirect(302, discordAuthUrl);
+  redirect(302, discordAuthUrl);
 }) satisfies RequestHandler;

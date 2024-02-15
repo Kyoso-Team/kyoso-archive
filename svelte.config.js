@@ -1,5 +1,5 @@
-import adapter from '@sveltejs/adapter-node';
-import { vitePreprocess } from '@sveltejs/kit/vite';
+import adapter from '@sveltejs/adapter-vercel';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 function src(path) {
   return `${process.cwd()}/src/${path}`;

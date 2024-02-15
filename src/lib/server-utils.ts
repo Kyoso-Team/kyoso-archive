@@ -90,7 +90,7 @@ export function getSession<T extends boolean>(
   const user = verifyJWT<Session>(cookies.get('session'));
 
   if (mustBeSignedIn && !user) {
-    throw error(401, 'Not logged in');
+    error(401, 'Not logged in');
   }
 
   return user as Session;

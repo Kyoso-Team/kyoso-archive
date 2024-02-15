@@ -9,8 +9,8 @@ export const GET = (async ({ url, cookies }) => {
   });
 
   if (redirectUri) {
-    throw redirect(302, decodeURI(redirectUri));
+    redirect(302, decodeURI(redirectUri));
   }
 
-  throw redirect(302, '/');
+  redirect(302, '/');
 }) satisfies RequestHandler;
