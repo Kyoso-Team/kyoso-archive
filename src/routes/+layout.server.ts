@@ -136,5 +136,8 @@ export const load = (async ({ cookies, route }) => {
     session = await updateUser(session, cookies, route);
   }
 
-  return { user: session };
+  return {
+    user: session,
+    testingEnv: env.ENV === 'testing'
+  };
 }) satisfies LayoutServerLoad;

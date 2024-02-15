@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { sql } from 'drizzle-orm';
 
 config();
-const dbUrl = z.string().nonempty().parse(process.env.DATABASE_URL);
+const dbUrl = z.string().min(1).parse(process.env.DATABASE_URL);
 
 async function main() {
   const pg = postgres(dbUrl, { max: 1 });

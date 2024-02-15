@@ -9,10 +9,10 @@ import {
 
 export const clientEnvSchema = z.object({
   PUBLIC_OSU_CLIENT_ID: z.number().int(),
-  PUBLIC_OSU_REDIRECT_URI: z.string().nonempty(),
-  PUBLIC_DISCORD_CLIENT_ID: z.string().nonempty(),
-  PUBLIC_DISCORD_REDIRECT_URI: z.string().nonempty(),
-  PUBLIC_CONTACT_EMAIL: z.string().email().nonempty()
+  PUBLIC_OSU_REDIRECT_URI: z.string().min(1),
+  PUBLIC_DISCORD_CLIENT_ID: z.string().min(1),
+  PUBLIC_DISCORD_REDIRECT_URI: z.string().min(1),
+  PUBLIC_CONTACT_EMAIL: z.string().email().min(1)
 });
 
 export const clientEnv = {

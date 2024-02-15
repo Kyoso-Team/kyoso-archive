@@ -85,7 +85,7 @@ export function verifyJWT<T>(token?: string) {
  */
 export function getSession<T extends boolean>(
   cookies: Cookies,
-  mustBeSignedIn: T
+  mustBeSignedIn?: T
 ): T extends true ? Session : Session | undefined {
   const user = verifyJWT<Session>(cookies.get('session'));
 
