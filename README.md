@@ -9,10 +9,12 @@ Repository for the Kyoso website.
 - [Zod](https://zod.dev): Validation library
 - [Drizzle](https://orm.drizzle.team): ORM for the database
 - [PostgreSQL](https://www.postgresql.org): The database itself
-- [tRPC](https://trpc.io): Backend / API
+- [tRPC](https://trpc.io): Backend / API (in most cases)
 - [Taiwind](https://tailwindcss.com): Styling
 - [Skeleton](https://www.skeleton.dev): UI library
 - [Bunny](https://bunny.net): File storage
+- [Vercel](https://vercel.com): CI/CD and deployments
+- [Neon](https://neon.tech): Database deployments
 
 ## Scripts
 
