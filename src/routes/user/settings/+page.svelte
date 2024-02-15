@@ -127,13 +127,13 @@
         {/if}
         <button class="btn-icon variant-filled-secondary" on:click={toggleApiKeyVisibility}>
           {#if viewApiKey}
-            <EyeOff size={20} class="stroke-white dark:stroke-black" />
+            <EyeOff size={20} class="stroke-black" />
           {:else}
-            <Eye size={20} class="stroke-white dark:stroke-black" />
+            <Eye size={20} class="stroke-black" />
           {/if}
         </button>
         <button class="btn-icon variant-filled-secondary" on:click={copyApiKey}>
-          <Copy size={20} class="stroke-white dark:stroke-black" />
+          <Copy size={20} class="stroke-black" />
         </button>
       </div>
       <div>

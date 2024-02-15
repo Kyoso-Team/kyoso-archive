@@ -5,5 +5,6 @@ import RegistrationsIcon from './Registrations.svelte';
 import StatsIcon from './Stats.svelte';
 import Osu from './Osu.svelte';
 import Discord from './Discord.svelte';
+import KyosoHybrid from './KyosoHybrid.svelte';
 
-export { PickemsIcon, PoolingIcon, RefereeIcon, RegistrationsIcon, StatsIcon, Osu, Discord };
+export { PickemsIcon, PoolingIcon, RefereeIcon, RegistrationsIcon, StatsIcon, Osu, Discord, KyosoHybrid };

@@ -2,11 +2,12 @@
   import { AppBar, Avatar, popup } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
   import { page } from '$app/stores';
+  import { LightSwitch } from '@skeletonlabs/skeleton';
+  import { Discord, KyosoHybrid } from '$components/icons';
+  import { Menu } from 'lucide-svelte';
   import type { Session } from '$types';
-  import type { PopupSettings } from '@skeletonlabs/skeleton';
 
   export let user: Session | undefined;
-
   const navLinks = [
     {
       href: 'dashboard',
@@ -21,69 +22,73 @@
       label: 'Blog'
     }
   ];
-
-  const adminNavLinks = [
-    {
-      href: 'users',
-      label: 'Users'
-    },
-    {
-      href: 'purchases',
-      label: 'Purchases'
-    },
-    {
-      href: 'upload',
-      label: 'Upload'
-    }
-  ];
-  
-  const navbarPopup: PopupSettings = {
-    event: 'click',
-    placement: 'bottom',
-    target: '',
-    middleware: {
-      offset: 24
-    }
-  };
 </script>
 
 <AppBar padding="py-3 px-6">
   <svelte:fragment slot="lead">
     <nav class="flex items-center gap-2">
-      <a href="/">
-        <img src={`${$page.url.origin}/logo-hybrid.svg`} alt="logo-hybrid" class="mr-4 h-7" />
+      <a href="/" class="mr-4">
+        <KyosoHybrid h={28} class="fill-black dark:fill-white" />
       </a>
-      {#if user?.isAdmin}
+      <div class="gap-2 hidden md:flex">
+        {#if user?.isAdmin}
+          <a href="/admin" class="btn hover:variant-soft-primary">Admin</a>
+        {/if}
+        {#each navLinks as { href, label }}
+          <a href={`/${href}`} class="btn hover:variant-soft-primary">{label}</a>
+        {/each}
+      </div>
+      <div class="block md:hidden">
         <button
-          class="btn hover:variant-soft-primary"
-          use:popup={{ ...navbarPopup, target: 'adminPopup' }}>Admin</button
+          class="btn-icon variant-soft-surface"
+          use:popup={{
+            event: 'click',
+            placement: 'bottom',
+            target: 'responsive-links',
+            middleware: {
+              offset: 24
+            }
+          }}
         >
-        <div class="card absolute left-4 top-[5rem] w-52 py-2" data-popup="adminPopup">
-          <nav class="flex flex-col gap-1 px-2">
-            {#each adminNavLinks as { href, label }}
-              <a href={`/admin/${href}`} class="btn justify-start py-1 hover:variant-soft-primary"
-                >{label}</a
-              >
-            {/each}
-          </nav>
+          <Menu size={24} class="stroke-white" />
+        </button>
+      </div>
+      <div class="card absolute p-2 shadow-md" data-popup="responsive-links">
+        <!-- Without this container, flex-col doesn't work -->
+        <div class="flex gap-2 flex-col">
+          {#if user?.isAdmin}
+            <a href="/admin" class="btn hover:variant-soft-primary">Admin</a>
+          {/if}
+          {#each navLinks as { href, label }}
+            <a href={`/${href}`} class="btn hover:variant-soft-primary">{label}</a>
+          {/each}
         </div>
-      {/if}
-      {#each navLinks as { href, label }}
-        <a href={`/${href}`} class="btn hover:variant-soft-primary">{label}</a>
-      {/each}
+      </div>
     </nav>
   </svelte:fragment>
   <svelte:fragment slot="trail">
-    <div>
+    <div class="flex justify-center">
       {#if user}
-        <div use:popup={{ ...navbarPopup, target: 'avatarPopup' }}>
+        <button
+          use:popup={{
+            event: 'click',
+            placement: 'bottom-end',
+            target: 'user-menu',
+            middleware: {
+              offset: 24
+            }
+          }}
+        >
           <Avatar src={buildUrl.userAvatar(user.osu.id)} width="w-10" cursor="cursor-pointer" />
-        </div>
-        <div class="card absolute right-4 top-[5rem] w-52 py-2" data-popup="avatarPopup">
-          <section class="flex flex-col px-6">
-            <div class="font-bold">{user.osu.username}</div>
-            <div class="text-sm">{user.discord.username}</div>
-          </section>
+        </button>
+        <div class="card absolute w-60 py-2 shadow-md" data-popup="user-menu">
+          <div class="flex flex-col px-6">
+            <span class="font-bold">{user.osu.username}</span>
+            <span class="text-sm flex gap-1 items-center">
+              <Discord w={16} h={16} class="fill-black dark:fill-white" />
+              <span>{user.discord.username}</span>
+            </span>
+          </div>
           <nav class="mt-2 flex flex-col gap-1 px-2">
             <a
               href={`/user/${user.userId}`}
@@ -96,6 +101,12 @@
               href={`/api/auth/logout?redirect_uri=${encodeURI($page.url.toString())}`}
               class="btn justify-start py-1 hover:variant-soft-primary">Log Out</a
             >
+            <div class="my-1 ml-5 flex">
+              <span>Theme</span>
+              <div class="w-full flex justify-end mr-5">
+                <LightSwitch rounded="rounded-full" />
+              </div>
+            </div>
           </nav>
         </div>
       {:else}
