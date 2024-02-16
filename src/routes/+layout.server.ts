@@ -32,8 +32,8 @@ async function updateUser(session: Session, cookies: Cookies, route: Parameters<
   try {
     refreshTokens = await union(osuRefreshTokenQuery, discordRefreshTokenQuery)
       .then((rows) => ({
-        osu: rows[0].refreshToken,
-        discord: rows[1].refreshToken
+        osu: rows[1].refreshToken,
+        discord: rows[0].refreshToken
       }));
   } catch (err) {
     throw await sveltekitError(err, 'Getting the osu! and Discord refresh tokens', route);

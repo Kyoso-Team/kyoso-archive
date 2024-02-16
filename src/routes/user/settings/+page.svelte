@@ -85,8 +85,8 @@
     </Modal>
   </Backdrop>
 {/if}
-<div class="m-12 flex justify-center">
-  <div class="w-[48rem]">
+<div class="m-4 md:m-12 sm:m-8 flex justify-center">
+  <div class="w-full max-w-[48rem]">
     <h1>User Settings</h1>
     <div class="border-b border-surface-700 mt-4 mb-8" />
     <h2>Accounts</h2>
@@ -119,22 +119,24 @@
     <!-- TODO: Link anchor to docs-->
     <p class="mt-2">This key allows you to make requests to the <a href="/" class="link">Kyoso API</a>. <span class="text-error-500">DO NOT SHARE THIS KEY WITH ANYONE.</span></p>
     <div class="mt-4 p-4 card flex flex-col relative">
-      <div class="flex gap-2">
+      <div class="flex gap-2 flex-wrap">
         {#if viewApiKey}
-          <input type="text" class="input w-72" readonly bind:value={data.user.apiKey} />
+          <input type="text" class="input w-full xs:w-72" readonly bind:value={data.user.apiKey} />
         {:else}
-          <input type="password" class="input w-72" readonly bind:value={data.user.apiKey} />
+          <input type="password" class="input w-full xs:w-72" readonly bind:value={data.user.apiKey} />
         {/if}
-        <button class="btn-icon variant-filled-secondary" on:click={toggleApiKeyVisibility}>
-          {#if viewApiKey}
-            <EyeOff size={20} class="stroke-black" />
-          {:else}
-            <Eye size={20} class="stroke-black" />
-          {/if}
-        </button>
-        <button class="btn-icon variant-filled-secondary" on:click={copyApiKey}>
-          <Copy size={20} class="stroke-black" />
-        </button>
+        <div class="flex gap-2">
+          <button class="btn-icon variant-filled-secondary" on:click={toggleApiKeyVisibility}>
+            {#if viewApiKey}
+              <EyeOff size={20} class="stroke-black" />
+            {:else}
+              <Eye size={20} class="stroke-black" />
+            {/if}
+          </button>
+          <button class="btn-icon variant-filled-secondary" on:click={copyApiKey}>
+            <Copy size={20} class="stroke-black" />
+          </button>
+        </div>
       </div>
       <div>
         <button class="btn variant-filled-primary mt-4 md:mt-0 md:absolute md:top-4 md:right-4" on:click={toggleRegenerateApiKeyPrompt}>

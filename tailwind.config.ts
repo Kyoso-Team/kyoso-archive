@@ -13,7 +13,8 @@ export default {
   theme: {
     extend: {
       screens: {
-        '2lg': '1100px'
+        '2lg': '1100px',
+        'xs': '450px'
       }
     }
   },

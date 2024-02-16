@@ -27,10 +27,10 @@
   <div
     class="absolute left-0 top-0 z-[4] flex h-full w-screen flex-col items-center justify-center"
   >
-    <h1 class="max-w-4xl text-center !text-6xl font-bold tracking-tight">
+    <h1 class="max-w-4xl text-center !text-3xl sm:!text-6xl font-bold tracking-tight px-4">
       osu! tournament management beyond spreadsheets
     </h1>
-    <p class="max-w-xl pt-6 text-center text-lg text-zinc-900 dark:text-zinc-300">
+    <p class="max-w-xl px-4 pt-6 text-center text-lg text-zinc-900 dark:text-zinc-300">
       A web application for hosting osu! tournaments in a professional manner, regardless of scale
       or complexity.
     </p>
