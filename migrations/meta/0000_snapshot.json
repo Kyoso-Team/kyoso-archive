@@ -1,5 +1,5 @@
 {
-  "id": "f3e5755b-0772-492e-bb5b-8c9ee2ce9558",
+  "id": "afe54aad-65a3-46aa-a513-130cbcc04d42",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -42,15 +42,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "access_token": {
-          "name": "access_token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "refresh_token": {
-          "name": "refresh_token",
-          "type": "text",
+        "token": {
+          "name": "token",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": true
         }
@@ -110,15 +104,9 @@
           "primaryKey": false,
           "notNull": false
         },
-        "access_token": {
-          "name": "access_token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "refresh_token": {
-          "name": "refresh_token",
-          "type": "text",
+        "token": {
+          "name": "token",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": true
         },
@@ -219,6 +207,75 @@
       },
       "uniqueConstraints": {}
     },
+    "session": {
+      "name": "session",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_active_at": {
+          "name": "last_active_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "inet",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_expired": {
+          "name": "is_expired",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "session_user_id_user_id_fk": {
+          "name": "session_user_id_user_id_fk",
+          "tableFrom": "session",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "user": {
       "name": "user",
       "schema": "",
@@ -240,8 +297,13 @@
           "name": "updated_api_data_at",
           "type": "timestamp (3) with time zone",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": false
+        },
+        "current_ban_duration": {
+          "name": "current_ban_duration",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         },
         "is_admin": {
           "name": "is_admin",
@@ -305,6 +367,20 @@
           "nullsNotDistinct": false,
           "columns": [
             "api_key"
+          ]
+        },
+        "uni_user_osu_user_id": {
+          "name": "uni_user_osu_user_id",
+          "nullsNotDistinct": false,
+          "columns": [
+            "osu_user_id"
+          ]
+        },
+        "uni_user_discord_user_id": {
+          "name": "uni_user_discord_user_id",
+          "nullsNotDistinct": false,
+          "columns": [
+            "discord_user_id"
           ]
         }
       }

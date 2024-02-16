@@ -6,8 +6,7 @@ CREATE TABLE IF NOT EXISTS "country" (
 CREATE TABLE IF NOT EXISTS "discord_user" (
 	"discord_user_id" varchar(19) PRIMARY KEY NOT NULL,
 	"username" varchar(32) NOT NULL,
-	"access_token" text NOT NULL,
-	"refresh_token" text NOT NULL
+	"token" jsonb NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "osu_badge" (
@@ -20,8 +19,7 @@ CREATE TABLE IF NOT EXISTS "osu_user" (
 	"username" varchar(16) NOT NULL,
 	"is_restricted" boolean NOT NULL,
 	"global_std_rank" integer,
-	"access_token" text NOT NULL,
-	"refresh_token" text NOT NULL,
+	"token" jsonb NOT NULL,
 	"code" char(2) NOT NULL,
 	CONSTRAINT "uni_osu_user_username" UNIQUE("username")
 );
@@ -33,15 +31,28 @@ CREATE TABLE IF NOT EXISTS "osu_user_awarded_badge" (
 	CONSTRAINT "osu_user_awarded_badge_osu_user_id_osu_badge_img_file_name_pk" PRIMARY KEY("osu_user_id","osu_badge_img_file_name")
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "session" (
+	"id" bigint PRIMARY KEY NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"last_active_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"ip_address" "inet" NOT NULL,
+	"user_agent" text NOT NULL,
+	"is_expired" boolean DEFAULT false NOT NULL,
+	"user_id" integer NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "user" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"registered_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
-	"updated_api_data_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"updated_api_data_at" timestamp (3) with time zone,
+	"current_ban_duration" integer,
 	"is_admin" boolean DEFAULT false NOT NULL,
 	"api_key" varchar(24) NOT NULL,
 	"osu_user_id" integer NOT NULL,
 	"discord_user_id" varchar(19) NOT NULL,
-	CONSTRAINT "uni_user_api_key" UNIQUE("api_key")
+	CONSTRAINT "uni_user_api_key" UNIQUE("api_key"),
+	CONSTRAINT "uni_user_osu_user_id" UNIQUE("osu_user_id"),
+	CONSTRAINT "uni_user_discord_user_id" UNIQUE("discord_user_id")
 );
 --> statement-breakpoint
 DO $$ BEGIN
@@ -58,6 +69,12 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "osu_user_awarded_badge" ADD CONSTRAINT "osu_user_awarded_badge_osu_badge_img_file_name_osu_badge_img_file_name_fk" FOREIGN KEY ("osu_badge_img_file_name") REFERENCES "osu_badge"("img_file_name") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
