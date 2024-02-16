@@ -22,7 +22,7 @@
     </video>
   </div>
   <div
-    class="absolute left-0 top-0 z-[3] h-full w-screen bg-gradient-to-t from-surface-900 from-10% via-transparent via-50% to-surface-900 to-90%"
+    class="absolute left-0 top-0 z-[3] h-full w-screen bg-gradient-to-t from-surface-50 dark:from-surface-900 from-10% via-transparent dark:via-transparent via-50% to-surface-50 dark:to-surface-900 to-90%"
   />
   <div
     class="absolute left-0 top-0 z-[4] flex h-full w-screen flex-col items-center justify-center"
@@ -30,7 +30,7 @@
     <h1 class="max-w-4xl text-center !text-6xl font-bold tracking-tight">
       osu! tournament management beyond spreadsheets
     </h1>
-    <p class="max-w-xl pt-6 text-center text-lg text-gray-300">
+    <p class="max-w-xl pt-6 text-center text-lg text-zinc-900 dark:text-zinc-300">
       A web application for hosting osu! tournaments in a professional manner, regardless of scale
       or complexity.
     </p>
