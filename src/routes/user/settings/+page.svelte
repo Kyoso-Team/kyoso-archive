@@ -13,7 +13,7 @@
 
   export let data: PageServerData;
   let openChangeDiscordPrompt = false;
-  let regenerateApiKeyPrompt = false;
+  let generateApiKeyPrompt = false;
   let viewApiKey = false;
   const toast = getToastStore();
 
@@ -21,8 +21,8 @@
     openChangeDiscordPrompt = !openChangeDiscordPrompt;
   }
 
-  function toggleRegenerateApiKeyPrompt() {
-    regenerateApiKeyPrompt = !regenerateApiKeyPrompt;
+  function toggleGenerateApiKeyPrompt() {
+    generateApiKeyPrompt = !generateApiKeyPrompt;
   }
 
   function toggleApiKeyVisibility() {
@@ -34,7 +34,7 @@
     toastSuccess(toast, 'API key copied to clipboard');
   }
 
-  async function regenerateApiKey() {
+  async function generateApiKey() {
     let user!: Router['users']['updateSelf']['_def']['_output_out'];
 
     try {
@@ -56,7 +56,7 @@
     data = Object.assign({}, data);
 
     toastSuccess(toast, 'New API key generated successfully');
-    regenerateApiKeyPrompt = false;
+    generateApiKeyPrompt = false;
   }
 </script>
 
@@ -73,14 +73,19 @@
     </Modal>
   </Backdrop>
 {/if}
-{#if regenerateApiKeyPrompt}
+{#if generateApiKeyPrompt}
   <Backdrop>
     <Modal>
-      <span class="title">Generate New API Key</span>
-      <p>Are you sure you want to generate a new API key? This will make the current one obsolete (unusuable), which means you'll need to replace the current key in any code base or project that has it with the new one.</p>
+      {#if data.user.apiKey}
+        <span class="title">Generate New API Key</span>
+        <p>Are you sure you want to generate a new API key? This will make the current one obsolete (unusuable), which means you'll need to replace the current key in any code base or project that has it with the new one.</p>
+      {:else}
+        <span class="title">Generate An API Key</span>
+        <p>Are you sure you want to generate an API key?</p>
+      {/if}
       <div class="actions">
-        <button class="btn variant-filled-primary" on:click={regenerateApiKey}>Generate</button>
-        <button class="btn variant-filled" on:click={toggleRegenerateApiKeyPrompt}>Cancel</button>
+        <button class="btn variant-filled-primary" on:click={generateApiKey}>Generate</button>
+        <button class="btn variant-filled" on:click={toggleGenerateApiKeyPrompt}>Cancel</button>
       </div>
     </Modal>
   </Backdrop>
@@ -117,32 +122,45 @@
     <div class="border-b border-surface-700 my-8" />
     <h2>API Key</h2>
     <!-- TODO: Link anchor to docs-->
-    <p class="mt-2">This key allows you to make requests to the <a href="/" class="link">Kyoso API</a>. <span class="text-error-500">DO NOT SHARE THIS KEY WITH ANYONE.</span></p>
-    <div class="mt-4 p-4 card flex flex-col relative">
-      <div class="flex gap-2 flex-wrap">
-        {#if viewApiKey}
-          <input type="text" class="input w-full xs:w-72" readonly bind:value={data.user.apiKey} />
-        {:else}
-          <input type="password" class="input w-full xs:w-72" readonly bind:value={data.user.apiKey} />
-        {/if}
-        <div class="flex gap-2">
-          <button class="btn-icon variant-filled-secondary" on:click={toggleApiKeyVisibility}>
-            {#if viewApiKey}
-              <EyeOff size={20} class="stroke-black" />
-            {:else}
-              <Eye size={20} class="stroke-black" />
-            {/if}
-          </button>
-          <button class="btn-icon variant-filled-secondary" on:click={copyApiKey}>
-            <Copy size={20} class="stroke-black" />
+    <p class="mt-2 mb-4">
+      This key allows you to make requests to the <a href="/" class="link">Kyoso API</a>.
+      {#if data.user.apiKey}
+        <span class="text-error-500">DO NOT SHARE THIS KEY WITH ANYONE.</span>
+      {:else}
+        <span>Start by creating your first key.</span>
+      {/if} 
+    </p>
+    {#if data.user.apiKey}
+      <div class="p-4 card flex flex-col relative">
+        <div class="flex gap-2 flex-wrap">
+          {#if viewApiKey}
+            <input type="text" class="input w-full xs:w-72" readonly bind:value={data.user.apiKey} />
+          {:else}
+            <input type="password" class="input w-full xs:w-72" readonly bind:value={data.user.apiKey} />
+          {/if}
+          <div class="flex gap-2">
+            <button class="btn-icon variant-filled-secondary" on:click={toggleApiKeyVisibility}>
+              {#if viewApiKey}
+                <EyeOff size={20} class="stroke-black" />
+              {:else}
+                <Eye size={20} class="stroke-black" />
+              {/if}
+            </button>
+            <button class="btn-icon variant-filled-secondary" on:click={copyApiKey}>
+              <Copy size={20} class="stroke-black" />
+            </button>
+          </div>
+        </div>
+        <div>
+          <button class="btn variant-filled-primary mt-4 md:mt-0 md:absolute md:top-4 md:right-4" on:click={toggleGenerateApiKeyPrompt}>
+            Generate New Key
           </button>
         </div>
       </div>
-      <div>
-        <button class="btn variant-filled-primary mt-4 md:mt-0 md:absolute md:top-4 md:right-4" on:click={toggleRegenerateApiKeyPrompt}>
-          Generate New Key
-        </button>
-      </div>
-    </div>
+    {:else}
+      <button class="btn variant-filled-primary" on:click={toggleGenerateApiKeyPrompt}>
+        Generate Key
+      </button>
+    {/if}
   </div>
 </div>
