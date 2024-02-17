@@ -4,7 +4,7 @@ import postgres from 'postgres';
 import { error } from '@sveltejs/kit';
 import { isOsuJSError } from 'osu-web.js';
 import { TRPCError } from '@trpc/server';
-import type { Session } from '$types';
+import type { AuthSession } from '$types';
 import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
 import type { Cookies } from '@sveltejs/kit';
 import type { TRPC_ERROR_CODE_KEY } from '@trpc/server/rpc';
@@ -86,14 +86,14 @@ export function verifyJWT<T>(token?: string) {
 export function getSession<T extends boolean>(
   cookies: Cookies,
   mustBeSignedIn?: T
-): T extends true ? Session : Session | undefined {
-  const user = verifyJWT<Session>(cookies.get('session'));
+): T extends true ? AuthSession : AuthSession | undefined {
+  const user = verifyJWT<AuthSession>(cookies.get('session'));
 
   if (mustBeSignedIn && !user) {
     error(401, 'Not logged in');
   }
 
-  return user as Session;
+  return user as AuthSession;
 }
 
 /**
@@ -313,6 +313,9 @@ export async function logError(err: unknown, when: string, from: string | null) 
   return message;
 }
 
+/**
+ * For throwing unknown errors within API routes. Probably needs a better name...
+ */
 export async function sveltekitError(err: unknown, when: string, route: { id: string | null }) {
   const message = await logError(err, when, route.id);
   return error(500, message);

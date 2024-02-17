@@ -1,26 +1,29 @@
-import { Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, db } from '$db';
-import { discordAuth } from './constants';
-import { sveltekitError } from './server-utils';
+import { Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, Session, db } from '$db';
+import { discordMainAuth } from './constants';
+import { pick, signJWT, sveltekitError } from './server-utils';
 import { Client } from 'osu-web.js';
 import { eq } from 'drizzle-orm';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { Token } from 'osu-web.js';
 
-export async function upsertDiscordUser(token: DiscordOAuth2.TokenRequestResult, route: { id: string | null; }, update?: {
+export async function upsertDiscordUser(token: DiscordOAuth2.TokenRequestResult, tokenIssuedAt: Date, route: { id: string | null; }, update?: {
   discordUserId: string;
 }) {
   let user!: Awaited<ReturnType<DiscordOAuth2['getUser']>>;
 
   try {
-    user = await discordAuth.getUser(token.access_token);
+    user = await discordMainAuth.getUser(token.access_token);
   } catch (err) {
     throw await sveltekitError(err, 'Getting the user\'s Discord data', route);
   }
 
   const set = {
-    accesstoken: token.access_token,
-    refreshToken: token.refresh_token,
-    username: user.username
+    username: user.username,
+    token: {
+      accesstoken: signJWT(token.access_token),
+      refreshToken: signJWT(token.refresh_token),
+      tokenIssuedAt: tokenIssuedAt.getTime()
+    }
   } satisfies Partial<typeof DiscordUser.$inferInsert>;
   
   try {
@@ -48,7 +51,7 @@ export async function upsertDiscordUser(token: DiscordOAuth2.TokenRequestResult,
   return user;
 }
 
-export async function upsertOsuUser(token: Token, route: { id: string | null; }, update?: {
+export async function upsertOsuUser(token: Token, tokenIssuedAt: Date, route: { id: string | null; }, update?: {
   osuUserId: number;
 }) {
   const osu = new Client(token.access_token);
@@ -62,10 +65,6 @@ export async function upsertOsuUser(token: Token, route: { id: string | null; },
     });
   } catch (err) {
     throw await sveltekitError(err, 'Getting the user\'s osu! data', route);
-  }
-
-  if (!user) {
-    return undefined as any;
   }
 
   try {
@@ -102,12 +101,15 @@ export async function upsertOsuUser(token: Token, route: { id: string | null; },
 
 
   const set = {
-    accessToken: token.access_token,
     countryCode: user.country.code,
-    isRestricted: user.is_restricted,
-    refreshToken: token.refresh_token,
+    restricted: user.is_restricted,
     username: user.username,
-    globalStdRank: user.statistics.global_rank
+    globalStdRank: user.statistics.global_rank,
+    token: {
+      accesstoken: signJWT(token.access_token),
+      refreshToken: signJWT(token.refresh_token),
+      tokenIssuedAt: tokenIssuedAt.getTime()
+    }
   } satisfies Partial<typeof OsuUser.$inferInsert>;
 
   try {
@@ -154,4 +156,24 @@ export async function upsertOsuUser(token: Token, route: { id: string | null; },
   }
 
   return user;
+}
+
+export async function createSession(userId: number, ipAddress: string, userAgent: string, route: { id: string | null; }) {
+  let session!: Pick<typeof Session.$inferSelect, 'id'>;
+
+  try {
+    session = await db
+      .insert(Session)
+      .values({
+        userId,
+        ipAddress,
+        userAgent
+      })
+      .returning(pick(Session, ['id']))
+      .then((session) => session[0]);
+  } catch (err) {
+    throw await sveltekitError(err, 'Creating the session', route);
+  }
+
+  return session;
 }

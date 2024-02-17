@@ -7,35 +7,38 @@ import {
   integer,
   text,
   char,
-  primaryKey
+  primaryKey,
+  inet,
+  jsonb,
+  bigserial
 } from 'drizzle-orm/pg-core';
 import { timestampConfig } from '../utils';
+import type { OAuthToken } from '$types';
 
 export const User = pgTable('user', {
   id: serial('id').primaryKey(),
   registeredAt: timestamp('registered_at', timestampConfig).notNull().defaultNow(),
   updatedApiDataAt: timestamp('updated_api_data_at', timestampConfig).notNull().defaultNow(),
-  isAdmin: boolean('is_admin').notNull().default(false),
+  admin: boolean('admin').notNull().default(false),
   apiKey: varchar('api_key', {
     length: 24
-  }).notNull().unique('uni_user_api_key'),
+  }).unique('uni_user_api_key'),
   // Relations
   osuUserId: integer('osu_user_id').notNull().unique('uni_user_osu_user_id').references(() => OsuUser.osuUserId),
   discordUserId: varchar('discord_user_id', {
     length: 19
   }).notNull().unique('uni_user_discord_user_id').references(() => DiscordUser.discordUserId)
-}); 
+});
 
 export const OsuUser = pgTable('osu_user', {
   osuUserId: integer('osu_user_id').primaryKey(),
   username: varchar('username', {
     length: 16
   }).notNull().unique('uni_osu_user_username'),
-  isRestricted: boolean('is_restricted').notNull(),
+  restricted: boolean('restricted').notNull(),
   globalStdRank: integer('global_std_rank'),
-  accessToken: text('access_token').notNull(),
-  refreshToken: text('refresh_token').notNull(),
-  countryCode: char('code', {
+  token: jsonb('token').notNull().$type<OAuthToken>(),
+  countryCode: char('country_code', {
     length: 2
   })
     .notNull()
@@ -78,21 +81,28 @@ export const DiscordUser = pgTable('discord_user', {
   username: varchar('username', {
     length: 32
   }).notNull(),
-  accesstoken: text('access_token').notNull(),
-  refreshToken: text('refresh_token').notNull()
+  token: jsonb('token').notNull().$type<OAuthToken>()
 });
 
-// export const dbUserPlayerInfo = pgTable('user_player_info', {
-//   updatedAt: timestamp('updated_at', timestampConfig).notNull().defaultNow(),
-//   /**
-//    * A string that represents the availability between 0 - 23 UTC (24 digits), from Friday to Monday.
-//    * Where each digit can be either 0 (unavailable) or 1 (available).
-//    * Each day is separated by a period, similarly to an IP address
-//    */
-//   availability: char('availability', length(99)).notNull(),
-//   badgeCount: integer('badge_count').notNull(),
-//   userId: integer('user_id')
-//     .notNull()
-//     .primaryKey()
-//     .references(() => dbUser.id, actions('cascade'))
-// });
+export const Session = pgTable('session', {
+  id: bigserial('id', {
+    mode: 'number'
+  }).primaryKey(),
+  createdAt: timestamp('created_at', timestampConfig).notNull().defaultNow(),
+  lastActiveAt: timestamp('last_active_at', timestampConfig).notNull().defaultNow(),
+  ipAddress: inet('ip_address').notNull(),
+  userAgent: text('user_agent').notNull(),
+  expired: boolean('expired').notNull().default(false),
+  userId: integer('user_id').notNull()
+});
+
+export const Ban = pgTable('ban', {
+  id: serial('id').primaryKey(),
+  issuedAt: timestamp('issued_at', timestampConfig).notNull().defaultNow(),
+  /** If null, then the ban is permanent */
+  liftAt: timestamp('lift_at', timestampConfig),
+  /** Date in which an admin has revoked the ban as a result of the user appealing */
+  revokedAt: timestamp('revoked_at', timestampConfig),
+  banReason: text('ban_reason').notNull(),
+  issuedToUserId: integer('issued_to_user_id').notNull()
+});

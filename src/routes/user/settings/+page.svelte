@@ -30,7 +30,7 @@
   }
 
   async function copyApiKey() {
-    await navigator.clipboard.writeText(data.user.apiKey);
+    await navigator.clipboard.writeText(data.user.apiKey || '');
     toastSuccess(toast, 'API key copied to clipboard');
   }
 
@@ -97,8 +97,8 @@
           <Osu w={48} h={48} class="fill-black dark:fill-white" />
         </div>
         <div class="flex flex-col">
-          <span class="text-lg font-medium">{data.user.osu.username}</span>
-          <span class="text-sm"><span class="font-medium">User ID:</span> {data.user.osu.id}</span>
+          <span class="text-lg font-medium">{data.session.osu.username}</span>
+          <span class="text-sm"><span class="font-medium">User ID:</span> {data.session.osu.id}</span>
         </div>
       </div>
       <div class="card p-4 w-full sm:w-[calc(50%-0.5rem)] flex items-center">
@@ -106,8 +106,8 @@
           <Discord w={48} h={48} class="fill-black dark:fill-white" />
         </div>
         <div class="flex flex-col">
-          <span class="text-lg font-medium">{data.user.discord.username}</span>
-          <span class="text-sm"><span class="font-medium">User ID:</span> {data.user.discord.id}</span>
+          <span class="text-lg font-medium">{data.session.discord.username}</span>
+          <span class="text-sm"><span class="font-medium">User ID:</span> {data.session.discord.id}</span>
         </div>
       </div>
     </div>

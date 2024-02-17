@@ -21,7 +21,7 @@ const mainHandle: Handle = async ({ event, resolve }) => {
   const session = getSession(cookies);
 
   if (env.ENV === 'testing') {
-    const isTester = session?.isAdmin || env.TESTERS.includes(session?.osu.id || 0);
+    const isTester = session?.admin || env.TESTERS.includes(session?.osu.id || 0);
 
     if (url.pathname !== '/testers-auth' && !url.pathname.includes('/api/auth') && !session) {
       if (!session) {

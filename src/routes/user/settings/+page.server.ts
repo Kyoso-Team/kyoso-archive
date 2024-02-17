@@ -20,9 +20,7 @@ export const load = (async ({ cookies, route }) => {
   }
 
   return {
-    user: {
-      ...user,
-      ...session
-    }
+    session,
+    user
   };
 }) satisfies PageServerLoad;

@@ -1,30 +1,30 @@
 import env from '$lib/env/server';
-import { discordAuth, osuAuth, discordAuthOptions } from '$lib/constants';
+import { discordMainAuth, osuAuth, discordMainAuthOptions } from '$lib/constants';
 import { sveltekitError, pick, signJWT, verifyJWT } from '$lib/server-utils';
-import { DiscordUser, OsuUser, User, db } from '$db';
-import { eq, sql } from 'drizzle-orm';
+import { DiscordUser, OsuUser, Session, User, db } from '$db';
+import { and, eq, sql } from 'drizzle-orm';
 import { union } from 'drizzle-orm/pg-core';
 import { upsertDiscordUser, upsertOsuUser } from '$lib/helpers';
 import type DiscordOAuth2 from 'discord-oauth2';
-import type { Session } from '$types';
+import type { AuthSession } from '$types';
 import type { Token } from 'osu-web.js';
 import type { LayoutServerLoad } from './$types';
 import type { Cookies } from '@sveltejs/kit';
 
-async function updateUser(session: Session, cookies: Cookies, route: Parameters<LayoutServerLoad>['0']['route']) {
+async function updateUser(session: AuthSession, cookies: Cookies, route: Parameters<LayoutServerLoad>['0']['route']) {
   let refreshTokens!: {
     osu: string;
     discord: string;
   };
 
   const osuRefreshTokenQuery = db
-    .select(pick(OsuUser, ['refreshToken']))
+    .select(pick(OsuUser, ['token']))
     .from(OsuUser)
     .where(eq(OsuUser.osuUserId, session.osu.id))
     .limit(1);
 
   const discordRefreshTokenQuery = db
-    .select(pick(DiscordUser, ['refreshToken']))
+    .select(pick(DiscordUser, ['token']))
     .from(DiscordUser)
     .where(eq(DiscordUser.discordUserId, session.discord.id))
     .limit(1);
@@ -32,8 +32,8 @@ async function updateUser(session: Session, cookies: Cookies, route: Parameters<
   try {
     refreshTokens = await union(osuRefreshTokenQuery, discordRefreshTokenQuery)
       .then((rows) => ({
-        osu: rows[1].refreshToken,
-        discord: rows[0].refreshToken
+        osu: rows[1].token.refreshToken,
+        discord: rows[0].token.refreshToken
       }));
   } catch (err) {
     throw await sveltekitError(err, 'Getting the osu! and Discord refresh tokens', route);
@@ -48,9 +48,11 @@ async function updateUser(session: Session, cookies: Cookies, route: Parameters<
     throw await sveltekitError(err, 'Getting the osu! access token', route);
   }
 
+  const osuTokenIssuedAt = new Date();
+
   try {
-    discordToken = await discordAuth.tokenRequest({
-      ...discordAuthOptions,
+    discordToken = await discordMainAuth.tokenRequest({
+      ...discordMainAuthOptions,
       grantType: 'refresh_token',
       scope: ['identify'],
       refreshToken: refreshTokens.discord
@@ -59,44 +61,48 @@ async function updateUser(session: Session, cookies: Cookies, route: Parameters<
     throw await sveltekitError(err, 'Getting the Discord access token', route);
   }
 
-  const osuUser = await upsertOsuUser(osuToken, route, {
+  const discordTokenIssuedAt = new Date();
+  const osuUser = await upsertOsuUser(osuToken, osuTokenIssuedAt, route, {
     osuUserId: session.osu.id
   });
-  const discordUser = await upsertDiscordUser(discordToken, route, {
+  const discordUser = await upsertDiscordUser(discordToken, discordTokenIssuedAt, route, {
     discordUserId: session.discord.id
   });
 
-  let kyosoUser!: {
+  let user!: {
     id: number;
-    isAdmin: boolean;
+    admin: boolean;
     updatedApiDataAt: Date;
   };
 
   try {
-    kyosoUser = await db
+    user = await db
       .update(User)
       .set({
-        isAdmin: env.ADMIN_BY_DEFAULT.includes(osuUser.id),
+        admin: env.ADMIN_BY_DEFAULT.includes(osuUser.id),
         updatedApiDataAt: sql`now()`
       })
       .where(eq(User.id, session.userId))
-      .returning(pick(User, ['id', 'updatedApiDataAt', 'isAdmin']))
+      .returning(pick(User, ['id', 'updatedApiDataAt', 'admin']))
       .then((user) => user[0]);
   } catch (err) {
     throw await sveltekitError(err, 'Updating the user', route);
   }
 
-  const kyosoProfile: Session = {
-    userId: kyosoUser.id,
-    isAdmin: kyosoUser.isAdmin,
-    updatedAt: kyosoUser.updatedApiDataAt.getTime(),
+  const kyosoProfile: AuthSession = {
+    sessionId: session.sessionId,
+    userId: user.id,
+    admin: user.admin,
+    updatedApiDataAt: user.updatedApiDataAt.getTime(),
     discord: {
       id: discordUser.id,
       username: discordUser.username
     },
     osu: {
       id: osuUser.id,
-      username: osuUser.username
+      username: osuUser.username,
+      globalStdRank: osuUser.statistics.global_rank,
+      restricted: osuUser.is_restricted
     }
   };
   
@@ -108,6 +114,10 @@ async function updateUser(session: Session, cookies: Cookies, route: Parameters<
 }
 
 export const load = (async ({ cookies, route }) => {
+  const returnValue = {
+    session: undefined as AuthSession | undefined,
+    testingEnv: env.ENV === 'testing'
+  };
   const sessionCookie = cookies.get('session');
 
   if (!sessionCookie) {
@@ -115,12 +125,31 @@ export const load = (async ({ cookies, route }) => {
       path: '/'
     });
 
-    return { user: undefined };
+    return returnValue;
   }
 
-  let session = verifyJWT<Session>(sessionCookie);
+  const session = verifyJWT<AuthSession>(sessionCookie);
+  let sessionIsActive = false;
+
+  try {
+    sessionIsActive = await db
+      .update(Session)
+      .set({
+        lastActiveAt: sql`now()`
+      })
+      .where(and(
+        eq(Session.id, session?.sessionId || 0),
+        eq(Session.expired, false)
+      ))
+      .returning({
+        active: sql`1`.as('exists')
+      })
+      .then((sessions) => !!sessions[0].active);
+  } catch (err) {
+    throw await sveltekitError(err, 'Verifying the session', route);
+  }
   
-  if (!session) {
+  if (!session || !sessionIsActive) {
     cookies.delete('temp_osu_profile', {
       path: '/'
     });
@@ -129,15 +158,12 @@ export const load = (async ({ cookies, route }) => {
       path: '/'
     });
 
-    return { user: undefined };
+    return returnValue;
   }
 
-  if (new Date().getTime() - session.updatedAt >= 86_400_000) {
-    session = await updateUser(session, cookies, route);
+  if (new Date().getTime() - session.updatedApiDataAt >= 86_400_000) {
+    returnValue.session = await updateUser(session, cookies, route);
   }
 
-  return {
-    user: session,
-    testingEnv: env.ENV === 'testing'
-  };
+  return returnValue;
 }) satisfies LayoutServerLoad;

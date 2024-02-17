@@ -18,6 +18,15 @@
 import type { Page } from '@sveltejs/kit';
 // import type { InferSelectModel } from 'drizzle-orm';
 
+export type OAuthToken = {
+  /** Encrypted using JWT */
+  accesstoken: string;
+  /** Encrypted using JWT */
+  refreshToken: string;
+  /** Timestamp in milliseconds */
+  tokenIssuedAt: number;
+};
+
 // Alias for any which refers to specifically any Svelte component. I (Mario564) dont' know how to use Svelte component classes as generics in function and variable type definitions
 export type AnyComponent = any;
 
@@ -99,14 +108,17 @@ export type AnyComponent = any;
 export type PageStore = Page<Record<string, string>, string | null>;
 // export type ParseInt<T> = T extends `${infer N extends number}` ? N : never;
 
-export interface Session {
+export interface AuthSession {
+  sessionId: number;
   userId: number;
-  isAdmin: boolean;
+  admin: boolean;
   /** Timestamp in miliseconds */
-  updatedAt: number;
+  updatedApiDataAt: number;
   osu: {
     id: number;
     username: string;
+    restricted: boolean;
+    globalStdRank: number | null;
   };
   discord: {
     id: string;

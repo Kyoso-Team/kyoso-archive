@@ -1,25 +1,15 @@
 import { redirect } from '@sveltejs/kit';
-import { getSession, signJWT } from '$lib/server-utils';
-import { discordAuth } from '$lib/constants';
-import type { Session } from '$types';
+import { getSession } from '$lib/server-utils';
+import { discordChangeAccountAuth } from '$lib/constants';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, cookies }) => {
   const redirectUri = url.searchParams.get('redirect_uri');
-  const user = getSession(cookies, true);
+  getSession(cookies, true);
 
-  const discordAuthUrl = discordAuth.generateAuthUrl({
+  const discordAuthUrl = discordChangeAccountAuth.generateAuthUrl({
     scope: ['identify'],
     state: redirectUri ? encodeURI(redirectUri) : undefined
-  });
-
-  const osuProfile: Session['osu'] = {
-    id: user.osu.id,
-    username: user.osu.username
-  };
-
-  cookies.set('temp_osu_profile', signJWT(osuProfile), {
-    path: '/'
   });
 
   redirect(302, discordAuthUrl);

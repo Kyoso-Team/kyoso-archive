@@ -5,9 +5,9 @@
   import { LightSwitch } from '@skeletonlabs/skeleton';
   import { Discord, KyosoHybrid } from '$components/icons';
   import { Menu } from 'lucide-svelte';
-  import type { Session } from '$types';
+  import type { AuthSession } from '$types';
 
-  export let user: Session | undefined;
+  export let session: AuthSession | undefined;
   const navLinks = [
     {
       href: 'dashboard',
@@ -31,7 +31,7 @@
         <KyosoHybrid h={28} class="fill-black dark:fill-white" />
       </a>
       <div class="gap-2 hidden md:flex">
-        {#if user?.isAdmin}
+        {#if session?.admin}
           <a href="/admin" class="btn hover:variant-soft-primary">Admin</a>
         {/if}
         {#each navLinks as { href, label }}
@@ -56,7 +56,7 @@
       <div class="card absolute p-2 shadow-md" data-popup="responsive-links">
         <!-- Without this container, flex-col doesn't work -->
         <div class="flex gap-2 flex-col">
-          {#if user?.isAdmin}
+          {#if session?.admin}
             <a href="/admin" class="btn hover:variant-soft-primary">Admin</a>
           {/if}
           {#each navLinks as { href, label }}
@@ -68,7 +68,7 @@
   </svelte:fragment>
   <svelte:fragment slot="trail">
     <div class="flex justify-center">
-      {#if user}
+      {#if session}
         <button
           use:popup={{
             event: 'click',
@@ -79,19 +79,19 @@
             }
           }}
         >
-          <Avatar src={buildUrl.userAvatar(user.osu.id)} width="w-10" cursor="cursor-pointer" />
+          <Avatar src={buildUrl.userAvatar(session.osu.id)} width="w-10" cursor="cursor-pointer" />
         </button>
         <div class="card absolute w-60 py-2 shadow-md" data-popup="user-menu">
           <div class="flex flex-col px-6">
-            <span class="font-bold">{user.osu.username}</span>
+            <span class="font-bold">{session.osu.username}</span>
             <span class="text-sm flex gap-1 items-center">
               <Discord w={16} h={16} class="fill-black dark:fill-white" />
-              <span>{user.discord.username}</span>
+              <span>{session.discord.username}</span>
             </span>
           </div>
           <nav class="mt-2 flex flex-col gap-1 px-2">
             <a
-              href={`/user/${user.userId}`}
+              href={`/user/${session.userId}`}
               class="btn justify-start py-1 hover:variant-soft-primary">Profile</a
             >
             <a href="/user/settings" class="btn justify-start py-1 hover:variant-soft-primary"

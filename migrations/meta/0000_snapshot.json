@@ -1,9 +1,56 @@
 {
-  "id": "afe54aad-65a3-46aa-a513-130cbcc04d42",
+  "id": "5a539f15-3d5c-4018-9b14-1f864dd52ae4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
   "tables": {
+    "ban": {
+      "name": "ban",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "issued_at": {
+          "name": "issued_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "lift_at": {
+          "name": "lift_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ban_reason": {
+          "name": "ban_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "issued_to_user_id": {
+          "name": "issued_to_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "country": {
       "name": "country",
       "schema": "",
@@ -92,8 +139,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "is_restricted": {
-          "name": "is_restricted",
+        "restricted": {
+          "name": "restricted",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true
@@ -110,8 +157,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "code": {
-          "name": "code",
+        "country_code": {
+          "name": "country_code",
           "type": "char(2)",
           "primaryKey": false,
           "notNull": true
@@ -119,12 +166,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "osu_user_code_country_code_fk": {
-          "name": "osu_user_code_country_code_fk",
+        "osu_user_country_code_country_code_fk": {
+          "name": "osu_user_country_code_country_code_fk",
           "tableFrom": "osu_user",
           "tableTo": "country",
           "columnsFrom": [
-            "code"
+            "country_code"
           ],
           "columnsTo": [
             "code"
@@ -213,7 +260,7 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "bigint",
+          "type": "bigserial",
           "primaryKey": true,
           "notNull": true
         },
@@ -243,8 +290,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "is_expired": {
-          "name": "is_expired",
+        "expired": {
+          "name": "expired",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -258,21 +305,7 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "session_user_id_user_id_fk": {
-          "name": "session_user_id_user_id_fk",
-          "tableFrom": "session",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -297,16 +330,11 @@
           "name": "updated_api_data_at",
           "type": "timestamp (3) with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "now()"
         },
-        "current_ban_duration": {
-          "name": "current_ban_duration",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "is_admin": {
-          "name": "is_admin",
+        "admin": {
+          "name": "admin",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -316,7 +344,7 @@
           "name": "api_key",
           "type": "varchar(24)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "osu_user_id": {
           "name": "osu_user_id",

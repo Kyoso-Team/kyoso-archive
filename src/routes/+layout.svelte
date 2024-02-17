@@ -60,7 +60,7 @@
 <Toast position="bl" />
 <AppShell regionPage="relative" slotPageHeader="sticky top-0 z-10">
   <svelte:fragment slot="header">
-    <NavBar user={data.user} />
+    <NavBar session={data.session} />
   </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
     <!-- <Sidebar /> -->
@@ -81,7 +81,7 @@
   {#if $error && errorComponent}
     <div
       class="bg-surface-backdrop-token fixed inset-0 z-30 flex h-screen w-screen items-center justify-center"
-    >
+session>
       <svelte:component this={errorComponent} />
     </div>
   {/if}

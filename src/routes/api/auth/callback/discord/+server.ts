@@ -1,27 +1,35 @@
 import env from '$lib/env/server';
 import { error, redirect } from '@sveltejs/kit';
-import { sveltekitError, pick, signJWT, verifyJWT } from '$lib/server-utils';
+import { sveltekitError, pick, signJWT, verifyJWT, getSession } from '$lib/server-utils';
 import { User, db } from '$db';
-import { customAlphabet } from 'nanoid';
-import { discordAuth, discordAuthOptions } from '$lib/constants';
-import { sql } from 'drizzle-orm';
-import { upsertDiscordUser } from '$lib/helpers';
+import { discordMainAuth, discordMainAuthOptions } from '$lib/constants';
+import { createSession, upsertDiscordUser } from '$lib/helpers';
 import type DiscordOAuth2 from 'discord-oauth2';
-import type { Session } from '$types';
+import type { AuthSession } from '$types';
 import type { RequestHandler } from './$types';
 
-export const GET = (async ({ url, route, cookies }) => {
-  const redirectUri = url.searchParams.get('state') || undefined;
+export const GET = (async ({ url, route, cookies, getClientAddress, request }) => {
+  const currentSession = getSession(cookies);
+  const redirectUri = url.searchParams.get('state');
   const code = url.searchParams.get('code');
   const osuProfileCookie = cookies.get('temp_osu_profile');
+  const userAgent = request.headers.get('User-Agent');
+
+  if (currentSession) {
+    error(403, 'You\'re already logged in');
+  }
+  
+  if (!userAgent) {
+    error(403, '"User-Agent" header is undefined');
+  }
 
   if (!osuProfileCookie) {
     error(400, 'Log into osu! before logging into Discord');
   }
 
-  const osuProfile = verifyJWT<Session['osu']>(osuProfileCookie);
+  const osuSessionData = verifyJWT<AuthSession['osu']>(osuProfileCookie);
 
-  if (!osuProfile) {
+  if (!osuSessionData) {
     error(500, '"temp_osu_profile" cookie is an invalid JWT string. Try logging in with osu! again');
   }
 
@@ -32,8 +40,8 @@ export const GET = (async ({ url, route, cookies }) => {
   let token!: DiscordOAuth2.TokenRequestResult;
 
   try {
-    token = await discordAuth.tokenRequest({
-      ...discordAuthOptions,
+    token = await discordMainAuth.tokenRequest({
+      ...discordMainAuthOptions,
       grantType: 'authorization_code',
       scope: ['identify'],
       code
@@ -42,55 +50,44 @@ export const GET = (async ({ url, route, cookies }) => {
     throw await sveltekitError(err, 'Getting the Discord OAuth token', route);
   }
 
-  const discordUser = await upsertDiscordUser(token, route);
+  const tokenIssuedAt = new Date();
+  const discordUser = await upsertDiscordUser(token, tokenIssuedAt, route);
 
-  let kyosoUser!: Pick<typeof User.$inferSelect, 'id' | 'updatedApiDataAt' | 'isAdmin'>;
+  let user!: Pick<typeof User.$inferSelect, 'id' | 'updatedApiDataAt' | 'admin'>;
 
   try {
-    kyosoUser = await db
+    user = await db
       .insert(User)
       .values({
-        apiKey: customAlphabet(
-          '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-          24
-        )(),
         discordUserId: discordUser.id,
-        osuUserId: osuProfile.id,
-        isAdmin: env.ADMIN_BY_DEFAULT.includes(osuProfile.id)
+        osuUserId: osuSessionData.id,
+        admin: env.ADMIN_BY_DEFAULT.includes(osuSessionData.id)
       })
-      .onConflictDoUpdate({
-        target: [User.osuUserId],
-        set: {
-          discordUserId: discordUser.id,
-          isAdmin: env.ADMIN_BY_DEFAULT.includes(osuProfile.id),
-          updatedApiDataAt: sql`now()`
-        }
-      })
-      .returning(pick(User, ['id', 'updatedApiDataAt', 'isAdmin']))
+      .returning(pick(User, ['id', 'updatedApiDataAt', 'admin']))
       .then((user) => user[0]);
   } catch (err) {
-    throw await sveltekitError(err, 'Upserting the user', route);
+    throw await sveltekitError(err, 'Creating the user', route);
   }
 
-  const kyosoProfile: Session = {
-    userId: kyosoUser.id,
-    isAdmin: kyosoUser.isAdmin,
-    updatedAt: kyosoUser.updatedApiDataAt.getTime(),
+  const session = await createSession(user.id, getClientAddress(), userAgent, route);
+
+  const authSession: AuthSession = {
+    sessionId: session.id,
+    userId: user.id,
+    admin: user.admin,
+    updatedApiDataAt: user.updatedApiDataAt.getTime(),
     discord: {
       id: discordUser.id,
       username: discordUser.username
     },
-    osu: {
-      id: osuProfile.id,
-      username: osuProfile.username
-    }
+    osu: osuSessionData
   };
 
   cookies.delete('temp_osu_profile', {
     path: '/'
   });
   
-  cookies.set('session', signJWT(kyosoProfile), {
+  cookies.set('session', signJWT(authSession), {
     path: '/'
   });
 
