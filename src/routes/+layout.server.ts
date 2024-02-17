@@ -148,7 +148,7 @@ export const load = (async ({ cookies, route }) => {
   } catch (err) {
     throw await sveltekitError(err, 'Verifying the session', route);
   }
-  
+
   if (!session || !sessionIsActive) {
     cookies.delete('temp_osu_profile', {
       path: '/'
@@ -163,6 +163,8 @@ export const load = (async ({ cookies, route }) => {
 
   if (new Date().getTime() - session.updatedApiDataAt >= 86_400_000) {
     returnValue.session = await updateUser(session, cookies, route);
+  } else {
+    returnValue.session = session;
   }
 
   return returnValue;

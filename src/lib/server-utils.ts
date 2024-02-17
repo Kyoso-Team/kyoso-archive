@@ -300,6 +300,10 @@ export async function logError(err: unknown, when: string, from: string | null) 
   message = `${message}. Error thrown when: ${when}`;
   console.error(`${new Date().toUTCString()} - ${from} - ${message}`);
 
+  if (message.includes('Unknown error')) {
+    console.log(err);
+  }
+
   if (osuJSResp) {
     const data = await osuJSResp.text();
     console.log(`${osuJSResp.status} response from osu.js: ${data}`);

@@ -54,7 +54,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
       .returning({
         exists: sql`1`.as('exists')
       })
-      .then((user) => !!user[0].exists);
+      .then((user) => !!user[0]?.exists);
   } catch (err) {
     throw await sveltekitError(err, 'Updating the user', route);
   }
@@ -73,6 +73,8 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
           osu: pick(OsuUser, ['osuUserId', 'username', 'globalStdRank', 'restricted'])
         })
         .from(User)
+        .innerJoin(DiscordUser, eq(User.discordUserId, DiscordUser.discordUserId))
+        .innerJoin(OsuUser, eq(User.osuUserId, OsuUser.osuUserId))
         .where(eq(User.osuUserId, osuUserId))
         .limit(1)
         .then((user) => user[0]);
@@ -86,7 +88,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
 
     try {
       isBanned = await db.execute(sql`
-        select exists(
+        select exists (
           select 1 from ${Ban}
           where ${Ban.issuedToUserId} = ${user.id} and (
             ${Ban.liftAt} is null
@@ -95,7 +97,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
           )
           limit 1
         )
-      `).then((bans) => (bans[0] as { exists: boolean; }).exists);
+      `).then((bans) => !!bans[0]?.exists);
     } catch (err) {
       throw await sveltekitError(err, 'Verifying the user\'s ban status', route);
     }
