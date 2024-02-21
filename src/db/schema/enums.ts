@@ -1,31 +1,17 @@
-// import { pgEnum } from 'drizzle-orm/pg-core';
+import { pgEnum } from 'drizzle-orm/pg-core';
 
-// export const dbTournamentType = pgEnum('tournament_type', ['teams', 'draft', 'solo']);
+export const TournamentType = pgEnum('tournament_type', ['teams', 'draft', 'solo']);
 
-// export const dbWinCondition = pgEnum('win_condition', ['score', 'accuracy', 'combo', 'misses']);
+export const TournamentAsset = pgEnum('tournament_asset', ['logo', 'banner']);
 
-// export const dbBanOrder = pgEnum('ban_oder', ['ABABAB', 'ABBAAB']);
-
-// export const dbTournamentService = pgEnum('tournament_service', [
-//   'registrations', // Specifically player and staff registrations
-//   'mappooling',
-//   'referee',
-//   'stats',
-//   'pickems'
-// ]);
-
-// export const dbPrizeType = pgEnum('prize_type', ['tournament', 'pickems']);
-
-// export const dbCashMetric = pgEnum('cash_metric', ['fixed', 'percent']);
-
-// export const dbStageFormat = pgEnum('stage_format', [
-//   'groups',
-//   'swiss',
-//   'qualifiers',
-//   'single_elim',
-//   'double_elim',
-//   'battle_royale'
-// ]);
+export const StageFormat = pgEnum('stage_format', [
+  'groups',
+  'swiss',
+  'qualifiers',
+  'single_elim',
+  'double_elim',
+  'battle_royale'
+]);
 
 // export const dbMappoolState = pgEnum('mappool_state', ['private', 'playtesting', 'public']);
 

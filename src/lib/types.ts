@@ -19,14 +19,99 @@ import type { Page } from '@sveltejs/kit';
 import type { Router } from '$trpc/router';
 // import type { InferSelectModel } from 'drizzle-orm';
 
-export type OAuthToken = {
+export interface OAuthToken {
   /** Encrypted using JWT */
   accesstoken: string;
   /** Encrypted using JWT */
   refreshToken: string;
   /** Timestamp in milliseconds */
   tokenIssuedAt: number;
-};
+}
+
+/** Linear: ABAB. Snake: ABBA */
+export type DraftType = 'linear' | 'snake';
+export interface RefereeSettings {
+  timerLength: {
+    pick: number;
+    ban: number;
+    protect: number;
+    ready: number;
+    start: number;
+  };
+  allow: {
+    doublePick: boolean;
+    doubleBan: boolean;
+    doubleProtect: boolean;
+  };
+  order: {
+    ban: DraftType;
+    pick: DraftType;
+    protect: DraftType;
+  }
+  alwaysForceNoFail: boolean;
+  banAndProtectCancelOut: boolean;
+  winCondition: 'score' | 'accuracy' | 'combo';
+}
+
+export interface TournamentLink {
+  label: string;
+  url: string;
+  icon: 'osu' | 'discord' | 'google_sheets' | 'google_forms' | 'twitch' | 'youtube' | 'x' | 'challonge' | 'donate' | 'website';
+}
+
+export interface BWSValues {
+  x: number;
+  y: number;
+  z: number;
+}
+
+export interface TeamSettings {
+  teamSize: number;
+  playersPerMap: number;
+  useTeamBanners: boolean;
+}
+
+export interface TournamentDates {
+  publish?: number;
+  concludes?: number;
+  playerRegs?: {
+    open: number;
+    close: number;
+  };
+  staffRegs?: {
+    open: number;
+    close: number;
+  };
+  other: {
+    label: string;
+    date: number;
+  }[];
+}
+
+export type RoundConfig = StandardRoundConfig | QualifierRoundConfig | BattleRoyaleRoundConfig;
+
+/** Applies to: Groups, swiss, single and double elim. */
+export interface StandardRoundConfig {
+  bestOf: number;
+  banCount: number;
+  protectCount: number;
+}
+
+export interface QualifierRoundConfig {
+  publishMpLinks: boolean;
+  runCount: number;
+  /**
+   * Only matters if there are multiple runs.
+   * `average`: Calculate the average score for each map in all runs.
+   * `sum`: Calculate the sum of scores for each map in all runs.
+   * `best`: Get the best score for each map
+   */
+  summarizeRunsAs: 'average' | 'sum' | 'best';
+}
+
+export interface BattleRoyaleRoundConfig {
+  playersEliminatedPerMap: number;
+}
 
 // Alias for any which refers to specifically any Svelte component. I (Mario564) dont' know how to use Svelte component classes as generics in function and variable type definitions
 export type AnyComponent = any;

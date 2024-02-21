@@ -5,9 +5,9 @@ import { createTRPCHandle } from 'trpc-sveltekit';
 import { getSession, logError, sveltekitError, verifyJWT } from '$lib/server-utils';
 import { redirect, type Handle, error } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
-import type { AuthSession } from '$types';
 import { Session, db } from '$db';
 import { and, eq, sql } from 'drizzle-orm';
+import type { AuthSession } from '$types';
 
 const trpcHandle = createTRPCHandle({
   router,

@@ -10,7 +10,8 @@ import {
   primaryKey,
   inet,
   jsonb,
-  bigserial
+  bigserial,
+  index
 } from 'drizzle-orm/pg-core';
 import { timestampConfig } from '../utils';
 import type { OAuthToken } from '$types';
@@ -99,7 +100,9 @@ export const Session = pgTable('session', {
   userAgent: text('user_agent').notNull(),
   expired: boolean('expired').notNull().default(false),
   userId: integer('user_id').notNull()
-});
+}, (table) => ({
+  indexIdExpired: index('idx_session_id_expired').on(table.id, table.expired)
+}));
 
 export const Ban = pgTable('ban', {
   id: serial('id').primaryKey(),
