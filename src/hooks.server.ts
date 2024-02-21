@@ -22,10 +22,9 @@ const trpcHandle = createTRPCHandle({
 const sessionHandle: Handle = async ({ event, resolve }) => {
   const { cookies, route } = event;
   const sessionCookie = cookies.get('session');
-  const resolved = await resolve(event);
 
   if (route.id?.includes('/api/auth')) {
-    return resolved;
+    return await resolve(event);
   }
 
   if (!sessionCookie) {
@@ -33,7 +32,7 @@ const sessionHandle: Handle = async ({ event, resolve }) => {
       path: '/'
     });
 
-    return resolved;
+    return await resolve(event);
   }
 
   const session = verifyJWT<AuthSession>(sessionCookie);
@@ -67,7 +66,7 @@ const sessionHandle: Handle = async ({ event, resolve }) => {
     });
   }
 
-  return resolved;
+  return await resolve(event);
 };
 
 const mainHandle: Handle = async ({ event, resolve }) => {
