@@ -22,13 +22,18 @@ const trpcHandle = createTRPCHandle({
 const sessionHandle: Handle = async ({ event, resolve }) => {
   const { cookies, route } = event;
   const sessionCookie = cookies.get('session');
+  const resolved = await resolve(event);
 
-  if (!sessionCookie && !route.id?.includes('/api/auth')) {
+  if (route.id?.includes('/api/auth')) {
+    return resolved;
+  }
+
+  if (!sessionCookie) {
     cookies.delete('temp_osu_profile', {
       path: '/'
     });
 
-    return await resolve(event);
+    return resolved;
   }
 
   const session = verifyJWT<AuthSession>(sessionCookie);
@@ -62,7 +67,7 @@ const sessionHandle: Handle = async ({ event, resolve }) => {
     });
   }
 
-  return await resolve(event);
+  return resolved;
 };
 
 const mainHandle: Handle = async ({ event, resolve }) => {
