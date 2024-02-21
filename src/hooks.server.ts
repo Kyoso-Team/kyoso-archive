@@ -23,7 +23,7 @@ const sessionHandle: Handle = async ({ event, resolve }) => {
   const { cookies, route } = event;
   const sessionCookie = cookies.get('session');
 
-  if (!sessionCookie) {
+  if (!sessionCookie && !route.id?.includes('/api/auth')) {
     cookies.delete('temp_osu_profile', {
       path: '/'
     });
