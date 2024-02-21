@@ -1,6 +1,7 @@
+import env from '$lib/env/server';
 import { Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, Session, db } from '$db';
 import { discordMainAuth } from './constants';
-import { pick, signJWT, sveltekitError } from './server-utils';
+import { pick, sveltekitError } from './server-utils';
 import { Client } from 'osu-web.js';
 import { eq } from 'drizzle-orm';
 import type DiscordOAuth2 from 'discord-oauth2';
@@ -20,8 +21,8 @@ export async function upsertDiscordUser(token: DiscordOAuth2.TokenRequestResult,
   const set = {
     username: user.username,
     token: {
-      accesstoken: signJWT(token.access_token),
-      refreshToken: signJWT(token.refresh_token),
+      accesstoken: token.access_token,
+      refreshToken: token.refresh_token,
       tokenIssuedAt: tokenIssuedAt.getTime()
     }
   } satisfies Partial<typeof DiscordUser.$inferInsert>;
@@ -106,8 +107,8 @@ export async function upsertOsuUser(token: Token, tokenIssuedAt: Date, route: { 
     username: user.username,
     globalStdRank: user.statistics.global_rank,
     token: {
-      accesstoken: signJWT(token.access_token),
-      refreshToken: signJWT(token.refresh_token),
+      accesstoken: token.access_token,
+      refreshToken: token.refresh_token,
       tokenIssuedAt: tokenIssuedAt.getTime()
     }
   } satisfies Partial<typeof OsuUser.$inferInsert>;
@@ -159,6 +160,29 @@ export async function upsertOsuUser(token: Token, tokenIssuedAt: Date, route: { 
 }
 
 export async function createSession(userId: number, ipAddress: string, userAgent: string, route: { id: string | null; }) {
+  // Get the public IP address of the local machine, if not done, `ipAddress` will be '::1'
+  if (env.ENV === 'development') {
+    try {
+      const resp = await fetch('https://api64.ipify.org');
+      ipAddress = await resp.text();
+    } catch (err) {
+      throw await sveltekitError(err, 'Getting your public IP address information', route);
+    }
+  }
+
+  let ipMeta!: {
+    city: string;
+    region: string;
+    country: string;
+  };
+
+  try {
+    const resp = await fetch(`https://ipinfo.io/${ipAddress}?token=${env.IPINFO_API_ACCESS_TOKEN}`);
+    ipMeta = await resp.json();
+  } catch (err) {
+    throw await sveltekitError(err, 'Getting the IP address\' information', route);
+  }
+
   let session!: Pick<typeof Session.$inferSelect, 'id'>;
 
   try {
@@ -167,7 +191,12 @@ export async function createSession(userId: number, ipAddress: string, userAgent
       .values({
         userId,
         ipAddress,
-        userAgent
+        userAgent,
+        ipMetadata: {
+          city: ipMeta.city,
+          region: ipMeta.region,
+          country: ipMeta.country
+        }
       })
       .returning(pick(Session, ['id']))
       .then((session) => session[0]);

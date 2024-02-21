@@ -10,7 +10,8 @@ import {
   ADMIN_BY_DEFAULT,
   DATABASE_URL,
   TESTERS,
-  ENV
+  ENV,
+  IPINFO_API_ACCESS_TOKEN
 } from '$env/static/private';
 import { clientEnvSchema, clientEnv } from './client';
 
@@ -25,6 +26,7 @@ const serverEnvSchema = z
     DISCORD_BOT_TOKEN: z.string().min(1),
     STORAGE_ENDPOINT: z.string().min(1),
     STORAGE_PASSWORD: z.string().min(1),
+    IPINFO_API_ACCESS_TOKEN: z.string().min(1),
     DATABASE_URL: z.string().min(1),
     ADMIN_BY_DEFAULT: z.array(z.number().int()),
     TESTERS: z.array(z.number().int())
@@ -41,6 +43,7 @@ const serverEnv = {
   DISCORD_BOT_TOKEN,
   STORAGE_ENDPOINT,
   STORAGE_PASSWORD,
+  IPINFO_API_ACCESS_TOKEN,
   DATABASE_URL,
   ADMIN_BY_DEFAULT: (JSON.parse(ADMIN_BY_DEFAULT) as string[]).map((id) => Number(id)),
   TESTERS: (JSON.parse(TESTERS) as string[]).map((id) => Number(id))

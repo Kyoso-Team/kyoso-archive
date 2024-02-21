@@ -1,6 +1,7 @@
-import { User, db } from '$db';
+import platform from 'platform';
+import { Session, User, db } from '$db';
 import { getSession, sveltekitError, pick } from '$lib/server-utils';
-import { eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ cookies, route }) => {
@@ -19,8 +20,45 @@ export const load = (async ({ cookies, route }) => {
     throw await sveltekitError(err, 'Getting the user', route);
   }
 
+  let activeSessions!: Pick<typeof Session.$inferSelect, 'id' | 'createdAt' | 'ipAddress' | 'userAgent' | 'lastActiveAt' | 'ipMetadata'>[];
+
+  try {
+    activeSessions = await db
+      .select(pick(Session, ['id', 'createdAt', 'ipAddress', 'userAgent', 'lastActiveAt', 'ipMetadata']))
+      .from(Session)
+      .where(and(
+        eq(Session.userId, session.userId),
+        eq(Session.expired, false)
+      ))
+      .orderBy(desc(Session.lastActiveAt));
+  } catch (err) {
+    throw await sveltekitError(err, 'Getting the active sessions', route);
+  }
+
+  const sessions = activeSessions.map(({ id, createdAt, ipAddress, userAgent, lastActiveAt, ipMetadata }) => {
+    const { os, name, version } = platform.parse(userAgent);
+
+    return {
+      id,
+      createdAt,
+      ipAddress,
+      userAgent,
+      lastActiveAt,
+      ipMetadata,
+      browser: {
+        name,
+        version
+      },
+      os: {
+        name: os?.family,
+        version: os?.version
+      }
+    };
+  });
+
   return {
     session,
-    user
+    user,
+    activeSessions: sessions
   };
 }) satisfies PageServerLoad;

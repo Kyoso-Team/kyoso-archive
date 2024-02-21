@@ -1,0 +1,430 @@
+{
+  "id": "4de21a3e-7139-4771-a211-c72c5d775422",
+  "prevId": "5a539f15-3d5c-4018-9b14-1f864dd52ae4",
+  "version": "5",
+  "dialect": "pg",
+  "tables": {
+    "ban": {
+      "name": "ban",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "issued_at": {
+          "name": "issued_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "lift_at": {
+          "name": "lift_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ban_reason": {
+          "name": "ban_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "issued_to_user_id": {
+          "name": "issued_to_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "country": {
+      "name": "country",
+      "schema": "",
+      "columns": {
+        "code": {
+          "name": "code",
+          "type": "char(2)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(35)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "discord_user": {
+      "name": "discord_user",
+      "schema": "",
+      "columns": {
+        "discord_user_id": {
+          "name": "discord_user_id",
+          "type": "varchar(19)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "username": {
+          "name": "username",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "osu_badge": {
+      "name": "osu_badge",
+      "schema": "",
+      "columns": {
+        "img_file_name": {
+          "name": "img_file_name",
+          "type": "varchar(60)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "osu_user": {
+      "name": "osu_user",
+      "schema": "",
+      "columns": {
+        "osu_user_id": {
+          "name": "osu_user_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "username": {
+          "name": "username",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "restricted": {
+          "name": "restricted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "global_std_rank": {
+          "name": "global_std_rank",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "token": {
+          "name": "token",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "country_code": {
+          "name": "country_code",
+          "type": "char(2)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "osu_user_country_code_country_code_fk": {
+          "name": "osu_user_country_code_country_code_fk",
+          "tableFrom": "osu_user",
+          "tableTo": "country",
+          "columnsFrom": [
+            "country_code"
+          ],
+          "columnsTo": [
+            "code"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uni_osu_user_username": {
+          "name": "uni_osu_user_username",
+          "nullsNotDistinct": false,
+          "columns": [
+            "username"
+          ]
+        }
+      }
+    },
+    "osu_user_awarded_badge": {
+      "name": "osu_user_awarded_badge",
+      "schema": "",
+      "columns": {
+        "osu_user_id": {
+          "name": "osu_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "osu_badge_img_file_name": {
+          "name": "osu_badge_img_file_name",
+          "type": "varchar(60)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "awarded_at": {
+          "name": "awarded_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "osu_user_awarded_badge_osu_user_id_osu_user_osu_user_id_fk": {
+          "name": "osu_user_awarded_badge_osu_user_id_osu_user_osu_user_id_fk",
+          "tableFrom": "osu_user_awarded_badge",
+          "tableTo": "osu_user",
+          "columnsFrom": [
+            "osu_user_id"
+          ],
+          "columnsTo": [
+            "osu_user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "osu_user_awarded_badge_osu_badge_img_file_name_osu_badge_img_file_name_fk": {
+          "name": "osu_user_awarded_badge_osu_badge_img_file_name_osu_badge_img_file_name_fk",
+          "tableFrom": "osu_user_awarded_badge",
+          "tableTo": "osu_badge",
+          "columnsFrom": [
+            "osu_badge_img_file_name"
+          ],
+          "columnsTo": [
+            "img_file_name"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "osu_user_awarded_badge_osu_user_id_osu_badge_img_file_name_pk": {
+          "name": "osu_user_awarded_badge_osu_user_id_osu_badge_img_file_name_pk",
+          "columns": [
+            "osu_user_id",
+            "osu_badge_img_file_name"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "session": {
+      "name": "session",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_active_at": {
+          "name": "last_active_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "inet",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ip_metadata": {
+          "name": "ip_metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expired": {
+          "name": "expired",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "user": {
+      "name": "user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "registered_at": {
+          "name": "registered_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_api_data_at": {
+          "name": "updated_api_data_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "admin": {
+          "name": "admin",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "api_key": {
+          "name": "api_key",
+          "type": "varchar(24)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "osu_user_id": {
+          "name": "osu_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "discord_user_id": {
+          "name": "discord_user_id",
+          "type": "varchar(19)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_osu_user_id_osu_user_osu_user_id_fk": {
+          "name": "user_osu_user_id_osu_user_osu_user_id_fk",
+          "tableFrom": "user",
+          "tableTo": "osu_user",
+          "columnsFrom": [
+            "osu_user_id"
+          ],
+          "columnsTo": [
+            "osu_user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_discord_user_id_discord_user_discord_user_id_fk": {
+          "name": "user_discord_user_id_discord_user_discord_user_id_fk",
+          "tableFrom": "user",
+          "tableTo": "discord_user",
+          "columnsFrom": [
+            "discord_user_id"
+          ],
+          "columnsTo": [
+            "discord_user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uni_user_api_key": {
+          "name": "uni_user_api_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "api_key"
+          ]
+        },
+        "uni_user_osu_user_id": {
+          "name": "uni_user_osu_user_id",
+          "nullsNotDistinct": false,
+          "columns": [
+            "osu_user_id"
+          ]
+        },
+        "uni_user_discord_user_id": {
+          "name": "uni_user_discord_user_id",
+          "nullsNotDistinct": false,
+          "columns": [
+            "discord_user_id"
+          ]
+        }
+      }
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

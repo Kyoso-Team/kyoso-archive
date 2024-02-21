@@ -1,8 +1,9 @@
 import colors from 'tailwindcss/colors';
 import { getModalStore } from '@skeletonlabs/skeleton';
-import type { PopupSettings, ToastSettings, ToastStore } from '@skeletonlabs/skeleton';
+import { TRPCClientError } from '@trpc/client';
+import type { PopupSettings, ToastStore } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
-import type { PageStore, ParseInt, Mod, StaffPermission } from '$types';
+import type { PageStore, ParseInt } from '$types';
 
 /**
  * Tailwind's default colors as a record
@@ -13,176 +14,236 @@ export const twColors = colors as unknown as Record<
 >;
 
 /**
+ * ```plain
+ * Example (full): new Date('2023-08-20T20:07:11.768Z') => 'August 20th, 2023'
+ * Example (shortened): new Date('2023-08-20T20:07:11.768Z') => 'Aug 20th, 2023'
+ * ```
+ */
+export function formatDate(date: Date, month: 'full' | 'shortened' = 'full') {
+  const months =
+    month === 'shortened'
+      ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+      : [
+          'January',
+          'February',
+          'March',
+          'April',
+          'May',
+          'June',
+          'July',
+          'August',
+          'September',
+          'October',
+          'November',
+          'December'
+        ];
+
+  const dateStr = date.getDate().toString();
+  let cardinal: string = '';
+
+  if (dateStr.at(-2) !== '1') {
+    if (dateStr.endsWith('1')) {
+      cardinal = 'st';
+    } else if (dateStr.endsWith('2')) {
+      cardinal = 'nd';
+    } else if (dateStr.endsWith('3')) {
+      cardinal = 'rd';
+    } else {
+      cardinal = 'th';
+    }
+  } else {
+    cardinal = 'th';
+  }
+
+  return `${months[date.getMonth()]} ${dateStr}${cardinal}, ${date.getFullYear()}`;
+}
+
+/**
+ * ```plain
+ * Example: new Date('2023-08-20T20:07:11.768Z') => '8:07 PM'
+ * ```
+ */
+export function formatTime(date: Date) {
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+
+  const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
+  const period = hours < 12 ? 'AM' : 'PM';
+
+  return `${formattedHours}:${minutes < 10 ? '0' : ''}${minutes} ${period}`;
+}
+
+/**
  * Format numbers
  */
-export const format = {
-  /**
-   * Example: 81000 => '#81,000'
-   */
-  rank: (n: number) => `#${new Intl.NumberFormat('us-US').format(n)}`,
-  /**
-   * Example: 5 => '$5.00'
-   */
-  price: (n: number) => {
-    return new Intl.NumberFormat('us-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(n);
-  },
-  /**
-   * Example (full): new Date('2023-08-20T20:07:11.768Z') => 'August 20th, 2023'
-   * Example: (shortened): new Date('2023-08-20T20:07:11.768Z') => 'Aug 20th, 2023'
-   */
-  date: (date: Date, month: 'full' | 'shortened' = 'full') => {
-    let months =
-      month === 'shortened'
-        ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-        : [
-            'January',
-            'February',
-            'March',
-            'April',
-            'May',
-            'June',
-            'July',
-            'August',
-            'September',
-            'October',
-            'November',
-            'December'
-          ];
+// export const format = {
+//   /**
+//    * Example: 81000 => '#81,000'
+//    */
+//   rank: (n: number) => `#${new Intl.NumberFormat('us-US').format(n)}`,
+//   /**
+//    * Example: 5 => '$5.00'
+//    */
+//   price: (n: number) => {
+//     return new Intl.NumberFormat('us-US', {
+//       style: 'currency',
+//       currency: 'USD'
+//     }).format(n);
+//   },
+//   /**
+//    * Example (full): new Date('2023-08-20T20:07:11.768Z') => 'August 20th, 2023'
+//    * Example: (shortened): new Date('2023-08-20T20:07:11.768Z') => 'Aug 20th, 2023'
+//    */
+//   date: (date: Date, month: 'full' | 'shortened' = 'full') => {
+//     const months =
+//       month === 'shortened'
+//         ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+//         : [
+//             'January',
+//             'February',
+//             'March',
+//             'April',
+//             'May',
+//             'June',
+//             'July',
+//             'August',
+//             'September',
+//             'October',
+//             'November',
+//             'December'
+//           ];
 
-    let dateStr = date.getDate().toString();
-    let cardinal: string = '';
+//     const dateStr = date.getDate().toString();
+//     let cardinal: string = '';
 
-    if (dateStr.at(-2) !== '1') {
-      if (dateStr.endsWith('1')) {
-        cardinal = 'st';
-      } else if (dateStr.endsWith('2')) {
-        cardinal = 'nd';
-      } else if (dateStr.endsWith('3')) {
-        cardinal = 'rd';
-      } else {
-        cardinal = 'th';
-      }
-    }
+//     if (dateStr.at(-2) !== '1') {
+//       if (dateStr.endsWith('1')) {
+//         cardinal = 'st';
+//       } else if (dateStr.endsWith('2')) {
+//         cardinal = 'nd';
+//       } else if (dateStr.endsWith('3')) {
+//         cardinal = 'rd';
+//       } else {
+//         cardinal = 'th';
+//       }
+//     }
 
-    return `${months[date.getMonth()]} ${dateStr}${cardinal}, ${date.getFullYear()}`;
-  },
-  /**
-   * Example (with 5 digits): 25 => '00025'
-   */
-  digits: (n: number, digitCount: number) => {
-    let nStr = n.toString();
-    let missingDigits = digitCount - nStr.length;
-    let str = '';
+//     return `${months[date.getMonth()]} ${dateStr}${cardinal}, ${date.getFullYear()}`;
+//   },
+//   /**
+//    * Example (with 5 digits): 25 => '00025'
+//    */
+//   digits: (n: number, digitCount: number) => {
+//     let nStr = n.toString();
+//     let missingDigits = digitCount - nStr.length;
+//     let str = '';
 
-    for (let i = missingDigits; i > 0; i--) {
-      str += '0';
-    }
+//     for (let i = missingDigits; i > 0; i--) {
+//       str += '0';
+//     }
 
-    return `${str}${nStr}`;
-  },
-  /**
-   * Example: ['Mario564', 'Taevas', 'Rekunan'] => 'Mario564, Taevas & Rekunan'
-   */
-  listArray: (arr: (string | number)[]) => {
-    let str = '';
+//     return `${str}${nStr}`;
+//   },
+//   /**
+//    * Example: ['Mario564', 'Taevas', 'Rekunan'] => 'Mario564, Taevas & Rekunan'
+//    */
+//   listArray: (arr: (string | number)[]) => {
+//     let str = '';
 
-    if (arr.length > 1) {
-      str += `${arr[0]}`;
+//     if (arr.length > 1) {
+//       str += `${arr[0]}`;
 
-      for (let i = 1; i < arr.length - 1; i++) {
-        str += `, ${arr[i]}`;
-      }
+//       for (let i = 1; i < arr.length - 1; i++) {
+//         str += `, ${arr[i]}`;
+//       }
 
-      str += ` & ${arr[arr.length - 1]}`;
-    }
+//       str += ` & ${arr[arr.length - 1]}`;
+//     }
 
-    return str;
-  },
-  /**
-   * Example: 1 => '1st'
-   */
-  cardinal: (n: number) => {
-    let str = n.toString();
+//     return str;
+//   },
+//   /**
+//    * Example: 1 => '1st'
+//    */
+//   cardinal: (n: number) => {
+//     let str = n.toString();
 
-    if (['1', '2', '3'].find((n) => n === str.at(-1)) && str.at(-2) !== '1') {
-      switch (str.at(-1)) {
-        default:
-          return `${n}th`;
-        case '1':
-          return `${n}st`;
-        case '2':
-          return `${n}nd`;
-        case '3':
-          return `${n}rd`;
-      }
-    }
+//     if (['1', '2', '3'].find((n) => n === str.at(-1)) && str.at(-2) !== '1') {
+//       switch (str.at(-1)) {
+//         default:
+//           return `${n}th`;
+//         case '1':
+//           return `${n}st`;
+//         case '2':
+//           return `${n}nd`;
+//         case '3':
+//           return `${n}rd`;
+//       }
+//     }
 
-    return `${n}th`;
-  },
-  /**
-   * Examples:
-   * - [1] => '1st'
-   * - [2,3] => '2nd & 3rd'
-   * - [4,6] => '4th-6th'
-   */
-  placements: (placements: number[]) => {
-    let str = '';
+//     return `${n}th`;
+//   },
+//   /**
+//    * Examples:
+//    * - [1] => '1st'
+//    * - [2,3] => '2nd & 3rd'
+//    * - [4,6] => '4th-6th'
+//    */
+//   placements: (placements: number[]) => {
+//     let str = '';
 
-    if (placements.length === 1) {
-      str = format.cardinal(placements[0]);
-    } else if (placements.length === 2) {
-      str = `${format.cardinal(placements[0])} & ${format.cardinal(placements[1])}`;
-    } else {
-      str = `${format.cardinal(placements[0])}-${format.cardinal(placements.at(-1) || 0)}`;
-    }
+//     if (placements.length === 1) {
+//       str = format.cardinal(placements[0]);
+//     } else if (placements.length === 2) {
+//       str = `${format.cardinal(placements[0])} & ${format.cardinal(placements[1])}`;
+//     } else {
+//       str = `${format.cardinal(placements[0])}-${format.cardinal(placements.at(-1) || 0)}`;
+//     }
 
-    return str;
-  }
-};
+//     return str;
+//   }
+// };
 
 /**
  * Calculate certain values
  */
-export const calc = {
-  /**
-   * Calculate a user's BWS rank
-   */
-  bwsRank: (rank: number, badgeCount: number) => {
-    return rank ** (0.9937 ** (badgeCount ** 2));
-  }
-};
+// export const calc = {
+//   /**
+//    * Calculate a user's BWS rank
+//    */
+//   bwsRank: (rank: number, badgeCount: number) => {
+//     return rank ** (0.9937 ** (badgeCount ** 2));
+//   }
+// };
 
-export const modal = {
-  yesNo: (
-    title: string,
-    message: string,
-    onYes: () => void | Promise<void>,
-    onNo?: () => void | Promise<void>
-  ) => {
-    let modalStore = getModalStore();
+// export const modal = {
+//   yesNo: (
+//     title: string,
+//     message: string,
+//     onYes: () => void | Promise<void>,
+//     onNo?: () => void | Promise<void>
+//   ) => {
+//     let modalStore = getModalStore();
 
-    modalStore.trigger({
-      title,
-      type: 'confirm',
-      buttonTextCancel: 'No',
-      buttonTextConfirm: 'Yes',
-      body: message,
-      response: (resp: boolean) => {
-        if (resp) {
-          onYes();
-          return;
-        }
+//     modalStore.trigger({
+//       title,
+//       type: 'confirm',
+//       buttonTextCancel: 'No',
+//       buttonTextConfirm: 'Yes',
+//       body: message,
+//       response: (resp: boolean) => {
+//         if (resp) {
+//           onYes();
+//           return;
+//         }
 
-        if (onNo) {
-          onNo();
-        }
-      }
-    });
-  }
-};
+//         if (onNo) {
+//           onNo();
+//         }
+//       }
+//     });
+//   }
+// };
 
 /**
  * Builds tournament related links
@@ -264,32 +325,32 @@ export function dateToHtmlInput(date: Date) {
 /**
  * Does a staff member meet certain permissions?
  */
-export function hasPerms(
-  staffMember:
-    | {
-        roles: {
-          permissions: StaffPermission[];
-        }[];
-      }
-    | undefined,
-  necessaryPermissions: StaffPermission[] | StaffPermission
-) {
-  if (!staffMember) {
-    return false;
-  }
+// export function hasPerms(
+//   staffMember:
+//     | {
+//         roles: {
+//           permissions: StaffPermission[];
+//         }[];
+//       }
+//     | undefined,
+//   necessaryPermissions: StaffPermission[] | StaffPermission
+// ) {
+//   if (!staffMember) {
+//     return false;
+//   }
 
-  let userPermissions: StaffPermission[] = [];
+//   let userPermissions: StaffPermission[] = [];
 
-  staffMember.roles.forEach((role) => {
-    userPermissions.push(...role.permissions);
-  });
+//   staffMember.roles.forEach((role) => {
+//     userPermissions.push(...role.permissions);
+//   });
 
-  userPermissions = [...new Set(userPermissions)];
+//   userPermissions = [...new Set(userPermissions)];
 
-  return Array.isArray(necessaryPermissions)
-    ? userPermissions.some((userPerm) => necessaryPermissions.includes(userPerm))
-    : userPermissions.some((userPerm) => necessaryPermissions === userPerm);
-}
+//   return Array.isArray(necessaryPermissions)
+//     ? userPermissions.some((userPerm) => necessaryPermissions.includes(userPerm))
+//     : userPermissions.some((userPerm) => necessaryPermissions === userPerm);
+// }
 
 /**
  * Get the full URL a user uploaded file
@@ -301,75 +362,75 @@ export function getFileUrl(page: PageStore, path: string) {
 /**
  * Apply a certain Tailwind color based off of a mod acronym
  */
-export function colorByMod(
-  mod: Mod | 'nm' | 'fm' | 'tb',
-  value: ParseInt<keyof (typeof colors)['neutral']>
-) {
-  let color: Record<keyof (typeof colors)['neutral'], string> | undefined;
+// export function colorByMod(
+//   mod: Mod | 'nm' | 'fm' | 'tb',
+//   value: ParseInt<keyof (typeof colors)['neutral']>
+// ) {
+//   let color: Record<keyof (typeof colors)['neutral'], string> | undefined;
 
-  switch (mod) {
-    case 'dt':
-      color = colors.violet;
-      break;
-    case 'ez':
-      color = colors.green;
-      break;
-    case 'fl':
-      color = colors.zinc;
-      break;
-    case 'fm':
-      color = colors.fuchsia;
-      break;
-    case 'hd':
-      color = colors.yellow;
-      break;
-    case 'hr':
-      color = colors.red;
-      break;
-    case 'ht':
-      color = colors.rose;
-      break;
-    case 'nm':
-      color = colors.blue;
-      break;
-    case 'pf':
-      color = colors.emerald;
-      break;
-    case 'rx':
-      color = colors.cyan;
-      break;
-    case 'sd':
-      color = colors.indigo;
-      break;
-    case 'tb':
-      color = colors.orange;
-      break;
-    default:
-      color = colors.neutral;
-      break;
-  }
+//   switch (mod) {
+//     case 'dt':
+//       color = colors.violet;
+//       break;
+//     case 'ez':
+//       color = colors.green;
+//       break;
+//     case 'fl':
+//       color = colors.zinc;
+//       break;
+//     case 'fm':
+//       color = colors.fuchsia;
+//       break;
+//     case 'hd':
+//       color = colors.yellow;
+//       break;
+//     case 'hr':
+//       color = colors.red;
+//       break;
+//     case 'ht':
+//       color = colors.rose;
+//       break;
+//     case 'nm':
+//       color = colors.blue;
+//       break;
+//     case 'pf':
+//       color = colors.emerald;
+//       break;
+//     case 'rx':
+//       color = colors.cyan;
+//       break;
+//     case 'sd':
+//       color = colors.indigo;
+//       break;
+//     case 'tb':
+//       color = colors.orange;
+//       break;
+//     default:
+//       color = colors.neutral;
+//       break;
+//   }
 
-  return color[value];
-}
+//   return color[value];
+// }
 
 /**
  * Has the tournament concluded?
  */
-export function hasTournamentConcluded(tournament: { concludesOn: Date | null }) {
-  return !!tournament.concludesOn && tournament.concludesOn.getTime() > new Date().getTime();
-}
+// export function hasTournamentConcluded(tournament: { concludesOn: Date | null }) {
+//   return !!tournament.concludesOn && tournament.concludesOn.getTime() > new Date().getTime();
+// }
 
 /**
  * Checks if valid http url
  */
-export function isUrl(url: string): boolean {
-  try {
-    const newUrl = new URL(url);
-    return newUrl.protocol === 'http:' || newUrl.protocol === 'https:';
-  } catch (_) {
-    return false;
-  }
-}
+// export function isUrl(url: string): boolean {
+//   try {
+//     const newUrl = new URL(url);
+//     return newUrl.protocol === 'http:' || newUrl.protocol === 'https:';
+//   } catch (_) {
+//     return false;
+//   }
+// }
 
 export function toastSuccess(toast: ToastStore, message: string) {
   toast.trigger({
@@ -390,4 +451,14 @@ export function toastError(toast: ToastStore, message: string) {
     hoverable: true,
     timeout: 3000
   });
+}
+
+export function displayError(toast: ToastStore, err: unknown) {
+  if (err instanceof TRPCClientError) {
+    toastError(toast, err.message);
+  } else {
+    toastError(toast, 'An unknown error ocurred');
+  }
+  
+  throw err;
 }

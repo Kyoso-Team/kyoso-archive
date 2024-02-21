@@ -1,8 +1,8 @@
 import env from '$lib/env/server';
 import { discordMainAuth, osuAuth, discordMainAuthOptions } from '$lib/constants';
-import { sveltekitError, pick, signJWT, verifyJWT } from '$lib/server-utils';
-import { DiscordUser, OsuUser, Session, User, db } from '$db';
-import { and, eq, sql } from 'drizzle-orm';
+import { sveltekitError, pick, signJWT, getSession } from '$lib/server-utils';
+import { DiscordUser, OsuUser, User, db } from '$db';
+import { eq, sql } from 'drizzle-orm';
 import { union } from 'drizzle-orm/pg-core';
 import { upsertDiscordUser, upsertOsuUser } from '$lib/helpers';
 import type DiscordOAuth2 from 'discord-oauth2';
@@ -18,22 +18,29 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: Paramet
   };
 
   const osuRefreshTokenQuery = db
-    .select(pick(OsuUser, ['token']))
+    .select({
+      token: OsuUser.token,
+      order: sql`0`.as('order')
+    })
     .from(OsuUser)
     .where(eq(OsuUser.osuUserId, session.osu.id))
     .limit(1);
 
   const discordRefreshTokenQuery = db
-    .select(pick(DiscordUser, ['token']))
+    .select({
+      token: DiscordUser.token,
+      order: sql`1`.as('order')
+    })
     .from(DiscordUser)
     .where(eq(DiscordUser.discordUserId, session.discord.id))
     .limit(1);
 
   try {
     refreshTokens = await union(osuRefreshTokenQuery, discordRefreshTokenQuery)
+      .orderBy(sql`"order" asc`)
       .then((rows) => ({
-        osu: rows[1].token.refreshToken,
-        discord: rows[0].token.refreshToken
+        osu: rows[0].token.refreshToken,
+        discord: rows[1].token.refreshToken
       }));
   } catch (err) {
     throw await sveltekitError(err, 'Getting the osu! and Discord refresh tokens', route);
@@ -114,58 +121,14 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: Paramet
 }
 
 export const load = (async ({ cookies, route }) => {
-  const returnValue = {
-    session: undefined as AuthSession | undefined,
+  let session = getSession(cookies);
+
+  if (session && new Date().getTime() - session.updatedApiDataAt >= 86_400_000) {
+    session = await updateUser(session, cookies, route);
+  }
+
+  return {
+    session,
     testingEnv: env.ENV === 'testing'
   };
-  const sessionCookie = cookies.get('session');
-
-  if (!sessionCookie) {
-    cookies.delete('temp_osu_profile', {
-      path: '/'
-    });
-
-    return returnValue;
-  }
-
-  const session = verifyJWT<AuthSession>(sessionCookie);
-  let sessionIsActive = false;
-
-  try {
-    sessionIsActive = await db
-      .update(Session)
-      .set({
-        lastActiveAt: sql`now()`
-      })
-      .where(and(
-        eq(Session.id, session?.sessionId || 0),
-        eq(Session.expired, false)
-      ))
-      .returning({
-        active: sql`1`.as('exists')
-      })
-      .then((sessions) => !!sessions[0].active);
-  } catch (err) {
-    throw await sveltekitError(err, 'Verifying the session', route);
-  }
-
-  if (!session || !sessionIsActive) {
-    cookies.delete('temp_osu_profile', {
-      path: '/'
-    });
-
-    cookies.delete('session', {
-      path: '/'
-    });
-
-    return returnValue;
-  }
-
-  if (new Date().getTime() - session.updatedApiDataAt >= 86_400_000) {
-    returnValue.session = await updateUser(session, cookies, route);
-  } else {
-    returnValue.session = session;
-  }
-
-  return returnValue;
 }) satisfies LayoutServerLoad;

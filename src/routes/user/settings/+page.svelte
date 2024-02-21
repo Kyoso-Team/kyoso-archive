@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Session from './Session.svelte';
   import { SEO } from '$components/general';
   import { Backdrop, Modal } from '$components/layout';
   import { Osu, Discord } from '$components/icons';
@@ -6,23 +7,22 @@
   import { page } from '$app/stores';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { Copy, Eye, EyeOff } from 'lucide-svelte';
-  import { TRPCClientError } from '@trpc/client';
-  import { toastError, toastSuccess } from '$lib/utils';
-  import type { Router } from '$trpc/router';
+  import { displayError, toastSuccess } from '$lib/utils';
   import type { PageServerData } from './$types';
+  import type { TRPCRouter } from '$types';
 
   export let data: PageServerData;
-  let openChangeDiscordPrompt = false;
-  let generateApiKeyPrompt = false;
+  let showChangeDiscordPrompt = false;
+  let showGenerateApiKeyPrompt = false;
   let viewApiKey = false;
   const toast = getToastStore();
 
   function toggleChangeDiscordPrompt() {
-    openChangeDiscordPrompt = !openChangeDiscordPrompt;
+    showChangeDiscordPrompt = !showChangeDiscordPrompt;
   }
 
   function toggleGenerateApiKeyPrompt() {
-    generateApiKeyPrompt = !generateApiKeyPrompt;
+    showGenerateApiKeyPrompt = !showGenerateApiKeyPrompt;
   }
 
   function toggleApiKeyVisibility() {
@@ -35,18 +35,12 @@
   }
 
   async function generateApiKey() {
-    let user!: Router['users']['updateSelf']['_def']['_output_out'];
+    let user!: TRPCRouter['users']['updateSelf'];
 
     try {
       user = await trpc($page).users.updateSelf.mutate();
     } catch (err) {
-      if (err instanceof TRPCClientError) {
-        toastError(toast, err.message);
-      } else {
-        toastError(toast, 'An unknown error ocurred');
-      }
-
-      return;
+      displayError(toast, err);
     }
 
     data.user = {
@@ -56,12 +50,27 @@
     data = Object.assign({}, data);
 
     toastSuccess(toast, 'New API key generated successfully');
-    generateApiKeyPrompt = false;
+    showGenerateApiKeyPrompt = false;
+  }
+
+  async function deleteSession(sessionId: number) {
+    try {
+      await trpc($page).users.deleteSession.mutate({
+        sessionId
+      });
+    } catch (err) {
+      displayError(toast, err);
+    }
+
+    data.activeSessions = data.activeSessions.filter((session) => session.id !== sessionId);
+    data = Object.assign({}, data);
+
+    toastSuccess(toast, 'Session deleted successfully');
   }
 </script>
 
 <SEO page={$page} title="User Settings - Kyoso" description="User settings" noIndex />
-{#if openChangeDiscordPrompt}
+{#if showChangeDiscordPrompt}
   <Backdrop>
     <Modal>
       <span class="title">Change Discord Account</span>
@@ -73,7 +82,7 @@
     </Modal>
   </Backdrop>
 {/if}
-{#if generateApiKeyPrompt}
+{#if showGenerateApiKeyPrompt}
   <Backdrop>
     <Modal>
       {#if data.user.apiKey}
@@ -94,7 +103,7 @@
   <div class="w-full max-w-[48rem]">
     <h1>User Settings</h1>
     <div class="border-b border-surface-700 mt-4 mb-8" />
-    <h2>Accounts</h2>
+    <h2>Linked Accounts</h2>
     <p class="mt-2">The accounts linked to your Kyoso profile.</p>
     <div class="flex gap-4 mt-4 flex-wrap">
       <div class="card p-4 w-full sm:w-[calc(50%-0.5rem)] flex items-center">
@@ -102,8 +111,8 @@
           <Osu w={48} h={48} class="fill-black dark:fill-white" />
         </div>
         <div class="flex flex-col">
-          <span class="text-lg font-medium">{data.session.osu.username}</span>
-          <span class="text-sm"><span class="font-medium">User ID:</span> {data.session.osu.id}</span>
+          <strong class="text-lg">{data.session.osu.username}</strong>
+          <span class="text-sm"><strong>User ID:</strong> {data.session.osu.id}</span>
         </div>
       </div>
       <div class="card p-4 w-full sm:w-[calc(50%-0.5rem)] flex items-center">
@@ -111,8 +120,8 @@
           <Discord w={48} h={48} class="fill-black dark:fill-white" />
         </div>
         <div class="flex flex-col">
-          <span class="text-lg font-medium">{data.session.discord.username}</span>
-          <span class="text-sm"><span class="font-medium">User ID:</span> {data.session.discord.id}</span>
+          <strong class="text-lg">{data.session.discord.username}</strong>
+          <span class="text-sm"><strong>User ID:</strong> {data.session.discord.id}</span>
         </div>
       </div>
     </div>
@@ -121,8 +130,8 @@
     </div>
     <div class="border-b border-surface-700 my-8" />
     <h2>API Key</h2>
-    <!-- TODO: Link anchor to docs-->
     <p class="mt-2 mb-4">
+      <!-- TODO: Link anchor to docs-->
       This key allows you to make requests to the <a href="/" class="link">Kyoso API</a>.
       {#if data.user.apiKey}
         <span class="text-error-500">DO NOT SHARE THIS KEY WITH ANYONE.</span>
@@ -139,15 +148,15 @@
             <input type="password" class="input w-full xs:w-72" readonly bind:value={data.user.apiKey} />
           {/if}
           <div class="flex gap-2">
-            <button class="btn-icon variant-filled-secondary" on:click={toggleApiKeyVisibility}>
+            <button class="btn-icon variant-filled" on:click={toggleApiKeyVisibility}>
               {#if viewApiKey}
-                <EyeOff size={20} class="stroke-black" />
+                <EyeOff />
               {:else}
-                <Eye size={20} class="stroke-black" />
+                <Eye />
               {/if}
             </button>
-            <button class="btn-icon variant-filled-secondary" on:click={copyApiKey}>
-              <Copy size={20} class="stroke-black" />
+            <button class="btn-icon variant-filled" on:click={copyApiKey}>
+              <Copy />
             </button>
           </div>
         </div>
@@ -162,5 +171,13 @@
         Generate Key
       </button>
     {/if}
+    <div class="border-b border-surface-700 my-8" />
+    <h2>Sessions</h2>
+    <p class="dark:text-zinc-300 text-zinc-700 text-sm mt-4">Some details may be inaccurate.</p>
+    <div class="mt-2 flex flex-col">
+      {#each data.activeSessions as session}
+        <Session {session} {deleteSession} current={data.session.sessionId === session.id} />
+      {/each}
+    </div>
   </div>
 </div>

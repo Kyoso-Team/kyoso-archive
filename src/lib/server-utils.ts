@@ -4,11 +4,11 @@ import postgres from 'postgres';
 import { error } from '@sveltejs/kit';
 import { isOsuJSError } from 'osu-web.js';
 import { TRPCError } from '@trpc/server';
+import { getHTTPStatusCodeFromError } from '@trpc/server/http';
 import type { AuthSession } from '$types';
 import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
 import type { Cookies } from '@sveltejs/kit';
 import type { TRPC_ERROR_CODE_KEY } from '@trpc/server/rpc';
-import { getHTTPStatusCodeFromError } from '@trpc/server/http';
 
 export function signJWT<T>(data: T) {
   return jwt.sign(data as string | object | Buffer, env.JWT_SECRET, {
@@ -266,9 +266,8 @@ export function getSession<T extends boolean>(
  */
 export function pick<
   T extends AnyPgTable,
-  F extends Exclude<keyof T, 'getSQL' | '_' | '$inferSelect' | '$inferInsert'>,
-  I extends F
->(table: T, fields: I[]) {
+  F extends Exclude<keyof T, 'getSQL' | '_' | '$inferSelect' | '$inferInsert'>
+>(table: T, fields: F[]) {
   const map = new Map<string, AnyPgColumn>([]);
 
   for (let i = 0; i < fields.length; i++) {
@@ -276,7 +275,7 @@ export function pick<
     map.set(fields[i].toString(), column);
   }
 
-  return Object.fromEntries(map) as Omit<T, Exclude<F, I> | 'getSQL' | '_' | '$inferSelect' | '$inferInsert'>;
+  return Object.fromEntries(map) as Pick<T, F>;
 }
 
 export async function logError(err: unknown, when: string, from: string | null) {
@@ -322,7 +321,7 @@ export async function logError(err: unknown, when: string, from: string | null) 
  */
 export async function sveltekitError(err: unknown, when: string, route: { id: string | null }) {
   const message = await logError(err, when, route.id);
-  return error(500, message);
+  error(500, message);
 }
 
 export function trpcUnknownError(err: unknown, when: string) {

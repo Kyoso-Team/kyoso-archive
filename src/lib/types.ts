@@ -16,6 +16,7 @@
 // } from '$db/schema';
 // import type { ZodBoolean, ZodDate, ZodNumber, ZodString } from 'zod';
 import type { Page } from '@sveltejs/kit';
+import type { Router } from '$trpc/router';
 // import type { InferSelectModel } from 'drizzle-orm';
 
 export type OAuthToken = {
@@ -105,8 +106,15 @@ export type AnyComponent = any;
 //   ? DateTime
 //   : Default;
 
+export type TRPCRouter = {
+  [K1 in Exclude<keyof Router, '_def' | 'createCaller' | 'getErrorShape'>]: {
+    [K2 in Exclude<keyof Router[K1], '_def' | 'createCaller' | 'getErrorShape'>]
+      : Router[K1][K2] extends { _def: { _output_out: any; }; } ? Router[K1][K2]['_def']['_output_out'] : never
+  };
+};
+
 export type PageStore = Page<Record<string, string>, string | null>;
-// export type ParseInt<T> = T extends `${infer N extends number}` ? N : never;
+export type ParseInt<T> = T extends `${infer N extends number}` ? N : never;
 
 export interface AuthSession {
   sessionId: number;
