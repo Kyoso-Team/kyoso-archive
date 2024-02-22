@@ -14,7 +14,7 @@ const config = {
       $trpc: src('trpc'),
       $stores: src('stores'),
       $types: src('lib/types'),
-      $components: src('components'),
+      $components: src('lib/components'),
       $classes: src('classes'),
       $db: src('lib/server/db')
     }
