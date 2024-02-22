@@ -2,11 +2,12 @@ import env from '$lib/env/server';
 import { createContext } from '$trpc/context';
 import { router } from '$trpc/router';
 import { createTRPCHandle } from 'trpc-sveltekit';
-import { getSession, logError, sveltekitError, verifyJWT } from '$lib/server-utils';
-import { redirect, type Handle, error } from '@sveltejs/kit';
+import { logError, sveltekitError, verifyJWT } from '$lib/server-utils';
+import { redirect, error } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { Session, db } from '$db';
 import { and, eq, sql } from 'drizzle-orm';
+import type { Handle, RequestEvent } from '@sveltejs/kit';
 import type { AuthSession } from '$types';
 
 const trpcHandle = createTRPCHandle({
@@ -19,20 +20,17 @@ const trpcHandle = createTRPCHandle({
   }
 });
 
-const sessionHandle: Handle = async ({ event, resolve }) => {
-  const { cookies, route } = event;
+async function verifySession({ cookies, route }: RequestEvent): Promise<AuthSession | undefined> {
   const sessionCookie = cookies.get('session');
 
-  if (route.id?.includes('/api/auth')) {
-    return await resolve(event);
-  }
+  if (route.id?.includes('/api/auth')) return;
 
   if (!sessionCookie) {
     cookies.delete('temp_osu_profile', {
       path: '/'
     });
 
-    return await resolve(event);
+    return;
   }
 
   const session = verifyJWT<AuthSession>(sessionCookie);
@@ -56,22 +54,20 @@ const sessionHandle: Handle = async ({ event, resolve }) => {
     throw await sveltekitError(err, 'Verifying the session', route);
   }
 
-  if (!session || !sessionIsActive) {
-    cookies.delete('temp_osu_profile', {
-      path: '/'
-    });
+  if (session && sessionIsActive) return session;
 
-    cookies.delete('session', {
-      path: '/'
-    });
-  }
+  cookies.delete('temp_osu_profile', {
+    path: '/'
+  });
 
-  return await resolve(event);
-};
+  cookies.delete('session', {
+    path: '/'
+  });
+}
 
 const mainHandle: Handle = async ({ event, resolve }) => {
-  const { url, cookies } = event;
-  const session = getSession(cookies);
+  const { url } = event;
+  const session = await verifySession(event);
 
   if (env.ENV === 'testing') {
     const isTester = session?.admin || env.TESTERS.includes(session?.osu.id || 0);
@@ -86,9 +82,8 @@ const mainHandle: Handle = async ({ event, resolve }) => {
       redirect(302, '/');
     }
   }
-  
 
   return await resolve(event);
 };
 
-export const handle = sequence(trpcHandle, sessionHandle, mainHandle);
+export const handle = sequence(trpcHandle, mainHandle);
