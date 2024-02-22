@@ -2,7 +2,7 @@ import { error, redirect } from '@sveltejs/kit';
 import { sveltekitError, signJWT, getSession } from '$lib/server-utils';
 import { User, db } from '$db';
 import { discordChangeAccountAuth, discordChangeAccountAuthOptions } from '$lib/server/constants';
-import { upsertDiscordUser } from '$lib/helpers';
+import { upsertDiscordUser } from '$lib/server/helpers';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { AuthSession } from '$types';
 import type { RequestHandler } from './$types';

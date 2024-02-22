@@ -4,7 +4,7 @@ import { sveltekitError, pick, signJWT, getSession } from '$lib/server-utils';
 import { DiscordUser, OsuUser, User, db } from '$db';
 import { eq, sql } from 'drizzle-orm';
 import { union } from 'drizzle-orm/pg-core';
-import { upsertDiscordUser, upsertOsuUser } from '$lib/helpers';
+import { upsertDiscordUser, upsertOsuUser } from '$lib/server/helpers';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { AuthSession } from '$types';
 import type { Token } from 'osu-web.js';
