@@ -1,6 +1,6 @@
 import env from '$lib/server/env';
 import { Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, Session, db } from '$db';
-import { discordMainAuth } from './constants';
+import { discordMainAuth } from './server/constants';
 import { pick, sveltekitError } from './server-utils';
 import { Client } from 'osu-web.js';
 import { eq } from 'drizzle-orm';

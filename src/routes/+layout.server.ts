@@ -1,5 +1,5 @@
 import env from '$lib/server/env';
-import { discordMainAuth, osuAuth, discordMainAuthOptions } from '$lib/constants';
+import { discordMainAuth, osuAuth, discordMainAuthOptions } from '$lib/server/constants';
 import { sveltekitError, pick, signJWT, getSession } from '$lib/server-utils';
 import { DiscordUser, OsuUser, User, db } from '$db';
 import { eq, sql } from 'drizzle-orm';

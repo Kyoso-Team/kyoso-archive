@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import { getSession } from '$lib/server-utils';
-import { discordChangeAccountAuth } from '$lib/constants';
+import { discordChangeAccountAuth } from '$lib/server/constants';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, cookies }) => {
