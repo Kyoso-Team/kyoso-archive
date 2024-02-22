@@ -7,7 +7,7 @@ module.exports = {
     'prettier'
   ],
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'drizzle'],
   parserOptions: {
     sourceType: 'module',
     ecmaVersion: 2020,
@@ -53,6 +53,18 @@ module.exports = {
       }
     ],
     'unused-export-let': 'off',
-    'svelte/no-at-html-tags': 'off'
+    'svelte/no-at-html-tags': 'off',
+    'drizzle/enforce-delete-with-where': [
+      'error',
+      {
+        drizzleObjectName: 'db'
+      }
+    ],
+    'drizzle/enforce-update-with-where': [
+      'error',
+      {
+        drizzleObjectName: 'db'
+      }
+    ]
   }
 };
