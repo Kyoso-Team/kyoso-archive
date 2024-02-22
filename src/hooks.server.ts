@@ -1,4 +1,4 @@
-import env from '$lib/env/server';
+import env from '$lib/server/env';
 import { createContext } from '$trpc/context';
 import { router } from '$trpc/router';
 import { createTRPCHandle } from 'trpc-sveltekit';

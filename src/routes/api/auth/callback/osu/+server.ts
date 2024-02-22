@@ -1,4 +1,4 @@
-import env from '$lib/env/server';
+import env from '$lib/server/env';
 import { error, redirect } from '@sveltejs/kit';
 import { sveltekitError, signJWT, pick, getSession } from '$lib/server-utils';
 import { discordMainAuth, osuAuth } from '$lib/constants';

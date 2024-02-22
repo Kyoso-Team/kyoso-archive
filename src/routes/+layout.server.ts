@@ -1,4 +1,4 @@
-import env from '$lib/env/server';
+import env from '$lib/server/env';
 import { discordMainAuth, osuAuth, discordMainAuthOptions } from '$lib/constants';
 import { sveltekitError, pick, signJWT, getSession } from '$lib/server-utils';
 import { DiscordUser, OsuUser, User, db } from '$db';

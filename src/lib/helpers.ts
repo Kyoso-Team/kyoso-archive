@@ -1,4 +1,4 @@
-import env from '$lib/env/server';
+import env from '$lib/server/env';
 import { Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, Session, db } from '$db';
 import { discordMainAuth } from './constants';
 import { pick, sveltekitError } from './server-utils';

@@ -26,7 +26,7 @@ export const clientEnv = {
   PUBLIC_CONTACT_EMAIL
 };
 
-function env() {
+function parseEnv() {
   const parsed = clientEnvSchema.safeParse(clientEnv);
 
   if (!parsed.success) {
@@ -37,4 +37,5 @@ function env() {
   return parsed.data;
 }
 
-export default env();
+const env = parseEnv();
+export default env;

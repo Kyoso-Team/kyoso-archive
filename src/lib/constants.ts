@@ -1,4 +1,4 @@
-import env from '$lib/env/server';
+import env from '$lib/server/env';
 import DiscordOauth2 from 'discord-oauth2';
 import { Auth } from 'osu-web.js';
 // import type { TournamentService } from '$types';

@@ -1,4 +1,4 @@
-// import env from '$lib/env/server';
+// import env from '$lib/server/env';
 // import { tryCatch } from '$trpc';
 // import { Client } from 'osu-web.js';
 // import { findFirst, findFirstOrThrow, pick } from '$lib/server-utils';

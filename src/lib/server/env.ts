@@ -13,7 +13,7 @@ import {
   ENV,
   IPINFO_API_ACCESS_TOKEN
 } from '$env/static/private';
-import { clientEnvSchema, clientEnv } from './client';
+import { clientEnvSchema, clientEnv } from '../env';
 
 const serverEnvSchema = z
   .object({
@@ -49,7 +49,7 @@ const serverEnv = {
   TESTERS: (JSON.parse(TESTERS) as string[]).map((id) => Number(id))
 };
 
-function env() {
+function parseEnv() {
   const parsed = serverEnvSchema.safeParse(serverEnv);
 
   if (!parsed.success) {
@@ -60,4 +60,5 @@ function env() {
   return parsed.data;
 }
 
-export default env();
+const env = parseEnv();
+export default env;

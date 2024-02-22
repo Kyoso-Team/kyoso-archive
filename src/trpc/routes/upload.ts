@@ -2,7 +2,7 @@
 // import db from '$db';
 // import { dbTournament } from '$db/schema';
 // import { eq } from 'drizzle-orm';
-// import env from '$lib/env/server';
+// import env from '$lib/server/env';
 // import { t, tryCatch } from '$trpc';
 // import { z } from 'zod';
 // import { TRPCError } from '@trpc/server';
