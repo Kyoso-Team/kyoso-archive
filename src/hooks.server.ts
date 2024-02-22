@@ -72,7 +72,7 @@ const mainHandle: Handle = async ({ event, resolve }) => {
   if (env.ENV === 'testing') {
     const isTester = session?.admin || env.TESTERS.includes(session?.osu.id || 0);
 
-    if (url.pathname !== '/testers-auth' && !url.pathname.includes('/api/auth') && !session) {
+    if (url.pathname !== '/testers-auth' && !url.pathname.includes('/api/auth')) {
       if (!session) {
         redirect(302, '/testers-auth');
       } else if (!isTester) {
