@@ -10,7 +10,7 @@ import {
   unique,
   real
 } from 'drizzle-orm/pg-core';
-import { StageFormat, TournamentAsset, TournamentType } from '.';
+import { StageFormat, TournamentAsset, TournamentType } from './schema';
 import type { BWSValues, RefereeSettings, RoundConfig, TeamSettings, TournamentDates, TournamentLink } from '$types';
 
 export const Tournament = pgTable('tournament', {

@@ -13,7 +13,7 @@ import {
   bigserial,
   index
 } from 'drizzle-orm/pg-core';
-import { timestampConfig } from '../utils';
+import { timestampConfig } from './schema-utils';
 import type { OAuthToken } from '$types';
 
 export const User = pgTable('user', {

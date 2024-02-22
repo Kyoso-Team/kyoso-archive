@@ -1,6 +1,5 @@
 import * as v from 'valibot';
-import { db } from '$db';
-import { Session, User } from '$db/schema';
+import { db, Session, User } from '$db';
 import { eq } from 'drizzle-orm';
 import { t } from '$trpc';
 import { getSession, pick, trpcUnknownError } from '$lib/server-utils';
