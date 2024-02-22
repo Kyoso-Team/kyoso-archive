@@ -14,6 +14,9 @@ dependencies:
   '@trpc/server':
     specifier: ^10.45.1
     version: 10.45.1
+  '@typeschema/valibot':
+    specifier: ^0.13.0
+    version: 0.13.0(valibot@0.29.0)
   discord-oauth2:
     specifier: ^2.12.1
     version: 2.12.1
@@ -59,6 +62,9 @@ dependencies:
   trpc-sveltekit:
     specifier: ^3.5.26
     version: 3.5.26(@sveltejs/adapter-node@1.3.1)(@trpc/client@10.45.1)(@trpc/server@10.45.1)(ws@8.16.0)
+  valibot:
+    specifier: ^0.29.0
+    version: 0.29.0
   zod:
     specifier: ^3.22.4
     version: 3.22.4
@@ -1320,6 +1326,32 @@ packages:
 
   /@types/trusted-types@2.0.4:
     resolution: {integrity: sha512-IDaobHimLQhjwsQ/NMwRVfa/yL7L/wriQPMhw1ZJall0KX6E1oxk29XMDeilW5qTIg5aoiqf5Udy8U/51aNoQQ==}
+    dev: false
+
+  /@typeschema/core@0.13.0:
+    resolution: {integrity: sha512-L0Rci3EFuq4QySNZezT+W6aINc7iQAh2EUslez5Kge0OEnw/Nd9UEbq9w7m1OKk20SoS27sZo3iANe0yFDHjyw==}
+    peerDependencies:
+      '@types/json-schema': ^7.0.15
+    peerDependenciesMeta:
+      '@types/json-schema':
+        optional: true
+    dev: false
+
+  /@typeschema/valibot@0.13.0(valibot@0.29.0):
+    resolution: {integrity: sha512-nfGB2LQzJbn6YgvwGLmbhZkrsPFo/ZoDYcIncXmNNA1qJD9q4qefC8nv+uAaZR7J8icg5lNbGHxXYnqd3VN76g==}
+    peerDependencies:
+      '@gcornut/valibot-json-schema': ^0.0.23
+      valibot: ^0.27.1
+    peerDependenciesMeta:
+      '@gcornut/valibot-json-schema':
+        optional: true
+      valibot:
+        optional: true
+    dependencies:
+      '@typeschema/core': 0.13.0
+      valibot: 0.29.0
+    transitivePeerDependencies:
+      - '@types/json-schema'
     dev: false
 
   /@typescript-eslint/eslint-plugin@7.0.1(@typescript-eslint/parser@7.0.1)(eslint@8.56.0)(typescript@5.3.3):
@@ -4475,6 +4507,10 @@ packages:
   /v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
     dev: true
+
+  /valibot@0.29.0:
+    resolution: {integrity: sha512-JhZn08lwZPhAamOCfBwBkv/btQt4KeQhekULPH8crH053zUCLSOGEF2zKExu3bFf245tsj6J1dY0ysd/jUiMIQ==}
+    dev: false
 
   /vite-plugin-tailwind-purgecss@0.2.0(vite@5.1.2):
     resolution: {integrity: sha512-6Q+SaalUd0t3BOIIiCQPlbZQuYARVgjoC78X+fLbQJqIEy/9fC58aQgHMgi+CmYfVfZmJToA8YiLueSGEo2mng==}

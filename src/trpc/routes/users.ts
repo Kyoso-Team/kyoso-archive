@@ -1,10 +1,11 @@
+import * as v from 'valibot';
 import { db } from '$db';
 import { Session, User } from '$db/schema';
 import { eq } from 'drizzle-orm';
 import { t } from '$trpc';
 import { getSession, pick, trpcUnknownError } from '$lib/server-utils';
 import { customAlphabet } from 'nanoid';
-import { z } from 'zod';
+import { wrap } from '@typeschema/valibot';
 
 const updateSelf = t
   .procedure
@@ -35,9 +36,11 @@ const updateSelf = t
 const deleteSession = t
   .procedure
   .input(
-    z.object({
-      sessionId: z.number()
-    })
+    wrap(
+      v.object({
+        sessionId: v.number([v.integer(), v.minValue(1)])
+      })
+    )
   )
   .mutation(async ({ ctx, input }) => {
     getSession(ctx.cookies, true);

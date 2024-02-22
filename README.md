@@ -6,7 +6,7 @@ Repository for the Kyoso website.
 
 - [pnpm](https://pnpm.io): Package manager
 - [SvelteKit](https://kit.svelte.dev): Full-stack framework
-- [Zod](https://zod.dev): Validation library
+- [Valibot](https://valibot.dev): Validation library
 - [Drizzle](https://orm.drizzle.team): ORM for the database
 - [PostgreSQL](https://www.postgresql.org): The database itself
 - [tRPC](https://trpc.io): Backend / API (in most cases)

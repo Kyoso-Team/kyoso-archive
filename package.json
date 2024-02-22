@@ -64,6 +64,7 @@
     "@floating-ui/dom": "^1.6.3",
     "@trpc/client": "^10.45.1",
     "@trpc/server": "^10.45.1",
+    "@typeschema/valibot": "^0.13.0",
     "discord-oauth2": "^2.12.1",
     "highlight.js": "^11.9.0",
     "isomorphic-dompurify": "^2.3.0",
@@ -79,6 +80,7 @@
     "superjson": "^2.2.1",
     "svelte-portal": "^2.2.1",
     "trpc-sveltekit": "^3.5.26",
+    "valibot": "^0.29.0",
     "zod": "^3.22.4"
   }
 }

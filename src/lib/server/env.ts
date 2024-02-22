@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as v from 'valibot';
 import {
   NODE_ENV,
   JWT_SECRET,
@@ -13,25 +13,38 @@ import {
   ENV,
   IPINFO_API_ACCESS_TOKEN
 } from '$env/static/private';
-import { clientEnvSchema, clientEnv } from '../env';
+import { clientEnvSchema, clientEnv, nonEmptyStringSchema, parseEnv } from '../env';
 
-const serverEnvSchema = z
-  .object({
-    /** Preferrably, use `ENV` instead. This is mainly for Vite, but it does have its use cases */
-    NODE_ENV: z.union([z.literal('production'), z.literal('development')]),
-    ENV: z.union([z.literal('production'), z.literal('testing'), z.literal('development')]),
-    JWT_SECRET: z.string().min(1),
-    OSU_CLIENT_SECRET: z.string().min(1),
-    DISCORD_CLIENT_SECRET: z.string().min(1),
-    DISCORD_BOT_TOKEN: z.string().min(1),
-    STORAGE_ENDPOINT: z.string().min(1),
-    STORAGE_PASSWORD: z.string().min(1),
-    IPINFO_API_ACCESS_TOKEN: z.string().min(1),
-    DATABASE_URL: z.string().min(1),
-    ADMIN_BY_DEFAULT: z.array(z.number().int()),
-    TESTERS: z.array(z.number().int())
-  })
-  .merge(clientEnvSchema);
+const osuUserIDsSchema = v.array(
+  v.number(
+    'be a number',
+    [v.integer('be an integer')]
+  ),
+  'be an array'
+);
+
+const serverEnvSchema = v.object({
+  ...clientEnvSchema.entries,
+  /** Preferrably, use `ENV` instead. This is mainly for Vite, but it does have its use cases */
+  NODE_ENV: v.union(
+    [v.literal('production'), v.literal('development')],
+    'be equal to "production" or "development"'
+  ),
+  ENV: v.union(
+    [v.literal('production'), v.literal('testing'), v.literal('development')],
+    'be equal to "production", "testing" or "development"'
+  ),
+  JWT_SECRET: nonEmptyStringSchema,
+  OSU_CLIENT_SECRET: nonEmptyStringSchema,
+  DISCORD_CLIENT_SECRET: nonEmptyStringSchema,
+  DISCORD_BOT_TOKEN: nonEmptyStringSchema,
+  STORAGE_ENDPOINT: nonEmptyStringSchema,
+  STORAGE_PASSWORD: nonEmptyStringSchema,
+  IPINFO_API_ACCESS_TOKEN: nonEmptyStringSchema,
+  DATABASE_URL: nonEmptyStringSchema,
+  ADMIN_BY_DEFAULT: osuUserIDsSchema,
+  TESTERS: osuUserIDsSchema
+});
 
 const serverEnv = {
   ...clientEnv,
@@ -49,16 +62,5 @@ const serverEnv = {
   TESTERS: (JSON.parse(TESTERS) as string[]).map((id) => Number(id))
 };
 
-function parseEnv() {
-  const parsed = serverEnvSchema.safeParse(serverEnv);
-
-  if (!parsed.success) {
-    console.error('Invalid environment variables:', parsed.error.flatten().fieldErrors);
-    throw new Error('Invalid environment variables');
-  }
-
-  return parsed.data;
-}
-
-const env = parseEnv();
+const env = parseEnv(serverEnvSchema, serverEnv);
 export default env;
