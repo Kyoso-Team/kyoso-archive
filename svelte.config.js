@@ -11,7 +11,7 @@ const config = {
   kit: {
     adapter: adapter(),
     alias: {
-      $trpc: src('trpc'),
+      $trpc: src('lib/server/trpc'),
       $stores: src('stores'),
       $types: src('lib/types'),
       $components: src('lib/components'),

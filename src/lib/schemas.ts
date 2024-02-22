@@ -1,4 +1,6 @@
-// import { z } from 'zod';
+import * as v from 'valibot';
+
+export const idSchema = v.number([v.integer(), v.minValue(1)]);
 
 // export const whereIdSchema = z.object({
 //   id: z.number().int()

@@ -1,4 +1,4 @@
-import { usersRouter } from './routes';
+import { usersRouter } from '../procedures';
 import { t } from '$trpc';
 
 export const router = t.router({
