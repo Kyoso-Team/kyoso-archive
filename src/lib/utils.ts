@@ -3,6 +3,7 @@ import { TRPCClientError } from '@trpc/client';
 import type { PopupSettings, ToastStore } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
 import type { PageStore } from '$types';
+import type { StaffPermission } from '$db';
 
 /**
  * Tailwind's default colors as a record
@@ -236,6 +237,10 @@ export function dateToHtmlInput(date: Date) {
  */
 export function getFileUrl(page: PageStore, path: string) {
   return `${page.url.origin}/uploads/${path}`;
+}
+
+export function hasPermissions(staffMember: { permissions: (typeof StaffPermission.enumValues)[number][] } | undefined, requiredPerms: (typeof StaffPermission.enumValues)[number][]) {
+  return staffMember ? staffMember.permissions.some((perm) => requiredPerms.includes(perm)) : false;
 }
 
 /**
