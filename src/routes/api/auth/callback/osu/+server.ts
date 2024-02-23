@@ -48,7 +48,8 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
     userExists = await db
       .update(User)
       .set({
-        admin: env.ADMIN_BY_DEFAULT.includes(osuUserId)
+        admin: env.ADMIN_BY_DEFAULT.includes(osuUserId),
+        approvedHost: env.ENV === 'testing'
       })
       .where(eq(User.osuUserId, osuUserId))
       .returning({
