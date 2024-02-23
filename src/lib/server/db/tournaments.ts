@@ -11,7 +11,7 @@ import {
   real
 } from 'drizzle-orm/pg-core';
 import { StageFormat, TournamentAsset, TournamentType } from './schema';
-import type { BWSValues, RefereeSettings, RoundConfig, TeamSettings, TournamentDates, TournamentLink } from '$types';
+import type { BWSValues, RankRange, RefereeSettings, RoundConfig, TeamSettings, TournamentDates, TournamentLink } from '$types';
 
 export const Tournament = pgTable('tournament', {
   id: serial('id').primaryKey(),
@@ -25,10 +25,11 @@ export const Tournament = pgTable('tournament', {
     length: 8
   }).notNull(),
   type: TournamentType('type').notNull(),
-  /** First element is lower rank range, and last element is upper rank range. If null, then it's an open rank tournament */
-  rankRange: integer('rank_range').array(2),
   /** Written as Markdown */
   rules: text('rules'),
+  assets: TournamentAsset('assets').array().notNull().default([]),
+  /** If null, then it's an open rank tournament */
+  rankRange: jsonb('rank_range').$type<RankRange>(),
   dates: jsonb('dates').notNull().$type<TournamentDates>().default({
     other: []
   }),
@@ -36,7 +37,6 @@ export const Tournament = pgTable('tournament', {
   /** If null, then the tournament doesn't use BWS */
   bwsValues: jsonb('bws_values').$type<BWSValues>(),
   links: jsonb('links').notNull().$type<TournamentLink[]>().default([]),
-  assets: TournamentAsset('assets').array().notNull().default([]),
   refereeSettings: jsonb('referee_settings').notNull().$type<RefereeSettings>().default({
     timerLength: {
       pick: 120,

@@ -88,6 +88,11 @@ export interface TournamentDates {
   }[];
 }
 
+export interface RankRange {
+  lower: number;
+  upper?: number;
+}
+
 export type RoundConfig = StandardRoundConfig | QualifierRoundConfig | BattleRoyaleRoundConfig;
 
 /** Applies to: Groups, swiss, single and double elim. */
