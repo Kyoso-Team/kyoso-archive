@@ -1,9 +1,8 @@
 import colors from 'tailwindcss/colors';
-import { getModalStore } from '@skeletonlabs/skeleton';
 import { TRPCClientError } from '@trpc/client';
 import type { PopupSettings, ToastStore } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
-import type { PageStore, ParseInt } from '$types';
+import type { PageStore } from '$types';
 
 /**
  * Tailwind's default colors as a record
@@ -74,6 +73,23 @@ export function formatTime(date: Date) {
 }
 
 /**
+ * ```plain
+ * Example: n = 25, digitCount = 5 => '00025'
+ * ```
+ */
+export function formatDigits(n: number, digitCount: number) {
+  const nStr = n.toString();
+  const missingDigits = digitCount - nStr.length;
+  let str = '';
+
+  for (let i = missingDigits; i > 0; i--) {
+    str += '0';
+  }
+
+  return `${str}${nStr}`;
+}
+
+/**
  * Format numbers
  */
 // export const format = {
@@ -89,60 +105,6 @@ export function formatTime(date: Date) {
 //       style: 'currency',
 //       currency: 'USD'
 //     }).format(n);
-//   },
-//   /**
-//    * Example (full): new Date('2023-08-20T20:07:11.768Z') => 'August 20th, 2023'
-//    * Example: (shortened): new Date('2023-08-20T20:07:11.768Z') => 'Aug 20th, 2023'
-//    */
-//   date: (date: Date, month: 'full' | 'shortened' = 'full') => {
-//     const months =
-//       month === 'shortened'
-//         ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-//         : [
-//             'January',
-//             'February',
-//             'March',
-//             'April',
-//             'May',
-//             'June',
-//             'July',
-//             'August',
-//             'September',
-//             'October',
-//             'November',
-//             'December'
-//           ];
-
-//     const dateStr = date.getDate().toString();
-//     let cardinal: string = '';
-
-//     if (dateStr.at(-2) !== '1') {
-//       if (dateStr.endsWith('1')) {
-//         cardinal = 'st';
-//       } else if (dateStr.endsWith('2')) {
-//         cardinal = 'nd';
-//       } else if (dateStr.endsWith('3')) {
-//         cardinal = 'rd';
-//       } else {
-//         cardinal = 'th';
-//       }
-//     }
-
-//     return `${months[date.getMonth()]} ${dateStr}${cardinal}, ${date.getFullYear()}`;
-//   },
-//   /**
-//    * Example (with 5 digits): 25 => '00025'
-//    */
-//   digits: (n: number, digitCount: number) => {
-//     let nStr = n.toString();
-//     let missingDigits = digitCount - nStr.length;
-//     let str = '';
-
-//     for (let i = missingDigits; i > 0; i--) {
-//       str += '0';
-//     }
-
-//     return `${str}${nStr}`;
 //   },
 //   /**
 //    * Example: ['Mario564', 'Taevas', 'Rekunan'] => 'Mario564, Taevas & Rekunan'
@@ -205,62 +167,9 @@ export function formatTime(date: Date) {
 // };
 
 /**
- * Calculate certain values
- */
-// export const calc = {
-//   /**
-//    * Calculate a user's BWS rank
-//    */
-//   bwsRank: (rank: number, badgeCount: number) => {
-//     return rank ** (0.9937 ** (badgeCount ** 2));
-//   }
-// };
-
-// export const modal = {
-//   yesNo: (
-//     title: string,
-//     message: string,
-//     onYes: () => void | Promise<void>,
-//     onNo?: () => void | Promise<void>
-//   ) => {
-//     let modalStore = getModalStore();
-
-//     modalStore.trigger({
-//       title,
-//       type: 'confirm',
-//       buttonTextCancel: 'No',
-//       buttonTextConfirm: 'Yes',
-//       body: message,
-//       response: (resp: boolean) => {
-//         if (resp) {
-//           onYes();
-//           return;
-//         }
-
-//         if (onNo) {
-//           onNo();
-//         }
-//       }
-//     });
-//   }
-// };
-
-/**
- * Builds tournament related links
- */
-export const buildLink = {
-  forumPost: (forumPostId: number) => `https://osu.ppy.sh/community/forums/topics/${forumPostId}`,
-  discord: (discordInviteId: string) => `https://discord.gg/${discordInviteId}`,
-  spreadsheet: (spreadsheetId: string) => `https://docs.google.com/spreadsheets/d/${spreadsheetId}`,
-  twitch: (twitchChannelName: string) => `https://www.twitch.tv/${twitchChannelName}`,
-  youtube: (youtubeChannelId: string) => `https://www.youtube.com/channel/${youtubeChannelId}`,
-  twitter: (twitterHandle: string) => `https://twitter.com/${twitterHandle}`
-};
-
-/**
  * Transform a numerical value in a different byte unit
  */
-export const byteUnit = {
+export const convertBytes = {
   kb: (value: number) => value * 1_000,
   mb: (value: number) => value * 1_000_000
 };
@@ -289,7 +198,7 @@ export function tooltip(target: string): PopupSettings {
  * Trims the string type values in each property of an object
  */
 export function trimStringValues<T extends Record<string, unknown>>(obj: T): T {
-  let newObj: Record<string, unknown> = {};
+  const newObj: Record<string, unknown> = {};
 
   Object.entries(obj).forEach(([key, value]) => {
     if (typeof value !== 'string') {
@@ -311,46 +220,16 @@ function fillDateDigits(n: number) {
  * Parses a Date type value and transforms it into a valid string for an HTML input of type datetime-local
  */
 export function dateToHtmlInput(date: Date) {
-  let year = date.getFullYear();
-  let month = fillDateDigits(date.getMonth() + 1);
-  let day = fillDateDigits(date.getDate());
+  const year = date.getFullYear();
+  const month = fillDateDigits(date.getMonth() + 1);
+  const day = fillDateDigits(date.getDate());
 
-  let hour = fillDateDigits(date.getHours());
-  let minute = fillDateDigits(date.getMinutes());
-  let second = fillDateDigits(date.getSeconds());
+  const hour = fillDateDigits(date.getHours());
+  const minute = fillDateDigits(date.getMinutes());
+  const second = fillDateDigits(date.getSeconds());
 
   return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
 }
-
-/**
- * Does a staff member meet certain permissions?
- */
-// export function hasPerms(
-//   staffMember:
-//     | {
-//         roles: {
-//           permissions: StaffPermission[];
-//         }[];
-//       }
-//     | undefined,
-//   necessaryPermissions: StaffPermission[] | StaffPermission
-// ) {
-//   if (!staffMember) {
-//     return false;
-//   }
-
-//   let userPermissions: StaffPermission[] = [];
-
-//   staffMember.roles.forEach((role) => {
-//     userPermissions.push(...role.permissions);
-//   });
-
-//   userPermissions = [...new Set(userPermissions)];
-
-//   return Array.isArray(necessaryPermissions)
-//     ? userPermissions.some((userPerm) => necessaryPermissions.includes(userPerm))
-//     : userPermissions.some((userPerm) => necessaryPermissions === userPerm);
-// }
 
 /**
  * Get the full URL a user uploaded file
@@ -411,25 +290,6 @@ export function getFileUrl(page: PageStore, path: string) {
 //   }
 
 //   return color[value];
-// }
-
-/**
- * Has the tournament concluded?
- */
-// export function hasTournamentConcluded(tournament: { concludesOn: Date | null }) {
-//   return !!tournament.concludesOn && tournament.concludesOn.getTime() > new Date().getTime();
-// }
-
-/**
- * Checks if valid http url
- */
-// export function isUrl(url: string): boolean {
-//   try {
-//     const newUrl = new URL(url);
-//     return newUrl.protocol === 'http:' || newUrl.protocol === 'https:';
-//   } catch (_) {
-//     return false;
-//   }
 // }
 
 export function toastSuccess(toast: ToastStore, message: string) {

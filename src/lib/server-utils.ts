@@ -5,6 +5,8 @@ import { error } from '@sveltejs/kit';
 import { isOsuJSError } from 'osu-web.js';
 import { TRPCError } from '@trpc/server';
 import { getHTTPStatusCodeFromError } from '@trpc/server/http';
+import { customAlphabet } from 'nanoid';
+import { SQL, gt, lte, sql } from 'drizzle-orm';
 import type { AuthSession } from '$types';
 import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
 import type { Cookies } from '@sveltejs/kit';
@@ -34,53 +36,6 @@ export function verifyJWT<T>(token?: string) {
 }
 
 /**
- * Disallow access to the curent user depending on certain conditions
- */
-// export const forbidIf = {
-//   /**
-//    * Disallow if the tournament has concluded
-//    */
-//   hasConcluded: (tournament: { id: number; concludesOn: Date | null }) => {
-//     if (hasTournamentConcluded(tournament)) {
-//       throw new TRPCError({
-//         code: 'FORBIDDEN',
-//         message: `Tournament of ID ${tournament.id} has concluded.`
-//       });
-//     }
-//   },
-//   /**
-//    * Disallow if the tournament doesn't include certain services
-//    */
-//   doesntIncludeService: (
-//     tournament: {
-//       id: number;
-//       services: TournamentService[];
-//     },
-//     mustInclude: TournamentService
-//   ) => {
-//     if (!tournament.services.includes(mustInclude)) {
-//       throw new TRPCError({
-//         code: 'FORBIDDEN',
-//         message: `Tournament of ID ${
-//           tournament.id
-//         } doesn't have the ${mustInclude.toLowerCase()} service.`
-//       });
-//     }
-//   },
-//   /**
-//    * Disallow if a round's pool is already public
-//    */
-//   poolIsPublished: (round: { id: number; mappoolState: MappoolState }) => {
-//     if (round.mappoolState === 'public') {
-//       throw new TRPCError({
-//         code: 'FORBIDDEN',
-//         message: `Round of ID ${round.id} already has its mappool published.`
-//       });
-//     }
-//   }
-// };
-
-/**
  * Gets the user's authenticated cookie and parses it. Throws an error if `mustBeSignedIn` is set to true
  */
 export function getSession<T extends boolean>(
@@ -96,17 +51,10 @@ export function getSession<T extends boolean>(
   return user as AuthSession;
 }
 
-/**
- * Is the user allowed in this tRPC procedure?
- */
-// export function isAllowed(isAllowed: boolean, action: string) {
-//   if (!isAllowed) {
-//     throw new TRPCError({
-//       code: 'UNAUTHORIZED',
-//       message: `You're not allowed to ${action}.`
-//     });
-//   }
-// }
+export function generateFileId() {
+  const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  return customAlphabet(alphabet, 8)();
+}
 
 // function mapUrlParams(params: URLSearchParams, prefix: string, allStrings?: boolean) {
 //   let obj: Record<string, unknown> = {};
@@ -177,33 +125,6 @@ export function getSession<T extends boolean>(
 // }
 
 /**
- * Finds the first value in a set of results in a Drizzle query
- */
-// export function findFirst<T>(queryResults: T[]): T | undefined {
-//   return queryResults.at(0);
-// }
-
-/**
- * Finds the first value in a set of results in a Drizzle query. Throws an error if the set is empty
- */
-// export function findFirstOrThrow<T>(queryResults: T[], objectName: string): T {
-//   let result = queryResults.at(0);
-
-//   if (!result) {
-//     throw new Error(`Couldn't find ${objectName}`);
-//   }
-
-//   return result;
-// }
-
-/**
- * Wrapper for order by clause in Drizzle queries
- */
-// export function orderBy<T extends AnyColumn | SQLWrapper>(column: T, sort: Sort) {
-//   return sort === 'asc' ? asc(column) : desc(column);
-// }
-
-/**
  * Enable text search capabilities provided the table's columns and the search term (query)
  */
 // export function textSearch(...columns: AnyColumn[]) {
@@ -224,23 +145,6 @@ export function getSession<T extends boolean>(
 //       return q;
 //     }
 //   };
-// }
-
-/**
- * Get the amount of rows of a certain table.Optionally pass a where clause to filter
- */
-// export async function getRowCount<T extends AnyPgTable>(table: T, where?: SQL | undefined) {
-//   let q = db
-//     .select({
-//       count: sql`count(*)::bigint`.mapWith(Number)
-//     })
-//     .from(table);
-
-//   if (where) {
-//     q.where(where);
-//   }
-
-//   return (await q)[0].count;
 // }
 
 /**
@@ -345,4 +249,16 @@ export function trpcError(code: TRPC_ERROR_CODE_KEY, err: unknown, message: stri
     message: `${httpStatusCode} - ${formattedCode}. ${message}`,
     cause: err
   });
+}
+
+export function future(column: AnyPgColumn | SQL, ms?: boolean) {
+  return ms
+    ? gt(column as any, sql`(${new Date().getTime()})::bigint`)
+    : gt(column as any, new Date());
+}
+
+export function past(column: AnyPgColumn | SQL, ms?: boolean) {
+  return ms
+    ? lte(column as any, sql`(${new Date().getTime()})::bigint`)
+    : lte(column as any, new Date());
 }
