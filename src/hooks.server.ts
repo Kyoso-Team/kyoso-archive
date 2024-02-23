@@ -6,7 +6,7 @@ import { logError, sveltekitError, verifyJWT } from '$lib/server-utils';
 import { redirect, error } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { Session, db } from '$db';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, not, sql } from 'drizzle-orm';
 import type { Handle, RequestEvent } from '@sveltejs/kit';
 import type { AuthSession } from '$types';
 
@@ -44,7 +44,7 @@ async function verifySession({ cookies, route }: RequestEvent): Promise<AuthSess
       })
       .where(and(
         eq(Session.id, session?.sessionId || 0),
-        eq(Session.expired, false)
+        not(Session.expired)
       ))
       .returning({
         exists: sql`1`.as('exists')

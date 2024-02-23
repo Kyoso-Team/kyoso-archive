@@ -1,7 +1,7 @@
 import platform from 'platform';
 import { Session, User, db } from '$db';
 import { getSession, sveltekitError, pick } from '$lib/server-utils';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, not } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ cookies, route }) => {
@@ -28,7 +28,7 @@ export const load = (async ({ cookies, route }) => {
       .from(Session)
       .where(and(
         eq(Session.userId, session.userId),
-        eq(Session.expired, false)
+        not(Session.expired)
       ))
       .orderBy(desc(Session.lastActiveAt));
   } catch (err) {

@@ -55,7 +55,7 @@
 
   async function deleteSession(sessionId: number) {
     try {
-      await trpc($page).users.deleteSession.mutate({
+      await trpc($page).users.expireSession.mutate({
         sessionId
       });
     } catch (err) {
@@ -69,7 +69,7 @@
   }
 </script>
 
-<SEO page={$page} title="User Settings - Kyoso" description="User settings" noIndex />
+<SEO page={$page} title="User Settings" description="User settings" noIndex />
 {#if showChangeDiscordPrompt}
   <Backdrop>
     <Modal>

@@ -31,7 +31,7 @@ const updateSelf = t.procedure.mutation(async ({ ctx }) => {
   return user;
 });
 
-const deleteSession = t.procedure
+const expireSession = t.procedure
   .input(
     wrap(
       v.object({
@@ -43,13 +43,18 @@ const deleteSession = t.procedure
     getSession(ctx.cookies, true);
 
     try {
-      await db.delete(Session).where(eq(Session.id, input.sessionId));
+      await db
+        .update(Session)
+        .set({
+          expired: true
+        })
+        .where(eq(Session.id, input.sessionId));
     } catch (err) {
-      throw trpcUnknownError(err, 'Deleting the session');
+      throw trpcUnknownError(err, 'Expiring the session');
     }
   });
 
 export const usersRouter = t.router({
   updateSelf,
-  deleteSession
+  expireSession
 });
