@@ -19,6 +19,8 @@ import type { Page } from '@sveltejs/kit';
 import type { Router } from '$trpc/router';
 // import type { InferSelectModel } from 'drizzle-orm';
 
+export type Simplify<T extends Record<string, any>> = { [K in keyof T]: T[K] } & NonNullable<unknown>;
+
 export interface OAuthToken {
   /** Encrypted using JWT */
   accesstoken: string;
@@ -144,7 +146,7 @@ export type AnyComponent = any;
 
 // export type FormInputType = 'string' | 'number' | 'boolean' | 'date' | 'id';
 // export type Sort = 'asc' | 'desc';
-// export type FileType = 'png' | 'jpg' | 'jpeg' | 'webp' | 'gif' | 'osr' | 'osz';
+export type FileType = 'png' | 'jpg' | 'jpeg' | 'webp' | 'gif' | 'osr' | 'osz';
 
 // export type NullPartial<
 //   T extends Record<string | number | symbol, unknown>,
@@ -210,6 +212,7 @@ export interface AuthSession {
   sessionId: number;
   userId: number;
   admin: boolean;
+  approvedHost: boolean;
   /** Timestamp in miliseconds */
   updatedApiDataAt: number;
   osu: {

@@ -77,8 +77,7 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: Paramet
   });
 
   let user!: {
-    id: number;
-    admin: boolean;
+    approvedHost: boolean;
     updatedApiDataAt: Date;
   };
 
@@ -86,11 +85,10 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: Paramet
     user = await db
       .update(User)
       .set({
-        admin: env.ADMIN_BY_DEFAULT.includes(osuUser.id),
         updatedApiDataAt: sql`now()`
       })
       .where(eq(User.id, session.userId))
-      .returning(pick(User, ['id', 'updatedApiDataAt', 'admin']))
+      .returning(pick(User, ['updatedApiDataAt', 'approvedHost']))
       .then((user) => user[0]);
   } catch (err) {
     throw await sveltekitError(err, 'Updating the user', route);
@@ -98,8 +96,9 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: Paramet
 
   const kyosoProfile: AuthSession = {
     sessionId: session.sessionId,
-    userId: user.id,
-    admin: user.admin,
+    userId: session.userId,
+    admin: session.admin,
+    approvedHost: user.approvedHost,
     updatedApiDataAt: user.updatedApiDataAt.getTime(),
     discord: {
       id: discordUser.id,

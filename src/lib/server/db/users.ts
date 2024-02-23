@@ -21,6 +21,7 @@ export const User = pgTable('user', {
   registeredAt: timestamp('registered_at', timestampConfig).notNull().defaultNow(),
   updatedApiDataAt: timestamp('updated_api_data_at', timestampConfig).notNull().defaultNow(),
   admin: boolean('admin').notNull().default(false),
+  approvedHost: boolean('approved_host').notNull().default(false),
   apiKey: varchar('api_key', {
     length: 24
   }).unique('uni_user_api_key'),

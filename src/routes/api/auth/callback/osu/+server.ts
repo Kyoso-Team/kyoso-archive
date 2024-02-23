@@ -60,7 +60,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
   }
 
   if (userExists) {
-    let user: Pick<typeof User.$inferSelect, 'id' | 'updatedApiDataAt' | 'admin'> & {
+    let user: Pick<typeof User.$inferSelect, 'id' | 'updatedApiDataAt' | 'admin' | 'approvedHost'> & {
       discord: Pick<typeof DiscordUser.$inferSelect, 'discordUserId' | 'username'>;
       osu: Pick<typeof OsuUser.$inferSelect, 'osuUserId' | 'username' | 'globalStdRank' | 'restricted'>;
     };
@@ -68,7 +68,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
     try {
       user = await db
         .select({
-          ...pick(User, ['id', 'updatedApiDataAt', 'admin']),
+          ...pick(User, ['id', 'updatedApiDataAt', 'admin', 'approvedHost']),
           discord: pick(DiscordUser, ['discordUserId', 'username']),
           osu: pick(OsuUser, ['osuUserId', 'username', 'globalStdRank', 'restricted'])
         })
@@ -112,6 +112,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
       sessionId: session.id,
       userId: user.id,
       admin: user.admin,
+      approvedHost: user.approvedHost,
       updatedApiDataAt: user.updatedApiDataAt.getTime(),
       discord: {
         id: user.discord.discordUserId,

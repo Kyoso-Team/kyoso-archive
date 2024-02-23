@@ -75,6 +75,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
     sessionId: session.id,
     userId: user.id,
     admin: user.admin,
+    approvedHost: false,
     updatedApiDataAt: user.updatedApiDataAt.getTime(),
     discord: {
       id: discordUser.id,
