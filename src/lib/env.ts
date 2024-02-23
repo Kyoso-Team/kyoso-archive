@@ -37,7 +37,7 @@ export const clientEnv = {
   PUBLIC_CONTACT_EMAIL
 };
 
-export function parseEnv(schema: v.BaseSchema, env: unknown) {
+export function parseEnv<T extends v.BaseSchema>(schema: T, env: unknown) {
   const parsed = v.safeParse(schema, env);
 
   if (!parsed.success) {
