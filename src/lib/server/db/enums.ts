@@ -2,8 +2,6 @@ import { pgEnum } from 'drizzle-orm/pg-core';
 
 export const TournamentType = pgEnum('tournament_type', ['teams', 'draft', 'solo']);
 
-export const TournamentAsset = pgEnum('tournament_asset', ['logo', 'banner']);
-
 export const StageFormat = pgEnum('stage_format', [
   'groups',
   'swiss',
@@ -13,77 +11,72 @@ export const StageFormat = pgEnum('stage_format', [
   'battle_royale'
 ]);
 
-// export const dbMappoolState = pgEnum('mappool_state', ['private', 'playtesting', 'public']);
+export const StaffPermission = pgEnum('staff_permission', [
+  // Prefixes:
+  // View: Get data
+  // Mutate: Create and update data
+  // Delete: Delete data
+  // Manage: Create, update and delete data
 
-// export const dbQualifierRunsSummary = pgEnum('qualifier_runs_summary', [
-//   'average', // Calculate the average score for each map in all runs
-//   'sum', // Calculate the sum of scores for each map in all runs
-//   'best' // Get the best score for each map
-// ]);
+  // Host can do everything regardless of other permissions, can also delete the tournament. Only one user can have this permission per tournament
+  'host',
+  // Same as above. This exists so a host can add this permission to a site admin to allow them to debug something without listing them as an actual staff member,
+  'debug',
+  // Tournament
+  'manage_tournament_settings',
+  // Tournament assets (upload and delete banner and logo)
+  'manage_tournament_assets',
+  // Staff and staff regs.
+  'view_staff_members',
+  'mutate_staff_members',
+  'delete_staff_members',
+  // Player regs.
+  'view_regs',
+  'mutate_regs',
+  'delete_regs',
+  // Mappool structure,
+  'mutate_pool_structure',
+  // Suggest maps
+  'view_pool_suggestions',
+  'mutate_pool_suggestions',
+  'delete_pool_suggestions',
+  // Pool maps,
+  'view_pooled_maps',
+  'mutate_pooled_maps',
+  'delete_pooled_maps',
+  // Playtest
+  'can_playtest',
+  // Matches
+  'view_matches',
+  'mutate_matches',
+  'delete_matches',
+  'ref_matches',
+  'commentate_matches',
+  'stream_matches',
+  // Stats
+  'view_stats',
+  'mutate_stats', // Can calculate stats
+  'delete_stats',
+  // Misc.
+  'can_play' // Can play in the tournament
+]);
 
-// export const dbStaffPermission = pgEnum('staff_permission', [
-//   // Prefixes:
-//   // View: Get data
-//   // Mutate: Create and update data
-//   // Delete: Delete data
-
-//   // Host can do everything regardless of other permissions, can also delete the tournament. Only one user can have this permission per tournament
-//   'host',
-//   // Same as above. This exists so a host can add this permission to a site admin to allow them to debug something without listing them as an actual staff member,
-//   'debug',
-//   // Tournament
-//   'mutate_tournament',
-//   // Staff and staff regs.
-//   'view_staff_members',
-//   'mutate_staff_members',
-//   'delete_staff_members',
-//   // Player regs.
-//   'view_regs',
-//   'mutate_regs',
-//   'delete_regs',
-//   // Mappool structure,
-//   'mutate_pool_structure',
-//   // Suggest maps
-//   'view_pool_suggestions',
-//   'mutate_pool_suggestions',
-//   'delete_pool_suggestions',
-//   // Pool maps,
-//   'view_pooled_maps',
-//   'mutate_pooled_maps',
-//   'delete_pooled_maps',
-//   // Playtest
-//   'can_playtest',
-//   // Matches
-//   'view_matches',
-//   'mutate_matches',
-//   'delete_matches',
-//   'ref_matches',
-//   'commentate_matches',
-//   'stream_matches',
-//   // Stats
-//   'view_stats',
-//   'mutate_stats', // Can calculate stats
-//   'delete_stats',
-//   // Misc.
-//   'can_play' // Can play in the tournament
-// ]);
-
-// export const dbStaffColor = pgEnum('staff_color', [
-//   'slate',
-//   'gray',
-//   'red',
-//   'orange',
-//   'yellow',
-//   'lime',
-//   'green',
-//   'emerald',
-//   'cyan',
-//   'blue',
-//   'indigo',
-//   'purple',
-//   'fuchsia',
-//   'pink'
-// ]);
+export const StaffColor = pgEnum('staff_color', [
+  'slate',
+  'gray',
+  'red',
+  'orange',
+  'yellow',
+  'lime',
+  'green',
+  'emerald',
+  'cyan',
+  'blue',
+  'indigo',
+  'purple',
+  'fuchsia',
+  'pink'
+]);
 
 // export const dbJoinRequestStatus = pgEnum('join_request_status', [
 //   'pending', // Pending response

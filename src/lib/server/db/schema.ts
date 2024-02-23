@@ -1,7 +1,7 @@
 export * from './enums';
 export * from './users';
-// export * from './tournaments';
-// export * from './registrations';
+export * from './tournaments';
+export * from './registrations';
 // export * from './junctions';
 // export * from './pooling';
 // export * from './referee';

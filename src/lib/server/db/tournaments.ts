@@ -8,13 +8,17 @@ import {
   smallint,
   boolean,
   unique,
-  real
+  real,
+  timestamp
 } from 'drizzle-orm/pg-core';
-import { StageFormat, TournamentAsset, TournamentType } from './schema';
+import { StageFormat, TournamentType } from './schema';
+import { timestampConfig } from './schema-utils';
 import type { BWSValues, RankRange, RefereeSettings, RoundConfig, TeamSettings, TournamentDates, TournamentLink } from '$types';
 
 export const Tournament = pgTable('tournament', {
   id: serial('id').primaryKey(),
+  createdAt: timestamp('created_at', timestampConfig).notNull().defaultNow(),
+  deleted: boolean('deleted').notNull().default(false),
   name: varchar('name', {
     length: 50
   }).notNull().unique('uni_tournament_name'),
@@ -27,7 +31,12 @@ export const Tournament = pgTable('tournament', {
   type: TournamentType('type').notNull(),
   /** Written as Markdown */
   rules: text('rules'),
-  assets: TournamentAsset('assets').array().notNull().default([]),
+  logoMetadata: jsonb('logo_metadata').$type<{
+    fileId: string;
+  }>(),
+  bannerMetadata: jsonb('banner_metadata').$type<{
+    fileId: string;
+  }>(),
   /** If null, then it's an open rank tournament */
   rankRange: jsonb('rank_range').$type<RankRange>(),
   dates: jsonb('dates').notNull().$type<TournamentDates>().default({

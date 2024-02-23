@@ -1,119 +1,81 @@
-// import {
-//   pgTable,
-//   serial,
-//   uniqueIndex,
-//   varchar,
-//   timestamp,
-//   boolean,
-//   integer,
-//   text,
-//   char,
-//   type AnyPgColumn,
-//   unique,
-//   smallint,
-//   real
-// } from 'drizzle-orm/pg-core';
-// import {
-//   dbStaffColor,
-//   dbStaffPermission,
-//   dbTournament,
-//   User,
-//   dbStaffMemberToStaffRole,
-//   dbQualLobbyToTeam,
-//   dbPlayedQualMapToTeam,
-//   dbJoinRequestStatus,
-//   dbJoinTeamRequestNotif,
-//   dbKnockoutLobbyToPlayer,
-//   dbKnockoutLobbyToTeam,
-//   dbLobbyToStaffMemberAsCommentator,
-//   dbLobbyToStaffMemberAsReferee,
-//   dbLobbyToStaffMemberAsStreamer,
-//   dbMatch,
-//   dbNewStaffAppSubmissionNotif,
-//   dbPlayedKnockoutMapToPlayerAsKnockedOut,
-//   dbPlayedKnockoutMapToPlayerAsPlayed,
-//   dbPlayedKnockoutMapToTeamAsKnockedOut,
-//   dbPlayedKnockoutMapToTeamAsPlayed,
-//   dbPlayedQualMapToPlayer,
-//   dbPlayerScore,
-//   dbPooledMap,
-//   dbPooledMapRating,
-//   dbPotentialMatch,
-//   dbQualLobbyToPlayer,
-//   dbQualPrediction,
-//   dbSuggestedMap,
-//   dbTeamChangeNotif,
-//   dbTeamScore
-// } from '.';
-// import { timestampConfig, length, relation, actions } from '../utils';
-// import { relations } from 'drizzle-orm';
+import {
+  pgTable,
+  serial,
+  varchar,
+  integer,
+  unique,
+  smallint,
+  timestamp,
+  primaryKey
+} from 'drizzle-orm/pg-core';
+import { StaffColor, StaffPermission, Tournament, User } from './schema';
+import { timestampConfig } from './schema-utils';
 
-// export const dbStaffRole = pgTable(
-//   'staff_role',
-//   {
-//     id: serial('id').primaryKey(),
-//     name: varchar('name', length(45)).notNull(),
-//     color: dbStaffColor('color').notNull().default('slate'),
-//     order: smallint('order').notNull(),
-//     permissions: dbStaffPermission('permissions')
-//       .array(dbStaffPermission.enumValues.length)
-//       .notNull()
-//       .default([]),
-//     tournamentId: integer('tournament_id')
-//       .notNull()
-//       .references(() => dbTournament.id, actions('cascade'))
-//   },
-//   (tbl) => ({
-//     nameTournamentIdKey: unique('staff_role_name_tournament_id_key').on(tbl.name, tbl.tournamentId)
-//   })
-// );
+export const StaffRole = pgTable(
+  'staff_role',
+  {
+    id: serial('id').primaryKey(),
+    name: varchar('name', {
+      length: 45
+    }).notNull(),
+    color: StaffColor('color').notNull().default('slate'),
+    order: smallint('order').notNull(),
+    permissions: StaffPermission('permissions').array().notNull().default([]),
+    tournamentId: integer('tournament_id')
+      .notNull()
+      .references(() => Tournament.id, {
+        onDelete: 'cascade'
+      })
+  },
+  (table) => ({
+    uniqueNameTournamentId: unique('uni_staff_role_name_tournament_id').on(table.name, table.tournamentId)
+  })
+);
 
-// export const dbStaffRoleRelations = relations(dbStaffRole, ({ one, many }) => ({
-//   tournament: one(dbTournament, {
-//     fields: [dbStaffRole.tournamentId],
-//     references: [dbTournament.id]
-//   }),
-//   staffMembers: many(dbStaffMemberToStaffRole)
-// }));
+export const StaffMember = pgTable(
+  'staff_member',
+  {
+    id: serial('id').primaryKey(),
+    joinedStaffAt: timestamp('joined_staff_at', timestampConfig).notNull().defaultNow(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => User.id, {
+        onDelete: 'cascade'
+      }),
+    tournamentId: integer('tournament_id')
+      .notNull()
+      .references(() => Tournament.id, {
+        onDelete: 'cascade'
+      })
+  },
+  (table) => ({
+    uniqueUserIdTournamentId: unique('uni_staff_member_user_id_tournament_id').on(
+      table.userId,
+      table.tournamentId
+    )
+  })
+);
 
-// export const dbStaffMember = pgTable(
-//   'staff_member',
-//   {
-//     id: serial('id').primaryKey(),
-//     joinedStaffAt: timestamp('joined_staff_at', timestampConfig).notNull().defaultNow(),
-//     userId: integer('user_id')
-//       .notNull()
-//       .references(() => User.id, actions('cascade')),
-//     tournamentId: integer('tournament_id')
-//       .notNull()
-//       .references(() => dbTournament.id, actions('cascade'))
-//   },
-//   (tbl) => ({
-//     userIdTournamentIdKey: unique('staff_member_user_id_tournament_id_key').on(
-//       tbl.userId,
-//       tbl.tournamentId
-//     )
-//   })
-// );
-
-// export const dbStaffMemberRelations = relations(dbStaffMember, ({ one, many }) => ({
-//   user: one(User, {
-//     fields: [dbStaffMember.userId],
-//     references: [User.id]
-//   }),
-//   tournament: one(dbTournament, {
-//     fields: [dbStaffMember.tournamentId],
-//     references: [dbTournament.id]
-//   }),
-//   roles: many(dbStaffMemberToStaffRole),
-//   suggestedMaps: many(dbSuggestedMap),
-//   suggestedPooledMaps: many(dbPooledMap, relation('suggested_by')),
-//   pooledMaps: many(dbPooledMap, relation('pooled_by')),
-//   asReferee: many(dbLobbyToStaffMemberAsReferee),
-//   asStreamer: many(dbLobbyToStaffMemberAsStreamer),
-//   asCommentator: many(dbLobbyToStaffMemberAsCommentator),
-//   pooledMapsRatingsGiven: many(dbPooledMapRating)
-// }));
+export const StaffMemberRole = pgTable(
+  'staff_member_role',
+  {
+    staffMemberId: integer('staff_member_id')
+      .notNull()
+      .references(() => StaffMember.id, {
+        onDelete: 'cascade'
+      }),
+    staffRoleId: integer('staff_role_id')
+      .notNull()
+      .references(() => StaffRole.id, {
+        onDelete: 'cascade'
+      })
+  },
+  (table) => ({
+    pkey: primaryKey({
+      columns: [table.staffMemberId, table.staffRoleId]
+    })
+  })
+);
 
 // export const dbStaffApplication = pgTable('staff_application', {
 //   title: varchar('title', length(90)).notNull(),
@@ -122,15 +84,6 @@
 //     .primaryKey()
 //     .references(() => dbTournament.id, actions('cascade'))
 // });
-
-// export const dbStaffApplicationRelations = relations(dbStaffApplication, ({ one, many }) => ({
-//   forTournament: one(dbTournament, {
-//     fields: [dbStaffApplication.forTournamentId],
-//     references: [dbTournament.id]
-//   }),
-//   lookingFor: many(dbStaffAppRole),
-//   submissions: many(dbStaffAppSubmission)
-// }));
 
 // export const dbStaffAppRole = pgTable(
 //   'staff_application_role',
@@ -149,13 +102,6 @@
 //   })
 // );
 
-// export const dbStaffAppRoleRelations = relations(dbStaffAppRole, ({ one }) => ({
-//   staffApplcation: one(dbStaffApplication, {
-//     fields: [dbStaffAppRole.id],
-//     references: [dbStaffApplication.forTournamentId]
-//   })
-// }));
-
 // export const dbStaffAppSubmission = pgTable('staff_application_submission', {
 //   id: serial('id').primaryKey(),
 //   submittedAt: timestamp('submitted_at', timestampConfig).notNull().defaultNow(),
@@ -170,18 +116,6 @@
 //     .notNull()
 //     .references(() => User.id, actions('cascade'))
 // });
-
-// export const dbStaffAppSubmissionRelations = relations(dbStaffAppSubmission, ({ one, many }) => ({
-//   staffApplication: one(dbStaffApplication, {
-//     fields: [dbStaffAppSubmission.staffApplicationId],
-//     references: [dbStaffApplication.forTournamentId]
-//   }),
-//   submittedBy: one(User, {
-//     fields: [dbStaffAppSubmission.submittedById],
-//     references: [User.id]
-//   }),
-//   inNewStaffAppSubmissionNotifs: many(dbNewStaffAppSubmissionNotif)
-// }));
 
 // export const dbTeam = pgTable(
 //   'team',
@@ -206,31 +140,6 @@
 //   })
 // );
 
-// export const dbTeamRelations = relations(dbTeam, ({ one, many }) => ({
-//   tournament: one(dbTournament, {
-//     fields: [dbTeam.tournamentId],
-//     references: [dbTournament.id]
-//   }),
-//   captain: one(dbPlayer, {
-//     fields: [dbTeam.captainId],
-//     references: [dbPlayer.id],
-//     relationName: 'captain'
-//   }),
-//   players: many(dbPlayer, relation('player')),
-//   asTeam1: many(dbMatch, relation('team_1')),
-//   asTeam2: many(dbMatch, relation('team_2')),
-//   asPotentialTeam1: many(dbPotentialMatch, relation('potential_team_1')),
-//   asPotentialTeam2: many(dbPotentialMatch, relation('potential_team_2')),
-//   inQualLobbies: many(dbQualLobbyToTeam),
-//   playedQualMaps: many(dbPlayedQualMapToTeam),
-//   inKnockoutLobbies: many(dbKnockoutLobbyToTeam),
-//   playedKnockoutMaps: many(dbPlayedKnockoutMapToTeamAsPlayed),
-//   knockedOutInMaps: many(dbPlayedKnockoutMapToTeamAsKnockedOut),
-//   scores: many(dbTeamScore),
-//   inTeamChangeNotifs: many(dbTeamChangeNotif),
-//   inQualPredictions: many(dbQualPrediction)
-// }));
-
 // export const dbJoinTeamRequest = pgTable('join_team_request', {
 //   id: serial('id').primaryKey(),
 //   requestedAt: timestamp('requested_at', timestampConfig).notNull().defaultNow(),
@@ -242,18 +151,6 @@
 //     .notNull()
 //     .references(() => dbTeam.id)
 // });
-
-// export const dbJoinTeamRequestRelations = relations(dbJoinTeamRequest, ({ one, many }) => ({
-//   sentBy: one(dbPlayer, {
-//     fields: [dbJoinTeamRequest.sentById],
-//     references: [dbPlayer.id]
-//   }),
-//   team: one(dbTeam, {
-//     fields: [dbJoinTeamRequest.teamId],
-//     references: [dbTeam.id]
-//   }),
-//   inJoinTeamRequestNotifs: many(dbJoinTeamRequestNotif)
-// }));
 
 // // If the player is in a team tournament and doesn't have a team, then they're a free agent
 // export const dbPlayer = pgTable(
@@ -277,31 +174,3 @@
 //     )
 //   })
 // );
-
-// export const dbPlayerRelations = relations(dbPlayer, ({ one, many }) => ({
-//   tournament: one(dbTournament, {
-//     fields: [dbPlayer.tournamentId],
-//     references: [dbTournament.id]
-//   }),
-//   user: one(User, {
-//     fields: [dbPlayer.userId],
-//     references: [User.id]
-//   }),
-//   team: one(dbTeam, {
-//     fields: [dbPlayer.teamId],
-//     references: [dbTeam.id],
-//     relationName: 'player'
-//   }),
-//   asPlayer1: many(dbMatch, relation('player_1')),
-//   asPlayer2: many(dbMatch, relation('player_2')),
-//   asPotentialPlayer1: many(dbPotentialMatch, relation('potential_player_1')),
-//   asPotentialPlayer2: many(dbPotentialMatch, relation('potential_player_2')),
-//   inQualLobbies: many(dbQualLobbyToPlayer),
-//   playedQualMaps: many(dbPlayedQualMapToPlayer),
-//   inKnockoutLobbies: many(dbKnockoutLobbyToPlayer),
-//   playedKnockoutMaps: many(dbPlayedKnockoutMapToPlayerAsPlayed),
-//   knockedOutInMaps: many(dbPlayedKnockoutMapToPlayerAsKnockedOut),
-//   scores: many(dbPlayerScore),
-//   sentJoinTeamRequests: many(dbJoinTeamRequest),
-//   inQualPredictions: many(dbQualPrediction)
-// }));

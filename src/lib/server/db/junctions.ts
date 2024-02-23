@@ -42,32 +42,6 @@
 //   })
 // }));
 
-// export const dbStaffMemberToStaffRole = pgTable(
-//   'staff_member_to_staff_role',
-//   {
-//     staffMemberId: integer('staff_member_id')
-//       .notNull()
-//       .references(() => dbStaffMember.id, actions('cascade', 'cascade')),
-//     staffRoleId: integer('staff_role_id')
-//       .notNull()
-//       .references(() => dbStaffRole.id, actions('cascade', 'cascade'))
-//   },
-//   (tbl) => ({
-//     pkey: primaryKey(tbl.staffMemberId, tbl.staffRoleId)
-//   })
-// );
-
-// export const dbStaffMemberToStaffRoleRelations = relations(dbStaffMemberToStaffRole, ({ one }) => ({
-//   staffMember: one(dbStaffMember, {
-//     fields: [dbStaffMemberToStaffRole.staffMemberId],
-//     references: [dbStaffMember.id]
-//   }),
-//   staffRole: one(dbStaffRole, {
-//     fields: [dbStaffMemberToStaffRole.staffRoleId],
-//     references: [dbStaffRole.id]
-//   })
-// }));
-
 // export const dbQualLobbyToTeam = pgTable(
 //   'qualifier_lobby_to_team',
 //   {
