@@ -1,11 +1,17 @@
+import * as v from 'valibot';
+import sharp from 'sharp';
 import env from '$lib/server/env';
-import { Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, Session, db } from '$db';
+import { Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, Session, StaffMember, StaffMemberRole, StaffRole, db } from '$db';
 import { discordMainAuth } from './constants';
 import { pick, sveltekitError } from '../server-utils';
 import { Client } from 'osu-web.js';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
+import { error } from '@sveltejs/kit';
+import { fileSchema } from '$lib/schemas';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { Token } from 'osu-web.js';
+import type { AuthSession, FileType, Simplify } from '$types';
+import type { StaffPermission } from '$db';
 
 export async function upsertDiscordUser(token: DiscordOAuth2.TokenRequestResult, tokenIssuedAt: Date, route: { id: string | null; }, update?: {
   discordUserId: string;
@@ -205,4 +211,209 @@ export async function createSession(userId: number, ipAddress: string, userAgent
   }
 
   return session;
+}
+
+export async function parseUploadFormData<T extends Record<string, v.BaseSchema>>(request: Request, route: { id: string | null }, schemas: T): Promise<Simplify<{
+  file: File;
+} & { [K in keyof T]: v.Output<T[K]> }>> {
+  let fd!: FormData;
+
+  try {
+    fd = await request.formData();
+  } catch (err) {
+    error(400, 'Body is malformed or isn\'t form data');
+  }
+
+  const data: Record<string, any> = {};
+  
+  try {
+    const file = v.parse(fileSchema, fd.get('file'));
+    data.file = file;
+
+    for (const key in schemas) {
+      data[key] = v.parse(schemas[key], fd.get(key));
+    }
+  } catch (err) {
+    if (err instanceof v.ValiError) {
+      let str = 'Invalid input:\n';
+      const issues = v.flatten(err.issues).nested;
+
+
+      for (const key in issues) {
+        str += `- body.${key} should ${issues[key]}\n`;
+      }
+
+      str = str.trimEnd();
+      error(400, str);
+    } else {
+      throw await sveltekitError(err, 'Parsing the form data', route);
+    }
+  }
+
+  return data as any;
+}
+
+export async function parseSearchParams<T extends Record<string, v.BaseSchema>>(url: URL, route: { id: string | null }, schemas: T): Promise<{ [K in keyof T]: v.Output<T[K]> }> {
+  const data: Record<string, any> = {};
+  
+  try {
+    for (const key in schemas) {
+      data[key] = v.parse(schemas[key], url.searchParams.get(key));
+    }
+  } catch (err) {
+    if (err instanceof v.ValiError) {
+      let str = 'Invalid input:\n';
+      const issues = v.flatten(err.issues).nested;
+
+      for (const key in issues) {
+        str += `- Param "${key}" should ${issues[key]}\n`;
+      }
+
+      str = str.trimEnd();
+      error(400, str);
+    } else {
+      throw await sveltekitError(err, 'Parsing the URL search parameters', route);
+    }
+  }
+
+  return data as any;
+}
+
+export async function transformFile(config: {
+  file: File;
+  validations?: {
+    maxSize?: number;
+    types?: FileType[];
+  };
+  resizes?: {
+    name: string;
+    width: number;
+    height: number;
+    quality: number;
+  }[];
+}) {
+  const { file, validations, resizes } = config;
+
+  if (validations?.maxSize && config.file.size > validations.maxSize) {
+    const bytes = new Intl.NumberFormat('us-US').format(validations.maxSize);
+    error(413, `File is too large. Size limit is of ${bytes} bytes`);
+  }
+
+  if (validations?.types) {
+    const splitName = file.name.split('.');
+    const extension = splitName[splitName.length - 1];
+
+    if (!validations.types.find((type) => type === extension)) {
+      error(400, `You can't upload .${extension} files`);
+    }
+  }
+
+  if (!resizes) return [];
+
+  return await Promise.all(
+    resizes.map(async ({ width, height, quality, name }) => {
+      const buffer = await file.arrayBuffer();
+      const newBuffer = await sharp(buffer)
+        .resize({ width, height })
+        .jpeg({ quality })
+        .toBuffer();
+
+      const newFile = new File([new Blob([newBuffer]) as any], name, {
+        lastModified: new Date().getTime()
+      });
+
+      return newFile;
+    })
+  );
+}
+
+export async function uploadFile(route: { id: string | null }, folderName: string, file: File) {
+  try {
+    await fetch(`https://${env.BUNNY_HOSTNAME}/${env.BUNNY_USERNAME}/${folderName}/${file.name}`, {
+      method: 'PUT',
+      headers: {
+        'AccessKey': env.BUNNY_PASSWORD,
+        'content-type': 'application/octet-stream'
+      },
+      body: file
+    });
+  } catch (err) {
+    throw await sveltekitError(err, 'Uploading the file', route);
+  }
+}
+
+export async function deleteFile(route: { id: string | null }, folderName: string, fileName: string) {
+  try {
+    await fetch(`https://${env.BUNNY_HOSTNAME}/${env.BUNNY_USERNAME}/${folderName}/${fileName}`, {
+      method: 'DELETE',
+      headers: {
+        AccessKey: env.BUNNY_PASSWORD
+      }
+    });
+  } catch (err) {
+    throw await sveltekitError(err, 'Deleting the file', route);
+  }
+}
+
+export async function getFile(route: { id: string | null }, folderName: string, fileName: string) {
+  let resp!: Response;
+
+  try {
+    resp = await fetch(`https://${env.BUNNY_HOSTNAME}/${env.BUNNY_USERNAME}/${folderName}/${fileName}`, {
+      headers: {
+        accept: '*/*',
+        AccessKey: env.BUNNY_PASSWORD
+      }
+    });
+  } catch (err) {
+    throw await sveltekitError(err, 'Getting the file', route);
+  }
+
+  if (resp.status === 404) {
+    error(404, 'File not found');
+  }
+
+  if (!resp.ok) {
+    const baseMsg = 'Unexpected response from Bunny.net';
+    console.log(`${baseMsg}: ${await resp.text()}`);
+    error(resp.status as any, baseMsg);
+  }
+
+  return await resp.blob();
+}
+
+export async function getStaffMember<T extends AuthSession | undefined>(route: { id: string | null }, session: T, tournamentId: number): Promise<T extends AuthSession ? {
+  id: number;
+  permissions: (typeof StaffPermission.enumValues)[number][]
+} : undefined> {
+  if (!session) {
+    return undefined as any;
+  };
+
+  let staffMember!: {
+    id: number;
+    permissions: (typeof StaffPermission.enumValues)[number][]
+  };
+
+  try {
+    staffMember = await db
+      .select({
+        id: StaffMember.id,
+        permissions: StaffRole.permissions
+      }).from(StaffMemberRole)
+      .innerJoin(StaffMember, eq(StaffMember.id, StaffMemberRole.staffMemberId))
+      .innerJoin(StaffRole, eq(StaffRole.id, StaffMemberRole.staffRoleId))
+      .where(and(
+        eq(StaffMember.userId, session.userId),
+        eq(StaffRole.tournamentId, tournamentId)
+      ))
+      .then((rows) => ({
+        id: rows[0].id,
+        permissions: Array.from(new Set(rows.map(({ permissions }) => permissions).flat()))
+      }));
+  } catch (err) {
+    throw await sveltekitError(err, 'Getting the current user as a staff member', route);
+  }
+
+  return staffMember as any;
 }

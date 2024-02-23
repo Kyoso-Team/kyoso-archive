@@ -1,6 +1,28 @@
 import * as v from 'valibot';
 
-export const idSchema = v.number([v.integer(), v.minValue(1)]);
+// When writing the error messages for scehmas, keep in mind that the message will be formated like:
+// "Invalid input: {object_name}.{property} should {message}"
+// Example: "Invalid input: body.tournamentId should be a number"
+
+export const idSchema = v.number(
+  'be a number',
+  [v.integer('be an integer'), v.minValue(1, 'be greater or equal to 1')]
+);
+
+export const fileIdSchema = v.string(
+  'be a string',
+  [v.length(8, 'have 8 characters')]
+);
+
+export const fileSchema = v.instance(File, 'be a file');
+
+export const boolStringSchema = v.transform(
+  v.union(
+    [v.literal('true'), v.literal('false')],
+    'be a boolean'
+  ),
+  (input) => input === 'true'
+);
 
 // export const whereIdSchema = z.object({
 //   id: z.number().int()
