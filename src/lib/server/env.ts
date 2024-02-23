@@ -5,8 +5,9 @@ import {
   OSU_CLIENT_SECRET,
   DISCORD_CLIENT_SECRET,
   DISCORD_BOT_TOKEN,
-  STORAGE_ENDPOINT,
-  STORAGE_PASSWORD,
+  BUNNY_HOSTNAME,
+  BUNNY_USERNAME,
+  BUNNY_PASSWORD,
   ADMIN_BY_DEFAULT,
   DATABASE_URL,
   TESTERS,
@@ -15,7 +16,7 @@ import {
 } from '$env/static/private';
 import { clientEnvSchema, clientEnv, nonEmptyStringSchema, parseEnv } from '../env';
 
-const osuUserIDsSchema = v.array(
+const osuUserIdsSchema = v.array(
   v.number(
     'be a number',
     [v.integer('be an integer')]
@@ -38,12 +39,13 @@ const serverEnvSchema = v.object({
   OSU_CLIENT_SECRET: nonEmptyStringSchema,
   DISCORD_CLIENT_SECRET: nonEmptyStringSchema,
   DISCORD_BOT_TOKEN: nonEmptyStringSchema,
-  STORAGE_ENDPOINT: nonEmptyStringSchema,
-  STORAGE_PASSWORD: nonEmptyStringSchema,
+  BUNNY_HOSTNAME: nonEmptyStringSchema,
+  BUNNY_USERNAME: nonEmptyStringSchema,
+  BUNNY_PASSWORD: nonEmptyStringSchema,
   IPINFO_API_ACCESS_TOKEN: nonEmptyStringSchema,
   DATABASE_URL: nonEmptyStringSchema,
-  ADMIN_BY_DEFAULT: osuUserIDsSchema,
-  TESTERS: osuUserIDsSchema
+  ADMIN_BY_DEFAULT: osuUserIdsSchema,
+  TESTERS: osuUserIdsSchema
 });
 
 const serverEnv = {
@@ -54,8 +56,9 @@ const serverEnv = {
   OSU_CLIENT_SECRET,
   DISCORD_CLIENT_SECRET,
   DISCORD_BOT_TOKEN,
-  STORAGE_ENDPOINT,
-  STORAGE_PASSWORD,
+  BUNNY_HOSTNAME,
+  BUNNY_USERNAME,
+  BUNNY_PASSWORD,
   IPINFO_API_ACCESS_TOKEN,
   DATABASE_URL,
   ADMIN_BY_DEFAULT: (JSON.parse(ADMIN_BY_DEFAULT) as string[]).map((id) => Number(id)),
