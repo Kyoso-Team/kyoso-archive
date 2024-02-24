@@ -1,5 +1,5 @@
 <!-- <script lang="ts">
-  import { trpc } from '$trpc/client';
+  import { trpc } from '$lib/trpc';
   import { page } from '$app/stores';
   import { tournamentSidebar, upload, error } from '$stores';
   import { onMount } from 'svelte';

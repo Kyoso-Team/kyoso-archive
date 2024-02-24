@@ -3,7 +3,7 @@
   import { paginate } from '$stores';
   import { SEO, SearchBar, Paginator, User, Dropdown, SearchResults } from '$components';
   import { page } from '$app/stores';
-  import { trpc } from '$trpc/client';
+  import { trpc } from '$lib/trpc';
   import { modal } from '$lib/utils';
   import { invalidateAll } from '$app/navigation';
   import type { PageServerData } from './$types';

@@ -2,7 +2,7 @@
   import { SEO, Setting, Settings } from '$components';
   import { z } from 'zod';
   import { setSettingError, trimStringValues } from '$lib/utils';
-  import { trpc } from '$trpc/client';
+  import { trpc } from '$lib/trpc';
   import { page } from '$app/stores';
   import { error, tournamentSidebar } from '$stores';
   import { onMount } from 'svelte';

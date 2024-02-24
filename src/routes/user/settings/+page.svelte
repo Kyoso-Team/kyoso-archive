@@ -3,7 +3,7 @@
   import { SEO } from '$components/general';
   import { Backdrop, Modal } from '$components/layout';
   import { Osu, Discord } from '$components/icons';
-  import { trpc } from '$trpc/client';
+  import { trpc } from '$lib/trpc';
   import { page } from '$app/stores';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { Copy, Eye, EyeOff } from 'lucide-svelte';
