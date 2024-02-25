@@ -1,14 +1,15 @@
-<!-- <script lang="ts">
+<script lang="ts">
   import { page } from '$app/stores';
-  import { getFileUrl, format } from '$lib/utils';
+  import { getFileUrl } from '$lib/utils';
+  import type { Tournament } from '$db';
 
-  export let tournament: {
-    id: number;
-    name: string;
-    hasBanner: boolean;
-  };
-  let bannerUrl = tournament.hasBanner
-    ? getFileUrl($page, `tournament-banners/${format.digits(tournament.id, 8)}-thumb.jpeg`)
+  export let tournament: Pick<typeof Tournament.$inferSelect, 'id' | 'name' | 'bannerMetadata'>;
+  export let playing = false;
+
+  $: bannerUrl = tournament.bannerMetadata
+    ? getFileUrl($page, `tournament_banner?tournament_id=${tournament.id}&file_id=${tournament.bannerMetadata.fileId}${
+      playing ? '&public=true' : ''
+    }`)
     : `${$page.url.origin}/defaults/tournament-banner-thumb.jpeg`;
 </script>
 
@@ -22,7 +23,7 @@
       alt={`banner-${tournament.id}`}
       class="absolute inset-0 -mt-3 aspect-[21/9] w-full"
     />
-    {#if !tournament.hasBanner}
+    {#if !tournament.bannerMetadata}
       <span
         class="font-violet-sans relative z-[3] -mt-2 inline-block text-xs tracking-wide text-white"
         >{tournament.name}</span
@@ -34,4 +35,4 @@
   >
     <span class="px-4 font-semibold text-white">{tournament.name}</span>
   </div>
-</a> -->
+</a>

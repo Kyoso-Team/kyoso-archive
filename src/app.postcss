@@ -73,10 +73,6 @@ strong {
   font-family: 'VioletSans Regular';
 }
 
-.backdrop {
-  @apply bg-surface-backdrop-token fixed inset-0 h-screen w-screen;
-}
-
 .modal {
   @apply card p-8 shadow-md min-w-[330px] max-w-[660px] m-4 relative;
 }
@@ -91,4 +87,24 @@ strong {
 
 .modal .close-btn {
   @apply absolute top-4 right-4 btn-icon variant-filled hover:variant-filled-error;
+}
+
+.line {
+  @apply border-surface-300 dark:border-surface-700;
+}
+
+.line-t {
+  @apply border-t line;
+}
+
+.line-r {
+  @apply border-r line;
+}
+
+.line-b {
+  @apply border-b line;
+}
+
+.line-l {
+  @apply border-l line;
 }

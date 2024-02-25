@@ -102,7 +102,7 @@
 <div class="m-4 md:m-12 sm:m-8 flex justify-center">
   <div class="w-full max-w-[48rem]">
     <h1>User Settings</h1>
-    <div class="border-b border-surface-700 mt-4 mb-8" />
+    <div class="line-b mt-4 mb-8" />
     <h2>Linked Accounts</h2>
     <p class="mt-2">The accounts linked to your Kyoso profile.</p>
     <div class="flex gap-4 mt-4 flex-wrap">
@@ -128,7 +128,7 @@
     <div class="my-4 flex justify-start sm:justify-end">
       <button class="btn variant-filled-primary" on:click={toggleChangeDiscordPrompt}>Change Discord</button>
     </div>
-    <div class="border-b border-surface-700 my-8" />
+    <div class="line-b my-8" />
     <h2>API Key</h2>
     <p class="mt-2 mb-4">
       <!-- TODO: Link anchor to docs-->
@@ -171,7 +171,7 @@
         Generate Key
       </button>
     {/if}
-    <div class="border-b border-surface-700 my-8" />
+    <div class="line-b my-8" />
     <h2>Sessions</h2>
     <p class="dark:text-zinc-300 text-zinc-700 text-sm mt-4">Some details may be inaccurate.</p>
     <div class="mt-2 flex flex-col">

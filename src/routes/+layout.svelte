@@ -63,7 +63,7 @@
     <NavBar session={data.session} />
   </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
-    <!-- <Sidebar /> -->
+    <div id="sidebar" class="h-full" />
   </svelte:fragment>
   <!--
   {#if $form && formComponent}

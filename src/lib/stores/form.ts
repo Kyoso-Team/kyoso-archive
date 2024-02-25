@@ -1,208 +1,120 @@
-// import { writable } from 'svelte/store';
-// import { ZodEffects, ZodOptional, z } from 'zod';
-// import type { Field, FormInputType, MapResult, AssignFieldType } from '$types';
-// import type { ZodString, ZodNumber, ZodBoolean, ZodDate, ZodAny } from 'zod';
+import * as v from 'valibot';
+import { writable, get } from 'svelte/store';
 
-// function createForm() {
-//   const { subscribe, set, update } = writable<
-//     | {
-//         title: string;
-//         fields: Field[];
-//         description?: string;
-//         defaultValue?: Record<string, unknown>;
-//         currentValue: Record<string, unknown>;
-//         onSubmit: (value: Record<string, unknown>) => void | Promise<void>;
-//         onClose?: () => void | Promise<void>;
-//       }
-//     | undefined
-//   >();
+export function createForm<
+  TSchema extends Record<string, v.BaseSchema>,
+  TFinalValue = { [K in keyof TSchema]: v.Output<TSchema[K]>; },
+  TLiveValue = {
+    [K in keyof TFinalValue]: TFinalValue[K] extends boolean ? TFinalValue[K] : TFinalValue[K] | undefined;
+  },
+>(formSchema: TSchema, defaults?: { [K in keyof TFinalValue]?: TFinalValue[K]; }) {
+  const labels: Record<string, string> = {};
+  const value: Record<string, any> = {};
+  const errors: Record<string, string | undefined> = {};
 
-//   function create<T extends Record<string, unknown>>({
-//     title,
-//     fields,
-//     onSubmit,
-//     defaultValue,
-//     description,
-//     onClose
-//   }: {
-//     title: string;
-//     fields: (createField: {
-//       field: typeof field;
-//       asyncField: typeof asyncField;
-//       select: typeof select;
-//     }) => Field[];
-//     onSubmit: (value: T) => void | Promise<void>;
-//     onClose?: () => void | Promise<void>;
-//     defaultValue?: T;
-//     description?: string;
-//   }) {
-//     function field<
-//       I extends FormInputType,
-//       K extends keyof T,
-//       Z extends AssignFieldType<T, K, ZodString, ZodNumber, ZodBoolean, ZodDate, ZodAny>
-//     >(
-//       label: string,
-//       mapToKey: K,
-//       type: AssignFieldType<
-//         T,
-//         K,
-//         'string',
-//         'number',
-//         'boolean',
-//         'date',
-//         Exclude<FormInputType, 'id'>
-//       >,
-//       options?: I extends 'string' | 'number'
-//         ? {
-//             list?: boolean;
-//             validation?: (z: Z) => Z | ZodOptional<Z> | ZodEffects<Z, unknown, unknown>;
-//             disableIf?: (currentValue: Partial<T>) => boolean;
-//             optional?: boolean;
-//             fromValues?: {
-//               values: () => {
-//                 value: string | number;
-//                 label: string;
-//               }[];
-//               selectMultiple?:
-//                 | boolean
-//                 | {
-//                     atLeast: number;
-//                   };
-//             };
-//           }
-//         : undefined
-//     ): Field {
-//       let err = {
-//         required_error: 'This field is required'
-//       };
+  for (const key in formSchema) {
+    const schema = formSchema[key];
 
-//       let schema =
-//         type === 'string'
-//           ? z.string(err)
-//           : type === 'number'
-//           ? z.number(err)
-//           : type === 'boolean'
-//           ? z.boolean(err)
-//           : z.date(err);
-//       let validation = options?.validation?.(schema as Z) as ZodString;
+    // Make boolean fields default to false instead of null
+    if ((schema as any)?.type === 'boolean' || (schema as any)?.wrapped?.type === 'boolean') {
+      value[key] = false;
+    }
 
-//       return {
-//         validation: (options?.optional ? validation?.optional() : validation) as ZodString,
-//         disableIf: options?.disableIf as
-//           | ((currentValue: Record<string, unknown>) => boolean)
-//           | undefined,
-//         mapToKey: mapToKey as string,
-//         optional: options?.optional,
-//         errorCount: 0,
-//         multipleValues: !!options?.fromValues,
-//         values: options?.fromValues?.values() || [],
-//         selectMultiple: options?.fromValues?.selectMultiple,
-//         list: options?.list,
-//         label,
-//         type
-//       };
-//     }
+    const defaultValue = defaults?.[key as unknown as keyof typeof defaults];
 
-//     function asyncField<I extends Record<string, unknown>>(
-//       label: string,
-//       mapToKey: keyof T,
-//       onSearch: () => Promise<Record<string, unknown>>,
-//       mapResult: {
-//         label: (result: I) => string;
-//         imgRef?: (result: I) => string;
-//       },
-//       optional?: boolean
-//     ): Field {
-//       return {
-//         values: [],
-//         type: 'id',
-//         mapToKey: mapToKey as string,
-//         mapResult: mapResult as MapResult,
-//         errorCount: 0,
-//         optional,
-//         label,
-//         onSearch
-//       };
-//     }
+    if (defaultValue !== undefined) {
+      value[key] = defaultValue;
+    }
 
-//     function select<V extends string | number>() {
-//       return (value: V, label?: string) => ({
-//         value,
-//         label: label || value.toString()
-//       });
-//     }
+    labels[key] = key;
+  }
 
-//     set({
-//       title,
-//       defaultValue,
-//       description,
-//       onClose,
-//       currentValue: {},
-//       onSubmit: onSubmit as (value: Record<string, unknown>) => void | Promise<void>,
-//       fields: fields({
-//         field,
-//         asyncField,
-//         select
-//       })
-//     });
-//   }
+  const form = writable<{
+    value: TLiveValue;
+    errors: { [K in keyof TFinalValue]?: string; };
+    canSubmit: boolean;
+  }>({
+    errors,
+    canSubmit: false,
+    value: value as any
+  });
 
-//   function destroy() {
-//     set(undefined);
-//   }
+  function canSubmit(form: {
+    value: TLiveValue;
+    errors: { [K in keyof TFinalValue]?: string | undefined; };
+  }) {
+    const { value, errors } = form;
+    const parsed = v.safeParse(v.object(formSchema), value);
+    const hasErrors = Object.values(errors).filter((err) => typeof err === 'string').length > 0;
+    return parsed.success && !hasErrors;
+  }
 
-//   function setKeyValue(key: string, value: unknown) {
-//     update((current) => {
-//       if (current) {
-//         current.currentValue[key] = value;
-//       }
+  function setValue(key: string, input: any) {
+    form.update((form) => {
+      const value = form.value as Record<string, any>;
+      const errors = form.errors as Record<string, string | undefined>;
+      const parsed = v.safeParse(formSchema[key], input);
 
-//       return Object.assign({}, current);
-//     });
-//   }
+      if (parsed.success) {
+        errors[key] = undefined;
+      } else {
+        errors[key] = v.flatten(parsed.issues).root?.[0];
+      }
 
-//   function getFieldByKey(
-//     form: {
-//       title: string;
-//       fields: Field[];
-//     },
-//     key: string
-//   ): Field {
-//     let field = form.fields.find(({ mapToKey }) => mapToKey === key);
+      value[key] = input;
 
-//     if (!field) {
-//       throw new Error(`Can't find field with key "${key}" inside form titled "${form.title}`);
-//     }
+      const newForm = {
+        value,
+        errors
+      } as any;
 
-//     return field;
-//   }
+      return {
+        ...newForm,
+        canSubmit: canSubmit(newForm)
+      };
+    });
+  }
 
-//   function setFieldErrorCount(fieldKey: string, errCount: number) {
-//     update((current) => {
-//       if (current) {
-//         let field = current.fields.find(({ mapToKey }) => mapToKey === fieldKey);
+  function setGlobalError(err: string) {
+    form.update((form) => {
+      const errors = form.errors as Record<string, string | undefined>;
+      errors['global'] = err;
 
-//         if (!field) {
-//           throw new Error(
-//             `Can't find field with key "${fieldKey}" inside form titled "${current.title}`
-//           );
-//         }
+      const newForm = {
+        errors,
+        value: form.value
+      } as any;
 
-//         field.errorCount = errCount;
-//       }
+      return {
+        ...newForm,
+        canSubmit: canSubmit(newForm)
+      };
+    });
+  }
 
-//       return Object.assign({}, current);
-//     });
-//   }
+  function getFinalValue(): TFinalValue {
+    const { value, errors } = get(form);
+    const parsed = v.safeParse(v.object(formSchema), value);
+    
+    if (!parsed.success) {
+      throw Error('Can\'t retrieve value for submission because the value is invalid');
+    }
 
-//   return {
-//     subscribe,
-//     create,
-//     destroy,
-//     setKeyValue,
-//     getFieldByKey,
-//     setFieldErrorCount
-//   };
-// }
+    const hasErrors = Object.values(errors).filter((err) => typeof err === 'string').length > 0;
 
-// export const form = createForm();
+    if (hasErrors) {
+      throw Error('Can\'t retrieve value for submission because the form has errors that need to be resolved');
+    }
+
+    return value as any;
+  }
+
+  return {
+    ...form,
+    setValue,
+    getFinalValue,
+    setGlobalError,
+    labels: labels as { [K in keyof TFinalValue]: K; },
+    schemas: formSchema
+  };
+}
