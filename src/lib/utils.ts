@@ -2,7 +2,7 @@ import colors from 'tailwindcss/colors';
 import { TRPCClientError } from '@trpc/client';
 import type { PopupSettings, ToastStore } from '@skeletonlabs/skeleton';
 import type { SafeParseReturnType } from 'zod';
-import type { PageStore } from '$types';
+import type { InferEnum, PageStore } from '$types';
 import type { StaffPermission } from '$db';
 
 /**
@@ -232,14 +232,18 @@ export function dateToHtmlInput(date: Date) {
   return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
 }
 
+export function keys<T extends Record<string, any>>(obj: T): (keyof T)[] {
+  return Object.keys(obj) as any;
+}
+
 /**
  * Get the full URL a user uploaded file
  */
 export function getFileUrl(page: PageStore, path: string) {
-  return `${page.url.origin}/uploads/${path}`;
+  return `${page.url.origin}/api/assets/${path}`;
 }
 
-export function hasPermissions(staffMember: { permissions: (typeof StaffPermission.enumValues)[number][] } | undefined, requiredPerms: (typeof StaffPermission.enumValues)[number][]) {
+export function hasPermissions(staffMember: { permissions: InferEnum<typeof StaffPermission>[] } | undefined, requiredPerms: InferEnum<typeof StaffPermission>[]) {
   return staffMember ? staffMember.permissions.some((perm) => requiredPerms.includes(perm)) : false;
 }
 

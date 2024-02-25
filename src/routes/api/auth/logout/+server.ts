@@ -10,10 +10,13 @@ export const GET = (async ({ url, cookies, route }) => {
 
   try {
     await db
-      .delete(Session)
+      .update(Session)
+      .set({
+        expired: true
+      })
       .where(eq(Session.id, session.sessionId));
   } catch (err) {
-    throw await sveltekitError(err, 'Getting the Discord OAuth token', route);
+    throw await sveltekitError(err, 'Expiring the session', route);
   }
 
   cookies.delete('session', {

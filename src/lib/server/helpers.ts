@@ -10,7 +10,7 @@ import { error } from '@sveltejs/kit';
 import { fileSchema } from '$lib/schemas';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { Token } from 'osu-web.js';
-import type { AuthSession, FileType, Simplify } from '$types';
+import type { AuthSession, FileType, InferEnum, Simplify } from '$types';
 import type { StaffPermission } from '$db';
 
 export async function upsertDiscordUser(token: DiscordOAuth2.TokenRequestResult, tokenIssuedAt: Date, route: { id: string | null; }, update?: {
@@ -384,7 +384,7 @@ export async function getFile(route: { id: string | null }, folderName: string, 
 
 export async function getStaffMember<T extends AuthSession | undefined>(route: { id: string | null }, session: T, tournamentId: number): Promise<T extends AuthSession ? {
   id: number;
-  permissions: (typeof StaffPermission.enumValues)[number][]
+  permissions: InferEnum<typeof StaffPermission>[]
 } : undefined> {
   if (!session) {
     return undefined as any;
@@ -392,7 +392,7 @@ export async function getStaffMember<T extends AuthSession | undefined>(route: {
 
   let staffMember!: {
     id: number;
-    permissions: (typeof StaffPermission.enumValues)[number][]
+    permissions: InferEnum<typeof StaffPermission>[]
   };
 
   try {

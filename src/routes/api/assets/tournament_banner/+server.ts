@@ -26,7 +26,7 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
   const session = getSession(cookies, params.public);
   const staffMember = await getStaffMember(route, session, params.tournament_id);
 
-  if (!params.public && !hasPermissions(staffMember, ['host', 'debug', 'manage_tournament_settings', 'manage_tournament_assets'])) {
+  if (!params.public && !staffMember) {
     error(401, 'You do not have the required permissions to view this tournament\'s banner');
   }
 
