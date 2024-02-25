@@ -15,6 +15,13 @@
       "when": 1708277886321,
       "tag": "0001_deep_stick",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1708737434311,
+      "tag": "0002_powerful_stingray",
+      "breakpoints": true
     }
   ]
 }
