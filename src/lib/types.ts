@@ -1,9 +1,20 @@
 import type { MaybePromise, Page } from '@sveltejs/kit';
 import type { Router } from '$trpc/router';
 import type { Writable } from 'svelte/store';
-import type { BaseSchema } from 'valibot';
+import type { BaseSchema, Output } from 'valibot';
+import type {
+  bwsValuesSchema,
+  draftTypeSchema,
+  rankRangeSchema,
+  refereeSettingsSchema,
+  teamSettingsSchema,
+  tournamentDatesSchema,
+  tournamentLinkSchema
+} from './schemas';
 
-export type Simplify<T extends Record<string, any>> = { [K in keyof T]: T[K] } & NonNullable<unknown>;
+export type Simplify<T extends Record<string, any>> = {
+  [K in keyof T]: T[K];
+} & NonNullable<unknown>;
 
 export interface OAuthToken {
   /** Encrypted using JWT */
@@ -15,69 +26,13 @@ export interface OAuthToken {
 }
 
 /** Linear: ABAB. Snake: ABBA */
-export type DraftType = 'linear' | 'snake';
-export interface RefereeSettings {
-  timerLength: {
-    pick: number;
-    ban: number;
-    protect: number;
-    ready: number;
-    start: number;
-  };
-  allow: {
-    doublePick: boolean;
-    doubleBan: boolean;
-    doubleProtect: boolean;
-  };
-  order: {
-    ban: DraftType;
-    pick: DraftType;
-    protect: DraftType;
-  }
-  alwaysForceNoFail: boolean;
-  banAndProtectCancelOut: boolean;
-  winCondition: 'score' | 'accuracy' | 'combo';
-}
-
-export interface TournamentLink {
-  label: string;
-  url: string;
-  icon: 'osu' | 'discord' | 'google_sheets' | 'google_forms' | 'twitch' | 'youtube' | 'x' | 'challonge' | 'donate' | 'website';
-}
-
-export interface BWSValues {
-  x: number;
-  y: number;
-  z: number;
-}
-
-export interface TeamSettings {
-  minTeamSize: number;
-  maxTeamSize: number;
-  useTeamBanners: boolean;
-}
-
-export interface TournamentDates {
-  publish?: number;
-  concludes?: number;
-  playerRegs?: {
-    open: number;
-    close: number;
-  };
-  staffRegs?: {
-    open: number;
-    close: number;
-  };
-  other: {
-    label: string;
-    date: number;
-  }[];
-}
-
-export interface RankRange {
-  lower: number;
-  upper?: number;
-}
+export type DraftType = Output<typeof draftTypeSchema>;
+export type RefereeSettings = Output<typeof refereeSettingsSchema>;
+export type TournamentLink = Output<typeof tournamentLinkSchema>;
+export type BWSValues = Output<typeof bwsValuesSchema>;
+export type TeamSettings = Output<typeof teamSettingsSchema>;
+export type TournamentDates = Output<typeof tournamentDatesSchema>;
+export type RankRange = Output<typeof rankRangeSchema>;
 
 export type RoundConfig = StandardRoundConfig | QualifierRoundConfig | BattleRoyaleRoundConfig;
 
@@ -114,8 +69,12 @@ export type FileType = 'png' | 'jpg' | 'jpeg' | 'webp' | 'gif' | 'osr' | 'osz';
 
 export type TRPCRouter = {
   [K1 in Exclude<keyof Router, '_def' | 'createCaller' | 'getErrorShape'>]: {
-    [K2 in Exclude<keyof Router[K1], '_def' | 'createCaller' | 'getErrorShape'>]
-      : Router[K1][K2] extends { _def: { _output_out: any; }; } ? Router[K1][K2]['_def']['_output_out'] : never
+    [K2 in Exclude<
+      keyof Router[K1],
+      '_def' | 'createCaller' | 'getErrorShape'
+    >]: Router[K1][K2] extends { _def: { _output_out: any } }
+      ? Router[K1][K2]['_def']['_output_out']
+      : never;
   };
 };
 
