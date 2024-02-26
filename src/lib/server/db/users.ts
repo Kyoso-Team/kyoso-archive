@@ -12,7 +12,8 @@ import {
   jsonb,
   bigserial,
   index,
-  bigint
+  bigint,
+  uniqueIndex
 } from 'drizzle-orm/pg-core';
 import { timestampConfig } from './schema-utils';
 import type { OAuthToken } from '$types';
@@ -27,11 +28,13 @@ export const User = pgTable('user', {
     length: 24
   }).unique('uni_user_api_key'),
   // Relations
-  osuUserId: integer('osu_user_id').notNull().unique('uni_user_osu_user_id').references(() => OsuUser.osuUserId),
+  osuUserId: integer('osu_user_id').notNull().references(() => OsuUser.osuUserId),
   discordUserId: varchar('discord_user_id', {
     length: 19
   }).notNull().unique('uni_user_discord_user_id').references(() => DiscordUser.discordUserId)
-});
+}, (table) => ({
+  uniqueIndexOsuUserId: uniqueIndex('udx_user_osu_user_id').on(table.osuUserId)
+}));
 
 export const OsuUser = pgTable('osu_user', {
   osuUserId: integer('osu_user_id').primaryKey(),
@@ -126,9 +129,8 @@ export const Notification = pgTable('notification', {
   /**
    * This message can contain variables that can then be replaced client side. Example:
    * ```plain
-   * "You've been added as a staff member for {tournament:id} by {osu_user:osu_user_id}."
+   * "You've been added as a staff member for {tournament:id} by {user:id}."
    * ```
-   * Variables can be extracted with the following regex: `/\{(\w+):(\w+)\}/g`
    */
   message: text('message').notNull()
 });
@@ -142,5 +144,7 @@ export const UserNotification = pgTable('user_notification', {
 }, (table) => ({
   pk: primaryKey({
     columns: [table.userId, table.notificationId]
-  })
+  }),
+  indexNotificationId: index('idx_user_notification_notification_id').on(table.notificationId),
+  indexUserIdNotifiedAt: index('idx_user_notification_user_id_notified_at').on(table.userId, table.notifiedAt)
 }));

@@ -1,0 +1,1146 @@
+{
+  "id": "2a5cd575-802e-4c57-8593-53e505b9052d",
+  "prevId": "c37298f8-fec0-4075-8b88-8ff32fb81dd5",
+  "version": "5",
+  "dialect": "pg",
+  "tables": {
+    "ban": {
+      "name": "ban",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "issued_at": {
+          "name": "issued_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "lift_at": {
+          "name": "lift_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ban_reason": {
+          "name": "ban_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "issued_to_user_id": {
+          "name": "issued_to_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "country": {
+      "name": "country",
+      "schema": "",
+      "columns": {
+        "code": {
+          "name": "code",
+          "type": "char(2)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(35)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "discord_user": {
+      "name": "discord_user",
+      "schema": "",
+      "columns": {
+        "discord_user_id": {
+          "name": "discord_user_id",
+          "type": "varchar(19)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "username": {
+          "name": "username",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "notification": {
+      "name": "notification",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "message_hash": {
+          "name": "message_hash",
+          "type": "char(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uni_notification_message_hash": {
+          "name": "uni_notification_message_hash",
+          "nullsNotDistinct": false,
+          "columns": [
+            "message_hash"
+          ]
+        }
+      }
+    },
+    "osu_badge": {
+      "name": "osu_badge",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "img_file_name": {
+          "name": "img_file_name",
+          "type": "varchar(60)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "osu_user": {
+      "name": "osu_user",
+      "schema": "",
+      "columns": {
+        "osu_user_id": {
+          "name": "osu_user_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "username": {
+          "name": "username",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "restricted": {
+          "name": "restricted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "global_std_rank": {
+          "name": "global_std_rank",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "token": {
+          "name": "token",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "country_code": {
+          "name": "country_code",
+          "type": "char(2)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "osu_user_country_code_country_code_fk": {
+          "name": "osu_user_country_code_country_code_fk",
+          "tableFrom": "osu_user",
+          "tableTo": "country",
+          "columnsFrom": [
+            "country_code"
+          ],
+          "columnsTo": [
+            "code"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uni_osu_user_username": {
+          "name": "uni_osu_user_username",
+          "nullsNotDistinct": false,
+          "columns": [
+            "username"
+          ]
+        }
+      }
+    },
+    "osu_user_awarded_badge": {
+      "name": "osu_user_awarded_badge",
+      "schema": "",
+      "columns": {
+        "osu_user_id": {
+          "name": "osu_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "osu_badge_id": {
+          "name": "osu_badge_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "awarded_at": {
+          "name": "awarded_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "osu_user_awarded_badge_osu_user_id_osu_user_osu_user_id_fk": {
+          "name": "osu_user_awarded_badge_osu_user_id_osu_user_osu_user_id_fk",
+          "tableFrom": "osu_user_awarded_badge",
+          "tableTo": "osu_user",
+          "columnsFrom": [
+            "osu_user_id"
+          ],
+          "columnsTo": [
+            "osu_user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "osu_user_awarded_badge_osu_badge_id_osu_badge_id_fk": {
+          "name": "osu_user_awarded_badge_osu_badge_id_osu_badge_id_fk",
+          "tableFrom": "osu_user_awarded_badge",
+          "tableTo": "osu_badge",
+          "columnsFrom": [
+            "osu_badge_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "osu_user_awarded_badge_osu_user_id_osu_badge_id_pk": {
+          "name": "osu_user_awarded_badge_osu_user_id_osu_badge_id_pk",
+          "columns": [
+            "osu_user_id",
+            "osu_badge_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "session": {
+      "name": "session",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_active_at": {
+          "name": "last_active_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "inet",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ip_metadata": {
+          "name": "ip_metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expired": {
+          "name": "expired",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_session_id_expired": {
+          "name": "idx_session_id_expired",
+          "columns": [
+            "id",
+            "expired"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "user": {
+      "name": "user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "registered_at": {
+          "name": "registered_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_api_data_at": {
+          "name": "updated_api_data_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "admin": {
+          "name": "admin",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "approved_host": {
+          "name": "approved_host",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "api_key": {
+          "name": "api_key",
+          "type": "varchar(24)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "osu_user_id": {
+          "name": "osu_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "discord_user_id": {
+          "name": "discord_user_id",
+          "type": "varchar(19)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "udx_user_osu_user_id": {
+          "name": "udx_user_osu_user_id",
+          "columns": [
+            "osu_user_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "user_osu_user_id_osu_user_osu_user_id_fk": {
+          "name": "user_osu_user_id_osu_user_osu_user_id_fk",
+          "tableFrom": "user",
+          "tableTo": "osu_user",
+          "columnsFrom": [
+            "osu_user_id"
+          ],
+          "columnsTo": [
+            "osu_user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_discord_user_id_discord_user_discord_user_id_fk": {
+          "name": "user_discord_user_id_discord_user_discord_user_id_fk",
+          "tableFrom": "user",
+          "tableTo": "discord_user",
+          "columnsFrom": [
+            "discord_user_id"
+          ],
+          "columnsTo": [
+            "discord_user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uni_user_api_key": {
+          "name": "uni_user_api_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "api_key"
+          ]
+        },
+        "uni_user_discord_user_id": {
+          "name": "uni_user_discord_user_id",
+          "nullsNotDistinct": false,
+          "columns": [
+            "discord_user_id"
+          ]
+        }
+      }
+    },
+    "user_notification": {
+      "name": "user_notification",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notified_at": {
+          "name": "notified_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "notification_id": {
+          "name": "notification_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_user_notification_notification_id": {
+          "name": "idx_user_notification_notification_id",
+          "columns": [
+            "notification_id"
+          ],
+          "isUnique": false
+        },
+        "idx_user_notification_user_id_notified_at": {
+          "name": "idx_user_notification_user_id_notified_at",
+          "columns": [
+            "user_id",
+            "notified_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "user_notification_user_id_user_id_fk": {
+          "name": "user_notification_user_id_user_id_fk",
+          "tableFrom": "user_notification",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_notification_notification_id_notification_id_fk": {
+          "name": "user_notification_notification_id_notification_id_fk",
+          "tableFrom": "user_notification",
+          "tableTo": "notification",
+          "columnsFrom": [
+            "notification_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "user_notification_user_id_notification_id_pk": {
+          "name": "user_notification_user_id_notification_id_pk",
+          "columns": [
+            "user_id",
+            "notification_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "round": {
+      "name": "round",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order": {
+          "name": "order",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "target_star_rating": {
+          "name": "target_star_rating",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "playtesting_pool": {
+          "name": "playtesting_pool",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "publish_pool": {
+          "name": "publish_pool",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "publish_schedules": {
+          "name": "publish_schedules",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "publish_stats": {
+          "name": "publish_stats",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "config": {
+          "name": "config",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "stage_id": {
+          "name": "stage_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "round_stage_id_stage_id_fk": {
+          "name": "round_stage_id_stage_id_fk",
+          "tableFrom": "round",
+          "tableTo": "stage",
+          "columnsFrom": [
+            "stage_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "round_tournament_id_tournament_id_fk": {
+          "name": "round_tournament_id_tournament_id_fk",
+          "tableFrom": "round",
+          "tableTo": "tournament",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uni_round_name_tournament_id": {
+          "name": "uni_round_name_tournament_id",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name",
+            "tournament_id"
+          ]
+        }
+      }
+    },
+    "stage": {
+      "name": "stage",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "format": {
+          "name": "format",
+          "type": "stage_format",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order": {
+          "name": "order",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_main_stage": {
+          "name": "is_main_stage",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "stage_tournament_id_tournament_id_fk": {
+          "name": "stage_tournament_id_tournament_id_fk",
+          "tableFrom": "stage",
+          "tableTo": "tournament",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uni_stage_tournament_id_format": {
+          "name": "uni_stage_tournament_id_format",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tournament_id",
+            "format"
+          ]
+        }
+      }
+    },
+    "tournament": {
+      "name": "tournament",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted": {
+          "name": "deleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url_slug": {
+          "name": "url_slug",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "acronym": {
+          "name": "acronym",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "tournament_type",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rules": {
+          "name": "rules",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo_metadata": {
+          "name": "logo_metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "banner_metadata": {
+          "name": "banner_metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rank_range": {
+          "name": "rank_range",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dates": {
+          "name": "dates",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{\"other\":[]}'::jsonb"
+        },
+        "team_settings": {
+          "name": "team_settings",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bws_values": {
+          "name": "bws_values",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "links": {
+          "name": "links",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "referee_settings": {
+          "name": "referee_settings",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{\"timerLength\":{\"pick\":120,\"ban\":120,\"protect\":120,\"ready\":120,\"start\":10},\"allow\":{\"doublePick\":false,\"doubleBan\":false,\"doubleProtect\":false},\"order\":{\"ban\":\"linear\",\"pick\":\"linear\",\"protect\":\"linear\"},\"alwaysForceNoFail\":true,\"banAndProtectCancelOut\":false,\"winCondition\":\"score\"}'::jsonb"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uni_tournament_name": {
+          "name": "uni_tournament_name",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        },
+        "uni_tournament_url_slug": {
+          "name": "uni_tournament_url_slug",
+          "nullsNotDistinct": false,
+          "columns": [
+            "url_slug"
+          ]
+        }
+      }
+    },
+    "staff_member": {
+      "name": "staff_member",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "joined_staff_at": {
+          "name": "joined_staff_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "staff_member_user_id_user_id_fk": {
+          "name": "staff_member_user_id_user_id_fk",
+          "tableFrom": "staff_member",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "staff_member_tournament_id_tournament_id_fk": {
+          "name": "staff_member_tournament_id_tournament_id_fk",
+          "tableFrom": "staff_member",
+          "tableTo": "tournament",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uni_staff_member_user_id_tournament_id": {
+          "name": "uni_staff_member_user_id_tournament_id",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id",
+            "tournament_id"
+          ]
+        }
+      }
+    },
+    "staff_member_role": {
+      "name": "staff_member_role",
+      "schema": "",
+      "columns": {
+        "staff_member_id": {
+          "name": "staff_member_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "staff_role_id": {
+          "name": "staff_role_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "staff_member_role_staff_member_id_staff_member_id_fk": {
+          "name": "staff_member_role_staff_member_id_staff_member_id_fk",
+          "tableFrom": "staff_member_role",
+          "tableTo": "staff_member",
+          "columnsFrom": [
+            "staff_member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "staff_member_role_staff_role_id_staff_role_id_fk": {
+          "name": "staff_member_role_staff_role_id_staff_role_id_fk",
+          "tableFrom": "staff_member_role",
+          "tableTo": "staff_role",
+          "columnsFrom": [
+            "staff_role_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "staff_member_role_staff_member_id_staff_role_id_pk": {
+          "name": "staff_member_role_staff_member_id_staff_role_id_pk",
+          "columns": [
+            "staff_member_id",
+            "staff_role_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "staff_role": {
+      "name": "staff_role",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "color": {
+          "name": "color",
+          "type": "staff_color",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'slate'"
+        },
+        "order": {
+          "name": "order",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "permissions": {
+          "name": "permissions",
+          "type": "staff_permission[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": []
+        },
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "staff_role_tournament_id_tournament_id_fk": {
+          "name": "staff_role_tournament_id_tournament_id_fk",
+          "tableFrom": "staff_role",
+          "tableTo": "tournament",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uni_staff_role_name_tournament_id": {
+          "name": "uni_staff_role_name_tournament_id",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name",
+            "tournament_id"
+          ]
+        }
+      }
+    }
+  },
+  "enums": {
+    "staff_color": {
+      "name": "staff_color",
+      "values": {
+        "slate": "slate",
+        "gray": "gray",
+        "red": "red",
+        "orange": "orange",
+        "yellow": "yellow",
+        "lime": "lime",
+        "green": "green",
+        "emerald": "emerald",
+        "cyan": "cyan",
+        "blue": "blue",
+        "indigo": "indigo",
+        "purple": "purple",
+        "fuchsia": "fuchsia",
+        "pink": "pink"
+      }
+    },
+    "staff_permission": {
+      "name": "staff_permission",
+      "values": {
+        "host": "host",
+        "debug": "debug",
+        "manage_tournament_settings": "manage_tournament_settings",
+        "manage_tournament_assets": "manage_tournament_assets",
+        "view_staff_members": "view_staff_members",
+        "mutate_staff_members": "mutate_staff_members",
+        "delete_staff_members": "delete_staff_members",
+        "view_regs": "view_regs",
+        "mutate_regs": "mutate_regs",
+        "delete_regs": "delete_regs",
+        "mutate_pool_structure": "mutate_pool_structure",
+        "view_pool_suggestions": "view_pool_suggestions",
+        "mutate_pool_suggestions": "mutate_pool_suggestions",
+        "delete_pool_suggestions": "delete_pool_suggestions",
+        "view_pooled_maps": "view_pooled_maps",
+        "mutate_pooled_maps": "mutate_pooled_maps",
+        "delete_pooled_maps": "delete_pooled_maps",
+        "can_playtest": "can_playtest",
+        "view_matches": "view_matches",
+        "mutate_matches": "mutate_matches",
+        "delete_matches": "delete_matches",
+        "ref_matches": "ref_matches",
+        "commentate_matches": "commentate_matches",
+        "stream_matches": "stream_matches",
+        "view_stats": "view_stats",
+        "mutate_stats": "mutate_stats",
+        "delete_stats": "delete_stats",
+        "can_play": "can_play"
+      }
+    },
+    "stage_format": {
+      "name": "stage_format",
+      "values": {
+        "groups": "groups",
+        "swiss": "swiss",
+        "qualifiers": "qualifiers",
+        "single_elim": "single_elim",
+        "double_elim": "double_elim",
+        "battle_royale": "battle_royale"
+      }
+    },
+    "tournament_type": {
+      "name": "tournament_type",
+      "values": {
+        "teams": "teams",
+        "draft": "draft",
+        "solo": "solo"
+      }
+    }
+  },
+  "schemas": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

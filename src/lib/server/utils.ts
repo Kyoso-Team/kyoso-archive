@@ -99,12 +99,12 @@ export function generateFileId() {
 /**
  * Paginate data in database queries
  */
-// export function paginate(page: number, elementsPerPage: number = 30) {
-//   return {
-//     offset: elementsPerPage * (page - 1),
-//     limit: elementsPerPage
-//   };
-// }
+export function paginate(page: number, elementsPerPage: number = 30) {
+  return {
+    offset: elementsPerPage * (page - 1),
+    limit: elementsPerPage
+  };
+}
 
 /**
  * Enable text search capabilities provided the table's columns and the search term (query)
