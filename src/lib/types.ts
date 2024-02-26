@@ -12,6 +12,8 @@ import type {
   tournamentLinkSchema
 } from './schemas';
 
+export type AnyComponent = any;
+
 export type Simplify<T extends Record<string, any>> = {
   [K in keyof T]: T[K];
 } & NonNullable<unknown>;
