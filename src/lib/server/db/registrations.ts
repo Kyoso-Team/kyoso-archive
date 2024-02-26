@@ -71,7 +71,7 @@ export const StaffMemberRole = pgTable(
       })
   },
   (table) => ({
-    pkey: primaryKey({
+    pk: primaryKey({
       columns: [table.staffMemberId, table.staffRoleId]
     })
   })

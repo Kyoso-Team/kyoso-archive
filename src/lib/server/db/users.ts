@@ -11,7 +11,8 @@ import {
   inet,
   jsonb,
   bigserial,
-  index
+  index,
+  bigint
 } from 'drizzle-orm/pg-core';
 import { timestampConfig } from './schema-utils';
 import type { OAuthToken } from '$types';
@@ -48,22 +49,21 @@ export const OsuUser = pgTable('osu_user', {
 });
 
 export const OsuBadge = pgTable('osu_badge', {
+  id: serial('id').primaryKey(),
   /** Example: In URL `https://assets.ppy.sh/profile-badges/owc2023-winner.png`, `owc2023-winner.png` is the file name */
   imgFileName: varchar('img_file_name', {
     length: 60
-  }).primaryKey(),
+  }).notNull(),
   description: text('description')
 });
 
 export const OsuUserAwardedBadge = pgTable('osu_user_awarded_badge', {
   osuUserId: integer('osu_user_id').notNull().references(() => OsuUser.osuUserId),
-  osuBadgeImgFileName: varchar('osu_badge_img_file_name', {
-    length: 60
-  }).notNull().references(() => OsuBadge.imgFileName),
+  osuBadgeId: integer('osu_badge_id').notNull().references(() => OsuBadge.id),
   awardedAt: timestamp('awarded_at', timestampConfig).notNull()
 }, (table) => ({
   pk: primaryKey({
-    columns: [table.osuUserId, table.osuBadgeImgFileName]
+    columns: [table.osuUserId, table.osuBadgeId]
   })
 }));
 
@@ -115,3 +115,32 @@ export const Ban = pgTable('ban', {
   banReason: text('ban_reason').notNull(),
   issuedToUserId: integer('issued_to_user_id').notNull()
 });
+
+export const Notification = pgTable('notification', {
+  id: bigserial('id', {
+    mode: 'number'
+  }).primaryKey(),
+  messageHash: char('message_hash', {
+    length: 32
+  }).notNull().unique('uni_notification_message_hash'),
+  /**
+   * This message can contain variables that can then be replaced client side. Example:
+   * ```plain
+   * "You've been added as a staff member for {tournament:id} by {osu_user:osu_user_id}."
+   * ```
+   * Variables can be extracted with the following regex: `/\{(\w+):(\w+)\}/g`
+   */
+  message: text('message').notNull()
+});
+
+export const UserNotification = pgTable('user_notification', {
+  userId: integer('user_id').notNull().references(() => User.id),
+  notifiedAt: timestamp('notified_at', timestampConfig).notNull().defaultNow(),
+  notificationId: bigint('notification_id', {
+    mode: 'number'
+  }).notNull().references(() => Notification.id)
+}, (table) => ({
+  pk: primaryKey({
+    columns: [table.userId, table.notificationId]
+  })
+}));

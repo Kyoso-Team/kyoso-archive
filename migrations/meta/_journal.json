@@ -22,6 +22,13 @@
       "when": 1708737434311,
       "tag": "0002_powerful_stingray",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1708927053410,
+      "tag": "0003_eager_master_chief",
+      "breakpoints": true
     }
   ]
 }
