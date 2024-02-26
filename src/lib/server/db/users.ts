@@ -31,16 +31,17 @@ export const User = pgTable('user', {
   osuUserId: integer('osu_user_id').notNull().references(() => OsuUser.osuUserId),
   discordUserId: varchar('discord_user_id', {
     length: 19
-  }).notNull().unique('uni_user_discord_user_id').references(() => DiscordUser.discordUserId)
+  }).notNull().references(() => DiscordUser.discordUserId)
 }, (table) => ({
-  uniqueIndexOsuUserId: uniqueIndex('udx_user_osu_user_id').on(table.osuUserId)
+  uniqueIndexOsuUserId: uniqueIndex('udx_user_osu_user_id').on(table.osuUserId),
+  uniqueIndexDiscordUserId: uniqueIndex('udx_user_discord_user_id').on(table.discordUserId)
 }));
 
 export const OsuUser = pgTable('osu_user', {
   osuUserId: integer('osu_user_id').primaryKey(),
   username: varchar('username', {
     length: 16
-  }).notNull().unique('uni_osu_user_username'),
+  }).notNull(),
   restricted: boolean('restricted').notNull(),
   globalStdRank: integer('global_std_rank'),
   token: jsonb('token').notNull().$type<OAuthToken>(),
@@ -49,7 +50,9 @@ export const OsuUser = pgTable('osu_user', {
   })
     .notNull()
     .references(() => Country.code)
-});
+}, (table) => ({
+  indexUsername: uniqueIndex('udx_osu_user_username').on(table.username)
+}));
 
 export const OsuBadge = pgTable('osu_badge', {
   id: serial('id').primaryKey(),
@@ -103,9 +106,12 @@ export const Session = pgTable('session', {
   }>(),
   userAgent: text('user_agent').notNull(),
   expired: boolean('expired').notNull().default(false),
-  userId: integer('user_id').notNull()
+  userId: integer('user_id').notNull().references(() => User.id, {
+    onDelete: 'cascade'
+  })
 }, (table) => ({
-  indexIdExpired: index('idx_session_id_expired').on(table.id, table.expired)
+  indexIdExpired: index('idx_session_id_expired').on(table.id, table.expired),
+  indexUserIdExpired: index('idx_session_user_id_expired').on(table.userId, table.expired)
 }));
 
 export const Ban = pgTable('ban', {
@@ -116,8 +122,12 @@ export const Ban = pgTable('ban', {
   /** Date in which an admin has revoked the ban as a result of the user appealing */
   revokedAt: timestamp('revoked_at', timestampConfig),
   banReason: text('ban_reason').notNull(),
-  issuedToUserId: integer('issued_to_user_id').notNull()
-});
+  issuedToUserId: integer('issued_to_user_id').notNull().references(() => User.id, {
+    onDelete: 'cascade'
+  })
+}, (table) => ({
+  indexIssuedToUserId: index('idx_ban_issued_to_user_id').on(table.issuedToUserId)
+}));
 
 export const Notification = pgTable('notification', {
   id: bigserial('id', {
@@ -136,12 +146,14 @@ export const Notification = pgTable('notification', {
 });
 
 export const UserNotification = pgTable('user_notification', {
-  userId: integer('user_id').notNull().references(() => User.id),
-  notifiedAt: timestamp('notified_at', timestampConfig).notNull().defaultNow(),
-  read: boolean('read').notNull().default(false),
+  userId: integer('user_id').notNull().references(() => User.id, {
+    onDelete: 'cascade'
+  }),
   notificationId: bigint('notification_id', {
     mode: 'number'
-  }).notNull().references(() => Notification.id)
+  }).notNull().references(() => Notification.id),
+  notifiedAt: timestamp('notified_at', timestampConfig).notNull().defaultNow(),
+  read: boolean('read').notNull().default(false)
 }, (table) => ({
   pk: primaryKey({
     columns: [table.userId, table.notificationId]

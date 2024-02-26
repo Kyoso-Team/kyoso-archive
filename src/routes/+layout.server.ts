@@ -3,7 +3,7 @@ import { discordMainAuth, osuAuth, discordMainAuthOptions } from '$lib/server/co
 import { apiError, pick, signJWT } from '$lib/server/utils';
 import { DiscordUser, OsuUser, User, db } from '$db';
 import { eq, sql } from 'drizzle-orm';
-import { union } from 'drizzle-orm/pg-core';
+import { unionAll } from 'drizzle-orm/pg-core';
 import { upsertDiscordUser, upsertOsuUser } from '$lib/server/helpers/auth';
 import { getSession } from '$lib/server/helpers/api';
 import type DiscordOAuth2 from 'discord-oauth2';
@@ -37,7 +37,7 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: Paramet
     .limit(1);
 
   try {
-    refreshTokens = await union(osuRefreshTokenQuery, discordRefreshTokenQuery)
+    refreshTokens = await unionAll(osuRefreshTokenQuery, discordRefreshTokenQuery)
       .orderBy(sql`"order" asc`)
       .then((rows) => ({
         osu: rows[0].token.refreshToken,
