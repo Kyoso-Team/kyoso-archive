@@ -99,7 +99,7 @@
     </Modal>
   </Backdrop>
 {/if}
-<div class="m-4 md:m-12 sm:m-8 flex justify-center">
+<main class="m-4 md:m-12 sm:m-8 flex justify-center">
   <div class="w-full max-w-[48rem]">
     <h1>User Settings</h1>
     <div class="line-b mt-4 mb-8" />
@@ -180,4 +180,4 @@
       {/each}
     </div>
   </div>
-</div>
+</main>

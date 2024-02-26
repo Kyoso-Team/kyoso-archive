@@ -15,7 +15,7 @@
     twitterCardType: 'summary_large_image'
   }}
 />
-<div class="relative h-[32rem]">
+<main class="relative h-[32rem]">
   <div class="relative z-[2] flex h-full w-screen items-center overflow-hidden opacity-20">
     <video src="./landing-bg-video.mp4" class="absolute w-full pb-2" autoplay loop>
       <track kind="captions" />
@@ -36,4 +36,4 @@
     </p>
     <!-- <a href="/dashboard" class="btn variant-filled-primary font-medium mt-6">Host Your Tournament Now</a> -->
   </div>
-</div>
+</main>
