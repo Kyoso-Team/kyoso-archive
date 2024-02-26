@@ -25,6 +25,7 @@ export function getSession<T extends boolean>(
 export async function getNotifications(userId: number, pagination: { limit: number; offset: number; }, route: { id: string | null }) {
   let notifications: {
     notifiedAt: Date;
+    read: boolean;
     message: string;
   }[] = [];
   
@@ -32,6 +33,7 @@ export async function getNotifications(userId: number, pagination: { limit: numb
     notifications = await db
       .select({
         notifiedAt: UserNotification.notifiedAt,
+        read: UserNotification.read,
         message: Notification.message
       })
       .from(UserNotification)

@@ -138,6 +138,7 @@ export const Notification = pgTable('notification', {
 export const UserNotification = pgTable('user_notification', {
   userId: integer('user_id').notNull().references(() => User.id),
   notifiedAt: timestamp('notified_at', timestampConfig).notNull().defaultNow(),
+  read: boolean('read').notNull().default(false),
   notificationId: bigint('notification_id', {
     mode: 'number'
   }).notNull().references(() => Notification.id)
