@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { SEO } from '$components/general';
+  import { page } from '$app/stores';
   import { User, Trophy } from 'lucide-svelte';
   import type { AnyComponent } from '$types';
 
@@ -17,6 +19,7 @@
   }];
 </script>
 
+<SEO page={$page} title="Admin" description="Admin dashboard" noIndex />
 <main class="main flex flex-col gap-4 justify-center items-center min-h-full">
   <h1>Admin Panel</h1>
   <div class="flex justify-center flex-wrap gap-4">
