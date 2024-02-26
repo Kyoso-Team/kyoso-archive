@@ -51,6 +51,16 @@
     const rankRangeValue = rankRangeCondition ? rankRange.getFinalValue($rankRange) : undefined;
     let tournament!: TRPCRouter['tournaments']['createTournament'];
 
+    if (teamValue && teamValue.minTeamSize > teamValue.maxTeamSize) {
+      toastError(toast, 'The minimum team size must be less than or equal to the maximum');
+      return;
+    }
+
+    if (rankRangeValue && rankRangeValue.upper && rankRangeValue.lower > rankRangeValue.upper) {
+      toastError(toast, 'The lower rank range limit must be less than or equal to the maximum');
+      return;
+    }
+
     try {
       tournament = await trpc($page).tournaments.createTournament.mutate({
         acronym,
@@ -78,7 +88,7 @@
     show = false;
     goto(`/${tournament.urlSlug}`);
   }
-  
+
   function cancel() {
     show = false;
   }
