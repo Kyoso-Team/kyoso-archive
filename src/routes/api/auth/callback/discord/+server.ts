@@ -62,7 +62,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
       .values({
         discordUserId: discordUser.id,
         osuUserId: osuSessionData.id,
-        admin: env.ADMIN_BY_DEFAULT.includes(osuSessionData.id),
+        admin: env.ADMIN_BY_DEFAULT === osuSessionData.id,
         approvedHost: env.ENV === 'testing'
       })
       .returning(pick(User, ['id', 'updatedApiDataAt', 'admin']))

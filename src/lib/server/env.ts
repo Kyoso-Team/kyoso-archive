@@ -44,7 +44,10 @@ const serverEnvSchema = v.object({
   BUNNY_PASSWORD: nonEmptyStringSchema,
   IPINFO_API_ACCESS_TOKEN: nonEmptyStringSchema,
   DATABASE_URL: nonEmptyStringSchema,
-  ADMIN_BY_DEFAULT: osuUserIdsSchema,
+  ADMIN_BY_DEFAULT: v.number(
+    'be a number',
+    [v.integer('be an integer')]
+  ),
   TESTERS: osuUserIdsSchema
 });
 
@@ -61,7 +64,7 @@ const serverEnv = {
   BUNNY_PASSWORD,
   IPINFO_API_ACCESS_TOKEN,
   DATABASE_URL,
-  ADMIN_BY_DEFAULT: (JSON.parse(ADMIN_BY_DEFAULT) as string[]).map((id) => Number(id)),
+  ADMIN_BY_DEFAULT: Number(ADMIN_BY_DEFAULT),
   TESTERS: (JSON.parse(TESTERS) as string[]).map((id) => Number(id))
 };
 
