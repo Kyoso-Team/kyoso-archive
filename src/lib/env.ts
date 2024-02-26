@@ -34,7 +34,7 @@ export const clientEnv = {
   PUBLIC_DISCORD_CLIENT_ID,
   PUBLIC_DISCORD_MAIN_REDIRECT_URI,
   PUBLIC_DISCORD_CHANGE_ACCOUNT_REDIRECT_URI,
-  PUBLIC_CONTACT_EMAIL
+  PUBLIC_CONTACT_EMAIL: PUBLIC_CONTACT_EMAIL || 'example@gmail.com'
 };
 
 export function parseEnv<T extends v.BaseSchema>(schema: T, env: unknown) {

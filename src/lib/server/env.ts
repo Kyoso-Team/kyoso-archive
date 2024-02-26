@@ -12,17 +12,9 @@ import {
   DATABASE_URL,
   TESTERS,
   ENV,
-  IPINFO_API_ACCESS_TOKEN
+  IPINFO_ACCESS_TOKEN
 } from '$env/static/private';
 import { clientEnvSchema, clientEnv, nonEmptyStringSchema, parseEnv } from '../env';
-
-const osuUserIdsSchema = v.array(
-  v.number(
-    'be a number',
-    [v.integer('be an integer')]
-  ),
-  'be an array'
-);
 
 const serverEnvSchema = v.object({
   ...clientEnvSchema.entries,
@@ -42,13 +34,19 @@ const serverEnvSchema = v.object({
   BUNNY_HOSTNAME: nonEmptyStringSchema,
   BUNNY_USERNAME: nonEmptyStringSchema,
   BUNNY_PASSWORD: nonEmptyStringSchema,
-  IPINFO_API_ACCESS_TOKEN: nonEmptyStringSchema,
+  IPINFO_ACCESS_TOKEN: nonEmptyStringSchema,
   DATABASE_URL: nonEmptyStringSchema,
   ADMIN_BY_DEFAULT: v.number(
     'be a number',
     [v.integer('be an integer')]
   ),
-  TESTERS: osuUserIdsSchema
+  TESTERS: v.array(
+    v.number(
+      'be a number',
+      [v.integer('be an integer')]
+    ),
+    'be an array'
+  )
 });
 
 const serverEnv = {
@@ -62,10 +60,10 @@ const serverEnv = {
   BUNNY_HOSTNAME,
   BUNNY_USERNAME,
   BUNNY_PASSWORD,
-  IPINFO_API_ACCESS_TOKEN,
+  IPINFO_ACCESS_TOKEN,
   DATABASE_URL,
   ADMIN_BY_DEFAULT: Number(ADMIN_BY_DEFAULT),
-  TESTERS: (JSON.parse(TESTERS) as string[]).map((id) => Number(id))
+  TESTERS: (JSON.parse(TESTERS || '[]') as string[]).map((id) => Number(id))
 };
 
 const env = parseEnv(serverEnvSchema, serverEnv);

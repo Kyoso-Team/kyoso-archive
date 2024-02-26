@@ -177,7 +177,7 @@ export async function createSession(userId: number, ipAddress: string, userAgent
   };
 
   try {
-    const resp = await fetch(`https://ipinfo.io/${ipAddress}?token=${env.IPINFO_API_ACCESS_TOKEN}`);
+    const resp = await fetch(`https://ipinfo.io/${ipAddress}?token=${env.IPINFO_ACCESS_TOKEN}`);
     ipMeta = await resp.json();
   } catch (err) {
     throw await apiError(err, 'Getting the IP address\' information', route);

@@ -9,15 +9,15 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "prettier --plugin-search-dir . --check . && eslint . && npx tsc --noEmit",
-    "fmt": "prettier --plugin-search-dir . --write .",
-    "review": "pnpm fmt && pnpm lint && pnpm check",
+    "format": "prettier --plugin-search-dir . --write .",
+    "review": "pnpm format && pnpm lint && pnpm check",
     "db:generate": "npx drizzle-kit generate:pg",
     "db:generate-custom": "npx drizzle-kit generate:pg --custom",
     "db:migrate": "node --loader ts-node/esm scripts/migrate.ts",
     "db:reset": "node --loader ts-node/esm scripts/reset.ts",
-    "db:push": "npx drizzle-kit push:pg",
     "db:seed": "node --experimental-specifier-resolution=node --loader ts-node/esm scripts/seed/index.ts",
     "db:studio": "npx drizzle-kit studio",
+    "db:drop": "npx drizzle-kit drop",
     "db:dbml": "node --experimental-specifier-resolution=node --loader ts-node/esm scripts/dbml.ts"
   },
   "devDependencies": {
