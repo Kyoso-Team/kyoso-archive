@@ -3,14 +3,14 @@ import { error } from '@sveltejs/kit';
 import { generateFileId, getSession, past, pick, sveltekitError } from '$lib/server-utils';
 import { Tournament, db } from '$db';
 import { and, eq, isNotNull, not, sql } from 'drizzle-orm';
-import { boolStringSchema, fileIdSchema, idSchema } from '$lib/schemas';
+import { boolStringSchema, fileIdSchema, positiveIntSchema } from '$lib/schemas';
 import { deleteFile, getFile, getStaffMember, parseSearchParams, parseUploadFormData, transformFile, uploadFile } from '$lib/server/helpers';
 import { convertBytes, formatDigits, hasPermissions } from '$lib/utils';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, cookies, route, setHeaders }) => {
   const params = await parseSearchParams(url, route, {
-    tournament_id: idSchema,
+    tournament_id: positiveIntSchema,
     file_id: fileIdSchema,
     public: v.optional(boolStringSchema),
     size: v.union(
@@ -63,7 +63,7 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
 export const PUT = (async ({ cookies, route, request }) => {
   const session = getSession(cookies, true);
   const data = await parseUploadFormData(request, route, {
-    tournamentId: idSchema
+    tournamentId: positiveIntSchema
   });
   const staffMember = await getStaffMember(route, session, data.tournamentId);
 
@@ -117,7 +117,7 @@ export const PUT = (async ({ cookies, route, request }) => {
 export const DELETE = (async ({ cookies, route, request }) => {
   const session = getSession(cookies, true);
   const data = await parseUploadFormData(request, route, {
-    tournamentId: idSchema
+    tournamentId: positiveIntSchema
   });
   const staffMember = await getStaffMember(route, session, data.tournamentId);
 

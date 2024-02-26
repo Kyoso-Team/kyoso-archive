@@ -1,11 +1,8 @@
-import { usersRouter } from '../procedures';
+import { usersRouter, tournamentsRouter } from '../procedures';
 import { t } from '$trpc';
 
 export const router = t.router({
-  // auth: authRouter,
-  // tournaments: tournamentRouter,
-  // uploads: uploadRouter,
-  // validation: validationRouter,
+  tournaments: tournamentsRouter,
   users: usersRouter
   // stages: stagesRouter,
   // rounds: roundsRouter,

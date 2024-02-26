@@ -3,8 +3,9 @@ import * as v from 'valibot';
 // When writing the error messages for scehmas, keep in mind that the message will be formated like:
 // "Invalid input: {object_name}.{property} should {message}"
 // Example: "Invalid input: body.tournamentId should be a number"
+// (The messages will not appear in tRPC procedures)
 
-export const idSchema = v.number(
+export const positiveIntSchema = v.number(
   'be a number',
   [v.integer('be an integer'), v.minValue(1, 'be greater or equal to 1')]
 );
@@ -23,6 +24,8 @@ export const boolStringSchema = v.transform(
   ),
   (input) => input === 'true'
 );
+
+export const urlSlugSchema = v.custom((input: string) => /[abcdefghijkmnlopqrstuvwxyz0123456789_]+$/.test(input));
 
 // export const whereIdSchema = z.object({
 //   id: z.number().int()

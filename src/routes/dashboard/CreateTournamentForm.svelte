@@ -1,14 +1,19 @@
 <script lang="ts">
   import * as f from '$lib/form-validation';
+  import { trpc } from '$lib/trpc';
   import { page } from '$app/stores';
+  import { goto } from '$app/navigation';
+  import { getToastStore } from '@skeletonlabs/skeleton';
   import { Text, Number, Select, Checkbox } from '$components/form';
   import { createForm } from '$stores';
   import { fly, slide } from 'svelte/transition';
-  import { keys } from '$lib/utils';
+  import { keys, displayError, toastError } from '$lib/utils';
   import type { TournamentType } from '$db';
-  import type { InferEnum } from '$types';
+  import type { InferEnum, TRPCRouter } from '$types';
 
   export let show: boolean;
+
+  const toast = getToastStore();
 
   const typeOptions: Record<InferEnum<typeof TournamentType>, string> = {
     draft: 'Draft',
@@ -39,16 +44,50 @@
     ...team.labels,
     ...rankRange.labels
   };
+
+  async function submit() {
+    const { acronym, name, type, urlSlug  } = general.getFinalValue($general);
+    const teamValue = teamCondition ? team.getFinalValue($team) : undefined;
+    const rankRangeValue = rankRangeCondition ? rankRange.getFinalValue($rankRange) : undefined;
+    let tournament!: TRPCRouter['tournaments']['createTournament'];
+
+    try {
+      tournament = await trpc($page).tournaments.createTournament.mutate({
+        acronym,
+        name,
+        type,
+        urlSlug,
+        teamSettings: teamValue ? {
+          maxTeamSize: teamValue.maxTeamSize,
+          minTeamSize: teamValue.minTeamSize
+        } : undefined,
+        rankRange: rankRangeValue ? {
+          lower: rankRangeValue.lower,
+          upper: rankRangeValue.upper
+        } : undefined
+      });
+    } catch (err) {
+      displayError(toast, err);
+    }
+
+    if (typeof tournament === 'string') {
+      toastError(toast, tournament);
+      return;
+    }
+
+    show = false;
+    goto(`/${tournament.urlSlug}`);
+  }
   
   function cancel() {
     show = false;
   }
-  
+
   $: teamCondition = ['teams', 'draft'].includes($general.value.type as any);
   $: rankRangeCondition = $general.value.openRank;
 </script>
 
-<form class="flex flex-col m-auto p-8 w-[450px] card shadow-md duration-150" transition:fly={{ duration: 150, y: 100 }}>
+<form class="flex flex-col m-auto p-8 w-[450px] card shadow-md duration-150" transition:fly={{ duration: 150, y: 100 }} on:submit|preventDefault={submit}>
   <span class="inline-block font-medium text-2xl">Create Tournament</span>
   <div class="flex flex-col gap-4 my-8">
     <Text form={general} label={labels.name} legend="Tournament name" />

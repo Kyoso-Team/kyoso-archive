@@ -5,3 +5,10 @@ export const timestampConfig: PgTimestampConfig = {
   withTimezone: true,
   precision: 3
 };
+
+export const uniqueConstraints = {
+  tournament: {
+    name: 'uni_tournament_name',
+    urlSlug: 'uni_tournament_url_slug'
+  }
+} as const;

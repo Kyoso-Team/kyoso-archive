@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { writable, get } from 'svelte/store';
+import { writable } from 'svelte/store';
 
 export function createForm<
   TSchema extends Record<string, v.BaseSchema>,
@@ -41,7 +41,7 @@ export function createForm<
 
   function canSubmit(form: {
     value: TLiveValue;
-    errors: { [K in keyof TFinalValue]?: string | undefined; };
+    errors: { [K in keyof TFinalValue]?: string; };
   }) {
     const { value, errors } = form;
     const parsed = v.safeParse(v.object(formSchema), value);
@@ -92,8 +92,11 @@ export function createForm<
     });
   }
 
-  function getFinalValue(): TFinalValue {
-    const { value, errors } = get(form);
+  function getFinalValue(form: {
+    value: TLiveValue;
+    errors: { [K in keyof TFinalValue]?: string; };
+  }): TFinalValue {
+    const { value, errors } = form;
     const parsed = v.safeParse(v.object(formSchema), value);
     
     if (!parsed.success) {

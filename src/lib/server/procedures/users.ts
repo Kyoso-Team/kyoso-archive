@@ -5,7 +5,7 @@ import { t } from '$trpc';
 import { getSession, pick, trpcUnknownError } from '$lib/server-utils';
 import { customAlphabet } from 'nanoid';
 import { wrap } from '@typeschema/valibot';
-import { idSchema } from '$lib/schemas';
+import { positiveIntSchema } from '$lib/schemas';
 
 const updateSelf = t.procedure.mutation(async ({ ctx }) => {
   const session = getSession(ctx.cookies, true);
@@ -35,7 +35,7 @@ const expireSession = t.procedure
   .input(
     wrap(
       v.object({
-        sessionId: idSchema
+        sessionId: positiveIntSchema
       })
     )
   )

@@ -12,7 +12,7 @@ import {
   timestamp
 } from 'drizzle-orm/pg-core';
 import { StageFormat, TournamentType } from './schema';
-import { timestampConfig } from './schema-utils';
+import { timestampConfig, uniqueConstraints } from './schema-utils';
 import type { BWSValues, RankRange, RefereeSettings, RoundConfig, TeamSettings, TournamentDates, TournamentLink } from '$types';
 
 export const Tournament = pgTable('tournament', {
@@ -21,10 +21,10 @@ export const Tournament = pgTable('tournament', {
   deleted: boolean('deleted').notNull().default(false),
   name: varchar('name', {
     length: 50
-  }).notNull().unique('uni_tournament_name'),
+  }).notNull().unique(uniqueConstraints.tournament.name),
   urlSlug: varchar('url_slug', {
     length: 16
-  }).notNull().unique('uni_tournament_url_slug'),
+  }).notNull().unique(uniqueConstraints.tournament.urlSlug),
   acronym: varchar('acronym', {
     length: 8
   }).notNull(),

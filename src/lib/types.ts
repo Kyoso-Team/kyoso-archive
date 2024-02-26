@@ -147,7 +147,7 @@ export type FormStore = Writable<{
   labels: Record<string, string>;
   setGlobalError: (err: string) => void;
   setValue: (key: string, input: any) => void;
-  getFinalValue: () => Record<string, any>;
+  getFinalValue: (form: any) => Record<string, any>;
 };
 export type ParseInt<T> = T extends `${infer N extends number}` ? N : never;
 
