@@ -9,7 +9,7 @@
 //   paginate,
 //   textSearch,
 //   pick
-// } from '$lib/server-utils';
+// } from '$lib/server/utils';
 // import { sortSchema } from '$lib/schemas';
 // import type { PageServerLoad } from './$types';
 

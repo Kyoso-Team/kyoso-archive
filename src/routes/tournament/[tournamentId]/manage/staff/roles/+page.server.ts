@@ -2,7 +2,7 @@
 // import { dbStaffRole } from '$db/schema';
 // import { eq, and, gt, asc } from 'drizzle-orm';
 // import { hasPerms } from '$lib/utils';
-// import { pick } from '$lib/server-utils';
+// import { pick } from '$lib/server/utils';
 // import { error } from '@sveltejs/kit';
 // import type { PageServerLoad } from './$types';
 

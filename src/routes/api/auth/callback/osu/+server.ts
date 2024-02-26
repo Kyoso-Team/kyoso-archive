@@ -1,10 +1,11 @@
 import env from '$lib/server/env';
 import { error, redirect } from '@sveltejs/kit';
-import { sveltekitError, signJWT, pick, getSession } from '$lib/server-utils';
+import { apiError, signJWT, pick } from '$lib/server/utils';
 import { discordMainAuth, osuAuth } from '$lib/server/constants';
-import { upsertOsuUser, createSession } from '$lib/server/helpers';
+import { upsertOsuUser, createSession } from '$lib/server/helpers/auth';
 import { Ban, DiscordUser, OsuUser, User, db } from '$db';
 import { eq, sql } from 'drizzle-orm';
+import { getSession } from '$lib/server/helpers/api';
 import type { Token } from 'osu-web.js';
 import type { RequestHandler } from './$types';
 import type { AuthSession } from '$types';
@@ -32,7 +33,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
   try {
     token = await osuAuth.requestToken(code);
   } catch (err) {
-    throw await sveltekitError(err, 'Getting the osu! OAuth token', route);
+    throw await apiError(err, 'Getting the osu! OAuth token', route);
   }
 
   // Get the osu! user ID from the token
@@ -57,7 +58,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
       })
       .then((user) => !!user[0]?.exists);
   } catch (err) {
-    throw await sveltekitError(err, 'Updating the user', route);
+    throw await apiError(err, 'Updating the user', route);
   }
 
   if (userExists) {
@@ -80,7 +81,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
         .limit(1)
         .then((user) => user[0]);
     } catch (err) {
-      throw await sveltekitError(err, 'Getting the user', route);
+      throw await apiError(err, 'Getting the user', route);
     }
 
     const now = new Date();
@@ -100,7 +101,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
         )
       `).then((bans) => !!bans[0]?.exists);
     } catch (err) {
-      throw await sveltekitError(err, 'Verifying the user\'s ban status', route);
+      throw await apiError(err, 'Verifying the user\'s ban status', route);
     }
 
     if (isBanned) {

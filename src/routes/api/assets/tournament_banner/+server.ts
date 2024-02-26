@@ -1,15 +1,16 @@
 import * as v from 'valibot';
 import { error } from '@sveltejs/kit';
-import { generateFileId, getSession, past, pick, sveltekitError } from '$lib/server-utils';
+import { generateFileId, past, pick, apiError } from '$lib/server/utils';
 import { Tournament, db } from '$db';
 import { and, eq, isNotNull, not, sql } from 'drizzle-orm';
 import { boolStringSchema, fileIdSchema, positiveIntSchema } from '$lib/schemas';
-import { deleteFile, getFile, getStaffMember, parseSearchParams, parseUploadFormData, transformFile, uploadFile } from '$lib/server/helpers';
+import { deleteFile, getFile, parseFormData, transformFile, uploadFile } from '$lib/server/helpers/upload';
+import { getSession, getStaffMember, parseSearchParams } from '$lib/server/helpers/api';
 import { convertBytes, formatDigits, hasPermissions } from '$lib/utils';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, cookies, route, setHeaders }) => {
-  const params = await parseSearchParams(url, route, {
+  const params = await parseSearchParams(url, {
     tournament_id: positiveIntSchema,
     file_id: fileIdSchema,
     public: v.optional(boolStringSchema),
@@ -17,14 +18,14 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
       [v.literal('full'), v.literal('thumb')],
       'be "full" or "thumb"'
     )
-  });
+  }, route);
 
   setHeaders({
     'cache-control': 'max-age=604800'
   });
 
   const session = getSession(cookies, params.public);
-  const staffMember = await getStaffMember(route, session, params.tournament_id);
+  const staffMember = await getStaffMember(session, params.tournament_id, route);
 
   if (!params.public && !staffMember) {
     error(401, 'You do not have the required permissions to view this tournament\'s banner');
@@ -45,7 +46,7 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
       .limit(1)
       .then((rows) => rows[0].bannerMetadata?.fileId);
   } catch (err) {
-    throw await sveltekitError(err, 'Updating the tournament', route);
+    throw await apiError(err, 'Updating the tournament', route);
   }
 
   if (!fileId) {
@@ -62,10 +63,10 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
 
 export const PUT = (async ({ cookies, route, request }) => {
   const session = getSession(cookies, true);
-  const data = await parseUploadFormData(request, route, {
+  const data = await parseFormData(request, route, {
     tournamentId: positiveIntSchema
   });
-  const staffMember = await getStaffMember(route, session, data.tournamentId);
+  const staffMember = await getStaffMember(session, data.tournamentId, route);
 
   if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament_settings', 'manage_tournament_assets'])) {
     error(401, 'You do not have the required permissions to upload this tournament\'s banner');
@@ -108,7 +109,7 @@ export const PUT = (async ({ cookies, route, request }) => {
       })
       .where(eq(Tournament.id, data.tournamentId));
   } catch (err) {
-    throw await sveltekitError(err, 'Updating the tournament', route);
+    throw await apiError(err, 'Updating the tournament', route);
   }
 
   return new Response(fileId);
@@ -116,10 +117,10 @@ export const PUT = (async ({ cookies, route, request }) => {
 
 export const DELETE = (async ({ cookies, route, request }) => {
   const session = getSession(cookies, true);
-  const data = await parseUploadFormData(request, route, {
+  const data = await parseFormData(request, route, {
     tournamentId: positiveIntSchema
   });
-  const staffMember = await getStaffMember(route, session, data.tournamentId);
+  const staffMember = await getStaffMember(session, data.tournamentId, route);
 
   if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament_settings', 'manage_tournament_assets'])) {
     error(401, 'You do not have the required permissions to delete this tournament\'s banner');
@@ -138,7 +139,7 @@ export const DELETE = (async ({ cookies, route, request }) => {
       })
       .where(eq(Tournament.id, data.tournamentId));
   } catch (err) {
-    throw await sveltekitError(err, 'Updating the tournament', route);
+    throw await apiError(err, 'Updating the tournament', route);
   }
 
   await Promise.all(Object.values(names).map((fileName) => deleteFile(route, 'tournament-banners', fileName)));

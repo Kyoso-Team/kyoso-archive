@@ -2,10 +2,11 @@ import * as v from 'valibot';
 import { db, Session, User } from '$db';
 import { eq } from 'drizzle-orm';
 import { t } from '$trpc';
-import { getSession, pick, trpcUnknownError } from '$lib/server-utils';
+import { pick, trpcUnknownError } from '$lib/server/utils';
 import { customAlphabet } from 'nanoid';
 import { wrap } from '@typeschema/valibot';
 import { positiveIntSchema } from '$lib/schemas';
+import { getSession } from '../helpers/api';
 
 const updateSelf = t.procedure.mutation(async ({ ctx }) => {
   const session = getSession(ctx.cookies, true);

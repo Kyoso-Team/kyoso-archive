@@ -3,7 +3,7 @@
 // import { z } from 'zod';
 // import { t } from '$trpc';
 // import { getStoredUser } from '$trpc/middleware';
-// import { paginate } from '$lib/server-utils';
+// import { paginate } from '$lib/server/utils';
 
 // interface BaseNotif {
 //   id: number;

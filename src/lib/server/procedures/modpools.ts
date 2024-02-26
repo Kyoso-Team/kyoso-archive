@@ -5,7 +5,7 @@
 // import { t, tryCatch } from '$trpc';
 // import { getUserAsStaffWithRound } from '$trpc/middleware';
 // import { whereIdSchema, withRoundSchema, modSchema } from '$lib/schemas';
-// import { forbidIf, getRowCount, isAllowed } from '$lib/server-utils';
+// import { forbidIf, getRowCount, isAllowed } from '$lib/server/utils';
 // import { hasPerms } from '$lib/utils';
 // import { swapOrder } from '$trpc/helpers';
 

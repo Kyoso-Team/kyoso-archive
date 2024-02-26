@@ -1,7 +1,7 @@
 // import db from '$db';
 // import { dbTournament, dbRound, dbModMultiplier, dbStaffRole } from '$db/schema';
 // import { eq, and } from 'drizzle-orm';
-// import { getRowCount, pick, findFirst } from '$lib/server-utils';
+// import { getRowCount, pick, findFirst } from '$lib/server/utils';
 // import { t, tryCatch } from '$trpc';
 // import { z } from 'zod';
 // import { withTournamentSchema, modSchema } from '$lib/schemas';

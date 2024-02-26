@@ -1,9 +1,10 @@
 import env from '$lib/server/env';
 import { error, redirect } from '@sveltejs/kit';
-import { sveltekitError, pick, signJWT, verifyJWT, getSession } from '$lib/server-utils';
+import { apiError, pick, signJWT, verifyJWT } from '$lib/server/utils';
 import { User, db } from '$db';
 import { discordMainAuth, discordMainAuthOptions } from '$lib/server/constants';
-import { createSession, upsertDiscordUser } from '$lib/server/helpers';
+import { createSession, upsertDiscordUser } from '$lib/server/helpers/auth';
+import { getSession } from '$lib/server/helpers/api';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { AuthSession } from '$types';
 import type { RequestHandler } from './$types';
@@ -47,7 +48,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
       code
     });;
   } catch (err) {
-    throw await sveltekitError(err, 'Getting the Discord OAuth token', route);
+    throw await apiError(err, 'Getting the Discord OAuth token', route);
   }
 
   const tokenIssuedAt = new Date();
@@ -67,7 +68,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
       .returning(pick(User, ['id', 'updatedApiDataAt', 'admin']))
       .then((user) => user[0]);
   } catch (err) {
-    throw await sveltekitError(err, 'Creating the user', route);
+    throw await apiError(err, 'Creating the user', route);
   }
 
   const session = await createSession(user.id, getClientAddress(), userAgent, route);

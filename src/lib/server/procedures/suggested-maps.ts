@@ -5,7 +5,7 @@
 // import { t, tryCatch } from '$trpc';
 // import { getUserAsStaffWithRound } from '$trpc/middleware';
 // import { whereIdSchema, withRoundSchema, skillsetSchema } from '$lib/schemas';
-// import { forbidIf, isAllowed } from '$lib/server-utils';
+// import { forbidIf, isAllowed } from '$lib/server/utils';
 // import { hasPerms } from '$lib/utils';
 // import { getOrCreateMap } from '$trpc/helpers';
 

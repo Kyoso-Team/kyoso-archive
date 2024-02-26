@@ -12,7 +12,7 @@
 //   dbUser
 // } from '$db/schema';
 // import { eq, sql, desc, asc } from 'drizzle-orm';
-// import { findFirstOrThrow, pick } from '$lib/server-utils';
+// import { findFirstOrThrow, pick } from '$lib/server/utils';
 // import type { PageServerLoad } from './$types';
 
 // export const load = (async (event) => {

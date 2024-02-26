@@ -1,7 +1,7 @@
 // import env from '$lib/server/env';
 // import { tryCatch } from '$trpc';
 // import { Client } from 'osu-web.js';
-// import { findFirst, findFirstOrThrow, pick } from '$lib/server-utils';
+// import { findFirst, findFirstOrThrow, pick } from '$lib/server/utils';
 // import { dbBeatmap, dbModpool, dbStarRating, dbBeatmapset, dbMapper } from '$db/schema';
 // import { eq, and, SQL } from 'drizzle-orm';
 // import type dbInstance from '$db';

@@ -1,7 +1,7 @@
 import env from '$lib/server/env';
 import { buildUrl } from 'osu-web.js';
 import { error, redirect } from '@sveltejs/kit';
-import { getSession } from '$lib/server-utils';
+import { getSession } from '$lib/server/helpers/api';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, cookies }) => {

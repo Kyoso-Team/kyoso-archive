@@ -1,10 +1,11 @@
 import env from '$lib/server/env';
 import { discordMainAuth, osuAuth, discordMainAuthOptions } from '$lib/server/constants';
-import { sveltekitError, pick, signJWT, getSession } from '$lib/server-utils';
+import { apiError, pick, signJWT } from '$lib/server/utils';
 import { DiscordUser, OsuUser, User, db } from '$db';
 import { eq, sql } from 'drizzle-orm';
 import { union } from 'drizzle-orm/pg-core';
-import { upsertDiscordUser, upsertOsuUser } from '$lib/server/helpers';
+import { upsertDiscordUser, upsertOsuUser } from '$lib/server/helpers/auth';
+import { getSession } from '$lib/server/helpers/api';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { AuthSession } from '$types';
 import type { Token } from 'osu-web.js';
@@ -43,7 +44,7 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: Paramet
         discord: rows[1].token.refreshToken
       }));
   } catch (err) {
-    throw await sveltekitError(err, 'Getting the osu! and Discord refresh tokens', route);
+    throw await apiError(err, 'Getting the osu! and Discord refresh tokens', route);
   }
 
   let osuToken!: Token;
@@ -52,7 +53,7 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: Paramet
   try {
     osuToken = await osuAuth.refreshToken(refreshTokens.osu);
   } catch (err) {
-    throw await sveltekitError(err, 'Getting the osu! access token', route);
+    throw await apiError(err, 'Getting the osu! access token', route);
   }
 
   const osuTokenIssuedAt = new Date();
@@ -65,7 +66,7 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: Paramet
       refreshToken: refreshTokens.discord
     });
   } catch (err) {
-    throw await sveltekitError(err, 'Getting the Discord access token', route);
+    throw await apiError(err, 'Getting the Discord access token', route);
   }
 
   const discordTokenIssuedAt = new Date();
@@ -91,7 +92,7 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: Paramet
       .returning(pick(User, ['updatedApiDataAt', 'approvedHost']))
       .then((user) => user[0]);
   } catch (err) {
-    throw await sveltekitError(err, 'Updating the user', route);
+    throw await apiError(err, 'Updating the user', route);
   }
 
   const kyosoProfile: AuthSession = {

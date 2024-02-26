@@ -1,25 +1,7 @@
-// import type {
-//   dbMappoolState,
-//   dbTournamentService,
-//   dbMod,
-//   dbStaffPermission,
-//   dbStaffColor,
-//   dbModMultiplier,
-//   dbStaffRole,
-//   dbBanOrder,
-//   dbTournamentType,
-//   dbWinCondition,
-//   dbPrizeType,
-//   dbCashMetric,
-//   dbQualifierRunsSummary,
-//   dbStageFormat
-// } from '$db/schema';
-// import type { ZodBoolean, ZodDate, ZodNumber, ZodString } from 'zod';
-import type { Page } from '@sveltejs/kit';
+import type { MaybePromise, Page } from '@sveltejs/kit';
 import type { Router } from '$trpc/router';
 import type { Writable } from 'svelte/store';
 import type { BaseSchema } from 'valibot';
-// import type { InferSelectModel } from 'drizzle-orm';
 
 export type Simplify<T extends Record<string, any>> = { [K in keyof T]: T[K] } & NonNullable<unknown>;
 
@@ -138,6 +120,7 @@ export type TRPCRouter = {
 };
 
 export type PageStore = Page<Record<string, string>, string | null>;
+
 export type FormStore = Writable<{
   value: Record<string, any>;
   errors: Record<string, string | undefined>;
@@ -149,7 +132,10 @@ export type FormStore = Writable<{
   setValue: (key: string, input: any) => void;
   getFinalValue: (form: any) => Record<string, any>;
 };
+
 export type ParseInt<T> = T extends `${infer N extends number}` ? N : never;
+
+export type OnServerError = (err: unknown) => MaybePromise<void>;
 
 export interface AuthSession {
   sessionId: number;
@@ -169,36 +155,3 @@ export interface AuthSession {
     username: string;
   };
 }
-
-// export interface InputEvent extends Event {
-//   currentTarget: EventTarget & HTMLInputElement;
-// }
-
-// export type TournamentFormData = {
-//   name: string;
-//   acronym: string;
-//   isOpenRank: boolean;
-//   lowerRankRange?: number;
-//   upperRankRange?: number;
-//   useBWS: boolean;
-//   type: TournamentType;
-//   teamSize?: number;
-//   teamPlaySize?: number;
-// };
-
-// export interface Post {
-//   id: number;
-//   title: string;
-//   published_at: string;
-//   cover_image: string;
-//   description: string;
-// }
-
-// export interface ExtendedPost extends Post {
-//   body_html: string;
-// }
-
-// export interface LinkModalResponse {
-//   displayText: string;
-//   link: string;
-// }

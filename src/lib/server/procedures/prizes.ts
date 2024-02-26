@@ -5,7 +5,7 @@
 // import { t, tryCatch } from '$trpc';
 // import { getUserAsStaff } from '$trpc/middleware';
 // import { whereIdSchema, withTournamentSchema } from '$lib/schemas';
-// import { findFirstOrThrow, forbidIf, isAllowed, pick } from '$lib/server-utils';
+// import { findFirstOrThrow, forbidIf, isAllowed, pick } from '$lib/server/utils';
 // import { hasPerms } from '$lib/utils';
 
 // const prizeMutationSchema = z.object({

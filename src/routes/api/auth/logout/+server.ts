@@ -1,7 +1,8 @@
 import { redirect } from '@sveltejs/kit';
-import { getSession, sveltekitError } from '$lib/server-utils';
+import { apiError } from '$lib/server/utils';
 import { Session, db } from '$db';
 import { eq } from 'drizzle-orm';
+import { getSession } from '$lib/server/helpers/api';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, cookies, route }) => {
@@ -16,7 +17,7 @@ export const GET = (async ({ url, cookies, route }) => {
       })
       .where(eq(Session.id, session.sessionId));
   } catch (err) {
-    throw await sveltekitError(err, 'Expiring the session', route);
+    throw await apiError(err, 'Expiring the session', route);
   }
 
   cookies.delete('session', {

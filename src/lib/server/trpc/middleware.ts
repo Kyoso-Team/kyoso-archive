@@ -12,7 +12,7 @@
 // import { verifyJWT } from '$lib/jwt';
 // import { t, tryCatch } from '$trpc';
 // import { TRPCError } from '@trpc/server';
-// import { findFirstOrThrow, pick } from '$lib/server-utils';
+// import { findFirstOrThrow, pick } from '$lib/server/utils';
 // import type { SessionUser } from '$types';
 // import type { Context } from '$trpc/context';
 

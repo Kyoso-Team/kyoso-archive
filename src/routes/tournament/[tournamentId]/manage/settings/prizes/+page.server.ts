@@ -1,7 +1,7 @@
 // import db from '$db';
 // import { dbPrize, dbPrizeCash } from '$db/schema';
 // import { eq, asc } from 'drizzle-orm';
-// import { pick } from '$lib/server-utils';
+// import { pick } from '$lib/server/utils';
 // import { hasPerms } from '$lib/utils';
 // import { error } from '@sveltejs/kit';
 // import type { PageServerLoad } from './$types';

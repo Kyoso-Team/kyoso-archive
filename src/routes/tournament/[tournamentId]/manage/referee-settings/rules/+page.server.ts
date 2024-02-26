@@ -3,7 +3,7 @@
 // import { eq } from 'drizzle-orm';
 // import { hasPerms } from '$lib/utils';
 // import { error } from '@sveltejs/kit';
-// import { findFirstOrThrow } from '$lib/server-utils';
+// import { findFirstOrThrow } from '$lib/server/utils';
 // import type { PageServerLoad } from './$types';
 
 // export const load = (async ({ parent }) => {

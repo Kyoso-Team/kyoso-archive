@@ -16,7 +16,7 @@
 // import { TRPCError } from '@trpc/server';
 // import { customAlphabet } from 'nanoid';
 // import { and, eq, inArray } from 'drizzle-orm';
-// import { findFirst, findFirstOrThrow, getRowCount } from '$lib/server-utils';
+// import { findFirst, findFirstOrThrow, getRowCount } from '$lib/server/utils';
 // import type { InferInsertModel } from 'drizzle-orm';
 // import type { TokenRequestResult, User } from 'discord-oauth2';
 // import type { SessionUser } from '$types';

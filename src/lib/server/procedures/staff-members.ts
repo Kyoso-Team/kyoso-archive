@@ -5,7 +5,7 @@
 // import { t, tryCatch } from '$trpc';
 // import { getUserAsStaff } from '$trpc/middleware';
 // import { whereIdSchema, withTournamentSchema, mToN } from '$lib/schemas';
-// import { forbidIf, isAllowed } from '$lib/server-utils';
+// import { forbidIf, isAllowed } from '$lib/server/utils';
 // import { hasPerms } from '$lib/utils';
 
 // export const staffMembersRouter = t.router({

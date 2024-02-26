@@ -1,7 +1,7 @@
 // import db from '$db';
 // import { dbTournament } from '$db/schema';
 // import { eq } from 'drizzle-orm';
-// import { findFirstOrThrow, pick } from '$lib/server-utils';
+// import { findFirstOrThrow, pick } from '$lib/server/utils';
 // import { hasPerms } from '$lib/utils';
 // import { error } from '@sveltejs/kit';
 // import type { PageServerLoad } from './$types';

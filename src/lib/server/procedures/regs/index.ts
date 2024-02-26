@@ -7,7 +7,7 @@
 // // import { t, tryCatch } from '$trpc';
 // // import { getUserAsStaff, getStoredUser } from '$trpc/middleware';
 // // import { availabilitySchema, withTournamentSchema } from '$lib/schemas';
-// // import { forbidIf, isAllowed, select, findFirstOrThrow } from '$lib/server-utils';
+// // import { forbidIf, isAllowed, select, findFirstOrThrow } from '$lib/server/utils';
 // // import { Client } from 'osu-web.js';
 // // import { getDiscordUser } from '$trpc/helpers';
 // // import { calc, hasPerms } from '$lib/utils';

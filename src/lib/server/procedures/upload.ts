@@ -6,7 +6,7 @@
 // import { t, tryCatch } from '$trpc';
 // import { z } from 'zod';
 // import { TRPCError } from '@trpc/server';
-// import { isAllowed } from '$lib/server-utils';
+// import { isAllowed } from '$lib/server/utils';
 // import { hasPerms, byteUnit, format } from '$lib/utils';
 // import { getUser, getUserAsStaff } from '$trpc/middleware';
 // import { withTournamentSchema } from '$lib/schemas';

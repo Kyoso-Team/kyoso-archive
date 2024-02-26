@@ -9,9 +9,10 @@ import {
   uniqueConstraints
 } from '$db';
 import { t } from '$trpc';
-import { getSession, pick, trpcUnknownError } from '$lib/server-utils';
+import { pick, trpcUnknownError } from '$lib/server/utils';
 import { wrap } from '@typeschema/valibot';
 import { positiveIntSchema, urlSlugSchema } from '$lib/schemas';
+import { getSession } from '../helpers/trpc';
 import { TRPCError } from '@trpc/server';
 
 const createTournament = t.procedure

@@ -1,7 +1,8 @@
 import platform from 'platform';
 import { Session, User, db } from '$db';
-import { getSession, sveltekitError, pick } from '$lib/server-utils';
+import { apiError, pick } from '$lib/server/utils';
 import { and, desc, eq, not } from 'drizzle-orm';
+import { getSession } from '$lib/server/helpers/api';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ cookies, route }) => {
@@ -17,7 +18,7 @@ export const load = (async ({ cookies, route }) => {
       .limit(1)
       .then((rows) => rows[0]);
   } catch (err) {
-    throw await sveltekitError(err, 'Getting the user', route);
+    throw await apiError(err, 'Getting the user', route);
   }
 
   let activeSessions!: Pick<typeof Session.$inferSelect, 'id' | 'createdAt' | 'ipAddress' | 'userAgent' | 'lastActiveAt' | 'ipMetadata'>[];
@@ -32,7 +33,7 @@ export const load = (async ({ cookies, route }) => {
       ))
       .orderBy(desc(Session.lastActiveAt));
   } catch (err) {
-    throw await sveltekitError(err, 'Getting the active sessions', route);
+    throw await apiError(err, 'Getting the active sessions', route);
   }
 
   const sessions = activeSessions.map(({ id, createdAt, ipAddress, userAgent, lastActiveAt, ipMetadata }) => {

@@ -2,7 +2,7 @@ import env from '$lib/server/env';
 import { createContext } from '$trpc/context';
 import { router } from '$trpc/router';
 import { createTRPCHandle } from 'trpc-sveltekit';
-import { logError, sveltekitError, verifyJWT } from '$lib/server-utils';
+import { logError, apiError, verifyJWT } from '$lib/server/utils';
 import { redirect, error } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { Session, db } from '$db';
@@ -51,7 +51,7 @@ async function verifySession({ cookies, route }: RequestEvent): Promise<AuthSess
       })
       .then((sessions) => !!sessions[0]?.exists);
   } catch (err) {
-    throw await sveltekitError(err, 'Verifying the session', route);
+    throw await apiError(err, 'Verifying the session', route);
   }
 
   if (session && sessionIsActive) return session;

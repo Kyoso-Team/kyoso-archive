@@ -4,7 +4,7 @@
 // import { z } from 'zod';
 // import { redirect, error } from '@sveltejs/kit';
 // import { buildLink } from '$lib/utils';
-// import { findFirst } from '$lib/server-utils';
+// import { findFirst } from '$lib/server/utils';
 // import type { RequestHandler } from './$types';
 // import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 

@@ -1,6 +1,7 @@
 import { db, StaffMember, Tournament } from '$db';
 import { and, eq, or, sql, gt, isNull, not } from 'drizzle-orm';
-import { getSession, pick } from '$lib/server-utils';
+import { pick } from '$lib/server/utils';
+import { getSession } from '$lib/server/helpers/api';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ cookies }) => {
