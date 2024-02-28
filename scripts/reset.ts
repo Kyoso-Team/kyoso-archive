@@ -1,17 +1,14 @@
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { config } from 'dotenv';
-import { z } from 'zod';
 import { sql } from 'drizzle-orm';
-
-config();
-const dbUrl = z.string().min(1).parse(process.env.DATABASE_URL);
+import { getEnv } from './env';
 
 async function main() {
-  const pg = postgres(dbUrl, { max: 1 });
-  const client = drizzle(pg);
+  const env = getEnv();
+  const client = postgres(env.DATABASE_URL, { max: 1 });
+  const db = drizzle(client);
 
-  await client.execute(sql`
+  await db.execute(sql`
     DROP SCHEMA IF EXISTS public CASCADE;
     CREATE SCHEMA public;
     DROP SCHEMA IF EXISTS drizzle CASCADE;

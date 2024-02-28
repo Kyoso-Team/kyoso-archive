@@ -1,17 +1,14 @@
 import postgres from 'postgres';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { config } from 'dotenv';
-import { z } from 'zod';
-
-config();
-const dbUrl = z.string().min(1).parse(process.env.DATABASE_URL);
+import { getEnv } from './env';
 
 async function main() {
-  const pg = postgres(dbUrl, { max: 1 });
-  const client = drizzle(pg);
+  const env = getEnv();
+  const client = postgres(env.DATABASE_URL, { max: 1 });
+  const db = drizzle(client);
 
-  await migrate(client, {
+  await migrate(db, {
     migrationsFolder: `${process.cwd()}/migrations`
   });
 
