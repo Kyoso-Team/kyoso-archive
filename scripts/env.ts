@@ -42,7 +42,7 @@ const serverEnvSchema = v.object({
   BUNNY_PASSWORD: nonEmptyStringSchema,
   IPINFO_ACCESS_TOKEN: nonEmptyStringSchema,
   DATABASE_URL: nonEmptyStringSchema,
-  ADMIN_BY_DEFAULT: v.number(
+  OWNER: v.number(
     'be a number',
     [v.integer('be an integer')]
   ),
@@ -74,7 +74,7 @@ export function getEnv() {
     BUNNY_PASSWORD: process.env.BUNNY_PASSWORD,
     IPINFO_ACCESS_TOKEN: process.env.IPINFO_ACCESS_TOKEN,
     DATABASE_URL: process.env.DATABASE_URL,
-    ADMIN_BY_DEFAULT: Number(process.env.ADMIN_BY_DEFAULT),
+    OWNER: Number(process.env.OWNER),
     TESTERS: (JSON.parse(process.env.TESTERS || '[]') as string[]).map((id) => Number(id))
   });
 

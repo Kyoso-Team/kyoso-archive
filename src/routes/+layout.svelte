@@ -86,7 +86,7 @@ session>
     </div>
   {/if}
   -->
-  {#if data.testingEnv}
+  {#if data.testingEnv && data.session}
     <div class="fixed bottom-0 left-0 w-screen p-2 font-medium h-max text-sm bg-warning-500 border-warning-900 border-t-2 text-black opacity-25 text-center z-[100]">
       <span class="sm:inline-block hidden">This is a test build of Kyoso. Any data stored here is subject to be completely wiped. Do not share any differences between this build and the production version of this site, unless given permission.</span>
       <span class="inline-block sm:hidden">This is a test build of Kyoso.</span>

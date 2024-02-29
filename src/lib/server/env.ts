@@ -8,7 +8,7 @@ import {
   BUNNY_HOSTNAME,
   BUNNY_USERNAME,
   BUNNY_PASSWORD,
-  ADMIN_BY_DEFAULT,
+  OWNER,
   DATABASE_URL,
   TESTERS,
   ENV,
@@ -36,7 +36,7 @@ const serverEnvSchema = v.object({
   BUNNY_PASSWORD: nonEmptyStringSchema,
   IPINFO_ACCESS_TOKEN: nonEmptyStringSchema,
   DATABASE_URL: nonEmptyStringSchema,
-  ADMIN_BY_DEFAULT: v.number(
+  OWNER: v.number(
     'be a number',
     [v.integer('be an integer')]
   ),
@@ -62,7 +62,7 @@ const serverEnv = {
   BUNNY_PASSWORD,
   IPINFO_ACCESS_TOKEN,
   DATABASE_URL,
-  ADMIN_BY_DEFAULT: Number(ADMIN_BY_DEFAULT),
+  OWNER: Number(OWNER),
   TESTERS: (JSON.parse(TESTERS || '[]') as string[]).map((id) => Number(id))
 };
 
