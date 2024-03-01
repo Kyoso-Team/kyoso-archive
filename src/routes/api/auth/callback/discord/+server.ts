@@ -63,7 +63,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
         discordUserId: discordUser.id,
         osuUserId: osuSessionData.id,
         admin: env.OWNER === osuSessionData.id,
-        approvedHost: env.ENV === 'testing'
+        approvedHost: env.ENV !== 'production' || env.OWNER === osuSessionData.id
       })
       .returning(pick(User, ['id', 'updatedApiDataAt', 'admin']))
       .then((user) => user[0]);

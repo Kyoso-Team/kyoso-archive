@@ -50,7 +50,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
       .update(User)
       .set({
         admin: env.OWNER === osuUserId,
-        approvedHost: env.ENV === 'testing'
+        approvedHost: env.ENV !== 'production' || env.OWNER === osuUserId
       })
       .where(eq(User.osuUserId, osuUserId))
       .returning({
