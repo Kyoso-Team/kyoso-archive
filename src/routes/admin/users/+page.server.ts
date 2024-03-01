@@ -1,11 +1,12 @@
+import env from '$lib/server/env';
 import { Ban, DiscordUser, OsuUser, User, db } from '$db';
 import { asc, count, countDistinct, eq, sql } from 'drizzle-orm';
 import { apiError, pick } from '$lib/server/utils';
-import { unionAll } from 'drizzle-orm/pg-core';
+import { union, unionAll } from 'drizzle-orm/pg-core';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ parent, route }) => {
-  await parent();
+  const { session } = await parent();
   
   const userCountQuery = db
     .select({
@@ -67,6 +68,17 @@ export const load = (async ({ parent, route }) => {
     discord: pick(DiscordUser, ['discordUserId', 'username'])
   };
 
+  const getOwnerQuery = db
+  .select({
+    ...selectFields,
+    banned: sql<boolean>`false`.as('banned')
+  })
+  .from(User)
+  .innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId))
+  .innerJoin(DiscordUser, eq(DiscordUser.discordUserId, User.discordUserId))
+  .where(eq(User.osuUserId, env.OWNER))
+  .limit(1);
+
   const getAdminsQuery = db
     .select({
       ...selectFields,
@@ -107,7 +119,8 @@ export const load = (async ({ parent, route }) => {
   })[];
 
   try {
-    users = await unionAll(
+    users = await union(
+      getOwnerQuery,
       getAdminsQuery,
       getHostsQuery,
       getBannedQuery
@@ -116,16 +129,10 @@ export const load = (async ({ parent, route }) => {
     throw await apiError(err, 'Getting the users', route);
   }
 
-  const admins = users.filter(({ admin }) => admin);
-  const hosts = users.filter(({ approvedHost }) => approvedHost);
-  const banned = users.filter(({ banned }) => banned);
-
   return {
     counts,
-    users: {
-      admins,
-      hosts,
-      banned
-    }
+    users,
+    isCurrentUserTheOwner: session.osu.id === env.OWNER,
+    ownerId: env.OWNER
   };
 }) satisfies PageServerLoad;

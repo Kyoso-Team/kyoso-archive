@@ -8,5 +8,7 @@ export const load = (async (event) => {
     throw error(401, 'You must be an admin');
   }
 
-  return session;
+  return {
+    session
+  };
 }) satisfies LayoutServerLoad;

@@ -4,7 +4,8 @@
   import type { PopupSettings } from '@skeletonlabs/skeleton';
 
   export let name: string;
-  export let styles: string = '';
+  let styles = '';
+  export { styles as class };
 
   const menuPopup: PopupSettings = {
     event: 'click',
@@ -13,21 +14,23 @@
   };
 </script>
 
-<button
-  class={`btn btn-sm variant-filled mx-auto mt-2 block px-2 ${styles}`.trim()}
-  use:popup={menuPopup}
->
-  <slot name="btn">
-    <Pencil size={15} color="#000" />
-  </slot>
-</button>
-<div
-  class="relative z-50 max-w-sm rounded-md border-[1px] border-primary-500 p-3 bg-surface-100-800-token"
-  data-popup={name}
->
-  <div class="flex flex-col gap-2">
-    <slot />
+<div class={`relative ${styles}`.trim()}>
+  <button
+    class="btn btn-icon btn-icon-sm variant-filled rounded-md"
+    use:popup={menuPopup}
+  >
+    <slot name="btn">
+      <Pencil size={16} class="dark:fill-black fill-white" />
+    </slot>
+  </button>
+  <div
+    class="absolute top-12 z-10 w-48 rounded-md border border-primary-500 p-3 bg-surface-800 shadow-md"
+    data-popup={name}
+  >
+    <div class="flex flex-col gap-2">
+      <slot />
+    </div>
+    <div class="absolute left-1 top-0 z-[9] h-2 w-[90%] rounded-full bg-inherit" />
+    <div class="arrow relative z-[8] border border-primary-500 bg-surface-800 shadow-md" />
   </div>
-  <div class="absolute left-1 top-0 z-[49] h-2 w-[90%] rounded-full bg-inherit" />
-  <div class="arrow relative z-[48] border-[1px] border-primary-500 bg-surface-100-800-token" />
 </div>

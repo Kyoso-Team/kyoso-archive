@@ -83,10 +83,10 @@
         </button>
         <div class="card absolute w-60 py-2 shadow-md" data-popup="user-menu">
           <div class="flex flex-col px-6">
-            <span class="font-bold">{session.osu.username}</span>
+            <span class="font-medium truncate">{session.osu.username}</span>
             <span class="text-sm flex gap-1 items-center">
               <Discord w={16} h={16} class="fill-black dark:fill-white" />
-              <span>{session.discord.username}</span>
+              <span class="truncate">{session.discord.username}</span>
             </span>
           </div>
           <nav class="mt-2 flex flex-col gap-1 px-2">

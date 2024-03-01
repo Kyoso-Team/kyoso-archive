@@ -90,17 +90,14 @@ export function formatDigits(n: number, digitCount: number) {
   return `${str}${nStr}`;
 }
 
+export function formatNumber(n: number) {
+  return new Intl.NumberFormat('us-US').format(n);
+}
+
 /**
  * Format numbers
  */
 // export const format = {
-//   /**
-//    * Example: 81000 => '#81,000'
-//    */
-//   rank: (n: number) => `#${new Intl.NumberFormat('us-US').format(n)}`,
-//   /**
-//    * Example: 5 => '$5.00'
-//    */
 //   price: (n: number) => {
 //     return new Intl.NumberFormat('us-US', {
 //       style: 'currency',

@@ -79,7 +79,7 @@
   </div>
   <div class="flex gap-2 xs:justify-end mt-4 xs:mt-0 w-full">
     <button class="btn-icon variant-filled" on:click={toggleShowMore}>
-      <Info />
+      <Info size={24} />
     </button>
     {#if !current}
       <button class="btn variant-filled-error" on:click={toggleEndSessionPrompt}>

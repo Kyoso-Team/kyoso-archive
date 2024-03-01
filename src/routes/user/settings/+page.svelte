@@ -150,13 +150,13 @@
           <div class="flex gap-2">
             <button class="btn-icon variant-filled" on:click={toggleApiKeyVisibility}>
               {#if viewApiKey}
-                <EyeOff />
+                <EyeOff size={24} />
               {:else}
-                <Eye />
+                <Eye size={24} />
               {/if}
             </button>
             <button class="btn-icon variant-filled" on:click={copyApiKey}>
-              <Copy />
+              <Copy size={24} />
             </button>
           </div>
         </div>

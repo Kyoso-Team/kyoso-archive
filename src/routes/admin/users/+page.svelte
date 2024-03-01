@@ -1,78 +1,79 @@
-<!-- <script lang="ts">
-  import { getToastStore } from '@skeletonlabs/skeleton';
-  import { paginate } from '$stores';
-  import { SEO, SearchBar, Paginator, User, Dropdown, SearchResults } from '$components';
+<script lang="ts">
+  import User from './User.svelte';
+  import { SEO } from '$components/general';
   import { page } from '$app/stores';
-  import { trpc } from '$lib/trpc';
-  import { modal } from '$lib/utils';
-  import { invalidateAll } from '$app/navigation';
+  import { formatNumber } from '$lib/utils';
+  import { getToastStore } from '@skeletonlabs/skeleton';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
-  let toastStore = getToastStore();
+  let users: Record<'admins' | 'banned' | 'hosts' | 'owners', PageServerData['users']> = {
+    admins: [],
+    banned: [],
+    hosts: [],
+    owners: []
+  };
+  let userTypes: {
+    typeLabel: string;
+    type: 'admin' | 'host' | 'banned' | 'owner';
+    description: string;
+    users: PageServerData['users'];
+  }[] = [];
+  const toast = getToastStore();
 
-  function onSearch(query: string | null) {
-    paginate.setSearch($page, query);
+  $: {
+    users = {
+      owners: data.users.filter(({ osu }) => osu.osuUserId === data.ownerId),
+      admins: data.users.filter(({ admin, osu }) => admin && osu.osuUserId !== data.ownerId),
+      hosts: data.users.filter(({ approvedHost }) => approvedHost),
+      banned: data.users.filter(({ banned }) => banned)
+    };
   }
 
-  function onPageChange(pageNum: number) {
-    paginate.setPage($page, pageNum);
-  }
-
-  export function adminChange(user: { id: number; isAdmin: boolean; osuUsername: string }) {
-    let isAdmin = user.isAdmin;
-
-    modal.yesNo(
-      `${isAdmin ? 'Removing' : 'Adding'} an admin`,
-      `Are you sure you want to <strong>${isAdmin ? 'REMOVE' : 'ADD'} ${
-        user.osuUsername
-      }</strong> ${isAdmin ? 'from' : 'to'} admins?`,
-      async () => {
-        let success = await trpc($page).users.changeAdminStatus.mutate({
-          id: user.id,
-          toAdmin: !isAdmin
-        });
-        await invalidateAll();
-        toastStore.trigger({ message: success ? 'Success!' : 'Something went wrong...' });
-      }
-    );
-  }
-
-  export function deleteUser(user: { id: number; isAdmin: boolean; osuUsername: string }) {
-    modal.yesNo(
-      'Deleting a user',
-      `Are you definitely sure you want to <strong>COMPLETELY DELETE ${user.osuUsername}?</strong> There's no coming back from this!`,
-      async () => {
-        let deletedUser = await trpc($page).users.deleteUser.mutate(user.id);
-        await invalidateAll();
-        toastStore.trigger({
-          message: `${deletedUser.osuUsername} has been successfully deleted!`
-        });
-      }
-    );
+  $: {
+    userTypes = [{
+      typeLabel: 'Owner',
+      type: 'owner',
+      description: 'The website owner.',
+      users: users.owners
+    }, {
+      typeLabel: 'Admins',
+      type: 'admin',
+      description: 'Users with administrative permissions.',
+      users: users.admins
+    }, {
+      typeLabel: 'Approved Hosts',
+      type: 'host',
+      description: 'Users who are approved to be able to create (and therefore, host) tournaments.',
+      users: users.hosts
+    }, {
+      typeLabel: 'Banned Users',
+      type: 'banned',
+      description: 'Users who are banned from using Kyoso and can no longer log in.',
+      users: users.banned
+    }];
   }
 </script>
 
-<SEO page={$page} title="Users - Admin" description="Manage users" noIndex />
-<div class="center-content">
-  <SearchBar label="Search Users" {onSearch} />
-  <SearchResults label="Users" resultCount={data.userCount}>
-    {#each data.users as user}
-      <div class="relative">
-        <User {user} showDiscordTag />
-        <Dropdown name={`user-${user.id}`} styles="absolute top-0 right-2">
-          <button
-            class={`btn btn-sm ${user.isAdmin ? 'variant-filled-error' : 'variant-filled'}`}
-            on:click={() => adminChange(user)}>{user.isAdmin ? 'Remove' : 'Make'} Admin</button
-          >
-          <button class="variant-filled-error btn btn-sm" on:click={() => deleteUser(user)}
-            >Delete User</button
-          >
-        </Dropdown>
+<SEO page={$page} title="Manage Users" description="Manage Kyoso users" noIndex />
+<main class="main flex justify-center">
+  <div class="w-full max-w-[48rem]">
+    <h1>Manage Users</h1>
+    <div class="line-b mt-4 mb-8" />
+    <h2>Users</h2>
+    <p class="mt-2 mb-4">There {data.counts.total === 1 ? 'is 1 user' : `are ${formatNumber(data.counts.total)} users`} registered to Kyoso. Use the search bar below if you wish to look one up.</p>
+    <div>
+
+    </div>
+    {#each userTypes as { description, type, typeLabel, users: userList }}
+      <div class="line-b my-8" />
+      <h2>{typeLabel}</h2>
+      <p class="mt-2">{description}</p>
+      <div class="flex gap-2 mt-4 flex-wrap">
+        {#each userList as user}
+          <User {user} {type} {toast} isCurrentUserTheOwner={data.isCurrentUserTheOwner} bind:users={users} />
+        {/each}
       </div>
     {/each}
-    <svelte:fragment slot="footer">
-      <Paginator count={data.userCount} page={data.page} {onPageChange} />
-    </svelte:fragment>
-  </SearchResults>
-</div> -->
+  </div>
+</main>

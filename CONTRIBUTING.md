@@ -92,15 +92,15 @@ pnpm dev
 
 **General**
 
-| Name                 | Type                                       | optional | Description                                                                        |
-| -------------------- | ------------------------------------------ | -------- | ---------------------------------------------------------------------------------- |
-| NODE_ENV             | 'production' \| 'development'              |          | Specify the environment to the Vite compiler.                                      |
-| ENV                  | 'production' \| 'testing' \| 'development' |          | Specify the environment to Kyoso.                                                  |
-| DATABASE_URL         | string                                     |          | URL of the Postgres database you wish to use for development.                      |
-| JWT_SECRET           | string                                     |          | Random string as a secret key used to sign JWT tokens.                             |
-| ADMIN_BY_DEFAULT     | number                                     |          | osu! user ID of the user who should be admin by default. Your ID, for development. |
-| TESTERS              | number[]                                   | ✓        | osu! user IDs of the users who are able to provide feedback and test the site      |
-| PUBLIC_CONTACT_EMAIL | string                                     | ✓        | An email address that users can contact for any inquires.                          |
+| Name                 | Type                                       | optional | Description                                                                         |
+| -------------------- | ------------------------------------------ | -------- | ----------------------------------------------------------------------------------- |
+| NODE_ENV             | 'production' \| 'development'              |          | Specify the environment to the Vite compiler.                                       |
+| ENV                  | 'production' \| 'testing' \| 'development' |          | Specify the environment to Kyoso.                                                   |
+| DATABASE_URL         | string                                     |          | URL of the Postgres database you wish to use for development.                       |
+| JWT_SECRET           | string                                     |          | Random string as a secret key used to sign JWT tokens.                              |
+| OWNER                | number                                     |          | osu! user ID of the user who is the owner of the website. Your ID, for development. |
+| TESTERS              | number[]                                   | ✓        | osu! user IDs of the users who are able to provide feedback and test the site       |
+| PUBLIC_CONTACT_EMAIL | string                                     | ✓        | An email address that users can contact for any inquires.                           |
 
 **osu! OAuth**
 
