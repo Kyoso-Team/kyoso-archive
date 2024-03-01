@@ -3,7 +3,7 @@ import { Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, Session, 
 import { discordMainAuth } from '../constants';
 import { pick, apiError } from '$lib/server/utils';
 import { Client } from 'osu-web.js';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { Token } from 'osu-web.js';
 
@@ -100,6 +100,18 @@ export async function upsertOsuUser(token: Token, tokenIssuedAt: Date, route: { 
     }
   }
 
+  let dbBadges: Pick<typeof OsuBadge.$inferSelect, 'id' | 'imgFileName'>[] = [];
+
+  if (badges.length > 0) {
+    try {
+      dbBadges = await db
+        .select(pick(OsuBadge, ['id', 'imgFileName']))
+        .from(OsuBadge)
+        .where(inArray(OsuBadge.imgFileName, badges.map(({ imgFileName }) => imgFileName)));
+    } catch (err) {
+      throw await apiError(err, 'Creating the user\'s badges', route);
+    }
+  }
 
   const set = {
     countryCode: user.country.code,
@@ -139,7 +151,7 @@ export async function upsertOsuUser(token: Token, tokenIssuedAt: Date, route: { 
 
   const awardedBadges: typeof OsuUserAwardedBadge.$inferInsert[] = user.badges.map((badge) => ({
     awardedAt: new Date(badge.awarded_at),
-    osuBadgeImgFileName: badge.image_url.split('/').at(-1) || '',
+    osuBadgeId: dbBadges.find(({ imgFileName }) => (badge.image_url.split('/').at(-1) || '') === imgFileName)!.id,
     osuUserId: user?.id || 0
   }));
 
@@ -149,7 +161,7 @@ export async function upsertOsuUser(token: Token, tokenIssuedAt: Date, route: { 
         .insert(OsuUserAwardedBadge)
         .values(awardedBadges)
         .onConflictDoNothing({
-          target: [OsuUserAwardedBadge.osuBadgeImgFileName, OsuUserAwardedBadge.osuUserId]
+          target: [OsuUserAwardedBadge.osuBadgeId, OsuUserAwardedBadge.osuUserId]
         });
     } catch (err) {
       throw await apiError(err, 'Linking the user and their awarded badges', route);

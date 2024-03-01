@@ -61,7 +61,9 @@ export const OsuBadge = pgTable('osu_badge', {
     length: 60
   }).notNull(),
   description: text('description')
-});
+}, (table) => ({
+  indexImgFileName: uniqueIndex('udx_osu_badge_img_file_name').on(table.imgFileName)
+}));
 
 export const OsuUserAwardedBadge = pgTable('osu_user_awarded_badge', {
   osuUserId: integer('osu_user_id').notNull().references(() => OsuUser.osuUserId),
