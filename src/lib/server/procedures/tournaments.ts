@@ -6,8 +6,8 @@ import { pick, trpcUnknownError } from '$lib/server/utils';
 import { wrap } from '@typeschema/valibot';
 import { getSession, getStaffMember } from '../helpers/trpc';
 import { TRPCError } from '@trpc/server';
-import { hasPermissions } from '$lib/utils';
-import { eq } from 'drizzle-orm';
+import { hasPermissions, keys } from '$lib/utils';
+import { eq, sql } from 'drizzle-orm';
 import {
   bwsValuesSchema,
   positiveIntSchema,
@@ -171,10 +171,70 @@ const updateTournament = t.procedure
     const session = getSession(ctx.cookies, true);
     const staffMember = await getStaffMember(session, tournamentId);
 
+    let tournament: {
+      publishTime: number;
+      concludesTime: number;
+    } | undefined;
+
+    try {
+      tournament = await db
+        .select({
+          publishTime: sql`${Tournament.dates} -> 'publish'`.mapWith(Number).as('publish_time'),
+          concludesTime: sql`${Tournament.dates} -> 'concludes'`.mapWith(Number).as('concludes_time')
+        })
+        .from(Tournament)
+        .where(eq(Tournament.id, tournamentId))
+        .limit(1)
+        .then((rows) => rows[0]);
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting the tournament');
+    }
+
+    if (!tournament) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Tournament not found'
+      });
+    }
+
+    const now = new Date().getTime();
+    const concluded = tournament.concludesTime <= now;
+    const published = tournament.publishTime <= now;
+    const disabledAfterPublishKeys: (keyof typeof Tournament.$inferSelect)[] = [
+      'bwsValues',
+      'rankRange',
+      'type'
+    ];
+    const hasDisabledKeys = keys(data).some((key) => disabledAfterPublishKeys.includes(key))
+      || teamSettings?.maxTeamSize
+      || teamSettings?.minTeamSize
+      || dates?.publish;
+
+    if (published && hasDisabledKeys) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'This tournament is public. You can no longer update the following: BWS formula, rank range, type of the tournament, the publish date. If the tournament is team based, then you also can\'t update the min. and max. team sizes'
+      });
+    }
+
     if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament_settings'])) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message: 'You do not have the required permissions to update this tournament'
+      });
+    }
+
+    if (concluded && !staffMember.permissions.includes('host')) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'This tournament has concluded. You can\'t create, update or delete any data related to this tournament unless you are/were the host'
+      });
+    }
+
+    if (Object.keys(data).length === 0) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Nothing to update'
       });
     }
 

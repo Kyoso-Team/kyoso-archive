@@ -72,7 +72,8 @@ export const OsuUserAwardedBadge = pgTable('osu_user_awarded_badge', {
 }, (table) => ({
   pk: primaryKey({
     columns: [table.osuUserId, table.osuBadgeId]
-  })
+  }),
+  indexOsuUserId: index('idx_osu_user_awarded_badge_osu_user_id').on(table.osuUserId)
 }));
 
 export const Country = pgTable('country', {
@@ -132,7 +133,7 @@ export const Ban = pgTable('ban', {
     onDelete: 'cascade'
   })
 }, (table) => ({
-  indexIssuedToUserId: index('idx_ban_issued_to_user_id').on(table.issuedToUserId)
+  indexIssuedToUserIdIssuedAt: index('idx_ban_issued_to_user_id_issued_at').on(table.issuedToUserId, table.issuedAt)
 }));
 
 export const Notification = pgTable('notification', {
