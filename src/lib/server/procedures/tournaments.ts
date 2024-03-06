@@ -224,7 +224,7 @@ const updateTournament = t.procedure
       });
     }
 
-    if (concluded && !staffMember.permissions.includes('host')) {
+    if (concluded && !hasPermissions(staffMember, ['host', 'debug'])) {
       throw new TRPCError({
         code: 'FORBIDDEN',
         message: 'This tournament has concluded. You can\'t create, update or delete any data related to this tournament unless you are/were the host'

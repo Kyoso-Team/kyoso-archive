@@ -128,7 +128,7 @@ export const Ban = pgTable('ban', {
   revokeReason: text('revoke_reason'),
   banReason: text('ban_reason').notNull(),
   issuedByUserId: integer('issued_by_user_id').notNull().references(() => User.id),
-  revokedByUserId: integer('issued_by_user_id').references(() => User.id),
+  revokedByUserId: integer('revoked_by_user_id').references(() => User.id),
   issuedToUserId: integer('issued_to_user_id').notNull().references(() => User.id, {
     onDelete: 'cascade'
   })

@@ -1,13 +1,13 @@
-import * as schema from '../src/db/schema';
+import * as schema from '../src/lib/server/db/schema';
 import { pgGenerate } from 'drizzle-dbml-generator';
 
 function main() {
   pgGenerate({
     schema,
-    out: './dbml/schema.dbml'
+    out: './.dbml/schema.dbml'
   });
 
-  console.log("Generated DBML successfully at 'dbml/schema.dbml'");
+  console.log('Generated DBML successfully at ".dbml/schema.dbml"');
   process.exit(0);
 }
 

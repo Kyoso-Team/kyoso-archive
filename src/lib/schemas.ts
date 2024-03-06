@@ -120,7 +120,8 @@ export const tournamentDatesSchema = v.object({
   other: v.array(
     v.object({
       label: v.string([v.minLength(1), v.maxLength(32)]),
-      date: oldestPossibleDateMsSchema
+      fromDate: oldestPossibleDateMsSchema,
+      toDate: v.optional(oldestPossibleDateMsSchema)
     })
   )
 });
