@@ -85,7 +85,7 @@
     }
 
     show = false;
-    goto(`/${tournament.urlSlug}`);
+    goto(`/t/${tournament.urlSlug}`);
   }
 
   function cancel() {
@@ -102,7 +102,7 @@
   </svelte:fragment>
   <Text form={main} label={labels.name} legend="Tournament name" />
   <Text form={main} label={labels.acronym} legend="Tournament acronym" />
-  <Text form={main} label={labels.urlSlug} legend="URL Slug">
+  <Text form={main} label={labels.urlSlug} legend="URL slug">
     The string that will be used to navigate towards any pages related to the tournament.
     <svelte:fragment slot="preview">
       <strong>Example URL:</strong> {$page.url.origin}/{$main.value.urlSlug ? $main.value.urlSlug : '[slug]'}

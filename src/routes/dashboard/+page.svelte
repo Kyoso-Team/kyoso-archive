@@ -1,13 +1,19 @@
 <script lang="ts">
   import CreateTournamentForm from './CreateTournamentForm.svelte';
+  import { popup } from '@skeletonlabs/skeleton';
   import Tournament from './Tournament.svelte';
+  import { Tooltip } from '$components/general';
   import { page } from '$app/stores';
   import { SEO } from '$components/general';
   import { Backdrop } from '$components/layout';
   import { portal } from 'svelte-portal';
+  import { tooltip } from '$lib/utils';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
+  const tooltips = {
+    notApprovedHost: 'tooltip-not-approved-host'
+  };
   let showForm = false;
 
   function toggleShowForm() {
@@ -53,6 +59,9 @@
     </div>
   </div>
   <div class="absolute bottom-0 left-0 w-full line-t p-4">
-    <button class="btn variant-filled-primary w-full" on:click={toggleShowForm}>Create Tournament</button>
+    <button class="btn variant-filled-primary w-full" on:click={toggleShowForm} use:popup={tooltip(tooltips.notApprovedHost)} disabled={!data.session.approvedHost}>Create Tournament</button>
+    {#if !data.session.approvedHost}
+      <Tooltip label="You're not approved to host a tournament" target={tooltips.notApprovedHost} />
+    {/if}
   </div>
 </nav>
