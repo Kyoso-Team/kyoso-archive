@@ -4,6 +4,7 @@
   export let form: FormStore;
   export let label: string;
   export let legend: string;
+  export let long = false;
   let hasWritten = false;
   let optional = false;
   let value: string | undefined;
@@ -35,12 +36,20 @@
       <slot />
     </p>
   {/if}
-  <input
-    type="text"
-    class={`input ${error && hasWritten ? 'input-error' : ''}`}
-    on:input={onInput}
-    bind:value
-  />
+  {#if long}
+    <textarea
+      class={`textarea resize-none h-32 ${error && hasWritten ? 'input-error' : ''}`}
+      on:input={onInput}
+      bind:value
+    />
+  {:else}
+    <input
+      type="text"
+      class={`input ${error && hasWritten ? 'input-error' : ''}`}
+      on:input={onInput}
+      bind:value
+    />
+  {/if}
   {#if $$slots.preview}
     <span class="block text-xs text-primary-500">
       <slot name="preview" />

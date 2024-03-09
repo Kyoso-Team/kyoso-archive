@@ -20,7 +20,7 @@
     teams: 'Teams'
   };
   
-  const general = createForm({
+  const main = createForm({
     name: f.string([f.maxStrLength(50)]),
     acronym: f.string([f.maxStrLength(8)]),
     urlSlug: f.string([f.maxStrLength(16), f.slug()]),
@@ -34,18 +34,18 @@
   });
   
   const rankRange = createForm({
-    lower: f.number([f.integer(), f.minValue(1)]),
-    upper: f.optional(f.number([f.integer(), f.minValue(1)]))
+    lower: f.number([f.integer(), f.minValue(1), f.maxSafeInt()]),
+    upper: f.optional(f.number([f.integer(), f.minValue(1), f.maxSafeInt()]))
   });
 
   const labels = {
-    ...general.labels,
+    ...main.labels,
     ...team.labels,
     ...rankRange.labels
   };
 
   async function submit() {
-    const { acronym, name, type, urlSlug  } = general.getFinalValue($general);
+    const { acronym, name, type, urlSlug  } = main.getFinalValue($main);
     const teamValue = teamCondition ? team.getFinalValue($team) : undefined;
     const rankRangeValue = rankRangeCondition ? rankRange.getFinalValue($rankRange) : undefined;
     let tournament!: TRPCRouter['tournaments']['createTournament'];
@@ -92,30 +92,30 @@
     show = false;
   }
 
-  $: teamCondition = ['teams', 'draft'].includes($general.value.type as any);
-  $: rankRangeCondition = $general.value.openRank;
+  $: teamCondition = ['teams', 'draft'].includes($main.value.type as any);
+  $: rankRangeCondition = $main.value.openRank;
 </script>
 
 <Form {submit}>
   <svelte:fragment slot="header">
     <span class="title">Create Tournament</span>
   </svelte:fragment>
-  <Text form={general} label={labels.name} legend="Tournament name" />
-  <Text form={general} label={labels.acronym} legend="Tournament acronym" />
-  <Text form={general} label={labels.urlSlug} legend="URL Slug">
+  <Text form={main} label={labels.name} legend="Tournament name" />
+  <Text form={main} label={labels.acronym} legend="Tournament acronym" />
+  <Text form={main} label={labels.urlSlug} legend="URL Slug">
     The string that will be used to navigate towards any pages related to the tournament.
     <svelte:fragment slot="preview">
-      <strong>Example URL:</strong> {$page.url.origin}/{$general.value.urlSlug ? $general.value.urlSlug : '[slug]'}
+      <strong>Example URL:</strong> {$page.url.origin}/{$main.value.urlSlug ? $main.value.urlSlug : '[slug]'}
     </svelte:fragment>
   </Text>
-  <Select form={general} label={labels.type} legend="Tournament type" options={typeOptions} />
+  <Select form={main} label={labels.type} legend="Tournament type" options={typeOptions} />
   {#if teamCondition}
     <Section>
       <Number form={team} label={labels.minTeamSize} legend="Min. team size" />
       <Number form={team} label={labels.maxTeamSize} legend="Max. team size" />
     </Section>
   {/if}
-  <Checkbox form={general} label={labels.openRank} legend="Is it open rank?" />
+  <Checkbox form={main} label={labels.openRank} legend="Is it open rank?" />
   {#if rankRangeCondition}
     <Section>
       <Number form={rankRange} label={labels.lower} legend="Lower rank range" />
@@ -126,7 +126,7 @@
   {/if}
   <svelte:fragment slot="actions">
     <button type="submit" class="btn variant-filled-primary" disabled={!(
-      $general.canSubmit &&
+      $main.canSubmit &&
       (teamCondition ? $team.canSubmit : true) &&
       (rankRangeCondition ? $rankRange.canSubmit : true)
     )}>Submit</button>

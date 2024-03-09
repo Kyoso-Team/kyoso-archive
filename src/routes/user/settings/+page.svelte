@@ -100,7 +100,7 @@
   </Backdrop>
 {/if}
 <main class="main flex justify-center">
-  <div class="w-full max-w-[48rem]">
+  <div class="w-full max-w-[56rem]">
     <h1>User Settings</h1>
     <div class="line-b mt-4 mb-8" />
     <h2>Linked Accounts</h2>

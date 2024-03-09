@@ -1,10 +1,10 @@
 import env from '$lib/server/env';
 import { error, redirect } from '@sveltejs/kit';
-import { apiError, signJWT, pick } from '$lib/server/utils';
+import { apiError, signJWT, pick, future } from '$lib/server/utils';
 import { discordMainAuth, osuAuth } from '$lib/server/constants';
 import { upsertOsuUser, createSession } from '$lib/server/helpers/auth';
 import { Ban, DiscordUser, OsuUser, User, db } from '$db';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, isNull, or, sql } from 'drizzle-orm';
 import { getSession } from '$lib/server/helpers/api';
 import type { Token } from 'osu-web.js';
 import type { RequestHandler } from './$types';
@@ -84,22 +84,25 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
       throw await apiError(err, 'Getting the user', route);
     }
 
-    const now = new Date();
-
     let isBanned!: boolean; 
 
     try {
       isBanned = await db.execute(sql`
-        select exists (
-          select 1 from ${Ban}
-          where ${Ban.issuedToUserId} = ${user.id} and (
-            ${Ban.liftAt} is null
-            or (${Ban.liftAt} is not null and ${now} <= ${Ban.liftAt})
-            or (${Ban.revokedAt} is not null and ${now} <= ${Ban.revokedAt})
+      select exists (
+        select 1 from ${Ban}
+        where ${and(
+          eq(Ban.issuedToUserId, user.id),
+          and(
+            isNull(Ban.revokedAt),
+            or(
+              isNull(Ban.liftAt),
+              future(Ban.liftAt)
+            )
           )
-          limit 1
-        )
-      `).then((bans) => !!bans[0]?.exists);
+        )}
+        limit 1
+      )
+    `).then((bans) => !!bans[0]?.exists);
     } catch (err) {
       throw await apiError(err, 'Verifying the user\'s ban status', route);
     }

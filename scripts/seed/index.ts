@@ -179,9 +179,9 @@ async function main() {
     usersInsert.push({
       discordUserId: discord.id,
       osuUserId: osu.id,
-      admin: r.boolean(0.15),
+      admin: r.boolean(0.1),
       apiKey: r.string(24),
-      approvedHost:  r.boolean(0.35),
+      approvedHost:  r.boolean(0.25),
       registeredAt: new Date(r.number(1704067200000, 1706659200000))
     });
   }

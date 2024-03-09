@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 import env from '../env';
-import { Ban, db, Session, User } from '$db';
-import { and, eq, isNotNull, isNull, or, sql } from 'drizzle-orm';
+import { Ban, Country, db, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, Session, User } from '$db';
+import { and, desc, eq, isNull, not, or, sql } from 'drizzle-orm';
 import { t } from '$trpc';
 import { future, pick, trpcUnknownError } from '$lib/server/utils';
 import { customAlphabet } from 'nanoid';
@@ -9,6 +9,207 @@ import { wrap } from '@typeschema/valibot';
 import { positiveIntSchema } from '$lib/schemas';
 import { getSession } from '../helpers/api';
 import { TRPCError } from '@trpc/server';
+import { alias, unionAll } from 'drizzle-orm/pg-core';
+import type { SQL } from 'drizzle-orm'; 
+
+const getUser = t.procedure
+  .input(
+    wrap(
+      v.object({
+        userId: positiveIntSchema
+      })
+    )
+  )
+  .query(async ({ ctx, input }) => {
+    const { userId } = input;
+    const session = getSession(ctx.cookies, true);
+
+    if (!session.admin) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'You do not have the required permissions to get this user'
+      });
+    }
+
+    let user!: Pick<typeof User.$inferSelect, 'id' | 'registeredAt' | 'updatedApiDataAt' | 'admin' | 'approvedHost'> & {
+      osu: Pick<typeof OsuUser.$inferSelect, 'osuUserId' | 'globalStdRank' | 'restricted' | 'username'>;
+      discord: Pick<typeof DiscordUser.$inferSelect, 'discordUserId' | 'username'>;
+      country: Pick<typeof Country.$inferSelect, 'code' | 'name'>;
+    };
+
+    try {
+      user = await db
+        .select({
+          ...pick(User, ['id', 'registeredAt', 'updatedApiDataAt', 'admin', 'approvedHost']),
+          osu: pick(OsuUser, ['osuUserId', 'globalStdRank', 'restricted', 'username']),
+          discord: pick(DiscordUser, ['discordUserId', 'username']),
+          country: pick(Country, ['code', 'name'])
+        })
+        .from(User)
+        .innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId))
+        .innerJoin(DiscordUser, eq(DiscordUser.discordUserId, User.discordUserId))
+        .innerJoin(Country, eq(Country.code, OsuUser.countryCode))
+        .where(eq(User.id, userId))
+        .limit(1)
+        .then((rows) => rows[0]);
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting the user');
+    }
+
+    let badges: (Pick<typeof OsuUserAwardedBadge.$inferSelect, 'awardedAt'> & Pick<typeof OsuBadge.$inferSelect, 'imgFileName' | 'description'>)[] = [];
+
+    try {
+      badges = await db
+        .select({
+          ...pick(OsuUserAwardedBadge, ['awardedAt']),
+          ...pick(OsuBadge, ['imgFileName', 'description'])
+        })
+        .from(OsuUserAwardedBadge)
+        .innerJoin(OsuBadge, eq(OsuBadge.id, OsuUserAwardedBadge.osuBadgeId))
+        .where(eq(OsuUserAwardedBadge.osuUserId, user.osu.osuUserId))
+        .orderBy(desc(OsuUserAwardedBadge.awardedAt));
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting the user\'s badges');
+    }
+
+    let bans: (
+      Pick<typeof Ban.$inferSelect, 'id' | 'banReason' | 'issuedAt' | 'liftAt' | 'revokeReason' | 'revokedAt'> & {
+        issuedBy: Pick<typeof User.$inferSelect, 'id'> & Pick<typeof OsuUser.$inferSelect, 'username'>;
+        revokedBy: Pick<typeof User.$inferSelect, 'id'> & Pick<typeof OsuUser.$inferSelect, 'username'> | null;
+      }
+    )[] = [];
+
+    const IssuedBy = alias(User, 'issued_by');
+    const IssuedByOsu = alias(OsuUser, 'issued_by_osu');
+    const RevokedBy = alias(User, 'revoked_by');
+    const RevokedByOsu = alias(OsuUser, 'revoked_by_osu');
+    
+    try {
+      bans = await db
+        .select({
+          ...pick(Ban, ['id', 'banReason', 'issuedAt', 'liftAt', 'revokeReason', 'revokedAt']),
+          issuedBy: {
+            ...pick(IssuedBy, ['id']),
+            ...pick(IssuedByOsu, ['username'])
+          },
+          revokedBy: {
+            ...pick(RevokedBy, ['id']),
+            ...pick(RevokedByOsu, ['username'])
+          }
+        })
+        .from(Ban)
+        .innerJoin(IssuedBy, eq(IssuedBy.id, Ban.issuedByUserId))
+        .innerJoin(IssuedByOsu, eq(IssuedByOsu.osuUserId, IssuedBy.osuUserId))
+        .leftJoin(RevokedBy, eq(RevokedBy.id, Ban.revokedByUserId))
+        .leftJoin(RevokedByOsu, eq(RevokedByOsu.osuUserId, RevokedBy.osuUserId))
+        .where(eq(Ban.issuedToUserId, user.id))
+        .orderBy(desc(Ban.issuedAt))
+        .then((bans) => {
+          return bans.map((ban) => ({
+            ...ban,
+            revokedBy: ban.revokedBy.id === null || ban.revokedBy.username === null ? null : {
+              id: ban.revokedBy.id,
+              username: ban.revokedBy.username
+            }
+          }));
+        });
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting the user\'s bans');
+    }
+
+    const getActiveSessionsQuery = db
+      .select(pick(Session, ['id', 'createdAt', 'lastActiveAt', 'expired']))
+      .from(Session)
+      .where(and(
+        eq(Session.userId, user.id),
+        not(Session.expired)
+      ))
+      .orderBy(desc(Session.lastActiveAt));
+
+    const getExpiredSessionsQuery = db
+      .select(pick(Session, ['id', 'createdAt', 'lastActiveAt', 'expired']))
+      .from(Session)
+      .where(and(
+        eq(Session.userId, user.id),
+        eq(Session.expired, true)
+      ))
+      .orderBy(desc(Session.lastActiveAt))
+      .limit(30);
+
+    let allSessions!: Pick<typeof Session.$inferSelect, 'id' | 'createdAt' | 'lastActiveAt' | 'expired'>[];
+
+    try {
+      allSessions = await unionAll(
+        getActiveSessionsQuery,
+        getExpiredSessionsQuery
+      );
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting the user\'s sessions');
+    }
+
+    const sessions = {
+      active: allSessions.filter(({ expired }) => !expired),
+      expired: allSessions.filter(({ expired }) => expired)
+    };
+
+    return {
+      ...user,
+      badges,
+      bans,
+      sessions,
+      owner: user.osu.osuUserId === env.OWNER
+    };
+  });
+
+const searchUser = t.procedure
+  .input(
+    wrap(
+      v.object({
+        search: v.string([v.minLength(1)]),
+        searchBy: v.string([v.minLength(1)])
+      })
+    )
+  )
+  .query(async ({ ctx, input }) => {
+    const { search, searchBy } = input;
+    const session = getSession(ctx.cookies, true);
+
+    if (!session.admin) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'You do not have the required permissions to search this user'
+      });
+    }
+
+    const searchNum = isNaN(Number(search)) ? 0 : Number(search);
+    let where!: SQL;
+
+    if (searchBy === 'osu') {
+      where = eq(User.osuUserId, searchNum);
+    } else if (searchBy === 'discord') {
+      where = eq(User.discordUserId, search);
+    } else if (searchBy === 'kyoso') {
+      where = eq(User.id, searchNum);
+    } else {
+      where = eq(OsuUser.username, search);
+    }
+
+    let user: Pick<typeof User.$inferSelect, 'id'> | undefined;
+
+    try {
+      user = await db
+        .select(pick(User, ['id']))
+        .from(User)
+        .innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId))
+        .where(where)
+        .limit(1)
+        .then((users) => users[0]);
+    } catch (err) {
+      throw trpcUnknownError(err, 'Searching the user');
+    }
+
+    return user;
+  });
 
 const updateSelf = t.procedure.mutation(async ({ ctx }) => {
   const session = getSession(ctx.cookies, true);
@@ -53,7 +254,7 @@ const updateUser = t.procedure
     const { admin, approvedHost } = data;
     const session = getSession(ctx.cookies, true);
 
-    if (admin !== undefined && session.userId !== env.OWNER) {
+    if (admin !== undefined && session.osu.id !== env.OWNER) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message: 'You do not have the required permissions to remove or add this user as an admin'
@@ -117,10 +318,12 @@ const banUser = t.procedure
           select 1 from ${Ban}
           where ${and(
             eq(Ban.issuedToUserId, issuedToUserId),
-            or(
-              isNull(Ban.liftAt),
-              and(isNotNull(Ban.liftAt), future(Ban.liftAt)),
-              and(isNotNull(Ban.revokedAt), future(Ban.revokedAt))
+            and(
+              isNull(Ban.revokedAt),
+              or(
+                isNull(Ban.liftAt),
+                future(Ban.liftAt)
+              )
             )
           )}
           limit 1
@@ -140,16 +343,36 @@ const banUser = t.procedure
     const liftAt = banTime ? new Date(new Date().getTime() + banTime) : undefined;
 
     try {
-      await db
-        .insert(Ban)
-        .values({
-          banReason,
-          issuedToUserId,
-          liftAt,
-          issuedByUserId: session.userId
-        });
+      await db.transaction(async (tx) => {
+        await tx
+          .insert(Ban)
+          .values({
+            banReason,
+            issuedToUserId,
+            liftAt,
+            issuedByUserId: session.userId
+          });
+
+        await tx
+          .update(User)
+          .set({
+            admin: false,
+            approvedHost: false
+          })
+          .where(eq(User.id, issuedToUserId));
+
+        await tx
+          .update(Session)
+          .set({
+            expired: true
+          })
+          .where(and(
+            eq(Session.userId, issuedToUserId),
+            not(Session.expired)
+          ));
+      });
     } catch (err) {
-      throw trpcUnknownError(err, 'Updating the user');
+      throw trpcUnknownError(err, 'Banning the user');
     }
   });
 
@@ -211,6 +434,8 @@ const expireSession = t.procedure
   });
 
 export const usersRouter = t.router({
+  getUser,
+  searchUser,
   updateSelf,
   updateUser,
   banUser,
