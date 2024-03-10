@@ -30,13 +30,13 @@
 <nav class="relative h-full w-64 line-r p-4 bg-surface-50-900-token" use:portal={'#sidebar'}>
   <div class="absolute inset-0 flex h-[calc(100%-74px)] flex-col gap-y-6 overflow-y-scroll p-4">
     <div>
-      <span class="block pb-4 font-bold text-primary-500">STAFFING</span>
+      <span class="font-bold text-primary-500">STAFFING</span>
       {#if data.tournamentsStaffing.length === 0}
-        <span class="inline-block text-sm text-surface-700 dark:text-surface-300"
+        <span class="inline-block text-sm text-surface-700/75 dark:text-surface-300/75 mt-2"
           >You're currently not staffing in any tournaments</span
         >
       {:else}
-        <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-4 mt-4">
           {#each data.tournamentsStaffing as tournament}
             <Tournament {tournament} />
           {/each}
@@ -44,13 +44,13 @@
       {/if}
     </div>
     <div>
-      <span class="block pb-4 font-bold text-primary-500">PLAYING</span>
+      <span class="font-bold text-primary-500">PLAYING</span>
       {#if data.tournamentsPlaying.length === 0}
-        <span class="inline-block text-sm text-surface-700 dark:text-surface-300"
+        <span class="inline-block text-sm text-surface-700/75 dark:text-surface-300/75 mt-2"
           >You're currently not playing in any tournaments</span
         >
       {:else}
-        <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-4 mt-4">
           {#each data.tournamentsPlaying as tournament}
             <Tournament {tournament} playing />
           {/each}

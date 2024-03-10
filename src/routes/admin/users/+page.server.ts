@@ -65,8 +65,8 @@ export const load = (async ({ parent, route, depends, url }) => {
       bannedCountQuery
     ).then((rows) => ({
       total: rows[0].count,
-      admin: rows[1].count,
-      host: rows[2].count,
+      admin: rows[1].count - 1,
+      host: rows[2].count - 1,
       banned: rows[3].count
     }));
   } catch (err) {

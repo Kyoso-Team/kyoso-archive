@@ -28,6 +28,7 @@
     typeLabel: string;
     type: 'admin' | 'host' | 'banned' | 'owner';
     description: string;
+    nonFoundDescription: string;
     users: PageServerData['users'];
   }[] = [];
   let search: string | undefined;
@@ -138,21 +139,25 @@
       typeLabel: 'Owner',
       type: 'owner',
       description: 'The website owner.',
+      nonFoundDescription: '',
       users: users.owners
     }, {
       typeLabel: 'Admins',
       type: 'admin',
       description: `All ${data.counts.admin} users with administrative permissions.`,
-      users: users.admins
+      nonFoundDescription: 'No users have administrative permissions.',
+      users: []
     }, {
       typeLabel: 'Approved Hosts',
       type: 'host',
       description: `All ${data.counts.host} users who are approved to be able to create (and therefore, host) tournaments.`,
+      nonFoundDescription: 'No users are approved to be able to create (and therefore, host) tournaments.',
       users: users.hosts
     }, {
       typeLabel: 'Banned Users',
       type: 'banned',
       description: `All ${data.counts.banned} users who are banned from using Kyoso and can no longer log in.`,
+      nonFoundDescription: 'No users are currently banned.',
       users: users.banned
     }];
   }
@@ -240,15 +245,19 @@
       <input type="search" placeholder="Search user..." bind:value={search} />
       <button class="btn variant-filled-primary rounded-l-none" disabled={!search} on:click={onSearch}>Search</button>
     </div>
-    {#each userTypes as { description, type, typeLabel, users: userList }}
+    {#each userTypes as { description, nonFoundDescription, type, typeLabel, users: userList }}
       <div class="line-b my-8" />
       <h2>{typeLabel}</h2>
-      <p class="mt-2">{description}</p>
-      <div class="gap-2 mt-4 grid sm:grid-cols-[50%_50%] lg:grid-cols-[33.33%_33.34%_33.33%]">
-        {#each userList as user}
-          <User {ctx} {user} {type} isCurrentUserTheOwner={data.isCurrentUserTheOwner} />
-        {/each}
-      </div>
+      {#if userList.length === 0}
+        <p class="mt-2">{nonFoundDescription}</p>
+      {:else}
+        <p class="mt-2">{description}</p>
+        <div class="gap-2 mt-4 grid sm:grid-cols-[50%_50%] lg:grid-cols-[33.33%_33.34%_33.33%]">
+          {#each userList as user}
+            <User {ctx} {user} {type} isCurrentUserTheOwner={data.isCurrentUserTheOwner} />
+          {/each}
+        </div>
+      {/if}
     {/each}
   </div>
 </main>

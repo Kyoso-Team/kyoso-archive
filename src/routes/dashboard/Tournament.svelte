@@ -33,6 +33,6 @@
   <div
     class="absolute inset-0 z-[4] flex h-full items-center justify-center bg-[rgba(0,0,0,0.75)] opacity-0 duration-150 hover:opacity-100"
   >
-    <span class="px-4 font-semibold text-white">{tournament.name}</span>
+    <span class="px-4 font-semibold text-white text-center">{tournament.name}</span>
   </div>
 </a>

@@ -110,7 +110,7 @@
     {/if}
     <h2 class="mt-8">Bans</h2>
     {#if user.bans.length === 0}
-      <p class="mt-4">This user hasn't been banned before.</p>
+      <p class="mt-2">This user hasn't been banned before.</p>
     {:else}
       {#if activeBan}
         <strong class="inline-block mt-4">Current Ban</strong>
@@ -134,7 +134,7 @@
     <h2 class="mt-8">Sessions</h2>
     <strong class="inline-block mt-4">Active</strong>
     {#if user.sessions.active.length === 0}
-      <p class="mt-4">This user has no active sessions.</p>
+      <p class="mt-2">This user has no active sessions.</p>
     {:else}
       <div class="mt-4 flex flex-col gap-2">
         {#each user.sessions.active as session}
@@ -144,7 +144,7 @@
     {/if}
     <strong class="inline-block mt-4">Expired</strong>
     {#if user.sessions.expired.length === 0}
-      <p class="mt-4">This user has no expired sessions.</p>
+      <p class="mt-2">This user has no expired sessions.</p>
     {:else}
       <p class="text-sm dark:text-zinc-300/75 text-zinc-700/75">Only showing the last 30 expired sessions.</p>
       <div class="mt-4 flex flex-col gap-2">
