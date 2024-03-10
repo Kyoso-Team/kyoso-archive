@@ -2,7 +2,7 @@
   import Ban from './Ban.svelte';
   import Session from './Session.svelte';
   import { Osu, Discord } from '$components/icons';
-  import { Loader2 } from 'lucide-svelte';
+  import { Loader2, X } from 'lucide-svelte';
   import { fly } from 'svelte/transition';
   import { buildUrl } from 'osu-web.js';
   import { formatDate, formatNumber, formatTime } from '$lib/utils';
@@ -28,10 +28,16 @@
   $: pastBans = (user?.bans || []).filter((({ id }) => id !== activeBan?.id));
   $: ctx.setSelectedUser(user);
 
-  $: console.log(pastBans, activeBan);
+  function close() {
+    ctx.setShowLookedUpUser(false);
+    history.back();
+  }
 </script>
 
-<div class="flex flex-col p-8 m-auto w-[900px] card shadow-md" transition:fly={{ duration: 150, y: 100 }}>
+<div class="info-modal" transition:fly={{ duration: 150, y: 100 }}>
+  <button class="close-btn" on:click={close}>
+    <X />
+  </button>
   {#if !user}
     <div class="flex justify-center w-full">
       <Loader2 size={48} class="dark:stroke-white stroke-black animate-spin" />
@@ -39,7 +45,7 @@
   {:else}
     <h2>User Information</h2>
     <div class="flex gap-4 mt-4 flex-wrap">
-      <div class="flex flex-col items-center">
+      <div class="flex flex-col items-center w-full sm:w-auto">
         <img src={buildUrl.userAvatar(user.osu.osuUserId)} alt="user pfp" width={96} height={96} class="rounded-md">
         <div class="flex flex-col mt-2 gap-1">
           {#if user.owner}
@@ -58,15 +64,21 @@
       </div>
       <div class="flex flex-col">
         <span class="text-lg"><strong>User ID: </strong>{user.id.toString()}</span>
-        <div class="mt-2 flex flex-col">
-          <span><strong>Registered at:</strong> {formatDate(user.registeredAt, 'shortened')} - {formatTime(user.registeredAt)}</span>
-          <span><strong>Updated API data at:</strong> {formatDate(user.updatedApiDataAt, 'shortened')} - {formatTime(user.updatedApiDataAt)}</span>
-          <span><strong>Global osu! STD rank:</strong> {user.osu.globalStdRank ? `#${formatNumber(user.osu.globalStdRank)}` : '-'}</span>
+        <div class="mt-2 flex flex-col gap-2 sm:gap-0">
+          <div class="flex flex-col sm:block">
+            <strong>Registered at:</strong> <span>{formatDate(user.registeredAt, 'shortened')} - {formatTime(user.registeredAt)}</span>
+          </div>
+          <div class="flex flex-col sm:block">
+            <strong>Updated API data at:</strong> <span>{formatDate(user.updatedApiDataAt, 'shortened')} - {formatTime(user.updatedApiDataAt)}</span>
+          </div>
+          <div class="flex flex-col sm:block">
+            <strong>Global osu! STD rank:</strong> <span>{user.osu.globalStdRank ? `#${formatNumber(user.osu.globalStdRank)}` : '-'}</span>
+          </div>
         </div>
         {#if user.osu.restricted}
           <span class="badge mt-2 variant-filled-error w-max">Restricted on osu!</span>
         {/if}
-        <div class="flex gap-2 mt-2 px-2 py-1">
+        <div class="flex gap-2 mt-4 sm:mt-2 px-2 py-1">
           <img src={`https://osuflags.omkserver.nl/${user.country.code}.png`} alt="country flag" width={24} height={24}>
           <span>{user.country.name}</span>
         </div>

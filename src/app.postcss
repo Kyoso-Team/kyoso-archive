@@ -90,7 +90,15 @@ strong {
 }
 
 .modal .close-btn {
-  @apply absolute top-4 right-4 btn-icon variant-filled hover:variant-filled-error;
+  @apply absolute top-4 right-4 btn-icon variant-filled hover:variant-filled-error duration-150;
+}
+
+.info-modal {
+  @apply flex flex-col p-8 m-auto w-[900px] card shadow-md relative;
+}
+
+.info-modal .close-btn {
+  @apply absolute top-8 right-8 btn-icon variant-filled hover:variant-filled-error duration-150;
 }
 
 .form {

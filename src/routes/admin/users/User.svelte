@@ -38,9 +38,9 @@
   $: showSearchBtn = hovering && $ctx.ctrl;
 </script>
 
-<div class="flex items-center p-2 gap-2 card w-72" role="presentation" on:mouseenter={onMouseEnter} on:mouseleave={onMouseLeave}>
+<div class="flex items-center p-2 gap-2 card w-full" role="presentation" on:mouseenter={onMouseEnter} on:mouseleave={onMouseLeave}>
   <img src={buildUrl.userAvatar(user.osu.osuUserId)} alt="user pfp" width={48} height={48} class="rounded-md" />
-  <div class="overflow-hidden w-40">
+  <div class="overflow-hidden w-[calc(100%-43px)]">
     <a href={buildUrl.user(user.osu.osuUserId)} class="font-medium truncate block hover:opacity-75 duration-150 w-max">{user.osu.username}</a>
     <div class="flex gap-1 items-center">
       <Discord w={12} h={12} class="fill-black dark:fill-white" />

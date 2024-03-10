@@ -244,7 +244,7 @@
       <div class="line-b my-8" />
       <h2>{typeLabel}</h2>
       <p class="mt-2">{description}</p>
-      <div class="flex gap-2 mt-4 flex-wrap">
+      <div class="gap-2 mt-4 grid sm:grid-cols-[50%_50%] lg:grid-cols-[33.33%_33.34%_33.33%]">
         {#each userList as user}
           <User {ctx} {user} {type} isCurrentUserTheOwner={data.isCurrentUserTheOwner} />
         {/each}
