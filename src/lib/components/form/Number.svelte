@@ -31,10 +31,12 @@
   }
 
   $: {
-    if (timeValue.multiplier !== 'undefined') {
-      value = timeValue.value * Number(timeValue.multiplier);
-    } else {
-      value = null;
+    if (time) {
+      if (timeValue.multiplier !== 'undefined') {
+        value = timeValue.value * Number(timeValue.multiplier);
+      } else {
+        value = null;
+      }
     }
   }
 </script>
