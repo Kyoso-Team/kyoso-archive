@@ -3,9 +3,13 @@
   import type { MaybePromise } from '@sveltejs/kit';
 
   export let submit: () => MaybePromise<void>;
+
+  function onKeyDown(e: KeyboardEvent) {
+    return e.key !== 'Enter';
+  }
 </script>
 
-<form class="form" transition:fly={{ duration: 150, y: 100 }} on:submit|preventDefault={submit}>
+<form class="form" role="presentation" transition:fly={{ duration: 150, y: 100 }} on:keydown={onKeyDown} on:submit|preventDefault={submit}>
   <slot name="header" />
   <div class="flex flex-col gap-4 my-8">
     <slot />

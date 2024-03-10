@@ -35,8 +35,8 @@ function uniqueConstraintsError(err: unknown) {
 
 const mutationSchemas = {
   name: v.string([v.maxLength(50)]),
-  urlSlug: v.string([v.maxLength(16)]),
-  acronym: v.string([v.maxLength(8), urlSlugSchema]),
+  urlSlug: v.string([v.maxLength(16), urlSlugSchema]),
+  acronym: v.string([v.maxLength(8)]),
   type: v.union([v.literal('teams'), v.literal('draft'), v.literal('solo')]),
   rankRange: v.optional(rankRangeSchema),
   teamSettings: v.optional(
@@ -53,7 +53,7 @@ const createTournament = t.procedure
     const { acronym, name, type, urlSlug, rankRange, teamSettings } = input;
     const session = getSession(ctx.cookies, true);
 
-    if (!session.admin || !session.approvedHost) {
+    if (!session.admin && !session.approvedHost) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message: 'You do not have the required permissions to create a tournament'

@@ -127,8 +127,8 @@ export const tournamentDatesSchema = v.object({
 });
 
 export const rankRangeSchema = v.object({
-  lower: positiveIntSchema,
-  upper: v.optional(positiveIntSchema)
+  lower: v.number([v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER)]),
+  upper: v.optional(v.number([v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER)]))
 });
 
 // export const whereIdSchema = z.object({
