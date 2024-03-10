@@ -35,21 +35,21 @@ export const load = (async ({ cookies }) => {
   const tournamentsPlaying: Pick<typeof Tournament.$inferSelect, 'id' | 'name' | 'bannerMetadata'>[] = [];
   const tournamentsStaffing: typeof tournamentsPlaying = [];
 
-  tournaments.forEach((tournament) => {
-    const data = {
-      id: tournament.id,
-      name: tournament.name,
-      bannerMetadata: tournament.bannerMetadata
-    };
+  // tournaments.forEach((tournament) => {
+  //   const data = {
+  //     id: tournament.id,
+  //     name: tournament.name,
+  //     bannerMetadata: tournament.bannerMetadata
+  //   };
 
-    if (tournament.staffs) {
-      tournamentsStaffing.push(data);
-    }
+  //   if (tournament.staffs) {
+  //     tournamentsStaffing.push(data);
+  //   }
 
-    if (tournament.plays) {
-      tournamentsPlaying.push(data);
-    }
-  });
+  //   if (tournament.plays) {
+  //     tournamentsPlaying.push(data);
+  //   }
+  // });
 
   return {
     session,
