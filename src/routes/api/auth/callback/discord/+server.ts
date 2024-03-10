@@ -54,7 +54,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
   const tokenIssuedAt = new Date();
   const discordUser = await upsertDiscordUser(token, tokenIssuedAt, route);
 
-  let user!: Pick<typeof User.$inferSelect, 'id' | 'updatedApiDataAt' | 'admin'>;
+  let user!: Pick<typeof User.$inferSelect, 'id' | 'updatedApiDataAt' | 'admin' | 'approvedHost'>;
 
   try {
     user = await db
@@ -65,7 +65,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
         admin: env.OWNER === osuSessionData.id,
         approvedHost: env.ENV !== 'production' || env.OWNER === osuSessionData.id
       })
-      .returning(pick(User, ['id', 'updatedApiDataAt', 'admin']))
+      .returning(pick(User, ['id', 'updatedApiDataAt', 'admin', 'approvedHost']))
       .then((user) => user[0]);
   } catch (err) {
     throw await apiError(err, 'Creating the user', route);
@@ -77,7 +77,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
     sessionId: session.id,
     userId: user.id,
     admin: user.admin,
-    approvedHost: false,
+    approvedHost: user.approvedHost,
     updatedApiDataAt: user.updatedApiDataAt.getTime(),
     discord: {
       id: discordUser.id,

@@ -93,7 +93,7 @@
   }
 
   $: teamCondition = ['teams', 'draft'].includes($main.value.type as any);
-  $: rankRangeCondition = $main.value.openRank;
+  $: rankRangeCondition = !$main.value.openRank;
 </script>
 
 <Form {submit}>
