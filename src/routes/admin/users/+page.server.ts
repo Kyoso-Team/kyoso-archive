@@ -1,7 +1,7 @@
 import env from '$lib/server/env';
 import { Ban, DiscordUser, OsuUser, User, db } from '$db';
-import { count, countDistinct, eq, sql } from 'drizzle-orm';
-import { apiError, pick } from '$lib/server/utils';
+import { and, count, countDistinct, eq, isNull, or, sql } from 'drizzle-orm';
+import { apiError, future, pick } from '$lib/server/utils';
 import { union, unionAll } from 'drizzle-orm/pg-core';
 import type { PageServerLoad } from './$types';
 
@@ -38,7 +38,17 @@ export const load = (async ({ parent, route, depends, url }) => {
       order: sql`4`.as('order')
     })
     .from(User)
-    .leftJoin(Ban, eq(Ban.issuedToUserId, User.id));
+    .leftJoin(Ban, eq(Ban.issuedToUserId, User.id))
+    .where(and(
+      eq(Ban.issuedToUserId, User.id),
+      and(
+        isNull(Ban.revokedAt),
+        or(
+          isNull(Ban.liftAt),
+          future(Ban.liftAt)
+        )
+      )
+    ));
 
   let counts!: {
     total: number;
@@ -108,7 +118,17 @@ export const load = (async ({ parent, route, depends, url }) => {
     .from(User)
     .innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId))
     .innerJoin(DiscordUser, eq(DiscordUser.discordUserId, User.discordUserId))
-    .innerJoin(Ban, eq(Ban.issuedToUserId, User.id));
+    .innerJoin(Ban, eq(Ban.issuedToUserId, User.id))
+    .where(and(
+      eq(Ban.issuedToUserId, User.id),
+      and(
+        isNull(Ban.revokedAt),
+        or(
+          isNull(Ban.liftAt),
+          future(Ban.liftAt)
+        )
+      )
+    ));
 
   let users!: (Pick<typeof User.$inferSelect, 'id' | 'admin' | 'approvedHost'> & {
     banned: boolean;

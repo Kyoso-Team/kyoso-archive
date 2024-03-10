@@ -1,5 +1,6 @@
 <script lang="ts">
   import Ban from './Ban.svelte';
+  import Session from './Session.svelte';
   import { Osu, Discord } from '$components/icons';
   import { Loader2 } from 'lucide-svelte';
   import { fly } from 'svelte/transition';
@@ -117,6 +118,28 @@
     {/if}
     {#if !activeBan && user.osu.osuUserId !== $ctx.ownerId}
       <button class="btn variant-filled-error w-max mt-4" on:click={() => onBanUser(user)}>Ban User</button>
+    {/if}
+    <h2 class="mt-8">Sessions</h2>
+    <strong class="inline-block mt-4">Active</strong>
+    {#if user.sessions.active.length === 0}
+      <p class="mt-4">This user has no active sessions.</p>
+    {:else}
+      <div class="mt-4 flex flex-col gap-2">
+        {#each user.sessions.active as session}
+          <Session {session} />
+        {/each}
+      </div>
+    {/if}
+    <strong class="inline-block mt-4">Expired</strong>
+    {#if user.sessions.expired.length === 0}
+      <p class="mt-4">This user has no expired sessions.</p>
+    {:else}
+      <p class="text-sm dark:text-zinc-300/75 text-zinc-700/75">Only showing the last 30 expired sessions.</p>
+      <div class="mt-4 flex flex-col gap-2">
+        {#each user.sessions.expired as session}
+          <Session {session} />
+        {/each}
+      </div>
     {/if}
   {/if}
 </div>

@@ -41,6 +41,7 @@
       </button>
       <span class="title">Session Info</span>
       <ul class="list-disc pl-4">
+        <li><strong>Session ID:</strong> {session.id.toString()}</li>
         <li>Signed in using...</li>
         <ul class="my-2 list-disc pl-8">
           <li><strong>IP:</strong> {session.ipAddress}</li>
@@ -82,8 +83,8 @@
       <Info size={24} />
     </button>
     {#if !current}
-      <button class="btn variant-filled-error" on:click={toggleEndSessionPrompt}>
-        End Session
+      <button class="btn-icon variant-filled-error" on:click={toggleEndSessionPrompt}>
+        <X size={24} />
       </button>
     {/if}
   </div>

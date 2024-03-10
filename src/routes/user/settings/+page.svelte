@@ -173,8 +173,8 @@
     {/if}
     <div class="line-b my-8" />
     <h2>Sessions</h2>
-    <p class="dark:text-zinc-300 text-zinc-700 text-sm mt-4">Some details may be inaccurate.</p>
-    <div class="mt-2 flex flex-col">
+    <p class="dark:text-zinc-300/75 text-zinc-700/75 text-sm">Some details may be inaccurate.</p>
+    <div class="mt-4 flex flex-col gap-2">
       {#each data.activeSessions as session}
         <Session {session} {deleteSession} current={data.session.sessionId === session.id} />
       {/each}
