@@ -1,4 +1,3 @@
-import env from '$lib/server/env';
 import { discordMainAuth, osuAuth, discordMainAuthOptions } from '$lib/server/constants';
 import { apiError, pick, signJWT } from '$lib/server/utils';
 import { DiscordUser, OsuUser, User, db } from '$db';
@@ -128,7 +127,6 @@ export const load = (async ({ cookies, route }) => {
   }
 
   return {
-    session,
-    testingEnv: env.ENV === 'testing'
+    session
   };
 }) satisfies LayoutServerLoad;
