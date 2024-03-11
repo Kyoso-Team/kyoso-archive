@@ -20,7 +20,7 @@ export function maxStrLength<T extends string, R extends number>(requirement: R)
 
 export function slug() {
   return v.custom(
-    (input: string) => /[abcdefghijkmnlopqrstuvwxyz0123456789_]+$/.test(input),
+    (input: string) => /^[a-z0-9_]+$/g.test(input),
     'Input can only contain the following characters: "abcdefghijkmnlopqrstuvwxyz0123456789_"'
   );
 }
