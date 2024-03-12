@@ -45,14 +45,11 @@ export async function baseGetStaffMember<T extends AuthSession | undefined>(sess
 }
 
 export function baseGetSession<T extends boolean>(
-  cookies: Cookies | Record<string, string | undefined>,
+  cookies: Cookies,
   trpc: boolean,
   mustBeSignedIn?: T
 ): T extends true ? AuthSession : AuthSession | undefined {
-  const sessionCookie = 'get' in cookies
-    ? (cookies as Cookies).get('session')
-    : (cookies as Record<string, string | undefined>).session;
-  const user = verifyJWT<AuthSession>(sessionCookie);
+  const user = verifyJWT<AuthSession>(cookies.get('session'));
 
   if (mustBeSignedIn && !user) {
     const errMessage = 'You must be logged in';
