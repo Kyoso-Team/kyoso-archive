@@ -105,7 +105,7 @@
   <Text form={main} label={labels.urlSlug} legend="URL slug">
     The string that will be used to navigate towards any pages related to the tournament.
     <svelte:fragment slot="preview">
-      <strong>Example URL:</strong> {$page.url.origin}/{$main.value.urlSlug ? $main.value.urlSlug : '[slug]'}
+      <strong>Example URL:</strong> {$page.url.origin}/t/{$main.value.urlSlug ? $main.value.urlSlug : '[slug]'}
     </svelte:fragment>
   </Text>
   <Select form={main} label={labels.type} legend="Tournament type" options={typeOptions} />
