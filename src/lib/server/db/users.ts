@@ -101,6 +101,7 @@ export const Session = pgTable('session', {
   }).primaryKey(),
   createdAt: timestamp('created_at', timestampConfig).notNull().defaultNow(),
   lastActiveAt: timestamp('last_active_at', timestampConfig).notNull().defaultNow(),
+  updateCookie: boolean('update_cookie').notNull().default(false),
   ipAddress: inet('ip_address').notNull(),
   ipMetadata: jsonb('ip_metadata').notNull().$type<{
     city: string;

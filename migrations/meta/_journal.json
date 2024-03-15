@@ -57,6 +57,13 @@
       "when": 1709760731929,
       "tag": "0007_amused_rogue",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1710526849981,
+      "tag": "0008_damp_black_crow",
+      "breakpoints": true
     }
   ]
 }

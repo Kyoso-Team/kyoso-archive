@@ -276,13 +276,25 @@ const updateUser = t.procedure
     }
 
     try {
-      await db
-        .update(User)
-        .set({
-          admin,
-          approvedHost
-        })
-        .where(eq(User.id, userId));
+      await db.transaction(async (tx) => {
+        await tx
+          .update(User)
+          .set({
+            admin,
+            approvedHost
+          })
+          .where(eq(User.id, userId));
+
+        await tx
+          .update(Session)
+          .set({
+            updateCookie: true
+          })
+          .where(and(
+            eq(Session.userId, userId),
+            not(Session.expired)
+          ));
+      });
     } catch (err) {
       throw trpcUnknownError(err, 'Updating the user');
     }
