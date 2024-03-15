@@ -24,12 +24,8 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
     'cache-control': 'max-age=604800'
   });
 
-  const session = getSession(cookies, params.public);
-  const staffMember = await getStaffMember(session, params.tournament_id, route);
-
-  if (!params.public && !staffMember) {
-    error(401, 'You do not have the required permissions to view this tournament\'s banner');
-  }
+  const session = getSession(cookies);
+  await getStaffMember(session, params.tournament_id, route, !params.public);
 
   let fileId: string | undefined;
 
@@ -66,7 +62,7 @@ export const PUT = (async ({ cookies, route, request }) => {
   const data = await parseFormData(request, route, {
     tournamentId: positiveIntSchema
   });
-  const staffMember = await getStaffMember(session, data.tournamentId, route);
+  const staffMember = await getStaffMember(session, data.tournamentId, route, true);
 
   if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament_settings', 'manage_tournament_assets'])) {
     error(401, 'You do not have the required permissions to upload this tournament\'s banner');
@@ -120,7 +116,7 @@ export const DELETE = (async ({ cookies, route, request }) => {
   const data = await parseFormData(request, route, {
     tournamentId: positiveIntSchema
   });
-  const staffMember = await getStaffMember(session, data.tournamentId, route);
+  const staffMember = await getStaffMember(session, data.tournamentId, route, true);
 
   if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament_settings', 'manage_tournament_assets'])) {
     error(401, 'You do not have the required permissions to delete this tournament\'s banner');

@@ -6,39 +6,60 @@ import { TRPCError } from '@trpc/server';
 import type { AuthSession, InferEnum, OnServerError } from '$types';
 import type { StaffPermission } from '$db';
 
-export async function baseGetStaffMember<T extends AuthSession | undefined>(session: T, tournamentId: number, errors: {
-  onGetStaffMemberError: OnServerError;
-}): Promise<T extends AuthSession ? {
-  id: number;
-  permissions: InferEnum<typeof StaffPermission>[]
-} : undefined> {
-  if (!session) {
-    return undefined as any;
-  };
-
-  let staffMember!: {
+export async function baseGetStaffMember<T extends boolean>(
+  session: AuthSession | undefined,
+  tournamentId: number,
+  trpc: boolean,
+  errors: {
+    onGetStaffMemberError: OnServerError;
+  },
+  mustBeStaffMember?: T
+): Promise<
+  T extends true
+    ? {
+      id: number;
+      permissions: InferEnum<typeof StaffPermission>[]
+    }
+    : undefined
+> {
+  let staffMember: {
     id: number;
     permissions: InferEnum<typeof StaffPermission>[]
-  };
+  } | undefined;
 
-  try {
-    staffMember = await db
-      .select({
-        id: StaffMember.id,
-        permissions: StaffRole.permissions
-      }).from(StaffMemberRole)
-      .innerJoin(StaffMember, eq(StaffMember.id, StaffMemberRole.staffMemberId))
-      .innerJoin(StaffRole, eq(StaffRole.id, StaffMemberRole.staffRoleId))
-      .where(and(
-        eq(StaffMember.userId, session.userId),
-        eq(StaffRole.tournamentId, tournamentId)
-      ))
-      .then((rows) => ({
-        id: rows[0].id,
-        permissions: Array.from(new Set(rows.map(({ permissions }) => permissions).flat()))
-      }));
-  } catch (err) {
-    await errors.onGetStaffMemberError(err);
+  if (session) {
+    try {
+      staffMember = await db
+        .select({
+          id: StaffMember.id,
+          permissions: StaffRole.permissions
+        }).from(StaffMemberRole)
+        .innerJoin(StaffMember, eq(StaffMember.id, StaffMemberRole.staffMemberId))
+        .innerJoin(StaffRole, eq(StaffRole.id, StaffMemberRole.staffRoleId))
+        .where(and(
+          eq(StaffMember.userId, session.userId),
+          eq(StaffRole.tournamentId, tournamentId)
+        ))
+        .then((rows) => ({
+          id: rows[0].id,
+          permissions: Array.from(new Set(rows.map(({ permissions }) => permissions).flat()))
+        }));
+    } catch (err) {
+      await errors.onGetStaffMemberError(err);
+    }
+  }
+
+  if (!staffMember && mustBeStaffMember) {
+    const errMessage = 'You must be a staff member for this tournament';
+
+    if (trpc) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: errMessage
+      });
+    } else {
+      error(401, errMessage);
+    }
   }
 
   return staffMember as any;

@@ -169,7 +169,7 @@ const updateTournament = t.procedure
       rules
     } = data;
     const session = getSession(ctx.cookies, true);
-    const staffMember = await getStaffMember(session, tournamentId);
+    const staffMember = await getStaffMember(session, tournamentId, true);
 
     let tournament: {
       publishTime: number;
@@ -277,7 +277,7 @@ const deleteTournament = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { tournamentId } = input;
     const session = getSession(ctx.cookies, true);
-    const staffMember = await getStaffMember(session, tournamentId);
+    const staffMember = await getStaffMember(session, tournamentId, true);
 
     if (!hasPermissions(staffMember, ['host'])) {
       throw new TRPCError({

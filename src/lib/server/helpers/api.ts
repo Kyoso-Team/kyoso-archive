@@ -7,12 +7,12 @@ import { desc, eq, inArray } from 'drizzle-orm';
 import type { Cookies } from '@sveltejs/kit';
 import type { AuthSession } from '$types';
 
-export async function getStaffMember<T extends AuthSession | undefined>(session: T, tournamentId: number, route: { id: string | null; }) {
-  return baseGetStaffMember<T>(session, tournamentId, {
+export async function getStaffMember<T extends boolean>(session: AuthSession | undefined, tournamentId: number, route: { id: string | null; }, mustBeStaffMember?: T) {
+  return baseGetStaffMember<T>(session, tournamentId, false, {
     onGetStaffMemberError: async (err) => {
       throw await apiError(err, 'Getting the current user as a staff member', route);
     }
-  });
+  }, mustBeStaffMember);
 }
 
 export function getSession<T extends boolean>(

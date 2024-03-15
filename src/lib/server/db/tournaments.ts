@@ -9,7 +9,8 @@ import {
   boolean,
   unique,
   real,
-  timestamp
+  timestamp,
+  uniqueIndex
 } from 'drizzle-orm/pg-core';
 import { StageFormat, TournamentType } from './schema';
 import { timestampConfig, uniqueConstraints } from './schema-utils';
@@ -24,7 +25,7 @@ export const Tournament = pgTable('tournament', {
   }).notNull().unique(uniqueConstraints.tournament.name),
   urlSlug: varchar('url_slug', {
     length: 16
-  }).notNull().unique(uniqueConstraints.tournament.urlSlug),
+  }).notNull(),
   acronym: varchar('acronym', {
     length: 8
   }).notNull(),
@@ -68,7 +69,9 @@ export const Tournament = pgTable('tournament', {
     banAndProtectCancelOut: false,
     winCondition: 'score'
   })
-});
+}, (table) => ({
+  uniqueIndexUrlSlug: uniqueIndex(uniqueConstraints.tournament.urlSlug).on(table.urlSlug)
+}));
 
 export const Stage = pgTable(
   'stage',

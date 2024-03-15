@@ -9,6 +9,6 @@ export const timestampConfig: PgTimestampConfig = {
 export const uniqueConstraints = {
   tournament: {
     name: 'uni_tournament_name',
-    urlSlug: 'uni_tournament_url_slug'
+    urlSlug: 'udx_tournament_url_slug'
   }
 } as const;
