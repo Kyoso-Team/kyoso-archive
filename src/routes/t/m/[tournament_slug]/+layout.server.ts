@@ -42,7 +42,8 @@ export const load = (async ({ cookies, route, params }) => {
     tournament: {
       id: tournament.id,
       acronym: tournament.acronym,
-      concludestime: tournament.concludesTime
+      concludestime: tournament.concludesTime,
+      urlSlug: params.tournament_slug
     }
   };
 }) satisfies LayoutServerLoad;

@@ -1,9 +1,9 @@
 <script lang="ts">
+  import UserMenu from './UserMenu.svelte';
   import { AppBar, Avatar, popup } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
   import { page } from '$app/stores';
-  import { LightSwitch } from '@skeletonlabs/skeleton';
-  import { Discord, KyosoHybrid } from '$components/icons';
+  import { KyosoHybrid } from '$components/icons';
   import { Menu } from 'lucide-svelte';
   import type { AuthSession } from '$types';
 
@@ -27,7 +27,7 @@
 <AppBar padding="py-3 px-6">
   <svelte:fragment slot="lead">
     <nav class="flex items-center gap-2">
-      <a href="/" class="mr-4">
+      <a href="/" class="mr-4 duration-150 hover:opacity-75">
         <KyosoHybrid h={28} class="fill-black dark:fill-white" />
       </a>
       <div class="gap-2 hidden md:flex">
@@ -73,7 +73,7 @@
           use:popup={{
             event: 'click',
             placement: 'bottom-end',
-            target: 'user-menu',
+            target: 'main-user-menu',
             middleware: {
               offset: 24
             }
@@ -81,34 +81,7 @@
         >
           <Avatar src={buildUrl.userAvatar(session.osu.id)} width="w-10" cursor="cursor-pointer" />
         </button>
-        <div class="card absolute w-60 py-2 shadow-md" data-popup="user-menu">
-          <div class="flex flex-col px-6">
-            <span class="font-medium truncate">{session.osu.username}</span>
-            <span class="text-sm flex gap-1 items-center">
-              <Discord w={16} h={16} class="fill-black dark:fill-white" />
-              <span class="truncate">{session.discord.username}</span>
-            </span>
-          </div>
-          <nav class="mt-2 flex flex-col gap-1 px-2">
-            <a
-              href={`/user/${session.userId}`}
-              class="btn justify-start py-1 hover:variant-soft-primary">Profile</a
-            >
-            <a href="/user/settings" class="btn justify-start py-1 hover:variant-soft-primary"
-              >Settings</a
-            >
-            <a
-              href={`/api/auth/logout?redirect_uri=${encodeURI($page.url.toString())}`}
-              class="btn justify-start py-1 hover:variant-soft-primary">Log Out</a
-            >
-            <div class="my-1 ml-5 flex">
-              <span>Theme</span>
-              <div class="w-full flex justify-end mr-5">
-                <LightSwitch rounded="rounded-full" />
-              </div>
-            </div>
-          </nav>
-        </div>
+        <UserMenu popupName="main-user-menu" {session} />
       {:else}
         <a
           href={`/api/auth/login?redirect_uri=${encodeURI($page.url.toString())}`}

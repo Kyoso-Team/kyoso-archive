@@ -11,10 +11,10 @@
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
+  let showForm = false;
   const tooltips = {
     notApprovedHost: 'tooltip-not-approved-host'
   };
-  let showForm = false;
 
   function toggleShowForm() {
     showForm = !showForm;
@@ -27,7 +27,7 @@
   </Backdrop>
 {/if}
 <SEO page={$page} title="Dashboard" description="User dashboard" noIndex />
-<nav class="relative h-full w-64 line-r p-4 bg-surface-50-900-token" use:portal={'#sidebar'}>
+<nav class="h-full w-64 line-r p-4" use:portal={'#sidebar'}>
   <div class="absolute inset-0 flex h-[calc(100%-74px)] flex-col gap-y-6 overflow-y-scroll p-4">
     <div>
       <span class="font-bold text-primary-500">STAFFING</span>
@@ -59,7 +59,7 @@
     </div>
   </div>
   <div class="absolute bottom-0 left-0 w-full line-t p-4">
-    <button class="btn variant-filled-primary w-full" on:click={toggleShowForm} use:popup={tooltip(tooltips.notApprovedHost)} disabled={!data.session.approvedHost}>Create Tournament</button>
+    <button class="btn variant-filled-primary w-full [&>*]:pointer-events-none" on:click={toggleShowForm} use:popup={tooltip(tooltips.notApprovedHost)} disabled={!data.session.approvedHost}>Create Tournament</button>
     {#if !data.session.approvedHost}
       <Tooltip label="You're not approved to host a tournament" target={tooltips.notApprovedHost} />
     {/if}

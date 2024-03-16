@@ -184,11 +184,11 @@ export function setSettingError<T extends string | number | null | undefined | D
 /**
  * Create a tooltip object
  */
-export function tooltip(target: string): PopupSettings {
+export function tooltip(target: string, placement: PopupSettings['placement'] = 'top'): PopupSettings {
   return {
     target,
-    event: 'hover',
-    placement: 'top'
+    placement,
+    event: 'hover'
   };
 }
 
