@@ -7,7 +7,7 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ cookies }) => {
   const session = getSession(cookies, true);
 
-  const tournaments = await db
+  const _tournaments = await db
     .select({
       ...pick(Tournament, ['id', 'name', 'bannerMetadata']),
       staffs: sql<boolean>`${StaffMember.userId} = ${session.userId}`.as('staffs'),
@@ -24,15 +24,21 @@ export const load = (async ({ cookies }) => {
         eq(StaffMember.userId, session.userId),
         not(Tournament.deleted),
         or(
-          gt(sql`(${Tournament.dates} -> 'concludes')::bigint`, sql`(${new Date().getTime()})::bigint`),
+          gt(
+            sql`(${Tournament.dates} -> 'concludes')::bigint`,
+            sql`(${new Date().getTime()})::bigint`
+          ),
           isNull(sql`(${Tournament.dates} -> 'concludes')`)
         )
       )
     )
     .leftJoin(StaffMember, eq(StaffMember.tournamentId, Tournament.id));
-    //.leftJoin(dbPlayer, eq(dbPlayer.tournamentId, dbTournament.id));
+  //.leftJoin(dbPlayer, eq(dbPlayer.tournamentId, dbTournament.id));
 
-  const tournamentsPlaying: Pick<typeof Tournament.$inferSelect, 'id' | 'name' | 'bannerMetadata'>[] = [];
+  const tournamentsPlaying: Pick<
+    typeof Tournament.$inferSelect,
+    'id' | 'name' | 'bannerMetadata'
+  >[] = [];
   const tournamentsStaffing: typeof tournamentsPlaying = [];
 
   // tournaments.forEach((tournament) => {

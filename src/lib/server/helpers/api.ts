@@ -7,12 +7,23 @@ import { desc, eq, inArray } from 'drizzle-orm';
 import type { Cookies } from '@sveltejs/kit';
 import type { AuthSession } from '$types';
 
-export async function getStaffMember<T extends boolean>(session: AuthSession | undefined, tournamentId: number, route: { id: string | null; }, mustBeStaffMember?: T) {
-  return baseGetStaffMember<T>(session, tournamentId, false, {
-    onGetStaffMemberError: async (err) => {
-      throw await apiError(err, 'Getting the current user as a staff member', route);
-    }
-  }, mustBeStaffMember);
+export async function getStaffMember<T extends boolean>(
+  session: AuthSession | undefined,
+  tournamentId: number,
+  route: { id: string | null },
+  mustBeStaffMember?: T
+) {
+  return baseGetStaffMember<T>(
+    session,
+    tournamentId,
+    false,
+    {
+      onGetStaffMemberError: async (err) => {
+        throw await apiError(err, 'Getting the current user as a staff member', route);
+      }
+    },
+    mustBeStaffMember
+  );
 }
 
 export function getSession<T extends boolean>(
@@ -22,13 +33,17 @@ export function getSession<T extends boolean>(
   return baseGetSession<T>(cookies, false, mustBeSignedIn);
 }
 
-export async function getNotifications(userId: number, pagination: { limit: number; offset: number; }, route: { id: string | null }) {
+export async function getNotifications(
+  userId: number,
+  pagination: { limit: number; offset: number },
+  route: { id: string | null }
+) {
   let notifications: {
     notifiedAt: Date;
     read: boolean;
     message: string;
   }[] = [];
-  
+
   try {
     notifications = await db
       .select({
@@ -47,17 +62,15 @@ export async function getNotifications(userId: number, pagination: { limit: numb
   }
 
   const messageVars = Array.from(
-    new Set(
-      notifications.map(({ message }) => message.match(/(\w+):(\w+)/g) || []).flat()
-    )
+    new Set(notifications.map(({ message }) => message.match(/(\w+):(\w+)/g) || []).flat())
   );
 
   const tournamentsToGet: number[] = [];
   const usersToGet: number[] = [];
 
   let tournaments: Pick<typeof Tournament.$inferSelect, 'name' | 'urlSlug'>[] = [];
-  let users: (Pick<typeof User.$inferSelect, 'id'> & Pick<typeof OsuUser.$inferSelect, 'username'>)[] = [];
-
+  let users: (Pick<typeof User.$inferSelect, 'id'> &
+    Pick<typeof OsuUser.$inferSelect, 'username'>)[] = [];
 
   for (let i = 0; i < messageVars.length; i++) {
     const split = messageVars[i].split(':');
@@ -112,9 +125,13 @@ export async function getNotifications(userId: number, pagination: { limit: numb
   };
 }
 
-export async function parseSearchParams<T extends Record<string, v.BaseSchema>>(url: URL, schemas: T, route: { id: string | null }): Promise<{ [K in keyof T]: v.Output<T[K]> }> {
+export async function parseSearchParams<T extends Record<string, v.BaseSchema>>(
+  url: URL,
+  schemas: T,
+  route: { id: string | null }
+): Promise<{ [K in keyof T]: v.Output<T[K]> }> {
   const data: Record<string, any> = {};
-  
+
   try {
     for (const key in schemas) {
       data[key] = v.parse(schemas[key], url.searchParams.get(key));

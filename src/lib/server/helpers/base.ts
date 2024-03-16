@@ -17,15 +17,17 @@ export async function baseGetStaffMember<T extends boolean>(
 ): Promise<
   T extends true
     ? {
-      id: number;
-      permissions: InferEnum<typeof StaffPermission>[]
-    }
+        id: number;
+        permissions: InferEnum<typeof StaffPermission>[];
+      }
     : undefined
 > {
-  let staffMember: {
-    id: number;
-    permissions: InferEnum<typeof StaffPermission>[]
-  } | undefined;
+  let staffMember:
+    | {
+        id: number;
+        permissions: InferEnum<typeof StaffPermission>[];
+      }
+    | undefined;
 
   if (session) {
     try {
@@ -33,13 +35,13 @@ export async function baseGetStaffMember<T extends boolean>(
         .select({
           id: StaffMember.id,
           permissions: StaffRole.permissions
-        }).from(StaffMemberRole)
+        })
+        .from(StaffMemberRole)
         .innerJoin(StaffMember, eq(StaffMember.id, StaffMemberRole.staffMemberId))
         .innerJoin(StaffRole, eq(StaffRole.id, StaffMemberRole.staffRoleId))
-        .where(and(
-          eq(StaffMember.userId, session.userId),
-          eq(StaffRole.tournamentId, tournamentId)
-        ))
+        .where(
+          and(eq(StaffMember.userId, session.userId), eq(StaffRole.tournamentId, tournamentId))
+        )
         .then((rows) => ({
           id: rows[0].id,
           permissions: Array.from(new Set(rows.map(({ permissions }) => permissions).flat()))

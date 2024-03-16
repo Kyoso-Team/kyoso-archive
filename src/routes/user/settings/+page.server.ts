@@ -21,41 +21,45 @@ export const load = (async ({ cookies, route }) => {
     throw await apiError(err, 'Getting the user', route);
   }
 
-  let activeSessions!: Pick<typeof Session.$inferSelect, 'id' | 'createdAt' | 'ipAddress' | 'userAgent' | 'lastActiveAt' | 'ipMetadata'>[];
+  let activeSessions!: Pick<
+    typeof Session.$inferSelect,
+    'id' | 'createdAt' | 'ipAddress' | 'userAgent' | 'lastActiveAt' | 'ipMetadata'
+  >[];
 
   try {
     activeSessions = await db
-      .select(pick(Session, ['id', 'createdAt', 'ipAddress', 'userAgent', 'lastActiveAt', 'ipMetadata']))
+      .select(
+        pick(Session, ['id', 'createdAt', 'ipAddress', 'userAgent', 'lastActiveAt', 'ipMetadata'])
+      )
       .from(Session)
-      .where(and(
-        eq(Session.userId, session.userId),
-        not(Session.expired)
-      ))
+      .where(and(eq(Session.userId, session.userId), not(Session.expired)))
       .orderBy(desc(Session.lastActiveAt));
   } catch (err) {
     throw await apiError(err, 'Getting the active sessions', route);
   }
 
-  const sessions = activeSessions.map(({ id, createdAt, ipAddress, userAgent, lastActiveAt, ipMetadata }) => {
-    const { os, name, version } = platform.parse(userAgent);
+  const sessions = activeSessions.map(
+    ({ id, createdAt, ipAddress, userAgent, lastActiveAt, ipMetadata }) => {
+      const { os, name, version } = platform.parse(userAgent);
 
-    return {
-      id,
-      createdAt,
-      ipAddress,
-      userAgent,
-      lastActiveAt,
-      ipMetadata,
-      browser: {
-        name,
-        version
-      },
-      os: {
-        name: os?.family,
-        version: os?.version
-      }
-    };
-  });
+      return {
+        id,
+        createdAt,
+        ipAddress,
+        userAgent,
+        lastActiveAt,
+        ipMetadata,
+        browser: {
+          name,
+          version
+        },
+        os: {
+          name: os?.family,
+          version: os?.version
+        }
+      };
+    }
+  );
 
   return {
     session,

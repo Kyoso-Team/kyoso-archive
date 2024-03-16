@@ -15,10 +15,7 @@
 </script>
 
 <div class={`relative ${styles}`.trim()}>
-  <button
-    class="btn btn-icon btn-icon-sm variant-filled rounded-md"
-    use:popup={menuPopup}
-  >
+  <button class="btn btn-icon btn-icon-sm variant-filled rounded-md" use:popup={menuPopup}>
     <slot name="btn">
       <Pencil size={16} class="dark:fill-black fill-white" />
     </slot>

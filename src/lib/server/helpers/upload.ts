@@ -6,19 +6,27 @@ import { error } from '@sveltejs/kit';
 import { fileSchema } from '$lib/schemas';
 import type { FileType, Simplify } from '$types';
 
-export async function parseFormData<T extends Record<string, v.BaseSchema>>(request: Request, route: { id: string | null }, schemas: T): Promise<Simplify<{
-  file: File;
-} & { [K in keyof T]: v.Output<T[K]> }>> {
+export async function parseFormData<T extends Record<string, v.BaseSchema>>(
+  request: Request,
+  route: { id: string | null },
+  schemas: T
+): Promise<
+  Simplify<
+    {
+      file: File;
+    } & { [K in keyof T]: v.Output<T[K]> }
+  >
+> {
   let fd!: FormData;
 
   try {
     fd = await request.formData();
   } catch (err) {
-    error(400, 'Body is malformed or isn\'t form data');
+    error(400, "Body is malformed or isn't form data");
   }
 
   const data: Record<string, any> = {};
-  
+
   try {
     const file = v.parse(fileSchema, fd.get('file'));
     data.file = file;
@@ -30,7 +38,6 @@ export async function parseFormData<T extends Record<string, v.BaseSchema>>(requ
     if (err instanceof v.ValiError) {
       let str = 'Invalid input:\n';
       const issues = v.flatten(err.issues).nested;
-
 
       for (const key in issues) {
         str += `- body.${key} should ${issues[key]}\n`;
@@ -80,10 +87,7 @@ export async function transformFile(config: {
   return await Promise.all(
     resizes.map(async ({ width, height, quality, name }) => {
       const buffer = await file.arrayBuffer();
-      const newBuffer = await sharp(buffer)
-        .resize({ width, height })
-        .jpeg({ quality })
-        .toBuffer();
+      const newBuffer = await sharp(buffer).resize({ width, height }).jpeg({ quality }).toBuffer();
 
       const newFile = new File([new Blob([newBuffer]) as any], name, {
         lastModified: new Date().getTime()
@@ -109,7 +113,11 @@ export async function uploadFile(route: { id: string | null }, folderName: strin
   }
 }
 
-export async function deleteFile(route: { id: string | null }, folderName: string, fileName: string) {
+export async function deleteFile(
+  route: { id: string | null },
+  folderName: string,
+  fileName: string
+) {
   try {
     await fetch(`https://${env.BUNNY_HOSTNAME}/${env.BUNNY_USERNAME}/${folderName}/${fileName}`, {
       method: 'DELETE',
@@ -126,12 +134,15 @@ export async function getFile(route: { id: string | null }, folderName: string, 
   let resp!: Response;
 
   try {
-    resp = await fetch(`https://${env.BUNNY_HOSTNAME}/${env.BUNNY_USERNAME}/${folderName}/${fileName}`, {
-      headers: {
-        accept: '*/*',
-        AccessKey: env.BUNNY_PASSWORD
+    resp = await fetch(
+      `https://${env.BUNNY_HOSTNAME}/${env.BUNNY_USERNAME}/${folderName}/${fileName}`,
+      {
+        headers: {
+          accept: '*/*',
+          AccessKey: env.BUNNY_PASSWORD
+        }
       }
-    });
+    );
   } catch (err) {
     throw await apiError(err, 'Getting the file', route);
   }

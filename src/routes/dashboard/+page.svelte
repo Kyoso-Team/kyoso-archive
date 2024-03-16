@@ -59,7 +59,12 @@
     </div>
   </div>
   <div class="absolute bottom-0 left-0 w-full line-t p-4">
-    <button class="btn variant-filled-primary w-full [&>*]:pointer-events-none" on:click={toggleShowForm} use:popup={tooltip(tooltips.notApprovedHost)} disabled={!data.session.approvedHost}>Create Tournament</button>
+    <button
+      class="btn variant-filled-primary w-full [&>*]:pointer-events-none"
+      on:click={toggleShowForm}
+      use:popup={tooltip(tooltips.notApprovedHost)}
+      disabled={!data.session.approvedHost}>Create Tournament</button
+    >
     {#if !data.session.approvedHost}
       <Tooltip label="You're not approved to host a tournament" target={tooltips.notApprovedHost} />
     {/if}

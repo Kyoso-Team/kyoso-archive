@@ -11,11 +11,17 @@ export function string(pipe: Parameters<typeof v.string>[1]) {
 }
 
 export function minStrLength<T extends string, R extends number>(requirement: R) {
-  return v.minLength<T, R>(requirement, `Input must have ${requirement.toString()} character(s) or more`);
+  return v.minLength<T, R>(
+    requirement,
+    `Input must have ${requirement.toString()} character(s) or more`
+  );
 }
 
 export function maxStrLength<T extends string, R extends number>(requirement: R) {
-  return v.maxLength<T, R>(requirement, `Input must have ${requirement.toString()} character(s) or less`);
+  return v.maxLength<T, R>(
+    requirement,
+    `Input must have ${requirement.toString()} character(s) or less`
+  );
 }
 
 export function slug() {
@@ -34,16 +40,25 @@ export function integer() {
 }
 
 export function minValue<T extends number | bigint, R extends T>(requirement: R) {
-  return v.minValue<T, R>(requirement, `Input must be greater than or equal to ${requirement.toString()}`);
+  return v.minValue<T, R>(
+    requirement,
+    `Input must be greater than or equal to ${requirement.toString()}`
+  );
 }
 
 export function maxValue<T extends number | bigint, R extends T>(requirement: R) {
-  return v.maxValue<T, R>(requirement, `Input must be less than or equal to ${requirement.toString()}`);
+  return v.maxValue<T, R>(
+    requirement,
+    `Input must be less than or equal to ${requirement.toString()}`
+  );
 }
 
 export function maxSafeInt() {
   const maxSafeInt = Number.MAX_SAFE_INTEGER;
-  return v.maxValue<number, number>(maxSafeInt, `Input must be less than or equal to ${maxSafeInt.toString()}`);
+  return v.maxValue<number, number>(
+    maxSafeInt,
+    `Input must be less than or equal to ${maxSafeInt.toString()}`
+  );
 }
 
 export function union<T extends readonly string[]>(options: T) {

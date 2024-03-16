@@ -9,7 +9,13 @@
   }
 </script>
 
-<form class="form" role="presentation" transition:fly={{ duration: 150, y: 100 }} on:keydown={onKeyDown} on:submit|preventDefault={submit}>
+<form
+  class="form"
+  role="presentation"
+  transition:fly={{ duration: 150, y: 100 }}
+  on:keydown={onKeyDown}
+  on:submit|preventDefault={submit}
+>
   <slot name="header" />
   <div class="flex flex-col gap-4 my-8">
     <slot />

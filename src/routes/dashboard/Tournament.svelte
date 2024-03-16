@@ -7,9 +7,12 @@
   export let playing = false;
 
   $: bannerUrl = tournament.bannerMetadata
-    ? getFileUrl($page, `tournament_banner?tournament_id=${tournament.id}&file_id=${tournament.bannerMetadata.fileId}${
-      playing ? '&public=true' : ''
-    }`)
+    ? getFileUrl(
+        $page,
+        `tournament_banner?tournament_id=${tournament.id}&file_id=${tournament.bannerMetadata.fileId}${
+          playing ? '&public=true' : ''
+        }`
+      )
     : `${$page.url.origin}/defaults/tournament-banner-thumb.jpeg`;
 </script>
 

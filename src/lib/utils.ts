@@ -1,7 +1,6 @@
 import colors from 'tailwindcss/colors';
 import { TRPCClientError } from '@trpc/client';
 import type { PopupSettings, ToastStore } from '@skeletonlabs/skeleton';
-import type { SafeParseReturnType } from 'zod';
 import type { InferEnum, PageStore } from '$types';
 import type { StaffPermission } from '$db';
 
@@ -173,18 +172,12 @@ export const convertBytes = {
 };
 
 /**
- * Returns an error message if the Zod schema didn't successfully parse the input
- */
-export function setSettingError<T extends string | number | null | undefined | Date>(
-  parsed: SafeParseReturnType<T, T>
-) {
-  return !parsed.success ? parsed.error.issues[0].message : undefined;
-}
-
-/**
  * Create a tooltip object
  */
-export function tooltip(target: string, placement: PopupSettings['placement'] = 'top'): PopupSettings {
+export function tooltip(
+  target: string,
+  placement: PopupSettings['placement'] = 'top'
+): PopupSettings {
   return {
     target,
     placement,
@@ -240,7 +233,10 @@ export function getFileUrl(page: PageStore, path: string) {
   return `${page.url.origin}/api/assets/${path}`;
 }
 
-export function hasPermissions(staffMember: { permissions: InferEnum<typeof StaffPermission>[] } | undefined, requiredPerms: InferEnum<typeof StaffPermission>[]) {
+export function hasPermissions(
+  staffMember: { permissions: InferEnum<typeof StaffPermission>[] } | undefined,
+  requiredPerms: InferEnum<typeof StaffPermission>[]
+) {
   return staffMember ? staffMember.permissions.some((perm) => requiredPerms.includes(perm)) : false;
 }
 
@@ -302,7 +298,8 @@ export function toastSuccess(toast: ToastStore, message: string) {
   toast.trigger({
     message,
     background: 'bg-success-500/10',
-    classes: 'relative border-l-4 border-success-500 text-white before:bg-surface-900 before:w-full before:h-full before:absolute before:inset-0 before:-z-[1] before:rounded-md',
+    classes:
+      'relative border-l-4 border-success-500 text-white before:bg-surface-900 before:w-full before:h-full before:absolute before:inset-0 before:-z-[1] before:rounded-md',
     hideDismiss: true,
     timeout: 3000
   });
@@ -312,7 +309,8 @@ export function toastError(toast: ToastStore, message: string) {
   toast.trigger({
     message,
     background: 'bg-error-500/10',
-    classes: 'relative border-l-4 border-error-500 text-white before:bg-surface-900 before:w-full before:h-full before:absolute before:inset-0 before:-z-[1] before:rounded-md',
+    classes:
+      'relative border-l-4 border-error-500 text-white before:bg-surface-900 before:w-full before:h-full before:absolute before:inset-0 before:-z-[1] before:rounded-md',
     hideDismiss: true,
     hoverable: true,
     timeout: 3000
@@ -325,6 +323,6 @@ export function displayError(toast: ToastStore, err: unknown) {
   } else {
     toastError(toast, 'An unknown error ocurred');
   }
-  
+
   throw err;
 }

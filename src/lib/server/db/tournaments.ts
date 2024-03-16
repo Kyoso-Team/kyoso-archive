@@ -14,64 +14,81 @@ import {
 } from 'drizzle-orm/pg-core';
 import { StageFormat, TournamentType } from './schema';
 import { timestampConfig, uniqueConstraints } from './schema-utils';
-import type { BWSValues, RankRange, RefereeSettings, RoundConfig, TeamSettings, TournamentDates, TournamentLink } from '$types';
+import type {
+  BWSValues,
+  RankRange,
+  RefereeSettings,
+  RoundConfig,
+  TeamSettings,
+  TournamentDates,
+  TournamentLink
+} from '$types';
 
-export const Tournament = pgTable('tournament', {
-  id: serial('id').primaryKey(),
-  createdAt: timestamp('created_at', timestampConfig).notNull().defaultNow(),
-  deleted: boolean('deleted').notNull().default(false),
-  name: varchar('name', {
-    length: 50
-  }).notNull().unique(uniqueConstraints.tournament.name),
-  urlSlug: varchar('url_slug', {
-    length: 16
-  }).notNull(),
-  acronym: varchar('acronym', {
-    length: 8
-  }).notNull(),
-  type: TournamentType('type').notNull(),
-  /** Written as Markdown */
-  rules: text('rules'),
-  logoMetadata: jsonb('logo_metadata').$type<{
-    fileId: string;
-  }>(),
-  bannerMetadata: jsonb('banner_metadata').$type<{
-    fileId: string;
-  }>(),
-  /** If null, then it's an open rank tournament */
-  rankRange: jsonb('rank_range').$type<RankRange>(),
-  dates: jsonb('dates').notNull().$type<TournamentDates>().default({
-    other: []
-  }),
-  teamSettings: jsonb('team_settings').$type<TeamSettings>(),
-  /** If null, then the tournament doesn't use BWS */
-  bwsValues: jsonb('bws_values').$type<BWSValues>(),
-  links: jsonb('links').notNull().$type<TournamentLink[]>().default([]),
-  refereeSettings: jsonb('referee_settings').notNull().$type<RefereeSettings>().default({
-    timerLength: {
-      pick: 120,
-      ban: 120,
-      protect: 120,
-      ready: 120,
-      start: 10
-    },
-    allow: {
-      doublePick: false,
-      doubleBan: false,
-      doubleProtect: false
-    },
-    order: {
-      ban: 'linear',
-      pick: 'linear',
-      protect: 'linear'
-    },
-    alwaysForceNoFail: true,
-    banAndProtectCancelOut: false,
-    winCondition: 'score'
+export const Tournament = pgTable(
+  'tournament',
+  {
+    id: serial('id').primaryKey(),
+    createdAt: timestamp('created_at', timestampConfig).notNull().defaultNow(),
+    deleted: boolean('deleted').notNull().default(false),
+    name: varchar('name', {
+      length: 50
+    })
+      .notNull()
+      .unique(uniqueConstraints.tournament.name),
+    urlSlug: varchar('url_slug', {
+      length: 16
+    }).notNull(),
+    acronym: varchar('acronym', {
+      length: 8
+    }).notNull(),
+    type: TournamentType('type').notNull(),
+    /** Written as Markdown */
+    rules: text('rules'),
+    logoMetadata: jsonb('logo_metadata').$type<{
+      fileId: string;
+    }>(),
+    bannerMetadata: jsonb('banner_metadata').$type<{
+      fileId: string;
+    }>(),
+    /** If null, then it's an open rank tournament */
+    rankRange: jsonb('rank_range').$type<RankRange>(),
+    dates: jsonb('dates').notNull().$type<TournamentDates>().default({
+      other: []
+    }),
+    teamSettings: jsonb('team_settings').$type<TeamSettings>(),
+    /** If null, then the tournament doesn't use BWS */
+    bwsValues: jsonb('bws_values').$type<BWSValues>(),
+    links: jsonb('links').notNull().$type<TournamentLink[]>().default([]),
+    refereeSettings: jsonb('referee_settings')
+      .notNull()
+      .$type<RefereeSettings>()
+      .default({
+        timerLength: {
+          pick: 120,
+          ban: 120,
+          protect: 120,
+          ready: 120,
+          start: 10
+        },
+        allow: {
+          doublePick: false,
+          doubleBan: false,
+          doubleProtect: false
+        },
+        order: {
+          ban: 'linear',
+          pick: 'linear',
+          protect: 'linear'
+        },
+        alwaysForceNoFail: true,
+        banAndProtectCancelOut: false,
+        winCondition: 'score'
+      })
+  },
+  (table) => ({
+    uniqueIndexUrlSlug: uniqueIndex(uniqueConstraints.tournament.urlSlug).on(table.urlSlug)
   })
-}, (table) => ({
-  uniqueIndexUrlSlug: uniqueIndex(uniqueConstraints.tournament.urlSlug).on(table.urlSlug)
-}));
+);
 
 export const Stage = pgTable(
   'stage',
@@ -87,7 +104,10 @@ export const Stage = pgTable(
       })
   },
   (table) => ({
-    uniqueTournamentIdFormat: unique('uni_stage_tournament_id_format').on(table.tournamentId, table.format)
+    uniqueTournamentIdFormat: unique('uni_stage_tournament_id_format').on(
+      table.tournamentId,
+      table.format
+    )
   })
 );
 
@@ -117,6 +137,9 @@ export const Round = pgTable(
       })
   },
   (table) => ({
-    uniqueNameTournamentId: unique('uni_round_name_tournament_id').on(table.name, table.tournamentId)
+    uniqueNameTournamentId: unique('uni_round_name_tournament_id').on(
+      table.name,
+      table.tournamentId
+    )
   })
 );

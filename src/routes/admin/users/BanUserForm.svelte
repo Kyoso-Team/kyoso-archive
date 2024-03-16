@@ -12,7 +12,7 @@
   export let ctx: ReturnType<typeof createContextStore>;
 
   const toast = getToastStore();
-  
+
   const main = createForm({
     banReason: f.string([f.minStrLength(1)]),
     permanent: f.boolean()
@@ -30,7 +30,7 @@
   async function submit() {
     const { banReason } = main.getFinalValue($main);
     const timeValue = timeCondition ? time.getFinalValue($time) : undefined;
-    
+
     if (!$ctx.issueBanTo) {
       throw Error('"issueBanTo" is undefined in the context');
     }
@@ -73,10 +73,11 @@
     </Section>
   {/if}
   <svelte:fragment slot="actions">
-    <button type="submit" class="btn variant-filled-primary" disabled={!(
-      $main.canSubmit &&
-      (timeCondition ? $time.canSubmit : true)
-    )}>Submit</button>
+    <button
+      type="submit"
+      class="btn variant-filled-primary"
+      disabled={!($main.canSubmit && (timeCondition ? $time.canSubmit : true))}>Submit</button
+    >
     <button type="button" class="btn variant-filled" on:click={cancel}>Cancel</button>
   </svelte:fragment>
 </Form>

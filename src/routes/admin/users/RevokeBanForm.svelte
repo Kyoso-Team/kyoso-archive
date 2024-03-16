@@ -50,7 +50,9 @@
     Explain why this ban is being revoked for this user.
   </Text>
   <svelte:fragment slot="actions">
-    <button type="submit" class="btn variant-filled-primary" disabled={!$form.canSubmit}>Submit</button>
+    <button type="submit" class="btn variant-filled-primary" disabled={!$form.canSubmit}
+      >Submit</button
+    >
     <button type="button" class="btn variant-filled" on:click={cancel}>Cancel</button>
   </svelte:fragment>
 </Form>

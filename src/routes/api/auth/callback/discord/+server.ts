@@ -17,9 +17,9 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
   const userAgent = request.headers.get('User-Agent');
 
   if (currentSession) {
-    error(403, 'You\'re already logged in');
+    error(403, "You're already logged in");
   }
-  
+
   if (!userAgent) {
     error(403, '"User-Agent" header is undefined');
   }
@@ -31,7 +31,10 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
   const osuSessionData = verifyJWT<AuthSession['osu']>(osuProfileCookie);
 
   if (!osuSessionData) {
-    error(500, '"temp_osu_profile" cookie is an invalid JWT string. Try logging in with osu! again');
+    error(
+      500,
+      '"temp_osu_profile" cookie is an invalid JWT string. Try logging in with osu! again'
+    );
   }
 
   if (!code) {
@@ -46,7 +49,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
       grantType: 'authorization_code',
       scope: ['identify'],
       code
-    });;
+    });
   } catch (err) {
     throw await apiError(err, 'Getting the Discord OAuth token', route);
   }
@@ -89,7 +92,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
   cookies.delete('temp_osu_profile', {
     path: '/'
   });
-  
+
   cookies.set('session', signJWT(authSession), {
     path: '/'
   });

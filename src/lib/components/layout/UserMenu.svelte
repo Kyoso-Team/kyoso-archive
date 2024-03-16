@@ -17,13 +17,10 @@
     </span>
   </div>
   <nav class="mt-2 flex flex-col gap-1 px-2">
-    <a
-      href={`/user/${session.userId}`}
-      class="btn justify-start py-1 hover:variant-soft-primary">Profile</a
+    <a href={`/user/${session.userId}`} class="btn justify-start py-1 hover:variant-soft-primary"
+      >Profile</a
     >
-    <a href="/user/settings" class="btn justify-start py-1 hover:variant-soft-primary"
-      >Settings</a
-    >
+    <a href="/user/settings" class="btn justify-start py-1 hover:variant-soft-primary">Settings</a>
     <a
       href={`/api/auth/logout?redirect_uri=${encodeURI($page.url.toString())}`}
       class="btn justify-start py-1 hover:variant-soft-primary">Log Out</a

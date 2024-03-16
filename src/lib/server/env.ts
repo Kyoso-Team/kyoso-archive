@@ -36,17 +36,8 @@ const serverEnvSchema = v.object({
   BUNNY_PASSWORD: nonEmptyStringSchema,
   IPINFO_ACCESS_TOKEN: nonEmptyStringSchema,
   DATABASE_URL: nonEmptyStringSchema,
-  OWNER: v.number(
-    'be a number',
-    [v.integer('be an integer')]
-  ),
-  TESTERS: v.array(
-    v.number(
-      'be a number',
-      [v.integer('be an integer')]
-    ),
-    'be an array'
-  )
+  OWNER: v.number('be a number', [v.integer('be an integer')]),
+  TESTERS: v.array(v.number('be a number', [v.integer('be an integer')]), 'be an array')
 });
 
 const serverEnv = {

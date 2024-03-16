@@ -4,21 +4,28 @@ import { generateFileId, past, pick, apiError } from '$lib/server/utils';
 import { Tournament, db } from '$db';
 import { and, eq, isNotNull, not, sql } from 'drizzle-orm';
 import { boolStringSchema, fileIdSchema, positiveIntSchema } from '$lib/schemas';
-import { deleteFile, getFile, parseFormData, transformFile, uploadFile } from '$lib/server/helpers/upload';
+import {
+  deleteFile,
+  getFile,
+  parseFormData,
+  transformFile,
+  uploadFile
+} from '$lib/server/helpers/upload';
 import { getSession, getStaffMember, parseSearchParams } from '$lib/server/helpers/api';
 import { convertBytes, formatDigits, hasPermissions } from '$lib/utils';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, cookies, route, setHeaders }) => {
-  const params = await parseSearchParams(url, {
-    tournament_id: positiveIntSchema,
-    file_id: fileIdSchema,
-    public: v.optional(boolStringSchema),
-    size: v.union(
-      [v.literal('full'), v.literal('thumb')],
-      'be "full" or "thumb"'
-    )
-  }, route);
+  const params = await parseSearchParams(
+    url,
+    {
+      tournament_id: positiveIntSchema,
+      file_id: fileIdSchema,
+      public: v.optional(boolStringSchema),
+      size: v.union([v.literal('full'), v.literal('thumb')], 'be "full" or "thumb"')
+    },
+    route
+  );
 
   setHeaders({
     'cache-control': 'max-age=604800'
@@ -33,12 +40,14 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
     fileId = await db
       .select(pick(Tournament, ['bannerMetadata']))
       .from(Tournament)
-      .where(and(
-        eq(Tournament.id, params.tournament_id),
-        not(Tournament.deleted),
-        params.public ? isNotNull(sql`(${Tournament.dates} -> 'publish')::bigint`) : undefined,
-        params.public ? past(sql`(${Tournament.dates} -> 'publish')::bigint`, true) : undefined
-      ))
+      .where(
+        and(
+          eq(Tournament.id, params.tournament_id),
+          not(Tournament.deleted),
+          params.public ? isNotNull(sql`(${Tournament.dates} -> 'publish')::bigint`) : undefined,
+          params.public ? past(sql`(${Tournament.dates} -> 'publish')::bigint`, true) : undefined
+        )
+      )
       .limit(1)
       .then((rows) => rows[0].bannerMetadata?.fileId);
   } catch (err) {
@@ -46,14 +55,18 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
   }
 
   if (!fileId) {
-    error(404, 'Either this tournament doesn\'t exist or it doesn\'t have a banner');
+    error(404, "Either this tournament doesn't exist or it doesn't have a banner");
   }
 
   if (fileId !== params.file_id) {
     error(400, 'Incorrect file ID');
   }
 
-  const file = await getFile(route, 'tournament-banners', `${formatDigits(params.tournament_id, 9)}-${params.size || 'thumb'}.jpeg`);
+  const file = await getFile(
+    route,
+    'tournament-banners',
+    `${formatDigits(params.tournament_id, 9)}-${params.size || 'thumb'}.jpeg`
+  );
   return new Response(file);
 }) satisfies RequestHandler;
 
@@ -65,7 +78,7 @@ export const PUT = (async ({ cookies, route, request }) => {
   const staffMember = await getStaffMember(session, data.tournamentId, route, true);
 
   if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament', 'manage_assets'])) {
-    error(401, 'You do not have the required permissions to upload this tournament\'s banner');
+    error(401, "You do not have the required permissions to upload this tournament's banner");
   }
 
   const fileId = generateFileId();
@@ -80,17 +93,20 @@ export const PUT = (async ({ cookies, route, request }) => {
       maxSize: convertBytes.mb(25),
       types: ['jpeg', 'jpg', 'png', 'webp']
     },
-    resizes: [{
-      name: names.full,
-      width: 1600,
-      height: 667,
-      quality: 100
-    }, {
-      name: names.thumb,
-      width: 620,
-      height: 258,
-      quality: 75
-    }]
+    resizes: [
+      {
+        name: names.full,
+        width: 1600,
+        height: 667,
+        quality: 100
+      },
+      {
+        name: names.thumb,
+        width: 620,
+        height: 258,
+        quality: 75
+      }
+    ]
   });
 
   await Promise.all(files.map((file) => uploadFile(route, 'tournament-banners', file)));
@@ -119,7 +135,7 @@ export const DELETE = (async ({ cookies, route, request }) => {
   const staffMember = await getStaffMember(session, data.tournamentId, route, true);
 
   if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament', 'manage_assets'])) {
-    error(401, 'You do not have the required permissions to delete this tournament\'s banner');
+    error(401, "You do not have the required permissions to delete this tournament's banner");
   }
 
   const names = {
@@ -138,6 +154,8 @@ export const DELETE = (async ({ cookies, route, request }) => {
     throw await apiError(err, 'Updating the tournament', route);
   }
 
-  await Promise.all(Object.values(names).map((fileName) => deleteFile(route, 'tournament-banners', fileName)));
+  await Promise.all(
+    Object.values(names).map((fileName) => deleteFile(route, 'tournament-banners', fileName))
+  );
   return new Response('Success');
 }) satisfies RequestHandler;

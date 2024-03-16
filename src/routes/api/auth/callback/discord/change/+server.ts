@@ -26,7 +26,7 @@ export const GET = (async ({ url, route, cookies }) => {
       grantType: 'authorization_code',
       scope: ['identify'],
       code
-    });;
+    });
   } catch (err) {
     throw await apiError(err, 'Getting the Discord OAuth token', route);
   }
@@ -52,7 +52,7 @@ export const GET = (async ({ url, route, cookies }) => {
       username: discordUser.username
     }
   };
-  
+
   cookies.set('session', signJWT(authSession), {
     path: '/'
   });

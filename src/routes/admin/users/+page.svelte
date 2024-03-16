@@ -133,38 +133,48 @@
   $: {
     users = {
       owners: data.users.filter(({ osu }) => osu.osuUserId === data.ownerId),
-      admins: data.users.filter(({ admin, osu }) => admin && osu.osuUserId !== data.ownerId).sort(sortUser),
-      hosts: data.users.filter(({ approvedHost, osu }) => approvedHost && osu.osuUserId !== data.ownerId).sort(sortUser),
+      admins: data.users
+        .filter(({ admin, osu }) => admin && osu.osuUserId !== data.ownerId)
+        .sort(sortUser),
+      hosts: data.users
+        .filter(({ approvedHost, osu }) => approvedHost && osu.osuUserId !== data.ownerId)
+        .sort(sortUser),
       banned: data.users.filter(({ banned }) => banned).sort(sortUser)
     };
   }
 
   $: {
-    userTypes = [{
-      typeLabel: 'Owner',
-      type: 'owner',
-      description: 'The website owner.',
-      nonFoundDescription: '',
-      users: users.owners
-    }, {
-      typeLabel: 'Admins',
-      type: 'admin',
-      description: `All ${data.counts.admin} users with administrative permissions.`,
-      nonFoundDescription: 'No users have administrative permissions.',
-      users: []
-    }, {
-      typeLabel: 'Approved Hosts',
-      type: 'host',
-      description: `All ${data.counts.host} users who are approved to be able to create (and therefore, host) tournaments.`,
-      nonFoundDescription: 'No users are approved to be able to create (and therefore, host) tournaments.',
-      users: users.hosts
-    }, {
-      typeLabel: 'Banned Users',
-      type: 'banned',
-      description: `All ${data.counts.banned} users who are banned from using Kyoso and can no longer log in.`,
-      nonFoundDescription: 'No users are currently banned.',
-      users: users.banned
-    }];
+    userTypes = [
+      {
+        typeLabel: 'Owner',
+        type: 'owner',
+        description: 'The website owner.',
+        nonFoundDescription: '',
+        users: users.owners
+      },
+      {
+        typeLabel: 'Admins',
+        type: 'admin',
+        description: `All ${data.counts.admin} users with administrative permissions.`,
+        nonFoundDescription: 'No users have administrative permissions.',
+        users: []
+      },
+      {
+        typeLabel: 'Approved Hosts',
+        type: 'host',
+        description: `All ${data.counts.host} users who are approved to be able to create (and therefore, host) tournaments.`,
+        nonFoundDescription:
+          'No users are approved to be able to create (and therefore, host) tournaments.',
+        users: users.hosts
+      },
+      {
+        typeLabel: 'Banned Users',
+        type: 'banned',
+        description: `All ${data.counts.banned} users who are banned from using Kyoso and can no longer log in.`,
+        nonFoundDescription: 'No users are currently banned.',
+        users: users.banned
+      }
+    ];
   }
 
   $: {
@@ -183,13 +193,21 @@
         <p>Are you sure you want to remove admin permissions from this user?</p>
       {:else}
         <span class="title">Grant Admin</span>
-        <p>Are you sure you want to grant admin permissions to this user? They'll be able to manage users, tournaments and more.</p>
+        <p>
+          Are you sure you want to grant admin permissions to this user? They'll be able to manage
+          users, tournaments and more.
+        </p>
       {/if}
       <div class="actions">
-        <button class="btn variant-filled-primary" on:click={() => changeAdminStatus($ctx.selectedUser?.id || 0, !$ctx.selectedUser?.admin)}>
+        <button
+          class="btn variant-filled-primary"
+          on:click={() => changeAdminStatus($ctx.selectedUser?.id || 0, !$ctx.selectedUser?.admin)}
+        >
           {$ctx.selectedUser?.admin ? 'Remove' : 'Grant'}
         </button>
-        <button class="btn variant-filled" on:click={ctx.toggleShowChangeAdminStatusPrompt}>Cancel</button>
+        <button class="btn variant-filled" on:click={ctx.toggleShowChangeAdminStatusPrompt}
+          >Cancel</button
+        >
       </div>
     </Modal>
   </Backdrop>
@@ -202,25 +220,34 @@
         <p>Are you sure you want to remove tournament hosting permissions from this user?</p>
       {:else}
         <span class="title">Approve Host</span>
-        <p>Are you sure you want to grant tournament hosting permissions to this user? They'll be able to host (create) tournaments.</p>
+        <p>
+          Are you sure you want to grant tournament hosting permissions to this user? They'll be
+          able to host (create) tournaments.
+        </p>
       {/if}
       <div class="actions">
-        <button class="btn variant-filled-primary" on:click={() => changeHostStatus($ctx.selectedUser?.id || 0, !$ctx.selectedUser?.approvedHost)}>
+        <button
+          class="btn variant-filled-primary"
+          on:click={() =>
+            changeHostStatus($ctx.selectedUser?.id || 0, !$ctx.selectedUser?.approvedHost)}
+        >
           {$ctx.selectedUser?.approvedHost ? 'Disapprove' : 'Approve'}
         </button>
-        <button class="btn variant-filled" on:click={ctx.toggleShowChangeHostStatusPrompt}>Cancel</button>
+        <button class="btn variant-filled" on:click={ctx.toggleShowChangeHostStatusPrompt}
+          >Cancel</button
+        >
       </div>
     </Modal>
   </Backdrop>
 {/if}
 {#if $ctx.showBanUserForm}
   <Backdrop zIndex="z-[21]">
-    <BanUserForm {ctx}  />
+    <BanUserForm {ctx} />
   </Backdrop>
 {/if}
 {#if $ctx.showRevokeBanForm}
   <Backdrop zIndex="z-[21]">
-    <RevokeBanForm {ctx}  />
+    <RevokeBanForm {ctx} />
   </Backdrop>
 {/if}
 {#if $ctx.showLookedUpUser}
@@ -233,7 +260,14 @@
     <h1>Manage Users</h1>
     <div class="line-b mt-4 mb-8" />
     <h2>Users</h2>
-    <p class="mt-2 mb-4">There {data.counts.total === 1 ? 'is 1 user' : `are ${formatNumber(data.counts.total)} users`} registered to Kyoso. Use the search bar below if you wish to look one up using either their osu! username, osu! user ID, Discord user ID or Kyoso user ID. Hold the <span class="badge variant-filled-secondary">Ctrl</span> or <span class="badge variant-filled-secondary">⌘</span> key when hovering over users to search them up.</p>
+    <p class="mt-2 mb-4">
+      There {data.counts.total === 1 ? 'is 1 user' : `are ${formatNumber(data.counts.total)} users`}
+      registered to Kyoso. Use the search bar below if you wish to look one up using either their osu!
+      username, osu! user ID, Discord user ID or Kyoso user ID. Hold the
+      <span class="badge variant-filled-secondary">Ctrl</span>
+      or <span class="badge variant-filled-secondary">⌘</span> key when hovering over users to search
+      them up.
+    </p>
     <div class="mb-2">
       <span>Search by: </span>
       <select class="input w-36 text-sm py-1 px-2" bind:value={searchBy}>
@@ -247,8 +281,17 @@
       <div class="input-group-shim">
         <Search size={24} />
       </div>
-      <input type="search" placeholder="Search user..." bind:value={search} on:keypress={onSearchKeyDown} />
-      <button class="btn variant-filled-primary rounded-l-none" disabled={!search} on:click={onSearch}>Search</button>
+      <input
+        type="search"
+        placeholder="Search user..."
+        bind:value={search}
+        on:keypress={onSearchKeyDown}
+      />
+      <button
+        class="btn variant-filled-primary rounded-l-none"
+        disabled={!search}
+        on:click={onSearch}>Search</button
+      >
     </div>
     {#each userTypes as { description, nonFoundDescription, type, typeLabel, users: userList }}
       <div class="line-b my-8" />

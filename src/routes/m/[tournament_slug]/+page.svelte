@@ -1,7 +1,7 @@
 <script lang="ts">
   import { portal } from 'svelte-portal';
   import type { PageServerData } from './$types';
-  
+
   export let data: PageServerData;
 </script>
 

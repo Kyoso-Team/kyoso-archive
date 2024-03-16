@@ -76,7 +76,11 @@
       <span class="title">Change Discord Account</span>
       <p>Are you sure you want to change the Discord account linked to Kyoso profile?</p>
       <div class="actions">
-        <a class="btn variant-filled-primary" href={`/api/auth/change_discord?redirect_uri=${encodeURI($page.url.toString())}`}>Change Discord</a>
+        <a
+          class="btn variant-filled-primary"
+          href={`/api/auth/change_discord?redirect_uri=${encodeURI($page.url.toString())}`}
+          >Change Discord</a
+        >
         <button class="btn variant-filled" on:click={toggleChangeDiscordPrompt}>Cancel</button>
       </div>
     </Modal>
@@ -87,7 +91,11 @@
     <Modal>
       {#if data.user.apiKey}
         <span class="title">Generate New API Key</span>
-        <p>Are you sure you want to generate a new API key? This will make the current one obsolete (unusuable), which means you'll need to replace the current key in any code base or project that has it with the new one.</p>
+        <p>
+          Are you sure you want to generate a new API key? This will make the current one obsolete
+          (unusuable), which means you'll need to replace the current key in any code base or
+          project that has it with the new one.
+        </p>
       {:else}
         <span class="title">Generate An API Key</span>
         <p>Are you sure you want to generate an API key?</p>
@@ -126,7 +134,9 @@
       </div>
     </div>
     <div class="my-4 flex justify-start sm:justify-end">
-      <button class="btn variant-filled-primary" on:click={toggleChangeDiscordPrompt}>Change Discord</button>
+      <button class="btn variant-filled-primary" on:click={toggleChangeDiscordPrompt}
+        >Change Discord</button
+      >
     </div>
     <div class="line-b my-8" />
     <h2>API Key</h2>
@@ -137,15 +147,25 @@
         <span class="text-error-500">DO NOT SHARE THIS KEY WITH ANYONE.</span>
       {:else}
         <span>Start by creating your first key.</span>
-      {/if} 
+      {/if}
     </p>
     {#if data.user.apiKey}
       <div class="p-4 card flex flex-col relative">
         <div class="flex gap-2 flex-wrap">
           {#if viewApiKey}
-            <input type="text" class="input w-full xs:w-72" readonly bind:value={data.user.apiKey} />
+            <input
+              type="text"
+              class="input w-full xs:w-72"
+              readonly
+              bind:value={data.user.apiKey}
+            />
           {:else}
-            <input type="password" class="input w-full xs:w-72" readonly bind:value={data.user.apiKey} />
+            <input
+              type="password"
+              class="input w-full xs:w-72"
+              readonly
+              bind:value={data.user.apiKey}
+            />
           {/if}
           <div class="flex gap-2">
             <button class="btn-icon variant-filled" on:click={toggleApiKeyVisibility}>
@@ -161,7 +181,10 @@
           </div>
         </div>
         <div>
-          <button class="btn variant-filled-primary mt-4 md:mt-0 md:absolute md:top-4 md:right-4" on:click={toggleGenerateApiKeyPrompt}>
+          <button
+            class="btn variant-filled-primary mt-4 md:mt-0 md:absolute md:top-4 md:right-4"
+            on:click={toggleGenerateApiKeyPrompt}
+          >
             Generate New Key
           </button>
         </div>

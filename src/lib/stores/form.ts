@@ -3,11 +3,13 @@ import { writable } from 'svelte/store';
 
 export function createForm<
   TSchema extends Record<string, v.BaseSchema>,
-  TFinalValue = { [K in keyof TSchema]: v.Output<TSchema[K]>; },
+  TFinalValue = { [K in keyof TSchema]: v.Output<TSchema[K]> },
   TLiveValue = {
-    [K in keyof TFinalValue]: TFinalValue[K] extends boolean ? TFinalValue[K] : TFinalValue[K] | undefined;
-  },
->(formSchema: TSchema, defaults?: { [K in keyof TFinalValue]?: TFinalValue[K]; }) {
+    [K in keyof TFinalValue]: TFinalValue[K] extends boolean
+      ? TFinalValue[K]
+      : TFinalValue[K] | undefined;
+  }
+>(formSchema: TSchema, defaults?: { [K in keyof TFinalValue]?: TFinalValue[K] }) {
   const labels: Record<string, string> = {};
   const value: Record<string, any> = {};
   const errors: Record<string, string | undefined> = {};
@@ -31,7 +33,7 @@ export function createForm<
 
   const form = writable<{
     value: TLiveValue;
-    errors: { [K in keyof TFinalValue]?: string; };
+    errors: { [K in keyof TFinalValue]?: string };
     canSubmit: boolean;
   }>({
     errors,
@@ -39,10 +41,7 @@ export function createForm<
     value: value as any
   });
 
-  function canSubmit(form: {
-    value: TLiveValue;
-    errors: { [K in keyof TFinalValue]?: string; };
-  }) {
+  function canSubmit(form: { value: TLiveValue; errors: { [K in keyof TFinalValue]?: string } }) {
     const { value, errors } = form;
     const parsed = v.safeParse(v.object(formSchema), value);
     const hasErrors = Object.values(errors).filter((err) => typeof err === 'string').length > 0;
@@ -94,19 +93,21 @@ export function createForm<
 
   function getFinalValue(form: {
     value: TLiveValue;
-    errors: { [K in keyof TFinalValue]?: string; };
+    errors: { [K in keyof TFinalValue]?: string };
   }): TFinalValue {
     const { value, errors } = form;
     const parsed = v.safeParse(v.object(formSchema), value);
-    
+
     if (!parsed.success) {
-      throw Error('Can\'t retrieve value for submission because the value is invalid');
+      throw Error("Can't retrieve value for submission because the value is invalid");
     }
 
     const hasErrors = Object.values(errors).filter((err) => typeof err === 'string').length > 0;
 
     if (hasErrors) {
-      throw Error('Can\'t retrieve value for submission because the form has errors that need to be resolved');
+      throw Error(
+        "Can't retrieve value for submission because the form has errors that need to be resolved"
+      );
     }
 
     return value as any;
@@ -117,7 +118,7 @@ export function createForm<
     setValue,
     getFinalValue,
     setGlobalError,
-    labels: labels as { [K in keyof TFinalValue]: K; },
+    labels: labels as { [K in keyof TFinalValue]: K },
     schemas: formSchema
   };
 }

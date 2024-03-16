@@ -4,7 +4,10 @@
   import { formatDate, formatTime } from '$lib/utils';
   import type { Session } from '$db';
 
-  export let session: Pick<typeof Session.$inferSelect, 'id' | 'createdAt' | 'ipAddress' | 'lastActiveAt' | 'ipMetadata'> & {
+  export let session: Pick<
+    typeof Session.$inferSelect,
+    'id' | 'createdAt' | 'ipAddress' | 'lastActiveAt' | 'ipMetadata'
+  > & {
     browser: Partial<{
       name: string;
       version: string;
@@ -45,11 +48,29 @@
         <li>Signed in using...</li>
         <ul class="my-2 list-disc pl-8">
           <li><strong>IP:</strong> {session.ipAddress}</li>
-          <li><strong>Browser:</strong> {session.browser.name && session.browser.version ? `${session.browser.name} ${session.browser.version}` : 'Unknown'} </li>
-          <li><strong>OS:</strong> {session.os.name && session.os.version ? `${session.os.name} ${session.os.version}` : 'Unknown'}</li>
+          <li>
+            <strong>Browser:</strong>
+            {session.browser.name && session.browser.version
+              ? `${session.browser.name} ${session.browser.version}`
+              : 'Unknown'}
+          </li>
+          <li>
+            <strong>OS:</strong>
+            {session.os.name && session.os.version
+              ? `${session.os.name} ${session.os.version}`
+              : 'Unknown'}
+          </li>
         </ul>
-        <li><strong>Signed in:</strong> {formatDate(session.createdAt)} - {formatTime(session.createdAt)}</li>
-        <li><strong>Last active:</strong> {current ? 'Now' : `${formatDate(session.lastActiveAt)} - ${formatTime(session.lastActiveAt)}`}</li>
+        <li>
+          <strong>Signed in:</strong>
+          {formatDate(session.createdAt)} - {formatTime(session.createdAt)}
+        </li>
+        <li>
+          <strong>Last active:</strong>
+          {current
+            ? 'Now'
+            : `${formatDate(session.lastActiveAt)} - ${formatTime(session.lastActiveAt)}`}
+        </li>
       </ul>
     </Modal>
   </Backdrop>
@@ -58,7 +79,10 @@
   <Backdrop>
     <Modal>
       <span class="title">End Session</span>
-      <p>Are you sure you want to end this session? You'll be signed out of the respective device and browser.</p>
+      <p>
+        Are you sure you want to end this session? You'll be signed out of the respective device and
+        browser.
+      </p>
       <div class="actions">
         <button class="btn variant-filled-error" on:click={onDeleteSession}>End Session</button>
         <button class="btn variant-filled" on:click={toggleEndSessionPrompt}>Close</button>

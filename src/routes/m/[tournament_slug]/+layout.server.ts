@@ -8,9 +8,11 @@ import type { LayoutServerLoad } from './$types';
 export const load = (async ({ cookies, route, params }) => {
   const session = getSession(cookies, true);
 
-  let tournament: (Pick<typeof Tournament.$inferSelect, 'id' | 'acronym' | 'deleted'> & {
-    concludesTime: number;
-  }) | undefined; 
+  let tournament:
+    | (Pick<typeof Tournament.$inferSelect, 'id' | 'acronym' | 'deleted'> & {
+        concludesTime: number;
+      })
+    | undefined;
 
   try {
     tournament = await db

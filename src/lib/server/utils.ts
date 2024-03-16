@@ -179,7 +179,7 @@ export async function logError(err: unknown, when: string, from: string | null) 
     query = err.query;
     queryParams = err.parameters;
   }
-  
+
   message = `${message}. Error thrown when: ${when}`;
   console.error(`${new Date().toUTCString()} - ${from} - ${message}`);
 
@@ -220,7 +220,7 @@ export function trpcError(code: TRPC_ERROR_CODE_KEY, err: unknown, message: stri
     .split('_')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join();
-  
+
   return new TRPCError({
     code,
     message: `${httpStatusCode} - ${formattedCode}. ${message}`,

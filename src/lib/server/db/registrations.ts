@@ -28,7 +28,10 @@ export const StaffRole = pgTable(
       })
   },
   (table) => ({
-    uniqueNameTournamentId: unique('uni_staff_role_name_tournament_id').on(table.name, table.tournamentId)
+    uniqueNameTournamentId: unique('uni_staff_role_name_tournament_id').on(
+      table.name,
+      table.tournamentId
+    )
   })
 );
 

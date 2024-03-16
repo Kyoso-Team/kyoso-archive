@@ -36,7 +36,11 @@
       <slot />
     </p>
   {/if}
-  <select class={`select ${error && hasSelected ? 'input-error' : ''}`} on:input={onInput} bind:value>
+  <select
+    class={`select ${error && hasSelected ? 'input-error' : ''}`}
+    on:input={onInput}
+    bind:value
+  >
     <option value="undefined">---</option>
     {#each Object.entries(options) as [value, option]}
       <option {value}>{option}</option>

@@ -133,7 +133,6 @@
 //     .references(() => dbLobby.id, actions('cascade'))
 // });
 
-
 // export const dbPlayedQualMap = pgTable('played_qualifier_map', {
 //   id: serial('id').primaryKey(),
 //   qualLobbyId: integer('qualifier_lobby_id')

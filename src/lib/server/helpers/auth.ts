@@ -7,15 +7,20 @@ import { eq, inArray } from 'drizzle-orm';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { Token } from 'osu-web.js';
 
-export async function upsertDiscordUser(token: DiscordOAuth2.TokenRequestResult, tokenIssuedAt: Date, route: { id: string | null; }, update?: {
-  discordUserId: string;
-}) {
+export async function upsertDiscordUser(
+  token: DiscordOAuth2.TokenRequestResult,
+  tokenIssuedAt: Date,
+  route: { id: string | null },
+  update?: {
+    discordUserId: string;
+  }
+) {
   let user!: Awaited<ReturnType<DiscordOAuth2['getUser']>>;
 
   try {
     user = await discordMainAuth.getUser(token.access_token);
   } catch (err) {
-    throw await apiError(err, 'Getting the user\'s Discord data', route);
+    throw await apiError(err, "Getting the user's Discord data", route);
   }
 
   const set = {
@@ -26,7 +31,7 @@ export async function upsertDiscordUser(token: DiscordOAuth2.TokenRequestResult,
       tokenIssuedAt: tokenIssuedAt.getTime()
     }
   } satisfies Partial<typeof DiscordUser.$inferInsert>;
-  
+
   try {
     if (update?.discordUserId) {
       await db
@@ -46,15 +51,24 @@ export async function upsertDiscordUser(token: DiscordOAuth2.TokenRequestResult,
         });
     }
   } catch (err) {
-    throw await apiError(err, `${update ? 'Updating': 'Upserting'} the user's Discord data`, route);
+    throw await apiError(
+      err,
+      `${update ? 'Updating' : 'Upserting'} the user's Discord data`,
+      route
+    );
   }
 
   return user;
 }
 
-export async function upsertOsuUser(token: Token, tokenIssuedAt: Date, route: { id: string | null; }, update?: {
-  osuUserId: number;
-}) {
+export async function upsertOsuUser(
+  token: Token,
+  tokenIssuedAt: Date,
+  route: { id: string | null },
+  update?: {
+    osuUserId: number;
+  }
+) {
   const osu = new Client(token.access_token);
   let user!: Awaited<ReturnType<Client['users']['getSelf']>>;
 
@@ -65,7 +79,7 @@ export async function upsertOsuUser(token: Token, tokenIssuedAt: Date, route: { 
       }
     });
   } catch (err) {
-    throw await apiError(err, 'Getting the user\'s osu! data', route);
+    throw await apiError(err, "Getting the user's osu! data", route);
   }
 
   try {
@@ -79,10 +93,10 @@ export async function upsertOsuUser(token: Token, tokenIssuedAt: Date, route: { 
         target: [Country.code]
       });
   } catch (err) {
-    throw await apiError(err, 'Creating the user\'s country', route);
+    throw await apiError(err, "Creating the user's country", route);
   }
 
-  const badges: typeof OsuBadge.$inferInsert[] = user.badges.map((badge) => ({
+  const badges: (typeof OsuBadge.$inferInsert)[] = user.badges.map((badge) => ({
     description: badge.description,
     imgFileName: badge.image_url.split('/').at(-1) || ''
   }));
@@ -96,7 +110,7 @@ export async function upsertOsuUser(token: Token, tokenIssuedAt: Date, route: { 
           target: [OsuBadge.imgFileName]
         });
     } catch (err) {
-      throw await apiError(err, 'Creating the user\'s badges', route);
+      throw await apiError(err, "Creating the user's badges", route);
     }
   }
 
@@ -107,9 +121,14 @@ export async function upsertOsuUser(token: Token, tokenIssuedAt: Date, route: { 
       dbBadges = await db
         .select(pick(OsuBadge, ['id', 'imgFileName']))
         .from(OsuBadge)
-        .where(inArray(OsuBadge.imgFileName, badges.map(({ imgFileName }) => imgFileName)));
+        .where(
+          inArray(
+            OsuBadge.imgFileName,
+            badges.map(({ imgFileName }) => imgFileName)
+          )
+        );
     } catch (err) {
-      throw await apiError(err, 'Creating the user\'s badges', route);
+      throw await apiError(err, "Creating the user's badges", route);
     }
   }
 
@@ -127,10 +146,7 @@ export async function upsertOsuUser(token: Token, tokenIssuedAt: Date, route: { 
 
   try {
     if (update?.osuUserId) {
-      await db
-        .update(OsuUser)
-        .set(set)
-        .where(eq(OsuUser.osuUserId, update.osuUserId));
+      await db.update(OsuUser).set(set).where(eq(OsuUser.osuUserId, update.osuUserId));
     } else {
       await db
         .insert(OsuUser)
@@ -144,14 +160,16 @@ export async function upsertOsuUser(token: Token, tokenIssuedAt: Date, route: { 
         });
     }
   } catch (err) {
-    throw await apiError(err, `${update ? 'Updating': 'Upserting'} the user's osu! data`, route);
+    throw await apiError(err, `${update ? 'Updating' : 'Upserting'} the user's osu! data`, route);
   }
 
   // NOTE: If a badge has been removed from the user, this case isn't hadled due to the very high unlikelyhood of this happening
 
-  const awardedBadges: typeof OsuUserAwardedBadge.$inferInsert[] = user.badges.map((badge) => ({
+  const awardedBadges: (typeof OsuUserAwardedBadge.$inferInsert)[] = user.badges.map((badge) => ({
     awardedAt: new Date(badge.awarded_at),
-    osuBadgeId: dbBadges.find(({ imgFileName }) => (badge.image_url.split('/').at(-1) || '') === imgFileName)!.id,
+    osuBadgeId: dbBadges.find(
+      ({ imgFileName }) => (badge.image_url.split('/').at(-1) || '') === imgFileName
+    )!.id,
     osuUserId: user?.id || 0
   }));
 
@@ -171,7 +189,12 @@ export async function upsertOsuUser(token: Token, tokenIssuedAt: Date, route: { 
   return user;
 }
 
-export async function createSession(userId: number, ipAddress: string, userAgent: string, route: { id: string | null; }) {
+export async function createSession(
+  userId: number,
+  ipAddress: string,
+  userAgent: string,
+  route: { id: string | null }
+) {
   // Get the public IP address of the local machine, if not done, `ipAddress` will be '::1'
   if (env.ENV === 'development') {
     try {
@@ -192,7 +215,7 @@ export async function createSession(userId: number, ipAddress: string, userAgent
     const resp = await fetch(`https://ipinfo.io/${ipAddress}?token=${env.IPINFO_ACCESS_TOKEN}`);
     ipMeta = await resp.json();
   } catch (err) {
-    throw await apiError(err, 'Getting the IP address\' information', route);
+    throw await apiError(err, "Getting the IP address' information", route);
   }
 
   let session!: Pick<typeof Session.$inferSelect, 'id'>;

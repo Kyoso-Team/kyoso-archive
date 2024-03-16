@@ -10,7 +10,7 @@ export const GET = (async ({ url, cookies }) => {
   const dontAskConsent = url.searchParams.get('dont_ask_consent') === 'true';
 
   if (session) {
-    error(403, 'You\'re already logged in');
+    error(403, "You're already logged in");
   }
 
   if (dontAskConsent) {
@@ -19,10 +19,12 @@ export const GET = (async ({ url, cookies }) => {
     });
   }
 
-  const osuAuthUrl = buildUrl.authRequest(env.PUBLIC_OSU_CLIENT_ID, env.PUBLIC_OSU_REDIRECT_URI, [
-    'identify',
-    'public'
-  ], redirectUri);
+  const osuAuthUrl = buildUrl.authRequest(
+    env.PUBLIC_OSU_CLIENT_ID,
+    env.PUBLIC_OSU_REDIRECT_URI,
+    ['identify', 'public'],
+    redirectUri
+  );
 
   redirect(302, osuAuthUrl);
 }) satisfies RequestHandler;

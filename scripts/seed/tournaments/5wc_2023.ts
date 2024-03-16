@@ -1,6 +1,13 @@
 import { userIds } from '../utils';
 import type { SeedTournament } from './type';
-import type { BWSValues, RankRange, RefereeSettings, TeamSettings, TournamentDates, TournamentLink } from '../../../src/lib/types';
+import type {
+  BWSValues,
+  RankRange,
+  RefereeSettings,
+  TeamSettings,
+  TournamentDates,
+  TournamentLink
+} from '../../../src/lib/types';
 
 export const tournament5wc2023: SeedTournament = {
   data: {
@@ -32,45 +39,56 @@ export const tournament5wc2023: SeedTournament = {
         open: 1672531200000,
         close: 1674345600000
       },
-      other: [{
-        label: 'Screening Buffer',
-        fromDate: 1674345600000,
-        toDate: 1675555200000
-      }, {
-        label: 'Team Submission Deadline',
-        fromDate: 1676160000000
-      }, {
-        label: 'Qualifiers Showcase',
-        fromDate: 1676246400000
-      }, {
-        label: 'Qualifiers',
-        fromDate: 1677196800000,
-        toDate: 1677456000000
-      }, {
-        label: 'Round of 32',
-        fromDate: 1677801600000,
-        toDate: 1678060800000
-      }, {
-        label: 'Round of 16',
-        fromDate: 1678406400000,
-        toDate: 1678665600000
-      }, {
-        label: 'Quarterfinals',
-        fromDate: 1679011200000,
-        toDate: 1679270400000
-      }, {
-        label: 'Semifinals',
-        fromDate: 1679616000000,
-        toDate: 1679875200000
-      }, {
-        label: 'Finals',
-        fromDate: 1680220800000,
-        toDate: 1680480000000
-      }, {
-        label: 'Grand Finals',
-        fromDate: 1680825600000,
-        toDate: 1681084800000
-      }]
+      other: [
+        {
+          label: 'Screening Buffer',
+          fromDate: 1674345600000,
+          toDate: 1675555200000
+        },
+        {
+          label: 'Team Submission Deadline',
+          fromDate: 1676160000000
+        },
+        {
+          label: 'Qualifiers Showcase',
+          fromDate: 1676246400000
+        },
+        {
+          label: 'Qualifiers',
+          fromDate: 1677196800000,
+          toDate: 1677456000000
+        },
+        {
+          label: 'Round of 32',
+          fromDate: 1677801600000,
+          toDate: 1678060800000
+        },
+        {
+          label: 'Round of 16',
+          fromDate: 1678406400000,
+          toDate: 1678665600000
+        },
+        {
+          label: 'Quarterfinals',
+          fromDate: 1679011200000,
+          toDate: 1679270400000
+        },
+        {
+          label: 'Semifinals',
+          fromDate: 1679616000000,
+          toDate: 1679875200000
+        },
+        {
+          label: 'Finals',
+          fromDate: 1680220800000,
+          toDate: 1680480000000
+        },
+        {
+          label: 'Grand Finals',
+          fromDate: 1680825600000,
+          toDate: 1681084800000
+        }
+      ]
     } as TournamentDates,
     refereeSettings: {
       allow: {
@@ -99,47 +117,58 @@ export const tournament5wc2023: SeedTournament = {
       minTeamSize: 4,
       useTeamBanners: false
     } as TeamSettings,
-    links: [{
-      icon: 'osu',
-      label: 'Forum Post',
-      url: 'https://osu.ppy.sh/community/forums/topics/1699537'
-    }, {
-      icon: 'google_sheets',
-      label: 'Main Sheet',
-      url: 'https://docs.google.com/spreadsheets/d/1ix6Os18DffbDzZ2iHW0XUHG_hN-Gq8VZ1Gi1XkkSSqo/edit?usp=sharing'
-    }, {
-      icon: 'discord',
-      label: 'Discord',
-      url: 'https://discord.gg/5wc'
-    }, {
-      icon: 'website',
-      label: 'Registrations',
-      url: 'https://5wc.stagec.xyz/'
-    }, {
-      icon: 'challonge',
-      label: 'Bracket',
-      url: 'https://challonge.com/5wc23'
-    }, {
-      icon: 'donate',
-      label: 'Donations',
-      url: 'https://www.paypal.com/paypalme/kaguyaproject'
-    }, {
-      icon: 'website',
-      label: 'Pick\'em',
-      url: 'https://pickem.hwc.hr/tournaments/103'
-    }, {
-      icon: 'google_sheets',
-      label: 'Stats Sheet',
-      url: 'https://docs.google.com/spreadsheets/d/1k9w4ydcox3hjCsYodRfCdeUSPpVd00L35mfkAVn2MYM/edit?usp=sharing'
-    }, {
-      icon: 'twitch',
-      label: 'Twitch',
-      url: 'https://www.twitch.tv/stagetournaments'
-    }, {
-      icon: 'twitch',
-      label: 'Backup Twitch',
-      url: 'https://www.twitch.tv/stagetournaments2'
-    }] as TournamentLink[]
+    links: [
+      {
+        icon: 'osu',
+        label: 'Forum Post',
+        url: 'https://osu.ppy.sh/community/forums/topics/1699537'
+      },
+      {
+        icon: 'google_sheets',
+        label: 'Main Sheet',
+        url: 'https://docs.google.com/spreadsheets/d/1ix6Os18DffbDzZ2iHW0XUHG_hN-Gq8VZ1Gi1XkkSSqo/edit?usp=sharing'
+      },
+      {
+        icon: 'discord',
+        label: 'Discord',
+        url: 'https://discord.gg/5wc'
+      },
+      {
+        icon: 'website',
+        label: 'Registrations',
+        url: 'https://5wc.stagec.xyz/'
+      },
+      {
+        icon: 'challonge',
+        label: 'Bracket',
+        url: 'https://challonge.com/5wc23'
+      },
+      {
+        icon: 'donate',
+        label: 'Donations',
+        url: 'https://www.paypal.com/paypalme/kaguyaproject'
+      },
+      {
+        icon: 'website',
+        label: "Pick'em",
+        url: 'https://pickem.hwc.hr/tournaments/103'
+      },
+      {
+        icon: 'google_sheets',
+        label: 'Stats Sheet',
+        url: 'https://docs.google.com/spreadsheets/d/1k9w4ydcox3hjCsYodRfCdeUSPpVd00L35mfkAVn2MYM/edit?usp=sharing'
+      },
+      {
+        icon: 'twitch',
+        label: 'Twitch',
+        url: 'https://www.twitch.tv/stagetournaments'
+      },
+      {
+        icon: 'twitch',
+        label: 'Backup Twitch',
+        url: 'https://www.twitch.tv/stagetournaments2'
+      }
+    ] as TournamentLink[]
   },
   users: [
     userIds(8191845, '146092837723832320'),

@@ -22,7 +22,11 @@ export interface Context {
   showRevokeBanForm: boolean;
 }
 
-export default function createContextStore(toast: ToastStore, ownerId: number, isCurrentUserTheOwner: boolean) {
+export default function createContextStore(
+  toast: ToastStore,
+  ownerId: number,
+  isCurrentUserTheOwner: boolean
+) {
   const { subscribe, update } = writable<Context>({
     ctrl: false,
     showLookedUpUser: false,
@@ -36,7 +40,7 @@ export default function createContextStore(toast: ToastStore, ownerId: number, i
 
   async function lookupUser(userId: number) {
     setShowLookedUpUser(true);
-    
+
     try {
       const lookedUpUser = await trpc(get(page)).users.getUser.query({
         userId

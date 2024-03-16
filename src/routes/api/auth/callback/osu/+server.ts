@@ -17,9 +17,9 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
   const userAgent = request.headers.get('User-Agent');
 
   if (currentSession) {
-    error(403, 'You\'re already logged in');
+    error(403, "You're already logged in");
   }
-  
+
   if (!userAgent) {
     error(400, '"User-Agent" header is undefined');
   }
@@ -29,7 +29,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
   }
 
   let token!: Token;
-  
+
   try {
     token = await osuAuth.requestToken(code);
   } catch (err) {
@@ -38,7 +38,10 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
 
   // Get the osu! user ID from the token
   const accessToken = token.access_token;
-  const payloadString =  accessToken.substring(accessToken.indexOf('.') + 1, accessToken.lastIndexOf('.'));
+  const payloadString = accessToken.substring(
+    accessToken.indexOf('.') + 1,
+    accessToken.lastIndexOf('.')
+  );
   const payloadBuffer = Buffer.from(payloadString, 'base64').toString('ascii');
   const payload: { sub: string } = JSON.parse(payloadBuffer);
   const osuUserId = Number(payload.sub);
@@ -62,9 +65,15 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
   }
 
   if (userExists) {
-    let user: Pick<typeof User.$inferSelect, 'id' | 'updatedApiDataAt' | 'admin' | 'approvedHost'> & {
+    let user: Pick<
+      typeof User.$inferSelect,
+      'id' | 'updatedApiDataAt' | 'admin' | 'approvedHost'
+    > & {
       discord: Pick<typeof DiscordUser.$inferSelect, 'discordUserId' | 'username'>;
-      osu: Pick<typeof OsuUser.$inferSelect, 'osuUserId' | 'username' | 'globalStdRank' | 'restricted'>;
+      osu: Pick<
+        typeof OsuUser.$inferSelect,
+        'osuUserId' | 'username' | 'globalStdRank' | 'restricted'
+      >;
     };
 
     try {
@@ -84,31 +93,32 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
       throw await apiError(err, 'Getting the user', route);
     }
 
-    let isBanned!: boolean; 
+    let isBanned!: boolean;
 
     try {
-      isBanned = await db.execute(sql`
+      isBanned = await db
+        .execute(
+          sql`
       select exists (
         select 1 from ${Ban}
         where ${and(
           eq(Ban.issuedToUserId, user.id),
-          and(
-            isNull(Ban.revokedAt),
-            or(
-              isNull(Ban.liftAt),
-              future(Ban.liftAt)
-            )
-          )
+          and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
         )}
         limit 1
       )
-    `).then((bans) => !!bans[0]?.exists);
+    `
+        )
+        .then((bans) => !!bans[0]?.exists);
     } catch (err) {
-      throw await apiError(err, 'Verifying the user\'s ban status', route);
+      throw await apiError(err, "Verifying the user's ban status", route);
     }
 
     if (isBanned) {
-      error(403, `You are banned from Kyoso. If you think this is a mistake, try logging in again or contact us at ${env.PUBLIC_CONTACT_EMAIL}`);
+      error(
+        403,
+        `You are banned from Kyoso. If you think this is a mistake, try logging in again or contact us at ${env.PUBLIC_CONTACT_EMAIL}`
+      );
     }
 
     const session = await createSession(user.id, getClientAddress(), userAgent, route);
@@ -138,7 +148,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
     if (redirectUri) {
       redirect(302, decodeURI(redirectUri));
     }
-  
+
     redirect(302, '/');
   }
 

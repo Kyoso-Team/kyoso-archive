@@ -8,7 +8,7 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ parent, route, depends, url }) => {
   depends(url.pathname);
   const { session } = await parent();
-  
+
   const userCountQuery = db
     .select({
       count: count(User.id).as('count'),
@@ -39,16 +39,12 @@ export const load = (async ({ parent, route, depends, url }) => {
     })
     .from(User)
     .leftJoin(Ban, eq(Ban.issuedToUserId, User.id))
-    .where(and(
-      eq(Ban.issuedToUserId, User.id),
+    .where(
       and(
-        isNull(Ban.revokedAt),
-        or(
-          isNull(Ban.liftAt),
-          future(Ban.liftAt)
-        )
+        eq(Ban.issuedToUserId, User.id),
+        and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
       )
-    ));
+    );
 
   let counts!: {
     total: number;
@@ -58,17 +54,14 @@ export const load = (async ({ parent, route, depends, url }) => {
   };
 
   try {
-    counts = await unionAll(
-      userCountQuery,
-      adminCountQuery,
-      hostCountQuery,
-      bannedCountQuery
-    ).then((rows) => ({
-      total: rows[0].count,
-      admin: rows[1].count - 1,
-      host: rows[2].count - 1,
-      banned: rows[3].count
-    }));
+    counts = await unionAll(userCountQuery, adminCountQuery, hostCountQuery, bannedCountQuery).then(
+      (rows) => ({
+        total: rows[0].count,
+        admin: rows[1].count - 1,
+        host: rows[2].count - 1,
+        banned: rows[3].count
+      })
+    );
   } catch (err) {
     throw await apiError(err, 'Getting the amount of users', route);
   }
@@ -80,15 +73,15 @@ export const load = (async ({ parent, route, depends, url }) => {
   };
 
   const getOwnerQuery = db
-  .select({
-    ...selectFields,
-    banned: sql<boolean>`false`.as('banned')
-  })
-  .from(User)
-  .innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId))
-  .innerJoin(DiscordUser, eq(DiscordUser.discordUserId, User.discordUserId))
-  .where(eq(User.osuUserId, env.OWNER))
-  .limit(1);
+    .select({
+      ...selectFields,
+      banned: sql<boolean>`false`.as('banned')
+    })
+    .from(User)
+    .innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId))
+    .innerJoin(DiscordUser, eq(DiscordUser.discordUserId, User.discordUserId))
+    .where(eq(User.osuUserId, env.OWNER))
+    .limit(1);
 
   const getAdminsQuery = db
     .select({
@@ -99,7 +92,7 @@ export const load = (async ({ parent, route, depends, url }) => {
     .innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId))
     .innerJoin(DiscordUser, eq(DiscordUser.discordUserId, User.discordUserId))
     .where(eq(User.admin, true));
-    
+
   const getHostsQuery = db
     .select({
       ...selectFields,
@@ -119,16 +112,12 @@ export const load = (async ({ parent, route, depends, url }) => {
     .innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId))
     .innerJoin(DiscordUser, eq(DiscordUser.discordUserId, User.discordUserId))
     .innerJoin(Ban, eq(Ban.issuedToUserId, User.id))
-    .where(and(
-      eq(Ban.issuedToUserId, User.id),
+    .where(
       and(
-        isNull(Ban.revokedAt),
-        or(
-          isNull(Ban.liftAt),
-          future(Ban.liftAt)
-        )
+        eq(Ban.issuedToUserId, User.id),
+        and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
       )
-    ));
+    );
 
   let users!: (Pick<typeof User.$inferSelect, 'id' | 'admin' | 'approvedHost'> & {
     banned: boolean;
@@ -137,12 +126,7 @@ export const load = (async ({ parent, route, depends, url }) => {
   })[];
 
   try {
-    users = await union(
-      getOwnerQuery,
-      getAdminsQuery,
-      getHostsQuery,
-      getBannedQuery
-    );
+    users = await union(getOwnerQuery, getAdminsQuery, getHostsQuery, getBannedQuery);
   } catch (err) {
     throw await apiError(err, 'Getting the users', route);
   }

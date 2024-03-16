@@ -26,10 +26,13 @@ const trpcHandle = createTRPCHandle({
   }
 });
 
-async function verifySession({ cookies, route }: RequestEvent): Promise<{
-  session: AuthSession;
-  updateCookie: boolean;
-} | undefined> {
+async function verifySession({ cookies, route }: RequestEvent): Promise<
+  | {
+      session: AuthSession;
+      updateCookie: boolean;
+    }
+  | undefined
+> {
   const sessionCookie = cookies.get('session');
 
   if (route.id?.includes('/api/auth')) return;
@@ -51,10 +54,7 @@ async function verifySession({ cookies, route }: RequestEvent): Promise<{
       .set({
         lastActiveAt: sql`now()`
       })
-      .where(and(
-        eq(Session.id, sessionToVerify?.sessionId || 0),
-        not(Session.expired)
-      ))
+      .where(and(eq(Session.id, sessionToVerify?.sessionId || 0), not(Session.expired)))
       .returning(pick(Session, ['updateCookie']))
       .then((sessions) => sessions[0]);
   } catch (err) {
@@ -77,7 +77,7 @@ async function verifySession({ cookies, route }: RequestEvent): Promise<{
   });
 }
 
-async function updateUser(session: AuthSession, cookies: Cookies, route: { id: string | null; }) {
+async function updateUser(session: AuthSession, cookies: Cookies, route: { id: string | null }) {
   let refreshTokens!: {
     osu: string;
     discord: string;
@@ -177,7 +177,7 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: { id: s
       restricted: osuUser.is_restricted
     }
   };
-  
+
   cookies.set('session', signJWT(kyosoProfile), {
     path: '/'
   });
@@ -202,7 +202,10 @@ const mainHandle: Handle = async ({ event, resolve }) => {
     }
   }
 
-  if (session && (new Date().getTime() - session.updatedApiDataAt >= 86_400_000 || sessionData.updateCookie)) {
+  if (
+    session &&
+    (new Date().getTime() - session.updatedApiDataAt >= 86_400_000 || sessionData.updateCookie)
+  ) {
     await updateUser(session, cookies, route);
 
     if (sessionData.updateCookie) {

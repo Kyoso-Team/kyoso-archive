@@ -171,16 +171,20 @@ const updateTournament = t.procedure
     const session = getSession(ctx.cookies, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
 
-    let tournament: {
-      publishTime: number;
-      concludesTime: number;
-    } | undefined;
+    let tournament:
+      | {
+          publishTime: number;
+          concludesTime: number;
+        }
+      | undefined;
 
     try {
       tournament = await db
         .select({
           publishTime: sql`${Tournament.dates} -> 'publish'`.mapWith(Number).as('publish_time'),
-          concludesTime: sql`${Tournament.dates} -> 'concludes'`.mapWith(Number).as('concludes_time')
+          concludesTime: sql`${Tournament.dates} -> 'concludes'`
+            .mapWith(Number)
+            .as('concludes_time')
         })
         .from(Tournament)
         .where(eq(Tournament.id, tournamentId))
@@ -205,15 +209,17 @@ const updateTournament = t.procedure
       'rankRange',
       'type'
     ];
-    const hasDisabledKeys = keys(data).some((key) => disabledAfterPublishKeys.includes(key))
-      || teamSettings?.maxTeamSize
-      || teamSettings?.minTeamSize
-      || dates?.publish;
+    const hasDisabledKeys =
+      keys(data).some((key) => disabledAfterPublishKeys.includes(key)) ||
+      teamSettings?.maxTeamSize ||
+      teamSettings?.minTeamSize ||
+      dates?.publish;
 
     if (published && hasDisabledKeys) {
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: 'This tournament is public. You can no longer update the following: BWS formula, rank range, type of the tournament, the publish date. If the tournament is team based, then you also can\'t update the min. and max. team sizes'
+        message:
+          "This tournament is public. You can no longer update the following: BWS formula, rank range, type of the tournament, the publish date. If the tournament is team based, then you also can't update the min. and max. team sizes"
       });
     }
 
@@ -227,7 +233,8 @@ const updateTournament = t.procedure
     if (concluded && !hasPermissions(staffMember, ['host', 'debug'])) {
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: 'This tournament has concluded. You can\'t create, update or delete any data related to this tournament unless you are/were the host'
+        message:
+          "This tournament has concluded. You can't create, update or delete any data related to this tournament unless you are/were the host"
       });
     }
 
