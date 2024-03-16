@@ -21,9 +21,9 @@
   };
   
   const main = createForm({
-    name: f.string([f.maxStrLength(50)]),
-    acronym: f.string([f.maxStrLength(8)]),
-    urlSlug: f.string([f.maxStrLength(16), f.slug()]),
+    name: f.string([f.minStrLength(2), f.maxStrLength(50)]),
+    acronym: f.string([f.minStrLength(2), f.maxStrLength(8)]),
+    urlSlug: f.string([f.minStrLength(2), f.maxStrLength(16), f.slug()]),
     type: f.union(keys(typeOptions)),
     openRank: f.boolean()
   });

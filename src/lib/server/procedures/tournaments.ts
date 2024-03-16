@@ -34,9 +34,9 @@ function uniqueConstraintsError(err: unknown) {
 }
 
 const mutationSchemas = {
-  name: v.string([v.maxLength(50)]),
-  urlSlug: v.string([v.maxLength(16), urlSlugSchema]),
-  acronym: v.string([v.maxLength(8)]),
+  name: v.string([v.minLength(2), v.maxLength(50)]),
+  urlSlug: v.string([v.minLength(2), v.maxLength(16), urlSlugSchema]),
+  acronym: v.string([v.minLength(2), v.maxLength(8)]),
   type: v.union([v.literal('teams'), v.literal('draft'), v.literal('solo')]),
   rankRange: v.optional(rankRangeSchema),
   teamSettings: v.optional(
