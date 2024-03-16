@@ -132,7 +132,7 @@
   </div>
   <div class="w-full flex flex-col gap-2 p-2 overflow-y-auto">
     {#each links as { href, icon, tip, tipName, class: styles }}
-      <a href={`/t/m/${data.tournament.urlSlug}${href}`} class="btn p-2 duration-150 hover:variant-soft-primary [&>*]:pointer-events-none" use:popup={tooltip(tipName, 'right')}>
+      <a href={`/m/${data.tournament.urlSlug}${href}`} class="btn p-2 duration-150 hover:variant-soft-primary [&>*]:pointer-events-none" use:popup={tooltip(tipName, 'right')}>
         <svelte:component this={icon} size={24} class={`duration-150 ${styles}`.trim()} />
       </a>
       <Tooltip target={tipName} label={tip} arrowBorders="border-l border-b" />

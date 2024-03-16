@@ -85,7 +85,7 @@
     }
 
     show = false;
-    goto(`/t/${tournament.urlSlug}`);
+    goto(`/m/${tournament.urlSlug}`);
   }
 
   function cancel() {
