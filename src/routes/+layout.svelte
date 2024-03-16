@@ -2,7 +2,7 @@
   import '../app.postcss';
   import 'highlight.js/styles/atom-one-dark.css';
   import { NavBar } from '$components/layout';
-  //import { form, error, upload } from '$stores';
+  import { showNavBar } from '$stores';
   import { onMount } from 'svelte';
   import {
     initializeStores,
@@ -13,24 +13,16 @@
     Toast
   } from '@skeletonlabs/skeleton';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-  //import { Sidebar } from '$components';
-  //import type { Form, Error, Upload } from '$components';
   import type { LayoutServerData } from './$types';
 
   storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
   export let data: LayoutServerData;
-  //let formComponent: typeof Form | undefined;
-  //let errorComponent: typeof Error | undefined;
-  //let uploadComponent: typeof Upload | undefined;
 
   initializeStores();
 
   onMount(() => {
     loadHighlightJs();
-    // loadFormComponent();
-    // loadErrorComponent();
-    // loadUploadComponent();
   });
 
   async function loadHighlightJs() {
@@ -60,7 +52,9 @@
 <Toast position="bl" />
 <AppShell regionPage="relative" slotPageHeader="sticky top-0 z-10">
   <svelte:fragment slot="header">
-    <NavBar session={data.session} />
+    {#if $showNavBar}
+      <NavBar session={data.session} />
+    {/if}
   </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
     <div id="sidebar" class="h-full" />
