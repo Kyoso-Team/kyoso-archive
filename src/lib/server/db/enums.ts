@@ -14,7 +14,7 @@ export const StageFormat = pgEnum('stage_format', [
 export const StaffPermission = pgEnum('staff_permission', [
   // Prefixes:
   // View: Get data
-  // Mutate: Create and update data
+  // Create: Create data
   // Delete: Delete data
   // Manage: Create, update and delete data
 
@@ -22,41 +22,33 @@ export const StaffPermission = pgEnum('staff_permission', [
   'host',
   // Same as above. This exists so a host can add this permission to a site admin to allow them to debug something without listing them as an actual staff member,
   'debug',
-  // Tournament
-  'manage_tournament_settings',
+  // Manage some (but not all) tournament settings. Can also manage staff members and roles
+  'manage_tournament',
   // Tournament assets (upload and delete banner and logo)
-  'manage_tournament_assets',
-  // Staff and staff regs.
-  'view_staff_members',
-  'mutate_staff_members',
-  'delete_staff_members',
+  'manage_assets',
   // Player regs.
-  'view_regs',
-  'mutate_regs',
-  'delete_regs',
+  'manage_regs',
   // Mappool structure,
-  'mutate_pool_structure',
+  'manage_pool_structure',
   // Suggest maps
   'view_pool_suggestions',
-  'mutate_pool_suggestions',
+  'create_pool_suggestions',
   'delete_pool_suggestions',
   // Pool maps,
   'view_pooled_maps',
-  'mutate_pooled_maps',
-  'delete_pooled_maps',
+  'manage_pooled_maps',
   // Playtest
+  'view_feedback',
   'can_playtest',
+  'can_submit_replays',
   // Matches
   'view_matches',
-  'mutate_matches',
-  'delete_matches',
+  'manage_matches',
   'ref_matches',
   'commentate_matches',
   'stream_matches',
   // Stats
-  'view_stats',
-  'mutate_stats', // Can calculate stats
-  'delete_stats',
+  'manage_stats',
   // Misc.
   'can_play' // Can play in the tournament
 ]);

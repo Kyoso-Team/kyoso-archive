@@ -217,7 +217,7 @@ const updateTournament = t.procedure
       });
     }
 
-    if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament_settings'])) {
+    if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament'])) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message: 'You do not have the required permissions to update this tournament'

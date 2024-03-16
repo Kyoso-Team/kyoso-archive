@@ -64,7 +64,7 @@ export const PUT = (async ({ cookies, route, request }) => {
   });
   const staffMember = await getStaffMember(session, data.tournamentId, route, true);
 
-  if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament_settings', 'manage_tournament_assets'])) {
+  if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament', 'manage_assets'])) {
     error(401, 'You do not have the required permissions to upload this tournament\'s banner');
   }
 
@@ -118,7 +118,7 @@ export const DELETE = (async ({ cookies, route, request }) => {
   });
   const staffMember = await getStaffMember(session, data.tournamentId, route, true);
 
-  if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament_settings', 'manage_tournament_assets'])) {
+  if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament', 'manage_assets'])) {
     error(401, 'You do not have the required permissions to delete this tournament\'s banner');
   }
 
