@@ -23,11 +23,3 @@
 //   resolved: boolean('resolved').notNull().default(false),
 //   submittedById: integer('submitted_by_id').references(() => User.id)
 // });
-
-// export const dbIssueRelations = relations(dbIssue, ({ one, many }) => ({
-//   submittedBy: one(User, {
-//     fields: [dbIssue.submittedById],
-//     references: [User.id]
-//   }),
-//   inIssueNotifs: many(dbIssueNotif)
-// }));

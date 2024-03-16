@@ -80,7 +80,6 @@
     "superjson": "^2.2.1",
     "svelte-portal": "^2.2.1",
     "trpc-sveltekit": "^3.6.1",
-    "valibot": "^0.30.0",
-    "zod": "^3.22.4"
+    "valibot": "^0.30.0"
   }
 }

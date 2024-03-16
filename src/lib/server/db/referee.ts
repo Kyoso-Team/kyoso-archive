@@ -80,37 +80,6 @@
 //   team2Id: integer('team_2_id').references(() => dbTeam.id)
 // });
 
-// export const dbMatchRelations = relations(dbMatch, ({ one, many }) => ({
-//   lobby: one(dbLobby, {
-//     fields: [dbMatch.lobbyId],
-//     references: [dbLobby.id]
-//   }),
-//   player1: one(dbPlayer, {
-//     fields: [dbMatch.player1Id],
-//     references: [dbPlayer.id],
-//     relationName: 'player_1'
-//   }),
-//   player2: one(dbPlayer, {
-//     fields: [dbMatch.player2Id],
-//     references: [dbPlayer.id],
-//     relationName: 'player_2'
-//   }),
-//   team1: one(dbTeam, {
-//     fields: [dbMatch.team1Id],
-//     references: [dbTeam.id],
-//     relationName: 'team_1'
-//   }),
-//   team2: one(dbTeam, {
-//     fields: [dbMatch.team2Id],
-//     references: [dbTeam.id],
-//     relationName: 'team_2'
-//   }),
-//   potentials: many(dbPotentialMatch),
-//   playedMaps: many(dbPlayedMap),
-//   bannedMaps: many(dbBannedMap),
-//   inPredictions: many(dbMatchPrediction)
-// }));
-
 // export const dbPlayedMap = pgTable('played_map', {
 //   id: serial('id').primaryKey(),
 //   winner: dbOpponent('winner').notNull(),
@@ -121,17 +90,6 @@
 //     .references(() => dbMatch.lobbyId)
 // });
 
-// export const dbPlayedMapRelations = relations(dbPlayedMap, ({ one }) => ({
-//   pooledMap: one(dbPooledMap, {
-//     fields: [dbPlayedMap.pooledMapId],
-//     references: [dbPooledMap.id]
-//   }),
-//   match: one(dbMatch, {
-//     fields: [dbPlayedMap.matchId],
-//     references: [dbMatch.lobbyId]
-//   })
-// }));
-
 // export const dbBannedMap = pgTable('banned_map', {
 //   id: serial('id').primaryKey(),
 //   bannedBy: dbOpponent('banned_by').notNull(),
@@ -140,17 +98,6 @@
 //     .notNull()
 //     .references(() => dbMatch.lobbyId)
 // });
-
-// export const dbBannedMapRelations = relations(dbBannedMap, ({ one }) => ({
-//   pooledMap: one(dbPooledMap, {
-//     fields: [dbBannedMap.pooledMapId],
-//     references: [dbPooledMap.id]
-//   }),
-//   match: one(dbMatch, {
-//     fields: [dbBannedMap.matchId],
-//     references: [dbMatch.lobbyId]
-//   })
-// }));
 
 // export const dbPotentialMatch = pgTable(
 //   'potential_match',
@@ -179,38 +126,6 @@
 //   })
 // );
 
-// export const dbPotentialMatchRelations = relations(dbPotentialMatch, ({ one, many }) => ({
-//   match: one(dbMatch, {
-//     fields: [dbPotentialMatch.matchId],
-//     references: [dbMatch.lobbyId]
-//   }),
-//   tournament: one(dbTournament, {
-//     fields: [dbPotentialMatch.tournamentId],
-//     references: [dbTournament.id]
-//   }),
-//   player1: one(dbPlayer, {
-//     fields: [dbPotentialMatch.player1Id],
-//     references: [dbPlayer.id],
-//     relationName: 'potential_player_1'
-//   }),
-//   player2: one(dbPlayer, {
-//     fields: [dbPotentialMatch.player2Id],
-//     references: [dbPlayer.id],
-//     relationName: 'potential_player_2'
-//   }),
-//   team1: one(dbTeam, {
-//     fields: [dbPotentialMatch.team1Id],
-//     references: [dbTeam.id],
-//     relationName: 'potential_team_1'
-//   }),
-//   team2: one(dbTeam, {
-//     fields: [dbPotentialMatch.team2Id],
-//     references: [dbTeam.id],
-//     relationName: 'potential_team_2'
-//   }),
-//   inPredictions: many(dbPotentialMatchPrediction)
-// }));
-
 // // Qualifier lobby
 // export const dbQualLobby = pgTable('qualifier_lobby', {
 //   lobbyId: integer('lobby_id')
@@ -218,15 +133,6 @@
 //     .references(() => dbLobby.id, actions('cascade'))
 // });
 
-// export const dbQualLobbyRelations = relations(dbQualLobby, ({ one, many }) => ({
-//   lobby: one(dbLobby, {
-//     fields: [dbQualLobby.lobbyId],
-//     references: [dbLobby.id]
-//   }),
-//   teams: many(dbQualLobbyToTeam),
-//   players: many(dbQualLobbyToPlayer),
-//   playedMaps: many(dbPlayedQualMap)
-// }));
 
 // export const dbPlayedQualMap = pgTable('played_qualifier_map', {
 //   id: serial('id').primaryKey(),
@@ -236,35 +142,12 @@
 //   pooledMapId: integer('pooled_map_id').references(() => dbPooledMap.id)
 // });
 
-// export const dbPlayedQualMapRelations = relations(dbPlayedQualMap, ({ one, many }) => ({
-//   qualLobby: one(dbQualLobby, {
-//     fields: [dbPlayedQualMap.qualLobbyId],
-//     references: [dbQualLobby.lobbyId]
-//   }),
-//   pooledMap: one(dbPooledMap, {
-//     fields: [dbPlayedQualMap.pooledMapId],
-//     references: [dbPooledMap.id]
-//   }),
-//   teams: many(dbPlayedQualMapToTeam),
-//   players: many(dbPlayedQualMapToPlayer)
-// }));
-
 // // Battle royale knockout lobby
 // export const dbKnockoutLobby = pgTable('knockout_lobby', {
 //   lobbyId: integer('lobby_id')
 //     .primaryKey()
 //     .references(() => dbLobby.id, actions('cascade'))
 // });
-
-// export const dbKnockoutLobbyRelations = relations(dbKnockoutLobby, ({ one, many }) => ({
-//   lobby: one(dbLobby, {
-//     fields: [dbKnockoutLobby.lobbyId],
-//     references: [dbLobby.id]
-//   }),
-//   teams: many(dbKnockoutLobbyToTeam),
-//   players: many(dbKnockoutLobbyToPlayer),
-//   playedMaps: many(dbPlayedKnockoutMap)
-// }));
 
 // export const dbPlayedKnockoutMap = pgTable('played_knockout_map', {
 //   id: serial('id').primaryKey(),
@@ -275,18 +158,3 @@
 //     .notNull()
 //     .references(() => dbPooledMap.id, actions('cascade'))
 // });
-
-// export const dbPlayedKnockoutMapRelations = relations(dbPlayedKnockoutMap, ({ one, many }) => ({
-//   knockoutLobby: one(dbKnockoutLobby, {
-//     fields: [dbPlayedKnockoutMap.knockoutLobbyId],
-//     references: [dbKnockoutLobby.lobbyId]
-//   }),
-//   pooledMap: one(dbPooledMap, {
-//     fields: [dbPlayedKnockoutMap.pooledMapId],
-//     references: [dbPooledMap.id]
-//   }),
-//   teamsThatPlayed: many(dbPlayedKnockoutMapToTeamAsPlayed),
-//   playersThatPlayed: many(dbPlayedKnockoutMapToPlayerAsPlayed),
-//   knockedOutTeams: many(dbPlayedKnockoutMapToTeamAsKnockedOut),
-//   knockedOutPlayers: many(dbPlayedKnockoutMapToPlayerAsKnockedOut)
-// }));

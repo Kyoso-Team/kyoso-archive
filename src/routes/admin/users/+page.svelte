@@ -99,6 +99,11 @@
     }
   }
 
+  async function onSearchKeyDown(e: KeyboardEvent) {
+    if (e.key !== 'Enter') return;
+    await onSearch();
+  }
+
   async function onSearch() {
     if (!search) return;
 
@@ -242,7 +247,7 @@
       <div class="input-group-shim">
         <Search size={24} />
       </div>
-      <input type="search" placeholder="Search user..." bind:value={search} />
+      <input type="search" placeholder="Search user..." bind:value={search} on:keypress={onSearchKeyDown} />
       <button class="btn variant-filled-primary rounded-l-none" disabled={!search} on:click={onSearch}>Search</button>
     </div>
     {#each userTypes as { description, nonFoundDescription, type, typeLabel, users: userList }}

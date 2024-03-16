@@ -29,13 +29,6 @@
 //   })
 // );
 
-// export const dbModMultiplierRelations = relations(dbModMultiplier, ({ one }) => ({
-//   tournament: one(dbTournament, {
-//     fields: [dbModMultiplier.tournamentId],
-//     references: [dbTournament.id]
-//   })
-// }));
-
 // // Total score, average accuracy, average combo, total relative score and total z-score can be calculated using aggregate functions
 // export const dbTeamScore = pgTable('team_score', {
 //   id: serial('id').primaryKey(),
@@ -47,22 +40,6 @@
 //     .references(() => dbRound.id, actions('cascade')),
 //   teamId: integer('team_id').references(() => dbTeam.id)
 // });
-
-// export const dbTeamScoreRelations = relations(dbTeamScore, ({ one, many }) => ({
-//   pooledMap: one(dbPooledMap, {
-//     fields: [dbTeamScore.pooledMapId],
-//     references: [dbPooledMap.id]
-//   }),
-//   round: one(dbRound, {
-//     fields: [dbTeamScore.roundId],
-//     references: [dbRound.id]
-//   }),
-//   team: one(dbTeam, {
-//     fields: [dbTeamScore.teamId],
-//     references: [dbTeam.id]
-//   }),
-//   playerScores: many(dbPlayerScore)
-// }));
 
 // // TODO once Drizzle supports more features: Move accuracy, relativeScore and zScore to a materialized view
 // export const dbPlayerScore = pgTable('player_score', {
@@ -89,22 +66,3 @@
 //     .references(() => dbTeamScore.id, actions('cascade')),
 //   playerId: integer('player_id').references(() => dbPlayer.id)
 // });
-
-// export const dbPlayerScoreRelations = relations(dbPlayerScore, ({ one }) => ({
-//   pooledMap: one(dbPooledMap, {
-//     fields: [dbPlayerScore.pooledMapId],
-//     references: [dbPooledMap.id]
-//   }),
-//   round: one(dbRound, {
-//     fields: [dbPlayerScore.roundId],
-//     references: [dbRound.id]
-//   }),
-//   player: one(dbPlayer, {
-//     fields: [dbPlayerScore.playerId],
-//     references: [dbPlayer.id]
-//   }),
-//   teamScore: one(dbTeamScore, {
-//     fields: [dbPlayerScore.teamScoreId],
-//     references: [dbTeamScore.id]
-//   })
-// }));

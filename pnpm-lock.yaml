@@ -68,9 +68,6 @@ dependencies:
   valibot:
     specifier: ^0.30.0
     version: 0.30.0
-  zod:
-    specifier: ^3.22.4
-    version: 3.22.4
 
 devDependencies:
   '@skeletonlabs/skeleton':
@@ -4763,3 +4760,4 @@ packages:
 
   /zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
+    dev: true

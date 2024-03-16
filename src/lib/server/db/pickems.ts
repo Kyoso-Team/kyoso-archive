@@ -32,18 +32,6 @@
 //   })
 // );
 
-// export const dbPickemUserRelations = relations(dbPickemUser, ({ one, many }) => ({
-//   user: one(User, {
-//     fields: [dbPickemUser.userId],
-//     references: [User.id]
-//   }),
-//   tournament: one(dbTournament, {
-//     fields: [dbPickemUser.tournamentId],
-//     references: [dbTournament.id]
-//   }),
-//   submissions: many(dbPredictionSubmission)
-// }));
-
 // export const dbPredictionSubmission = pgTable(
 //   'prediction_submission',
 //   {
@@ -63,30 +51,6 @@
 //     roundIdSubmittedByPickemUserIdKey: unique(
 //       'prediction_submission_round_id_submitted_by_pickem_user_id_key'
 //     ).on(tbl.roundId, tbl.submittedByPickemUserId)
-//   })
-// );
-
-// export const dbPredictionSubmissionRelations = relations(
-//   dbPredictionSubmission,
-//   ({ one, many }) => ({
-//     tournament: one(dbTournament, {
-//       fields: [dbPredictionSubmission.tournamentId],
-//       references: [dbTournament.id]
-//     }),
-//     round: one(dbRound, {
-//       fields: [dbPredictionSubmission.roundId],
-//       references: [dbRound.id]
-//     }),
-//     submittedByPickemUser: one(dbPickemUser, {
-//       fields: [dbPredictionSubmission.submittedByPickemUserId],
-//       references: [dbPickemUser.id]
-//     }),
-//     // Groups, swiss, single and double elim.
-//     matchPredictions: many(dbMatchPrediction),
-//     potentialMatchPredictions: many(dbPotentialMatchPrediction),
-//     // Quals
-//     qualPredictions: many(dbQualPrediction)
-//     // Battle royale tournaments can't have pickems
 //   })
 // );
 
@@ -110,17 +74,6 @@
 //   })
 // );
 
-// export const dbMatchPredictionRelations = relations(dbMatchPrediction, ({ one }) => ({
-//   match: one(dbMatch, {
-//     fields: [dbMatchPrediction.matchId],
-//     references: [dbMatch.lobbyId]
-//   }),
-//   submission: one(dbPredictionSubmission, {
-//     fields: [dbMatchPrediction.submissionId],
-//     references: [dbPredictionSubmission.id]
-//   })
-// }));
-
 // export const dbPotentialMatchPrediction = pgTable(
 //   'potential_match_prediction',
 //   {
@@ -140,20 +93,6 @@
 //   })
 // );
 
-// export const dbPotentialMatchPredictionRelations = relations(
-//   dbPotentialMatchPrediction,
-//   ({ one }) => ({
-//     potentialMatch: one(dbPotentialMatch, {
-//       fields: [dbPotentialMatchPrediction.potentialMatchId],
-//       references: [dbPotentialMatch.id]
-//     }),
-//     submission: one(dbPredictionSubmission, {
-//       fields: [dbPotentialMatchPrediction.submissionId],
-//       references: [dbPredictionSubmission.id]
-//     })
-//   })
-// );
-
 // export const dbQualPrediction = pgTable('qualifier_predictions', {
 //   id: serial('id').primaryKey(),
 //   predictedPosition: smallint('predicted_position').notNull(),
@@ -165,18 +104,3 @@
 //   // Teams
 //   teamId: integer('team_id').references(() => dbTeam.id)
 // });
-
-// export const dbQualPredictionRelations = relations(dbQualPrediction, ({ one }) => ({
-//   submission: one(dbPredictionSubmission, {
-//     fields: [dbQualPrediction.submissionId],
-//     references: [dbPredictionSubmission.id]
-//   }),
-//   player: one(dbPlayer, {
-//     fields: [dbQualPrediction.playerId],
-//     references: [dbPlayer.id]
-//   }),
-//   team: one(dbTeam, {
-//     fields: [dbQualPrediction.teamId],
-//     references: [dbTeam.id]
-//   })
-// }));
