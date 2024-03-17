@@ -10,8 +10,11 @@
 // import { eq, and } from 'drizzle-orm';
 // import { z } from 'zod';
 // import { verifyJWT } from '$lib/jwt';
-// import { t, tryCatch } from '$trpc';
-// import { TRPCError } from '@trpc/server';
+import { t } from '$trpc';
+import { TRPCError } from '@trpc/server';
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+import { getEnv } from '../../../../scripts/env';
 // import { findFirstOrThrow, pick } from '$lib/server/utils';
 // import type { SessionUser } from '$types';
 // import type { Context } from '$trpc/context';
@@ -176,3 +179,29 @@
 //     });
 //   }
 // );
+
+const ratelimit = new Ratelimit({
+  redis: new Redis({
+    url: getEnv().UPSTASH_REDIS_REST_URL,
+    token: getEnv().UPSTASH_REDIS_REST_TOKEN
+  }),
+  limiter: Ratelimit.slidingWindow(1, '10 s')
+});
+
+export const rateLimitMiddleware = t.middleware(
+  async ({ path, next, ctx: { getClientAddress } }) => {
+    const ip = getClientAddress();
+    const identifier = `${path}-${ip}`;
+
+    const result = await ratelimit.limit(identifier);
+
+    if (!result.success) {
+      throw new TRPCError({
+        code: 'TOO_MANY_REQUESTS',
+        message: 'Too many requests, please try again later!'
+      });
+    }
+
+    return next();
+  }
+);

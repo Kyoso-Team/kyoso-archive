@@ -34,7 +34,10 @@ const serverEnvSchema = v.object({
   IPINFO_ACCESS_TOKEN: nonEmptyStringSchema,
   DATABASE_URL: nonEmptyStringSchema,
   OWNER: v.number('be a number', [v.integer('be an integer')]),
-  TESTERS: v.array(v.number('be a number', [v.integer('be an integer')]), 'be an array')
+  TESTERS: v.array(v.number('be a number', [v.integer('be an integer')]), 'be an array'),
+  UPSTASH_API_KEY: nonEmptyStringSchema,
+  UPSTASH_REDIS_REST_URL: nonEmptyStringSchema,
+  UPSTASH_REDIS_REST_TOKEN: nonEmptyStringSchema
 });
 
 export function getEnv() {
@@ -58,7 +61,10 @@ export function getEnv() {
     IPINFO_ACCESS_TOKEN: process.env.IPINFO_ACCESS_TOKEN,
     DATABASE_URL: process.env.DATABASE_URL,
     OWNER: Number(process.env.OWNER),
-    TESTERS: (JSON.parse(process.env.TESTERS || '[]') as string[]).map((id) => Number(id))
+    TESTERS: (JSON.parse(process.env.TESTERS || '[]') as string[]).map((id) => Number(id)),
+    UPSTASH_API_KEY: process.env.UPSTASH_API_KEY,
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN
   });
 
   if (!parsed.success) {

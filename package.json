@@ -64,6 +64,8 @@
     "@trpc/client": "^10.45.2",
     "@trpc/server": "^10.45.2",
     "@typeschema/valibot": "^0.13.4",
+    "@upstash/ratelimit": "^1.0.1",
+    "@upstash/redis": "^1.28.4",
     "discord-oauth2": "^2.12.1",
     "drizzle-orm": "^0.30.1",
     "highlight.js": "^11.9.0",
