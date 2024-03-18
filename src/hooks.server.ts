@@ -10,6 +10,7 @@ import { and, eq, not, sql } from 'drizzle-orm';
 import { discordMainAuth, osuAuth, discordMainAuthOptions } from '$lib/server/constants';
 import { unionAll } from 'drizzle-orm/pg-core';
 import { upsertDiscordUser, upsertOsuUser } from '$lib/server/helpers/auth';
+import { ratelimit } from '$lib/server/helpers/consts';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { Token } from 'osu-web.js';
 import type { Cookies } from '@sveltejs/kit';
@@ -184,7 +185,12 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: { id: s
 }
 
 const mainHandle: Handle = async ({ event, resolve }) => {
-  const { url, route, cookies } = event;
+  const { url, route, cookies, getClientAddress } = event;
+  const ip = getClientAddress();
+  const rateLimitAttempt = await ratelimit.limit(ip);
+  if (!rateLimitAttempt.success) {
+    throw error(429, 'Too many requests. Please try again later.');
+  }
   const sessionData = await verifySession(event);
   const session = sessionData?.session;
 
