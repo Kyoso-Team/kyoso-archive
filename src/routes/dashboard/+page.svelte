@@ -27,7 +27,7 @@
   </Backdrop>
 {/if}
 <SEO page={$page} title="Dashboard" description="User dashboard" noIndex />
-<nav class="h-full w-64 line-r p-4" use:portal={'#sidebar'}>
+<nav class="h-full w-64 line-r p-4 relative" use:portal={'#sidebar'}>
   <div class="absolute inset-0 flex h-[calc(100%-74px)] flex-col gap-y-6 overflow-y-scroll p-4">
     <div>
       <span class="font-bold text-primary-500">STAFFING</span>
