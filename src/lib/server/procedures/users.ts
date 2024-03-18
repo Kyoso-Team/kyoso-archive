@@ -20,8 +20,8 @@ import { positiveIntSchema } from '$lib/schemas';
 import { getSession } from '../helpers/api';
 import { TRPCError } from '@trpc/server';
 import { alias, unionAll } from 'drizzle-orm/pg-core';
-import type { SQL } from 'drizzle-orm';
 import { rateLimitMiddleware } from '$trpc/middleware';
+import type { SQL } from 'drizzle-orm';
 
 const getUser = t.procedure
   .input(

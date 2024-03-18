@@ -10,7 +10,7 @@ import { and, eq, not, sql } from 'drizzle-orm';
 import { discordMainAuth, osuAuth, discordMainAuthOptions } from '$lib/server/constants';
 import { unionAll } from 'drizzle-orm/pg-core';
 import { upsertDiscordUser, upsertOsuUser } from '$lib/server/helpers/auth';
-import { ratelimit } from '$lib/server/helpers/consts';
+import { ratelimit } from '$lib/server/ratelimit';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { Token } from 'osu-web.js';
 import type { Cookies } from '@sveltejs/kit';

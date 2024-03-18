@@ -12,9 +12,7 @@
 // import { verifyJWT } from '$lib/jwt';
 import { t } from '$trpc';
 import { TRPCError } from '@trpc/server';
-import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
-import { getEnv } from '../../../../scripts/env';
+import { ratelimit } from '$lib/server/ratelimit';
 // import { findFirstOrThrow, pick } from '$lib/server/utils';
 // import type { SessionUser } from '$types';
 // import type { Context } from '$trpc/context';
@@ -179,14 +177,6 @@ import { getEnv } from '../../../../scripts/env';
 //     });
 //   }
 // );
-
-const ratelimit = new Ratelimit({
-  redis: new Redis({
-    url: getEnv().UPSTASH_REDIS_REST_URL,
-    token: getEnv().UPSTASH_REDIS_REST_TOKEN
-  }),
-  limiter: Ratelimit.slidingWindow(1, '10 s')
-});
 
 export const rateLimitMiddleware = t.middleware(
   async ({ path, next, ctx: { getClientAddress } }) => {
