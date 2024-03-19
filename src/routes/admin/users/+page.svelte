@@ -157,7 +157,7 @@
         type: 'admin',
         description: `All ${data.counts.admin} users with administrative permissions.`,
         nonFoundDescription: 'No users have administrative permissions.',
-        users: []
+        users: users.admins
       },
       {
         typeLabel: 'Approved Hosts',
