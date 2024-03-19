@@ -221,3 +221,12 @@ Structure to follow when writing Svelte components.
 ### Database Queries
 
 Drizzle ORM has two APIs for querying data: core and RQB. When developing for this project, we only use the core API to avoid having confusion as to when to use which. The RQB is also a high-level abstraction, so it can have its limitations, bugs and performance issues compared to core.
+
+## Development Shortcuts
+
+If `ENV` is set to `development` then the user will be able to execute keyboard shortcuts made specifically for use in a development environement, and are not accessible in test or production builds.
+
+The shortcuts are the following:
+
+- Shift+Ctrl+1: Opens a modal that allows the user to impersonate another. This is useful to test functionality that requires actions from two or more users, in that case, you can perform actions as different users (hence "impersonating").
+- Shift+Ctrl+2: Toggles the theme (between light and dark).
