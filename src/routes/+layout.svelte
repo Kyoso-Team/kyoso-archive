@@ -1,49 +1,56 @@
 <script lang="ts">
   import '../app.postcss';
-  import 'highlight.js/styles/atom-one-dark.css';
   import { NavBar } from '$components/layout';
   import { showNavBar } from '$stores';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import {
     initializeStores,
     setInitialClassState,
     AppShell,
-    storeHighlightJs,
     storePopup,
-    Toast
+    Toast,
+    modeCurrent,
+    setModeUserPrefers,
+    setModeCurrent
   } from '@skeletonlabs/skeleton';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
+  import { browser } from '$app/environment';
   import type { LayoutServerData } from './$types';
 
   storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
+  initializeStores();
 
   export let data: LayoutServerData;
 
-  initializeStores();
-
   onMount(() => {
-    loadHighlightJs();
+    if (!browser || !data.isDevEnv) return;
+    window.addEventListener('keydown', onDevShortcut);
   });
 
-  async function loadHighlightJs() {
-    const hljs = await import('highlight.js');
-    storeHighlightJs.set(hljs);
+  onDestroy(() => {
+    if (!browser || !data.isDevEnv) return;
+    window.removeEventListener('keydown', onDevShortcut);
+  });
+
+  function onDevShortcut(e: KeyboardEvent) {
+    if (!e.ctrlKey || !e.shiftKey) return;
+
+    switch (e.key) {
+      case '!':
+        break;
+      case '@':
+        toggletheme();
+        break;
+      default:
+        break;
+    }
   }
 
-  // async function loadFormComponent() {
-  //   const form = await import('$components/layout/Form.svelte');
-  //   formComponent = form.default;
-  // }
-
-  // async function loadErrorComponent() {
-  //   const error = await import('$components/layout/Error.svelte');
-  //   errorComponent = error.default;
-  // }
-
-  // async function loadUploadComponent() {
-  //   const upload = await import('$components/layout/Upload.svelte');
-  //   uploadComponent = upload.default;
-  // }
+  function toggletheme() {
+    $modeCurrent = !$modeCurrent;
+		setModeUserPrefers($modeCurrent);
+		setModeCurrent($modeCurrent);
+  }
 </script>
 
 <svelte:head>
@@ -59,26 +66,5 @@
   <svelte:fragment slot="sidebarLeft">
     <div id="sidebar" class="h-full" />
   </svelte:fragment>
-  <!--
-  {#if $form && formComponent}
-    <div class="bg-surface-backdrop-token fixed inset-0 z-20 h-screen w-screen">
-      <svelte:component this={formComponent} />
-    </div>
-  {/if}
-  {#if $upload && uploadComponent}
-    <div
-      class="bg-surface-backdrop-token fixed inset-0 z-20 flex h-screen w-screen items-center justify-center"
-    >
-      <svelte:component this={uploadComponent} />
-    </div>
-  {/if}
-  {#if $error && errorComponent}
-    <div
-      class="bg-surface-backdrop-token fixed inset-0 z-30 flex h-screen w-screen items-center justify-center"
-session>
-      <svelte:component this={errorComponent} />
-    </div>
-  {/if}
-  -->
   <slot />
 </AppShell>
