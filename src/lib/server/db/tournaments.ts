@@ -11,9 +11,9 @@ import {
   real,
   timestamp,
   uniqueIndex
-}                                              from 'drizzle-orm/pg-core';
+} from 'drizzle-orm/pg-core';
 import { StageFormat, TournamentType } from './schema';
-import { timestampConfig, uniqueConstraints, citext }  from './schema-utils';
+import { timestampConfig, uniqueConstraints, citext } from './schema-utils';
 import type {
   BWSValues,
   RankRange,

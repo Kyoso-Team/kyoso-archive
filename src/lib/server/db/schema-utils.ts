@@ -13,7 +13,7 @@ export const uniqueConstraints = {
   }
 } as const;
 
-export const citext = customType<{data: string}>({
+export const citext = customType<{ data: string }>({
   dataType() {
     return 'citext';
   }
