@@ -11,9 +11,9 @@ import {
   real,
   timestamp,
   uniqueIndex
-} from 'drizzle-orm/pg-core';
+}                                              from 'drizzle-orm/pg-core';
 import { StageFormat, TournamentType } from './schema';
-import { timestampConfig, uniqueConstraints } from './schema-utils';
+import { timestampConfig, uniqueConstraints, citext }  from './schema-utils';
 import type {
   BWSValues,
   RankRange,
@@ -30,7 +30,7 @@ export const Tournament = pgTable(
     id: serial('id').primaryKey(),
     createdAt: timestamp('created_at', timestampConfig).notNull().defaultNow(),
     deleted: boolean('deleted').notNull().default(false),
-    name: varchar('name', {
+    name: citext('name', {
       length: 50
     })
       .notNull()
@@ -115,7 +115,7 @@ export const Round = pgTable(
   'round',
   {
     id: serial('id').primaryKey(),
-    name: varchar('name', {
+    name: citext('name', {
       length: 20
     }).notNull(),
     order: smallint('order').notNull(),

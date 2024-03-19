@@ -1,21 +1,20 @@
 import {
   pgTable,
   serial,
-  varchar,
   integer,
   unique,
   smallint,
   timestamp,
   primaryKey
 } from 'drizzle-orm/pg-core';
-import { StaffColor, StaffPermission, Tournament, User } from './schema';
-import { timestampConfig } from './schema-utils';
+import { StaffColor, StaffPermission, Tournament, User  } from './schema';
+import { timestampConfig, citext } from './schema-utils';
 
 export const StaffRole = pgTable(
   'staff_role',
   {
     id: serial('id').primaryKey(),
-    name: varchar('name', {
+    name: citext('name', {
       length: 45
     }).notNull(),
     color: StaffColor('color').notNull().default('slate'),
