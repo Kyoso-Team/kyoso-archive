@@ -172,9 +172,7 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: { id: s
     },
     osu: {
       id: osuUser.id,
-      username: osuUser.username,
-      globalStdRank: osuUser.statistics.global_rank,
-      restricted: osuUser.is_restricted
+      username: osuUser.username
     }
   };
 

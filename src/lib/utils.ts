@@ -320,6 +320,8 @@ export function toastError(toast: ToastStore, message: string) {
 export function displayError(toast: ToastStore, err: unknown) {
   if (err instanceof TRPCClientError) {
     toastError(toast, err.message);
+  } else if (typeof err === 'object' && 'message' in (err || {})) {
+    toastError(toast, (err as any).message);
   } else {
     toastError(toast, 'An unknown error ocurred');
   }

@@ -4,11 +4,9 @@ import postgres from 'postgres';
 import { error } from '@sveltejs/kit';
 import { isOsuJSError } from 'osu-web.js';
 import { TRPCError } from '@trpc/server';
-import { getHTTPStatusCodeFromError } from '@trpc/server/http';
 import { customAlphabet } from 'nanoid';
 import { SQL, gt, lte, sql } from 'drizzle-orm';
 import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
-import type { TRPC_ERROR_CODE_KEY } from '@trpc/server/rpc';
 
 export function signJWT<T>(data: T) {
   return jwt.sign(data as string | object | Buffer, env.JWT_SECRET, {
@@ -196,34 +194,17 @@ export async function logError(err: unknown, when: string, from: string | null) 
     console.log(`Database query: ${query}`);
     console.log(`Query parameters: ${JSON.stringify(queryParams)}`);
   }
-
-  return message;
 }
 
 export async function apiError(err: unknown, when: string, route: { id: string | null }) {
-  const message = await logError(err, when, route.id);
-  error(500, message);
+  await logError(err, when, route.id);
+  error(500, `Internal server error. Error thrown when: ${when}`);
 }
 
 export function trpcUnknownError(err: unknown, when: string) {
   return new TRPCError({
     code: 'INTERNAL_SERVER_ERROR',
-    message: `500 - Internal Server Error. Error thrown when: ${when}`,
-    cause: err
-  });
-}
-
-export function trpcError(code: TRPC_ERROR_CODE_KEY, err: unknown, message: string) {
-  const httpStatusCode = getHTTPStatusCodeFromError({ code } as TRPCError);
-  const formattedCode = code
-    .toLowerCase()
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join();
-
-  return new TRPCError({
-    code,
-    message: `${httpStatusCode} - ${formattedCode}. ${message}`,
+    message: `Internal server error. Error thrown when: ${when}`,
     cause: err
   });
 }

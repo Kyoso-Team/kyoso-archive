@@ -154,3 +154,37 @@ export async function parseSearchParams<T extends Record<string, v.BaseSchema>>(
 
   return data as any;
 }
+
+export async function parseRequestBody<T extends v.BaseSchema>(
+  request: Request,
+  schema: T,
+  route: { id: string | null }
+): Promise<v.Output<T>> {
+  let body!: Record<string, any>;
+
+  try {
+    body = await request.json();
+  } catch (err) {
+    error(400, "Body is malformed or isn't JSON");
+  }
+
+  try {
+    body = v.parse(schema, body);
+  } catch (err) {
+    if (err instanceof v.ValiError) {
+      let str = 'Invalid input:\n';
+      const issues = v.flatten(err.issues).nested;
+
+      for (const key in issues) {
+        str += `- body.${key} should ${issues[key]}\n`;
+      }
+
+      str = str.trimEnd();
+      error(400, str);
+    } else {
+      throw await apiError(err, 'Parsing the JSON body', route);
+    }
+  }
+
+  return body as any;
+}

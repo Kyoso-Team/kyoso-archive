@@ -10,7 +10,7 @@ import type { Token } from 'osu-web.js';
 export async function upsertDiscordUser(
   token: DiscordOAuth2.TokenRequestResult,
   tokenIssuedAt: Date,
-  route: { id: string | null },
+  route: { id: string | null; },
   update?: {
     discordUserId: string;
   }
@@ -64,7 +64,7 @@ export async function upsertDiscordUser(
 export async function upsertOsuUser(
   token: Token,
   tokenIssuedAt: Date,
-  route: { id: string | null },
+  route: { id: string | null; },
   update?: {
     osuUserId: number;
   }
@@ -193,7 +193,7 @@ export async function createSession(
   userId: number,
   ipAddress: string,
   userAgent: string,
-  route: { id: string | null }
+  route: { id: string | null; }
 ) {
   // Get the public IP address of the local machine, if not done, `ipAddress` will be '::1'
   if (env.ENV === 'development') {

@@ -70,10 +70,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
       'id' | 'updatedApiDataAt' | 'admin' | 'approvedHost'
     > & {
       discord: Pick<typeof DiscordUser.$inferSelect, 'discordUserId' | 'username'>;
-      osu: Pick<
-        typeof OsuUser.$inferSelect,
-        'osuUserId' | 'username' | 'globalStdRank' | 'restricted'
-      >;
+      osu: Pick<typeof OsuUser.$inferSelect, 'osuUserId' | 'username'>;
     };
 
     try {
@@ -81,7 +78,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
         .select({
           ...pick(User, ['id', 'updatedApiDataAt', 'admin', 'approvedHost']),
           discord: pick(DiscordUser, ['discordUserId', 'username']),
-          osu: pick(OsuUser, ['osuUserId', 'username', 'globalStdRank', 'restricted'])
+          osu: pick(OsuUser, ['osuUserId', 'username'])
         })
         .from(User)
         .innerJoin(DiscordUser, eq(User.discordUserId, DiscordUser.discordUserId))
@@ -135,8 +132,6 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
       },
       osu: {
         id: user.osu.osuUserId,
-        globalStdRank: user.osu.globalStdRank,
-        restricted: user.osu.restricted,
         username: user.osu.username
       }
     };
@@ -161,9 +156,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
 
   const osuSessionData: AuthSession['osu'] = {
     id: osuUser.id,
-    username: osuUser.username,
-    globalStdRank: osuUser.statistics.global_rank,
-    restricted: osuUser.is_restricted
+    username: osuUser.username
   };
 
   cookies.set('temp_osu_profile', signJWT(osuSessionData), {

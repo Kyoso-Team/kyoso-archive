@@ -108,11 +108,15 @@ export interface AuthSession {
   osu: {
     id: number;
     username: string;
-    restricted: boolean;
-    globalStdRank: number | null;
   };
   discord: {
     id: string;
     username: string;
+  };
+  /** This property is used when a dev impersonates a user. This should only ever be used in development environments */
+  realUser?: {
+    id: number;
+    osuUserId: number;
+    discordUserId: string;
   };
 }
