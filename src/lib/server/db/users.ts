@@ -15,7 +15,7 @@ import {
   bigint,
   uniqueIndex
 } from 'drizzle-orm/pg-core';
-import { timestampConfig } from './schema-utils';
+import { timestampConfig, citext } from './schema-utils';
 import type { OAuthToken } from '$types';
 
 export const User = pgTable(
@@ -49,9 +49,7 @@ export const OsuUser = pgTable(
   'osu_user',
   {
     osuUserId: integer('osu_user_id').primaryKey(),
-    username: varchar('username', {
-      length: 16
-    }).notNull(),
+    username: citext('username').notNull(),
     restricted: boolean('restricted').notNull(),
     globalStdRank: integer('global_std_rank'),
     token: jsonb('token').notNull().$type<OAuthToken>(),
@@ -113,9 +111,7 @@ export const DiscordUser = pgTable('discord_user', {
   discordUserId: varchar('discord_user_id', {
     length: 19
   }).primaryKey(),
-  username: varchar('username', {
-    length: 32
-  }).notNull(),
+  username: citext('username').notNull(),
   token: jsonb('token').notNull().$type<OAuthToken>()
 });
 

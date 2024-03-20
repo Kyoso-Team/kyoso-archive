@@ -78,6 +78,20 @@
       "when": 1710616033254,
       "tag": "0010_jazzy_inhumans",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1710889382647,
+      "tag": "0011_smart_red_wolf",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1710891168882,
+      "tag": "0012_square_the_watchers",
+      "breakpoints": true
     }
   ]
 }
