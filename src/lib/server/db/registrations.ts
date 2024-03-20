@@ -14,9 +14,7 @@ export const StaffRole = pgTable(
   'staff_role',
   {
     id: serial('id').primaryKey(),
-    name: citext('name', {
-      length: 45
-    }).notNull(),
+    name: citext('name').notNull(),
     color: StaffColor('color').notNull().default('slate'),
     order: smallint('order').notNull(),
     permissions: StaffPermission('permissions').array().notNull().default([]),

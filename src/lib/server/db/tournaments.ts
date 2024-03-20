@@ -30,9 +30,7 @@ export const Tournament = pgTable(
     id: serial('id').primaryKey(),
     createdAt: timestamp('created_at', timestampConfig).notNull().defaultNow(),
     deleted: boolean('deleted').notNull().default(false),
-    name: citext('name', {
-      length: 50
-    })
+    name: citext('name')
       .notNull()
       .unique(uniqueConstraints.tournament.name),
     urlSlug: varchar('url_slug', {
@@ -115,9 +113,7 @@ export const Round = pgTable(
   'round',
   {
     id: serial('id').primaryKey(),
-    name: citext('name', {
-      length: 20
-    }).notNull(),
+    name: citext('name').notNull(),
     order: smallint('order').notNull(),
     targetStarRating: real('target_star_rating').notNull(),
     playtestingPool: boolean('playtesting_pool').notNull().default(false),
