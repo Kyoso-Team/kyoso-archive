@@ -13,7 +13,6 @@ import {
   TESTERS,
   ENV,
   IPINFO_ACCESS_TOKEN,
-  UPSTASH_API_KEY,
   UPSTASH_REDIS_REST_URL,
   UPSTASH_REDIS_REST_TOKEN
 } from '$env/static/private';
@@ -41,7 +40,6 @@ const serverEnvSchema = v.object({
   DATABASE_URL: nonEmptyStringSchema,
   OWNER: v.number('be a number', [v.integer('be an integer')]),
   TESTERS: v.array(v.number('be a number', [v.integer('be an integer')]), 'be an array'),
-  UPSTASH_API_KEY: nonEmptyStringSchema,
   UPSTASH_REDIS_REST_URL: nonEmptyStringSchema,
   UPSTASH_REDIS_REST_TOKEN: nonEmptyStringSchema
 });
@@ -61,7 +59,6 @@ const serverEnv = {
   DATABASE_URL,
   OWNER: Number(OWNER),
   TESTERS: (JSON.parse(TESTERS || '[]') as string[]).map((id) => Number(id)),
-  UPSTASH_API_KEY,
   UPSTASH_REDIS_REST_URL,
   UPSTASH_REDIS_REST_TOKEN
 };

@@ -26,6 +26,7 @@ If you're interested in making a signficant contribution, it's recommended that 
 **Hosting**
 
 - [Bunny](https://bunny.net): File storage
+- [Upstash](https://upstash.com): Redis instance (for rate limiting)
 - [Vercel](https://vercel.com): CI/CD and website deployments
 - [Neon](https://neon.tech): Database deployments
 
@@ -70,6 +71,7 @@ Scripts present in the package.json file. Each script must be prepended with `pn
 - An osu! account with an OAuth app.
 - A Discord account with an OAuth app.
 - Any storage zone hosted on Bunny. **IMPORTANT:** Do not delete your zone once created. If you've just signed up to Bunny, you have a 14 day trial and when that trial expires, you're still able to read and write to your existing zones but you can no longer create new one's.
+- A Redis database on Upstash.
 - An IPInfo account.
 
 ### Setup
@@ -141,6 +143,15 @@ Log into your IPInfo account and go to your [dashboard](https://ipinfo.io/accoun
 | Name                    | Type   | optional |
 | ----------------------- | ------ | -------- |
 | IPINFO_API_ACCESS_TOKEN | string |          |
+
+**Upstash**
+
+Log into your Upstash account and [create a Redis database](https://console.upstash.com). In the dashboard for the Redis DB, The rest URL is what's under "Endpoint" and the rest token is what's under "Password".
+
+| Name                     | Type   | optional |
+| ------------------------ | ------ | -------- |
+| UPSTASH_REDIS_REST_URL   | string |          |
+| UPSTASH_REDIS_REST_TOKEN | string |          |
 
 ## Code Quality
 

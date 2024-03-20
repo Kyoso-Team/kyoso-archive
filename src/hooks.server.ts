@@ -184,11 +184,14 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: { id: s
 
 const mainHandle: Handle = async ({ event, resolve }) => {
   const { url, route, cookies, getClientAddress } = event;
+
   const ip = getClientAddress();
   const rateLimitAttempt = await ratelimit.limit(ip);
+
   if (!rateLimitAttempt.success) {
-    throw error(429, 'Too many requests. Please try again later.');
+    error(429, 'Too many requests. Please try again later.');
   }
+
   const sessionData = await verifySession(event);
   const session = sessionData?.session;
 
