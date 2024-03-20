@@ -10,8 +10,9 @@
 // import { eq, and } from 'drizzle-orm';
 // import { z } from 'zod';
 // import { verifyJWT } from '$lib/jwt';
-// import { t, tryCatch } from '$trpc';
-// import { TRPCError } from '@trpc/server';
+import { t } from '$trpc';
+import { TRPCError } from '@trpc/server';
+import { ratelimit } from '$lib/server/ratelimit';
 // import { findFirstOrThrow, pick } from '$lib/server/utils';
 // import type { SessionUser } from '$types';
 // import type { Context } from '$trpc/context';
@@ -176,3 +177,21 @@
 //     });
 //   }
 // );
+
+export const rateLimitMiddleware = t.middleware(
+  async ({ path, next, ctx: { getClientAddress } }) => {
+    const ip = getClientAddress();
+    const identifier = `${path}-${ip}`;
+
+    const result = await ratelimit.limit(identifier);
+
+    if (!result.success) {
+      throw new TRPCError({
+        code: 'TOO_MANY_REQUESTS',
+        message: 'Too many requests, please try again later!'
+      });
+    }
+
+    return next();
+  }
+);

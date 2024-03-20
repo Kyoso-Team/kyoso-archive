@@ -20,6 +20,7 @@ import { positiveIntSchema } from '$lib/schemas';
 import { getSession } from '../helpers/api';
 import { TRPCError } from '@trpc/server';
 import { alias, unionAll } from 'drizzle-orm/pg-core';
+import { rateLimitMiddleware } from '$trpc/middleware';
 import type { SQL } from 'drizzle-orm';
 
 const getUser = t.procedure
@@ -180,6 +181,7 @@ const getUser = t.procedure
   });
 
 const searchUser = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({
