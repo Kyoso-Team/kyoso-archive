@@ -5,6 +5,7 @@
   import { Osu, Discord } from '$components/icons';
   import { trpc } from '$lib/trpc';
   import { page } from '$app/stores';
+  import { loading } from '$stores';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { Copy, Eye, EyeOff } from 'lucide-svelte';
   import { displayError, toastSuccess } from '$lib/utils';
@@ -37,11 +38,15 @@
   async function generateApiKey() {
     let user!: TRPCRouter['users']['updateSelf'];
 
+    loading.set(true);
+
     try {
       user = await trpc($page).users.updateSelf.mutate();
     } catch (err) {
       displayError(toast, err);
     }
+
+    loading.set(false);
 
     data.user = {
       ...data.user,
@@ -54,6 +59,8 @@
   }
 
   async function deleteSession(sessionId: number) {
+    loading.set(true);
+
     try {
       await trpc($page).users.expireSession.mutate({
         sessionId
@@ -61,6 +68,8 @@
     } catch (err) {
       displayError(toast, err);
     }
+
+    loading.set(false);
 
     data.activeSessions = data.activeSessions.filter((session) => session.id !== sessionId);
     data = Object.assign({}, data);

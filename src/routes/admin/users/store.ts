@@ -3,6 +3,7 @@ import { pushState } from '$app/navigation';
 import { trpc } from '$lib/trpc';
 import { page } from '$app/stores';
 import { displayError } from '$lib/utils';
+import { loading } from '$stores';
 import type { ToastStore } from '@skeletonlabs/skeleton';
 import type { Ban, User } from '$db';
 import type { TRPCRouter } from '$types';
@@ -40,6 +41,7 @@ export default function createContextStore(
 
   async function lookupUser(userId: number) {
     setShowLookedUpUser(true);
+    loading.set(true);
 
     try {
       const lookedUpUser = await trpc(get(page)).users.getUser.query({
@@ -56,6 +58,8 @@ export default function createContextStore(
       history.back();
       displayError(toast, err);
     }
+
+    loading.set(false);
   }
 
   function setShowLookedUpUser(showLookedUpUser: boolean) {

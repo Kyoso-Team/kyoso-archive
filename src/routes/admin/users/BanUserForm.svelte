@@ -5,7 +5,7 @@
   import { invalidate } from '$app/navigation';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { Form, Section, Text, Number, Checkbox } from '$components/form';
-  import { createForm } from '$stores';
+  import { createForm, loading } from '$stores';
   import { displayError, toastSuccess } from '$lib/utils';
   import type createContextStore from './store';
 
@@ -35,6 +35,8 @@
       throw Error('"issueBanTo" is undefined in the context');
     }
 
+    loading.set(true);
+
     try {
       await trpc($page).users.banUser.mutate({
         banReason,
@@ -46,6 +48,8 @@
     }
 
     ctx.toggleShowBanUserForm();
+    loading.set(false);
+    
     toastSuccess(toast, 'Banned user succcessfully');
     await invalidate($page.url.pathname);
   }

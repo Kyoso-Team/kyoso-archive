@@ -1,4 +1,5 @@
 <script lang="ts">
+  // NOTE: Page needs to be slightly reworked after this PR gets merged: https://github.com/sveltejs/kit/pull/11810
   import User from './User.svelte';
   import BanUserForm from './BanUserForm.svelte';
   import RevokeBanForm from './RevokeBanForm.svelte';
@@ -10,6 +11,7 @@
   import { displayError, formatNumber, toastError, toastSuccess } from '$lib/utils';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { onDestroy, onMount } from 'svelte';
+  import { loading } from '$stores';
   import { trpc } from '$lib/trpc';
   import { invalidate } from '$app/navigation';
   import { browser } from '$app/environment';
@@ -58,6 +60,8 @@
   }
 
   async function changeAdminStatus(userId: number, admin: boolean) {
+    loading.set(true);
+
     try {
       await trpc($page).users.updateUser.mutate({
         userId,
@@ -69,7 +73,10 @@
       displayError(toast, err);
     }
 
+    
     await invalidate($page.url.pathname);
+    loading.set(false);
+
     ctx.toggleShowChangeAdminStatusPrompt();
     toastSuccess(toast, `${admin ? 'Granted' : 'Removed'} admin successfully`);
 
@@ -79,6 +86,8 @@
   }
 
   async function changeHostStatus(userId: number, approvedHost: boolean) {
+    loading.set(true);
+
     try {
       await trpc($page).users.updateUser.mutate({
         userId,
@@ -91,6 +100,8 @@
     }
 
     await invalidate($page.url.pathname);
+    loading.set(false);
+
     ctx.toggleShowChangeHostStatusPrompt();
     toastSuccess(toast, `${approvedHost ? 'Approved' : 'Disapproved'} host successfully`);
 
@@ -108,6 +119,7 @@
     if (!search) return;
 
     let user: TRPCRouter['users']['searchUser'];
+    loading.set(true);
 
     try {
       user = await trpc($page).users.searchUser.query({
@@ -117,6 +129,8 @@
     } catch (err) {
       displayError(toast, err);
     }
+
+    loading.set(false);
 
     if (!user) {
       toastError(toast, 'User not found');

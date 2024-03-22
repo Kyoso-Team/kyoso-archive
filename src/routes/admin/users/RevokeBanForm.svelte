@@ -4,7 +4,7 @@
   import { page } from '$app/stores';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { Form, Text } from '$components/form';
-  import { createForm } from '$stores';
+  import { createForm, loading } from '$stores';
   import { displayError, toastSuccess } from '$lib/utils';
   import { invalidate } from '$app/navigation';
   import type createContextStore from './store';
@@ -23,6 +23,8 @@
       throw Error('"banToRevoke" is undefined in the context');
     }
 
+    loading.set(true);
+
     try {
       await trpc($page).users.revokeBan.mutate({
         banId: $ctx.banToRevoke.id,
@@ -33,6 +35,8 @@
     }
 
     ctx.toggleShowRevokeBanForm();
+    loading.set(false);
+    
     toastSuccess(toast, 'Ban revoked succcessfully');
     await invalidate($page.url.pathname);
   }

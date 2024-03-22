@@ -1,5 +1,6 @@
 import colors from 'tailwindcss/colors';
 import { TRPCClientError } from '@trpc/client';
+import { loading } from '$stores';
 import type { PopupSettings, ToastStore } from '@skeletonlabs/skeleton';
 import type { InferEnum, PageStore } from '$types';
 import type { StaffPermission } from '$db';
@@ -318,6 +319,8 @@ export function toastError(toast: ToastStore, message: string) {
 }
 
 export function displayError(toast: ToastStore, err: unknown) {
+  loading.set(false);
+
   if (err instanceof TRPCClientError) {
     toastError(toast, err.message);
   } else if (typeof err === 'object' && 'message' in (err || {})) {

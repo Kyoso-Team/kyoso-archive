@@ -5,7 +5,7 @@
   import { goto } from '$app/navigation';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { Form, Section, Text, Number, Select, Checkbox } from '$components/form';
-  import { createForm } from '$stores';
+  import { createForm, loading } from '$stores';
   import { keys, displayError, toastError } from '$lib/utils';
   import type { TournamentType } from '$db';
   import type { InferEnum, TRPCRouter } from '$types';
@@ -60,6 +60,8 @@
       return;
     }
 
+    loading.set(true);
+
     try {
       tournament = await trpc($page).tournaments.createTournament.mutate({
         acronym,
@@ -82,6 +84,8 @@
     } catch (err) {
       displayError(toast, err);
     }
+
+    loading.set(false);
 
     if (typeof tournament === 'string') {
       toastError(toast, tournament);

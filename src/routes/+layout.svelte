@@ -62,6 +62,8 @@
   async function impersonateUser() {
     let resp!: Response;
 
+    loading.set(true);
+
     try {
       resp = await fetch(`/api/auth/impersonate?redirect_uri=${encodeURI($page.url.toString())}`, {
         method: 'PUT',
