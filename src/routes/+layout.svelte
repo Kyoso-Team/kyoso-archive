@@ -1,7 +1,7 @@
 <script lang="ts">
   import '../app.postcss';
   import { NavBar, Backdrop, Modal } from '$components/layout';
-  import { showNavBar } from '$stores';
+  import { showNavBar, loading } from '$stores';
   import { onDestroy, onMount } from 'svelte';
   import {
     initializeStores,
@@ -14,9 +14,11 @@
     setModeCurrent,
     getToastStore
   } from '@skeletonlabs/skeleton';
+  import { Loader2 } from 'lucide-svelte';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
   import { browser } from '$app/environment';
   import { page } from '$app/stores';
+  import { fly } from 'svelte/transition';
   import { displayError } from '$lib/utils';
   import type { LayoutServerData } from './$types';
 
@@ -109,6 +111,13 @@
 <svelte:head>
   {@html `<\u{73}cript nonce="%sveltekit.nonce%">(${setInitialClassState.toString()})();</script>`}
 </svelte:head>
+{#if $loading}
+  <Backdrop zIndex="z-[100]">
+    <div transition:fly={{ duration: 150, y: 50 }}>
+      <Loader2 size={64} class="dark:stroke-white stroke-black animate-spin" />
+    </div>
+  </Backdrop>
+{/if}
 <Toast position="bl" />
 <AppShell regionPage="relative" slotPageHeader="sticky top-0 z-10">
   <svelte:fragment slot="header">
