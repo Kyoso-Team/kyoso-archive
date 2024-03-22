@@ -49,7 +49,7 @@
 
     ctx.toggleShowBanUserForm();
     loading.set(false);
-    
+
     toastSuccess(toast, 'Banned user succcessfully');
     await invalidate($page.url.pathname);
   }

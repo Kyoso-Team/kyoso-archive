@@ -84,8 +84,8 @@
 
   function toggletheme() {
     $modeCurrent = !$modeCurrent;
-		setModeUserPrefers($modeCurrent);
-		setModeCurrent($modeCurrent);
+    setModeUserPrefers($modeCurrent);
+    setModeCurrent($modeCurrent);
   }
 </script>
 
@@ -94,16 +94,28 @@
     <Modal>
       <span class="title">Impersonate User</span>
       {#if data.session?.realUser}
-        <p class="mb-2 text-warning-500">You're currently impersonating a user. Click "End Session" to go back to being yourself.</p>
+        <p class="mb-2 text-warning-500">
+          You're currently impersonating a user. Click "End Session" to go back to being yourself.
+        </p>
       {/if}
-      <p>Input the Kyoso user ID of the user you want to impersonate. Can be any user registered in the databse (except banned users).</p>
+      <p>
+        Input the Kyoso user ID of the user you want to impersonate. Can be any user registered in
+        the databse (except banned users).
+      </p>
       <input type="number" class="input mt-2" bind:value={impersonateUserInput} />
       <div class="actions">
-        <button class="btn variant-filled-primary" disabled={!impersonateUserInput} on:click={impersonateUser}>Impersonate</button>
+        <button
+          class="btn variant-filled-primary"
+          disabled={!impersonateUserInput}
+          on:click={impersonateUser}>Impersonate</button
+        >
         {#if data.session?.realUser}
-          <a class="btn variant-filled-error" href={`/api/auth/logout?redirect_uri=${encodeURI(
-            `${$page.url.origin}/api/auth/login?redirect_uri=${encodeURI($page.url.toString())}`
-          )}`}>End Session</a>
+          <a
+            class="btn variant-filled-error"
+            href={`/api/auth/logout?redirect_uri=${encodeURI(
+              `${$page.url.origin}/api/auth/login?redirect_uri=${encodeURI($page.url.toString())}`
+            )}`}>End Session</a
+          >
         {/if}
         <button class="btn variant-filled" on:click={toggleShowImpersonateUserModal}>Cancel</button>
       </div>

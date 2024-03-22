@@ -17,9 +17,13 @@ export const PUT = (async ({ cookies, route, getClientAddress, request }) => {
 
   const session = getSession(cookies, true);
   const userAgent = request.headers.get('User-Agent');
-  const body = await parseRequestBody(request, v.object({
-    userId: positiveIntSchema
-  }), route);
+  const body = await parseRequestBody(
+    request,
+    v.object({
+      userId: positiveIntSchema
+    }),
+    route
+  );
 
   if (!userAgent) {
     error(400, '"User-Agent" header is undefined');
@@ -54,16 +58,14 @@ export const PUT = (async ({ cookies, route, getClientAddress, request }) => {
 
   try {
     userExists = await db
-      .execute(
-        sql`select exists (select 1 from ${User} where ${eq(User.id, body.userId)} limit 1)`
-      )
+      .execute(sql`select exists (select 1 from ${User} where ${eq(User.id, body.userId)} limit 1)`)
       .then((users) => !!users[0]?.exists);
   } catch (err) {
     throw await apiError(err, "Verifying the user to impersonate's ban status", route);
   }
 
   if (!userExists) {
-    error(404, 'The user you want to impersonate doesn\'t exist');
+    error(404, "The user you want to impersonate doesn't exist");
   }
 
   try {
@@ -87,7 +89,7 @@ export const PUT = (async ({ cookies, route, getClientAddress, request }) => {
       .select({
         ...pick(User, ['admin', 'approvedHost']),
         discord: pick(DiscordUser, ['discordUserId', 'username']),
-        osu: pick(OsuUser,['osuUserId', 'username'])
+        osu: pick(OsuUser, ['osuUserId', 'username'])
       })
       .from(User)
       .innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId))

@@ -73,7 +73,6 @@
       displayError(toast, err);
     }
 
-    
     await invalidate($page.url.pathname);
     loading.set(false);
 

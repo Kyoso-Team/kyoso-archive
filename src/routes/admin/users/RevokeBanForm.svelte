@@ -36,7 +36,7 @@
 
     ctx.toggleShowRevokeBanForm();
     loading.set(false);
-    
+
     toastSuccess(toast, 'Ban revoked succcessfully');
     await invalidate($page.url.pathname);
   }

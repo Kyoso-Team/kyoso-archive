@@ -30,9 +30,7 @@ export const Tournament = pgTable(
     id: serial('id').primaryKey(),
     createdAt: timestamp('created_at', timestampConfig).notNull().defaultNow(),
     deleted: boolean('deleted').notNull().default(false),
-    name: citext('name')
-      .notNull()
-      .unique(uniqueConstraints.tournament.name),
+    name: citext('name').notNull().unique(uniqueConstraints.tournament.name),
     urlSlug: varchar('url_slug', {
       length: 16
     }).notNull(),
