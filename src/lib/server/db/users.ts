@@ -178,11 +178,6 @@ export const Notification = pgTable('notification', {
   id: bigserial('id', {
     mode: 'number'
   }).primaryKey(),
-  messageHash: char('message_hash', {
-    length: 32
-  })
-    .notNull()
-    .unique('uni_notification_message_hash'),
   /**
    * This message can contain variables that can then be replaced client side. Example:
    * ```plain
