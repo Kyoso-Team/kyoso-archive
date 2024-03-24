@@ -1,19 +1,10 @@
-import { usersRouter, tournamentsRouter } from '../procedures';
+import { usersRouter, tournamentsRouter, notificationsRouter } from '../procedures';
 import { t } from '$trpc';
 
 export const router = t.router({
+  users: usersRouter,
   tournaments: tournamentsRouter,
-  users: usersRouter
-  // stages: stagesRouter,
-  // rounds: roundsRouter,
-  // modMultipliers: modMultipliersRouter,
-  // prizes: prizesRouter,
-  // staffMembers: staffMembersRouter,
-  // staffRoles: staffRolesRouter,
-  // modpools: modpoolsRouter,
-  // pooledMaps: pooledMapsRouter,
-  // suggestedMaps: suggestedMapsRouter,
-  // markdown: markdownRouter
+  notifications: notificationsRouter
 });
 
 export type Router = typeof router;

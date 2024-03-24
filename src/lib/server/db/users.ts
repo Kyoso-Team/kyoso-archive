@@ -207,9 +207,9 @@ export const UserNotification = pgTable(
     pk: primaryKey({
       columns: [table.userId, table.notificationId]
     }),
-    indexNotificationId: index('idx_user_notification_notification_id').on(table.notificationId),
-    indexUserIdNotifiedAt: index('idx_user_notification_user_id_notified_at').on(
+    indexUserIdReadNotifiedAt: index('idx_user_notification_user_id_read_notified_at').on(
       table.userId,
+      table.read,
       table.notifiedAt
     )
   })
