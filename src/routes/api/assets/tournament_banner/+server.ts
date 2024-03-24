@@ -3,7 +3,7 @@ import { error } from '@sveltejs/kit';
 import { generateFileId, past, pick, apiError } from '$lib/server/utils';
 import { Tournament, db } from '$db';
 import { and, eq, isNotNull, not, sql } from 'drizzle-orm';
-import { boolStringSchema, fileIdSchema, positiveIntSchema } from '$lib/schemas';
+import { boolStringSchema, fileIdSchema, fileSchema, positiveIntSchema } from '$lib/schemas';
 import {
   deleteFile,
   getFile,
@@ -73,6 +73,7 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
 export const PUT = (async ({ cookies, route, request }) => {
   const session = getSession(cookies, true);
   const data = await parseFormData(request, route, {
+    file: fileSchema,
     tournamentId: positiveIntSchema
   });
   const staffMember = await getStaffMember(session, data.tournamentId, route, true);

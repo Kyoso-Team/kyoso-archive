@@ -3,20 +3,13 @@ import sharp from 'sharp';
 import env from '$lib/server/env';
 import { apiError } from '$lib/server/utils';
 import { error } from '@sveltejs/kit';
-import { fileSchema } from '$lib/schemas';
-import type { FileType, Simplify } from '$types';
+import type { FileType } from '$types';
 
 export async function parseFormData<T extends Record<string, v.BaseSchema>>(
   request: Request,
   route: { id: string | null },
   schemas: T
-): Promise<
-  Simplify<
-    {
-      file: File;
-    } & { [K in keyof T]: v.Output<T[K]> }
-  >
-> {
+): Promise<{ [K in keyof T]: v.Output<T[K]> }> {
   let fd!: FormData;
 
   try {
@@ -28,9 +21,6 @@ export async function parseFormData<T extends Record<string, v.BaseSchema>>(
   const data: Record<string, any> = {};
 
   try {
-    const file = v.parse(fileSchema, fd.get('file'));
-    data.file = file;
-
     for (const key in schemas) {
       data[key] = v.parse(schemas[key], fd.get(key));
     }
