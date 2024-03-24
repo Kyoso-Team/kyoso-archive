@@ -116,6 +116,7 @@ export const PUT = (async ({ cookies, route, request }) => {
       .update(Tournament)
       .set({
         bannerMetadata: {
+          originalFileName: data.file.name,
           fileId
         }
       })

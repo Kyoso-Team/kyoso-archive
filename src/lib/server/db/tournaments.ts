@@ -42,9 +42,11 @@ export const Tournament = pgTable(
     rules: text('rules'),
     logoMetadata: jsonb('logo_metadata').$type<{
       fileId: string;
+      originalFileName: string;
     }>(),
     bannerMetadata: jsonb('banner_metadata').$type<{
       fileId: string;
+      originalFileName: string;
     }>(),
     /** If null, then it's an open rank tournament */
     rankRange: jsonb('rank_range').$type<RankRange>(),
