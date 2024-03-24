@@ -14,6 +14,7 @@ import {
 import { getSession, getStaffMember, parseSearchParams } from '$lib/server/helpers/api';
 import { convertBytes, formatDigits, hasPermissions } from '$lib/utils';
 import type { RequestHandler } from './$types';
+import type { Assets } from '$types';
 
 export const GET = (async ({ url, cookies, route, setHeaders }) => {
   const params = await parseSearchParams(
@@ -72,7 +73,7 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
 
 export const PUT = (async ({ cookies, route, request }) => {
   const session = getSession(cookies, true);
-  const data = await parseFormData(request, route, {
+  const data: Assets['tournamentBanner']['put'] = await parseFormData(request, route, {
     file: fileSchema,
     tournamentId: positiveIntSchema
   });
@@ -131,7 +132,7 @@ export const PUT = (async ({ cookies, route, request }) => {
 
 export const DELETE = (async ({ cookies, route, request }) => {
   const session = getSession(cookies, true);
-  const data = await parseFormData(request, route, {
+  const data: Assets['tournamentBanner']['delete'] = await parseFormData(request, route, {
     tournamentId: positiveIntSchema
   });
   const staffMember = await getStaffMember(session, data.tournamentId, route, true);
