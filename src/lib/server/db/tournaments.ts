@@ -10,7 +10,9 @@ import {
   unique,
   real,
   timestamp,
-  uniqueIndex
+  uniqueIndex,
+  date,
+  index
 } from 'drizzle-orm/pg-core';
 import { StageFormat, TournamentType } from './schema';
 import { timestampConfig, uniqueConstraints, citext } from './schema-utils';
@@ -20,7 +22,7 @@ import type {
   RefereeSettings,
   RoundConfig,
   TeamSettings,
-  TournamentDates,
+  TournamentOtherDates,
   TournamentLink
 } from '$types';
 
@@ -50,9 +52,13 @@ export const Tournament = pgTable(
     }>(),
     /** If null, then it's an open rank tournament */
     rankRange: jsonb('rank_range').$type<RankRange>(),
-    dates: jsonb('dates').notNull().$type<TournamentDates>().default({
-      other: []
-    }),
+    publishedAt: timestamp('published_at', { mode: 'string' }),
+    concludesAt: timestamp('concludes_at', { mode: 'string' }),
+    playerRegsOpenAt: date('player_regs_open_at', { mode: 'string' }),
+    playerRegsCloseAt: date('player_regs_close_at', { mode: 'string' }),
+    staffRegsOpenAt: date('staff_regs_open_at', { mode: 'string' }),
+    staffRegsCloseAt: date('staff_regs_close_at', { mode: 'string' }),
+    otherDates: jsonb('other_dates').notNull().$type<TournamentOtherDates[]>().default([]),
     teamSettings: jsonb('team_settings').$type<TeamSettings>(),
     /** If null, then the tournament doesn't use BWS */
     bwsValues: jsonb('bws_values').$type<BWSValues>(),
@@ -84,7 +90,15 @@ export const Tournament = pgTable(
       })
   },
   (table) => ({
-    uniqueIndexUrlSlug: uniqueIndex(uniqueConstraints.tournament.urlSlug).on(table.urlSlug)
+    uniqueIndexUrlSlug: uniqueIndex(uniqueConstraints.tournament.urlSlug).on(table.urlSlug),
+    indexPublishedAt: index('idx_tournament_published_at').on(table.publishedAt),
+    indexConcludesAt: index('idx_tournament_concludes_at').on(table.concludesAt),
+    indexPlayerRegsOpenAt: index('idx_tournament_player_regs_open_at').on(table.playerRegsOpenAt),
+    indexPlayerRegsCloseAt: index('idx_tournament_player_regs_close_at').on(
+      table.playerRegsCloseAt
+    ),
+    indexStaffRegsOpenAt: index('idx_tournament_staff_regs_open_at').on(table.staffRegsOpenAt),
+    indexStaffRegsCloseAt: index('idx_tournament_staff_regs_close_at').on(table.staffRegsCloseAt)
   })
 );
 

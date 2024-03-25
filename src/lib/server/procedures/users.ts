@@ -11,6 +11,7 @@ import {
   Session,
   User
 } from '$db';
+import { asc, ilike, notExists, type SQL } from 'drizzle-orm';
 import { and, desc, eq, isNull, not, or, sql } from 'drizzle-orm';
 import { t } from '$trpc';
 import { future, pick, trpcUnknownError } from '$lib/server/utils';
@@ -21,7 +22,6 @@ import { getSession } from '../helpers/api';
 import { TRPCError } from '@trpc/server';
 import { alias, unionAll } from 'drizzle-orm/pg-core';
 import { rateLimitMiddleware } from '$trpc/middleware';
-import type { SQL } from 'drizzle-orm';
 
 const getUser = t.procedure
   .input(
@@ -345,15 +345,17 @@ const banUser = t.procedure
       hasActiveBan = await db
         .execute(
           sql`
-        select exists (
-          select 1 from ${Ban}
-          where ${and(
-            eq(Ban.issuedToUserId, issuedToUserId),
-            and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
-          )}
-          limit 1
-        )
-      `
+              select exists (select 1
+                             from ${Ban}
+                             where ${and(
+                               eq(Ban.issuedToUserId, issuedToUserId),
+                               and(
+                                 isNull(Ban.revokedAt),
+                                 or(isNull(Ban.liftAt), future(Ban.liftAt))
+                               )
+                             )}
+                             limit 1)
+          `
         )
         .then((bans) => !!bans[0]?.exists);
     } catch (err) {
@@ -455,6 +457,52 @@ const expireSession = t.procedure
     }
   });
 
+const newSearchUser = t.procedure.input(wrap(v.string())).query(async ({ ctx, input }) => {
+  getSession(ctx.cookies, true);
+
+  try {
+    const isBanned = db.$with('is_banned').as(
+      db
+        .select()
+        .from(Ban)
+        .where(
+          notExists(
+            sql`select 1
+        from ${Ban}
+        where ${and(
+          eq(Ban.issuedToUserId, +input),
+          and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
+        )}
+        limit 1
+    `
+          )
+        )
+    );
+
+    return await db
+      .with(isBanned)
+      .select({
+        id: User.id,
+        osuId: User.osuUserId,
+        username: OsuUser.username
+      })
+      .from(User)
+      .leftJoin(OsuUser, eq(User.osuUserId, OsuUser.osuUserId))
+      .where(
+        or(
+          eq(User.id, +input),
+          eq(User.osuUserId, +input),
+          eq(User.discordUserId, input),
+          ilike(OsuUser.username, `%${input}%`)
+        )
+      )
+      .orderBy(({ username }) => asc(username))
+      .limit(10);
+  } catch (err) {
+    throw trpcUnknownError(err, 'Expiring the session');
+  }
+});
+
 export const usersRouter = t.router({
   getUser,
   searchUser,
@@ -462,5 +510,6 @@ export const usersRouter = t.router({
   updateUser,
   banUser,
   revokeBan,
-  expireSession
+  expireSession,
+  newSearchUser
 });

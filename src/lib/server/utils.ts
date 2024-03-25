@@ -220,3 +220,12 @@ export function past(column: AnyPgColumn | SQL, ms?: boolean) {
     ? lte(column as any, sql`(${new Date().getTime()})::bigint`)
     : lte(column as any, new Date());
 }
+
+export function isDatePast(date: string | null) {
+  if (!date) return false;
+  return new Date(date).getTime() <= new Date().getTime();
+}
+
+export function getISODate(ms: number) {
+  return new Date(ms).toISOString();
+}

@@ -2,19 +2,19 @@ import * as v from 'valibot';
 import postgres from 'postgres';
 import { db, StaffMember, StaffMemberRole, StaffRole, Tournament, uniqueConstraints } from '$db';
 import { t } from '$trpc';
-import { pick, trpcUnknownError } from '$lib/server/utils';
+import { isDatePast, pick, trpcUnknownError } from '$lib/server/utils';
 import { wrap } from '@typeschema/valibot';
 import { getSession, getStaffMember } from '../helpers/trpc';
 import { TRPCError } from '@trpc/server';
 import { hasPermissions, keys } from '$lib/utils';
-import { eq, sql } from 'drizzle-orm';
+import { asc, eq, ilike, or } from 'drizzle-orm';
 import {
   bwsValuesSchema,
   positiveIntSchema,
   rankRangeSchema,
   refereeSettingsSchema,
   teamSettingsSchema,
-  tournamentDatesSchema,
+  tournamentOtherDatesSchema,
   tournamentLinkSchema,
   urlSlugSchema
 } from '$lib/schemas';
@@ -144,7 +144,7 @@ const updateTournament = t.procedure
             ...mutationSchemas,
             teamSettings: teamSettingsSchema,
             bwsValues: bwsValuesSchema,
-            dates: tournamentDatesSchema,
+            otherDates: v.array(tournamentOtherDatesSchema),
             links: v.array(tournamentLinkSchema),
             refereeSettings: refereeSettingsSchema,
             rules: v.string()
@@ -163,7 +163,7 @@ const updateTournament = t.procedure
       rankRange,
       teamSettings,
       bwsValues,
-      dates,
+      otherDates,
       links,
       refereeSettings,
       rules
@@ -173,18 +173,16 @@ const updateTournament = t.procedure
 
     let tournament:
       | {
-          publishTime: number;
-          concludesTime: number;
+          publishTime: string | null;
+          concludesTime: string | null;
         }
       | undefined;
 
     try {
       tournament = await db
         .select({
-          publishTime: sql`${Tournament.dates} -> 'publish'`.mapWith(Number).as('publish_time'),
-          concludesTime: sql`${Tournament.dates} -> 'concludes'`
-            .mapWith(Number)
-            .as('concludes_time')
+          publishTime: Tournament.publishedAt,
+          concludesTime: Tournament.concludesAt
         })
         .from(Tournament)
         .where(eq(Tournament.id, tournamentId))
@@ -201,9 +199,8 @@ const updateTournament = t.procedure
       });
     }
 
-    const now = new Date().getTime();
-    const concluded = tournament.concludesTime <= now;
-    const published = tournament.publishTime <= now;
+    const concluded = isDatePast(tournament.concludesTime);
+    const published = isDatePast(tournament.publishTime);
     const disabledAfterPublishKeys: (keyof typeof Tournament.$inferSelect)[] = [
       'bwsValues',
       'rankRange',
@@ -213,7 +210,7 @@ const updateTournament = t.procedure
       keys(data).some((key) => disabledAfterPublishKeys.includes(key)) ||
       teamSettings?.maxTeamSize ||
       teamSettings?.minTeamSize ||
-      dates?.publish;
+      published;
 
     if (published && hasDisabledKeys) {
       throw new TRPCError({
@@ -256,7 +253,7 @@ const updateTournament = t.procedure
           rankRange,
           teamSettings,
           bwsValues,
-          dates,
+          otherDates,
           links,
           refereeSettings,
           rules
@@ -305,8 +302,26 @@ const deleteTournament = t.procedure
     }
   });
 
+const searchTournaments = t.procedure.input(wrap(v.string())).query(async ({ input }) => {
+  return db
+    .select()
+    .from(Tournament)
+    .where(
+      or(
+        eq(Tournament.id, +input),
+        ilike(Tournament.name, `%${input}%`),
+        ilike(Tournament.acronym, `%${input}%`),
+        ilike(Tournament.urlSlug, `%${input}%`),
+        eq(Tournament.deleted, false)
+      )
+    )
+    .orderBy(({ name }) => asc(name))
+    .limit(10);
+});
+
 export const tournamentsRouter = t.router({
   createTournament,
   updateTournament,
-  deleteTournament
+  deleteTournament,
+  searchTournaments
 });

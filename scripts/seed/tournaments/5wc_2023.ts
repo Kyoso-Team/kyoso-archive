@@ -5,9 +5,10 @@ import type {
   RankRange,
   RefereeSettings,
   TeamSettings,
-  TournamentDates,
+  TournamentOtherDates,
   TournamentLink
 } from '../../../src/lib/types';
+import { getISODate } from '../../../src/lib/server/utils';
 
 export const tournament5wc2023: SeedTournament = {
   data: {
@@ -18,10 +19,12 @@ export const tournament5wc2023: SeedTournament = {
     createdAt: new Date(1672466400000 - 86400000),
     rules: '',
     bannerMetadata: {
-      fileId: 'oXlNIxqu'
+      fileId: 'oXlNIxqu',
+      originalFileName: '5wc-banner-full.jpeg'
     },
     logoMetadata: {
-      fileId: 'ueRq1peH'
+      fileId: 'ueRq1peH',
+      originalFileName: '5wc-logo-full'
     },
     bwsValues: {
       x: 0.9937,
@@ -32,64 +35,62 @@ export const tournament5wc2023: SeedTournament = {
       lower: 10000,
       upper: 99999
     } as RankRange,
-    dates: {
-      publish: 1672444800000,
-      concludes: 1681084800000,
-      playerRegs: {
-        open: 1672531200000,
-        close: 1674345600000
+    publishedAt: getISODate(1672444800000),
+    concludesAt: getISODate(1681084800000),
+    playerRegsOpenAt: getISODate(1672531200000),
+    playerRegsCloseAt: getISODate(1674345600000),
+    staffRegsOpenAt: '',
+    staffRegsCloseAt: '',
+    otherDates: [
+      {
+        label: 'Screening Buffer',
+        fromDate: 1674345600000,
+        toDate: 1675555200000
       },
-      other: [
-        {
-          label: 'Screening Buffer',
-          fromDate: 1674345600000,
-          toDate: 1675555200000
-        },
-        {
-          label: 'Team Submission Deadline',
-          fromDate: 1676160000000
-        },
-        {
-          label: 'Qualifiers Showcase',
-          fromDate: 1676246400000
-        },
-        {
-          label: 'Qualifiers',
-          fromDate: 1677196800000,
-          toDate: 1677456000000
-        },
-        {
-          label: 'Round of 32',
-          fromDate: 1677801600000,
-          toDate: 1678060800000
-        },
-        {
-          label: 'Round of 16',
-          fromDate: 1678406400000,
-          toDate: 1678665600000
-        },
-        {
-          label: 'Quarterfinals',
-          fromDate: 1679011200000,
-          toDate: 1679270400000
-        },
-        {
-          label: 'Semifinals',
-          fromDate: 1679616000000,
-          toDate: 1679875200000
-        },
-        {
-          label: 'Finals',
-          fromDate: 1680220800000,
-          toDate: 1680480000000
-        },
-        {
-          label: 'Grand Finals',
-          fromDate: 1680825600000,
-          toDate: 1681084800000
-        }
-      ]
-    } as TournamentDates,
+      {
+        label: 'Team Submission Deadline',
+        fromDate: 1676160000000
+      },
+      {
+        label: 'Qualifiers Showcase',
+        fromDate: 1676246400000
+      },
+      {
+        label: 'Qualifiers',
+        fromDate: 1677196800000,
+        toDate: 1677456000000
+      },
+      {
+        label: 'Round of 32',
+        fromDate: 1677801600000,
+        toDate: 1678060800000
+      },
+      {
+        label: 'Round of 16',
+        fromDate: 1678406400000,
+        toDate: 1678665600000
+      },
+      {
+        label: 'Quarterfinals',
+        fromDate: 1679011200000,
+        toDate: 1679270400000
+      },
+      {
+        label: 'Semifinals',
+        fromDate: 1679616000000,
+        toDate: 1679875200000
+      },
+      {
+        label: 'Finals',
+        fromDate: 1680220800000,
+        toDate: 1680480000000
+      },
+      {
+        label: 'Grand Finals',
+        fromDate: 1680825600000,
+        toDate: 1681084800000
+      }
+    ] as TournamentOtherDates[],
     refereeSettings: {
       allow: {
         doubleBan: true,

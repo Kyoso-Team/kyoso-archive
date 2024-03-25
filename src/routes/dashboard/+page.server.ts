@@ -23,13 +23,7 @@ export const load = (async ({ cookies }) => {
       and(
         eq(StaffMember.userId, session.userId),
         not(Tournament.deleted),
-        or(
-          gt(
-            sql`(${Tournament.dates} -> 'concludes')::bigint`,
-            sql`(${new Date().getTime()})::bigint`
-          ),
-          isNull(sql`(${Tournament.dates} -> 'concludes')`)
-        )
+        or(gt(Tournament.concludesAt, sql`now()`), isNull(Tournament.concludesAt))
       )
     )
     .leftJoin(StaffMember, eq(StaffMember.tournamentId, Tournament.id));

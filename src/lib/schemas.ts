@@ -98,28 +98,10 @@ export const teamSettingsSchema = v.object({
   useTeamBanners: v.boolean()
 });
 
-export const tournamentDatesSchema = v.object({
-  publish: v.optional(oldestPossibleDateMsSchema),
-  concludes: v.optional(oldestPossibleDateMsSchema),
-  playerRegs: v.optional(
-    v.object({
-      open: oldestPossibleDateMsSchema,
-      close: oldestPossibleDateMsSchema
-    })
-  ),
-  staffRegs: v.optional(
-    v.object({
-      open: oldestPossibleDateMsSchema,
-      close: oldestPossibleDateMsSchema
-    })
-  ),
-  other: v.array(
-    v.object({
-      label: v.string([v.minLength(1), v.maxLength(32)]),
-      fromDate: oldestPossibleDateMsSchema,
-      toDate: v.optional(oldestPossibleDateMsSchema)
-    })
-  )
+export const tournamentOtherDatesSchema = v.object({
+  label: v.string(),
+  fromDate: v.number(),
+  toDate: v.nullable(v.number())
 });
 
 export const rankRangeSchema = v.object({
