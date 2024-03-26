@@ -22,8 +22,8 @@ import {
   rankRangeSchema,
   refereeSettingsSchema,
   teamSettingsSchema,
-  tournamentOtherDatesSchema,
   tournamentLinkSchema,
+  tournamentOtherDatesSchema,
   urlSlugSchema
 } from '$lib/schemas';
 
@@ -244,21 +244,21 @@ const updateTournament = t.procedure
     }
 
     try {
-      await db.transaction(async (tx) => {
-        await tx
-          .update(Tournament)
-          .set({
-            ...tournamentData
-          })
-          .where(eq(Tournament.id, tournamentId));
+      await db
+        .update(Tournament)
+        .set({
+          ...tournamentData
+        })
+        .where(eq(Tournament.id, tournamentId));
 
-        await tx
+      if (otherDates) {
+        await db
           .update(TournamentDates)
           .set({
             other: otherDates
           })
           .where(eq(TournamentDates.tournamentId, tournamentId));
-      });
+      }
     } catch (err) {
       const uqErr = uniqueConstraintsError(err);
 
