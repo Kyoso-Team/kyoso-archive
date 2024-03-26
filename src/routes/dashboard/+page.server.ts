@@ -1,4 +1,4 @@
-import { db, StaffMember, Tournament } from '$db';
+import { db, StaffMember, Tournament, TournamentDates } from '$db';
 import { and, eq, or, sql, gt, isNull, not } from 'drizzle-orm';
 import { pick } from '$lib/server/utils';
 import { getSession } from '$lib/server/helpers/api';
@@ -23,10 +23,11 @@ export const load = (async ({ cookies }) => {
       and(
         eq(StaffMember.userId, session.userId),
         not(Tournament.deleted),
-        or(gt(Tournament.concludesAt, sql`now()`), isNull(Tournament.concludesAt))
+        or(gt(TournamentDates.concludesAt, sql`now()`), isNull(TournamentDates.concludesAt))
       )
     )
-    .leftJoin(StaffMember, eq(StaffMember.tournamentId, Tournament.id));
+    .leftJoin(StaffMember, eq(StaffMember.tournamentId, Tournament.id))
+    .leftJoin(TournamentDates, eq(TournamentDates.tournamentId, Tournament.id));
   //.leftJoin(dbPlayer, eq(dbPlayer.tournamentId, dbTournament.id));
 
   const tournamentsPlaying: Pick<

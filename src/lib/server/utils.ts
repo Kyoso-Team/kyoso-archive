@@ -221,7 +221,7 @@ export function past(column: AnyPgColumn | SQL, ms?: boolean) {
     : lte(column as any, new Date());
 }
 
-export function isDatePast(date: string | null) {
+export function isDatePast(date: Date | null) {
   if (!date) return false;
   return new Date(date).getTime() <= new Date().getTime();
 }

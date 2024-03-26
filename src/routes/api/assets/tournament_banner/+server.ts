@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 import { error } from '@sveltejs/kit';
 import { generateFileId, past, pick, apiError } from '$lib/server/utils';
-import { Tournament, db } from '$db';
+import { Tournament, db, TournamentDates } from '$db';
 import { and, eq, isNotNull, not } from 'drizzle-orm';
 import { boolStringSchema, fileIdSchema, fileSchema, positiveIntSchema } from '$lib/schemas';
 import {
@@ -45,10 +45,11 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
         and(
           eq(Tournament.id, params.tournament_id),
           not(Tournament.deleted),
-          params.public ? isNotNull(Tournament.publishedAt) : undefined,
-          params.public ? past(Tournament.publishedAt, true) : undefined
+          params.public ? isNotNull(TournamentDates.publishedAt) : undefined,
+          params.public ? past(TournamentDates.publishedAt, true) : undefined
         )
       )
+      .leftJoin(TournamentDates, eq(TournamentDates.tournamentId, Tournament.id))
       .limit(1)
       .then((rows) => rows[0].bannerMetadata?.fileId);
   } catch (err) {

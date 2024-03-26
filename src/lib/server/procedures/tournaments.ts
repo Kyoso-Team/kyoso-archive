@@ -1,6 +1,14 @@
 import * as v from 'valibot';
 import postgres from 'postgres';
-import { db, StaffMember, StaffMemberRole, StaffRole, Tournament, TournamentDates, uniqueConstraints } from '$db';
+import {
+  db,
+  StaffMember,
+  StaffMemberRole,
+  StaffRole,
+  Tournament,
+  TournamentDates,
+  uniqueConstraints
+} from '$db';
 import { t } from '$trpc';
 import { isDatePast, pick, trpcUnknownError } from '$lib/server/utils';
 import { wrap } from '@typeschema/valibot';
@@ -83,11 +91,9 @@ const createTournament = t.procedure
           .returning(pick(Tournament, ['id', 'urlSlug']))
           .then((rows) => rows[0]);
 
-        await tx
-          .insert(TournamentDates)
-          .values({
-            tournamentId: tournament.id
-          });
+        await tx.insert(TournamentDates).values({
+          tournamentId: tournament.id
+        });
 
         const host = await tx
           .insert(StaffMember)
@@ -161,61 +167,50 @@ const updateTournament = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { data, tournamentId } = input;
-    const {
-      acronym,
-      name,
-      type,
-      urlSlug,
-      rankRange,
-      teamSettings,
-      bwsValues,
-      otherDates,
-      links,
-      refereeSettings,
-      rules
-    } = data;
+    const { otherDates, ...tournamentData } = data;
     const session = getSession(ctx.cookies, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
 
-    let tournament:
+    let tournamentDates:
       | {
-          publishTime: string | null;
-          concludesTime: string | null;
+          publishTime: Date | null;
+          concludesTime: Date | null;
         }
       | undefined;
 
     try {
-      tournament = await db
+      tournamentDates = await db
         .select({
-          publishTime: Tournament.publishedAt,
-          concludesTime: Tournament.concludesAt
+          publishTime: TournamentDates.publishedAt,
+          concludesTime: TournamentDates.concludesAt
         })
-        .from(Tournament)
-        .where(eq(Tournament.id, tournamentId))
+        .from(TournamentDates)
+        .where(eq(TournamentDates.tournamentId, tournamentId))
         .limit(1)
         .then((rows) => rows[0]);
     } catch (err) {
       throw trpcUnknownError(err, 'Getting the tournament');
     }
 
-    if (!tournament) {
+    if (!tournamentDates) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Tournament not found'
       });
     }
 
-    const concluded = isDatePast(tournament.concludesTime);
-    const published = isDatePast(tournament.publishTime);
+    const concluded = isDatePast(tournamentDates.concludesTime);
+    const published = isDatePast(tournamentDates.publishTime);
     const disabledAfterPublishKeys: (keyof typeof Tournament.$inferSelect)[] = [
       'bwsValues',
       'rankRange',
       'type'
     ];
+
     const hasDisabledKeys =
-      keys(data).some((key) => disabledAfterPublishKeys.includes(key)) ||
-      teamSettings?.maxTeamSize ||
-      teamSettings?.minTeamSize ||
+      keys(tournamentData).some((key) => disabledAfterPublishKeys.includes(key)) ||
+      tournamentData.teamSettings?.maxTeamSize ||
+      tournamentData.teamSettings?.minTeamSize ||
       published;
 
     if (published && hasDisabledKeys) {
@@ -249,22 +244,21 @@ const updateTournament = t.procedure
     }
 
     try {
-      await db
-        .update(Tournament)
-        .set({
-          acronym,
-          name,
-          type,
-          urlSlug,
-          rankRange,
-          teamSettings,
-          bwsValues,
-          otherDates,
-          links,
-          refereeSettings,
-          rules
-        })
-        .where(eq(Tournament.id, tournamentId));
+      await db.transaction(async (tx) => {
+        await tx
+          .update(Tournament)
+          .set({
+            ...tournamentData
+          })
+          .where(eq(Tournament.id, tournamentId));
+
+        await tx
+          .update(TournamentDates)
+          .set({
+            other: otherDates
+          })
+          .where(eq(TournamentDates.tournamentId, tournamentId));
+      });
     } catch (err) {
       const uqErr = uniqueConstraintsError(err);
 

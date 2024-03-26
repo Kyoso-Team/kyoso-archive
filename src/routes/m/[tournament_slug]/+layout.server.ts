@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { getSession, getStaffMember } from '$lib/server/helpers/api';
-import { Tournament, db } from '$db';
+import { db, Tournament, TournamentDates } from '$db';
 import { apiError, pick } from '$lib/server/utils';
 import { eq } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
@@ -10,7 +10,7 @@ export const load = (async ({ cookies, route, params }) => {
 
   let tournament:
     | (Pick<typeof Tournament.$inferSelect, 'id' | 'acronym' | 'deleted'> & {
-        concludesTime: string | null;
+        concludesTime: Date | null;
       })
     | undefined;
 
@@ -18,10 +18,11 @@ export const load = (async ({ cookies, route, params }) => {
     tournament = await db
       .select({
         ...pick(Tournament, ['id', 'acronym', 'deleted']),
-        concludesTime: Tournament.concludesAt
+        concludesTime: TournamentDates.concludesAt
       })
       .from(Tournament)
       .where(eq(Tournament.urlSlug, params.tournament_slug))
+      .leftJoin(TournamentDates, eq(TournamentDates.tournamentId, Tournament.id))
       .limit(1)
       .then((tournaments) => tournaments[0]);
   } catch (err) {
