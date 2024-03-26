@@ -457,51 +457,51 @@ const expireSession = t.procedure
     }
   });
 
-const newSearchUser = t.procedure.input(wrap(v.string())).query(async ({ ctx, input }) => {
-  getSession(ctx.cookies, true);
-
-  try {
-    const isBanned = db.$with('is_banned').as(
-      db
-        .select()
-        .from(Ban)
-        .where(
-          notExists(
-            sql`select 1
-        from ${Ban}
-        where ${and(
-          eq(Ban.issuedToUserId, +input),
-          and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
-        )}
-        limit 1
-    `
-          )
-        )
-    );
-
-    return await db
-      .with(isBanned)
-      .select({
-        id: User.id,
-        osuId: User.osuUserId,
-        username: OsuUser.username
-      })
-      .from(User)
-      .leftJoin(OsuUser, eq(User.osuUserId, OsuUser.osuUserId))
-      .where(
-        or(
-          eq(User.id, +input),
-          eq(User.osuUserId, +input),
-          eq(User.discordUserId, input),
-          ilike(OsuUser.username, `%${input}%`)
-        )
-      )
-      .orderBy(({ username }) => asc(username))
-      .limit(10);
-  } catch (err) {
-    throw trpcUnknownError(err, 'Expiring the session');
-  }
-});
+// const newSearchUser = t.procedure.input(wrap(v.string())).query(async ({ ctx, input }) => {
+//   getSession(ctx.cookies, true);
+//
+//   try {
+//     const isBanned = db.$with('is_banned').as(
+//       db
+//         .select()
+//         .from(Ban)
+//         .where(
+//           notExists(
+//             sql`select 1
+//         from ${Ban}
+//         where ${and(
+//           eq(Ban.issuedToUserId, +input),
+//           and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
+//         )}
+//         limit 1
+//     `
+//           )
+//         )
+//     );
+//
+//     return await db
+//       .with(isBanned)
+//       .select({
+//         id: User.id,
+//         osuId: User.osuUserId,
+//         username: OsuUser.username
+//       })
+//       .from(User)
+//       .leftJoin(OsuUser, eq(User.osuUserId, OsuUser.osuUserId))
+//       .where(
+//         or(
+//           eq(User.id, +input),
+//           eq(User.osuUserId, +input),
+//           eq(User.discordUserId, input),
+//           ilike(OsuUser.username, `%${input}%`)
+//         )
+//       )
+//       .orderBy(({ username }) => asc(username))
+//       .limit(10);
+//   } catch (err) {
+//     throw trpcUnknownError(err, 'Expiring the session');
+//   }
+// });
 
 export const usersRouter = t.router({
   getUser,
@@ -510,6 +510,6 @@ export const usersRouter = t.router({
   updateUser,
   banUser,
   revokeBan,
-  expireSession,
-  newSearchUser
+  expireSession
+  // newSearchUser
 });

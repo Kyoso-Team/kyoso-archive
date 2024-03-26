@@ -302,26 +302,25 @@ const deleteTournament = t.procedure
     }
   });
 
-const searchTournaments = t.procedure.input(wrap(v.string())).query(async ({ input }) => {
-  return db
-    .select()
-    .from(Tournament)
-    .where(
-      or(
-        eq(Tournament.id, +input),
-        ilike(Tournament.name, `%${input}%`),
-        ilike(Tournament.acronym, `%${input}%`),
-        ilike(Tournament.urlSlug, `%${input}%`),
-        eq(Tournament.deleted, false)
-      )
-    )
-    .orderBy(({ name }) => asc(name))
-    .limit(10);
-});
-
+// const searchTournaments = t.procedure.input(wrap(v.string())).query(async ({ input }) => {
+//   return db
+//     .select()
+//     .from(Tournament)
+//     .where(
+//       or(
+//         eq(Tournament.id, +input),
+//         ilike(Tournament.name, `%${input}%`),
+//         ilike(Tournament.acronym, `%${input}%`),
+//         ilike(Tournament.urlSlug, `%${input}%`),
+//         eq(Tournament.deleted, false)
+//       )
+//     )
+//     .orderBy(({ name }) => asc(name))
+//     .limit(10);
+// });
 export const tournamentsRouter = t.router({
   createTournament,
   updateTournament,
-  deleteTournament,
-  searchTournaments
+  deleteTournament
+  // searchTournaments
 });
