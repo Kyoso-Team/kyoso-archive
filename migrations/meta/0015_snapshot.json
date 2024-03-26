@@ -1,5 +1,5 @@
 {
-  "id": "d92ded8f-d555-4493-929c-00f92ff09949",
+  "id": "9f7c6bb5-9318-4096-9585-0381a0283772",
   "prevId": "4b86989d-f1d4-4043-9d1e-14ea2b13286b",
   "version": "5",
   "dialect": "pg",
@@ -909,49 +909,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "published_at": {
-          "name": "published_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "concludes_at": {
-          "name": "concludes_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "player_regs_open_at": {
-          "name": "player_regs_open_at",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "player_regs_close_at": {
-          "name": "player_regs_close_at",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "staff_regs_open_at": {
-          "name": "staff_regs_open_at",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "staff_regs_close_at": {
-          "name": "staff_regs_close_at",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "other_dates": {
-          "name": "other_dates",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'[]'::jsonb"
-        },
         "team_settings": {
           "name": "team_settings",
           "type": "jsonb",
@@ -986,48 +943,6 @@
             "url_slug"
           ],
           "isUnique": true
-        },
-        "idx_tournament_published_at": {
-          "name": "idx_tournament_published_at",
-          "columns": [
-            "published_at"
-          ],
-          "isUnique": false
-        },
-        "idx_tournament_concludes_at": {
-          "name": "idx_tournament_concludes_at",
-          "columns": [
-            "concludes_at"
-          ],
-          "isUnique": false
-        },
-        "idx_tournament_player_regs_open_at": {
-          "name": "idx_tournament_player_regs_open_at",
-          "columns": [
-            "player_regs_open_at"
-          ],
-          "isUnique": false
-        },
-        "idx_tournament_player_regs_close_at": {
-          "name": "idx_tournament_player_regs_close_at",
-          "columns": [
-            "player_regs_close_at"
-          ],
-          "isUnique": false
-        },
-        "idx_tournament_staff_regs_open_at": {
-          "name": "idx_tournament_staff_regs_open_at",
-          "columns": [
-            "staff_regs_open_at"
-          ],
-          "isUnique": false
-        },
-        "idx_tournament_staff_regs_close_at": {
-          "name": "idx_tournament_staff_regs_close_at",
-          "columns": [
-            "staff_regs_close_at"
-          ],
-          "isUnique": false
         }
       },
       "foreignKeys": {},
@@ -1041,6 +956,110 @@
           ]
         }
       }
+    },
+    "tournament_dates": {
+      "name": "tournament_dates",
+      "schema": "",
+      "columns": {
+        "tournament_id": {
+          "name": "tournament_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "concludes_at": {
+          "name": "concludes_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "player_regs_open_at": {
+          "name": "player_regs_open_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "player_regs_close_at": {
+          "name": "player_regs_close_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "staff_regs_open_at": {
+          "name": "staff_regs_open_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "staff_regs_close_at": {
+          "name": "staff_regs_close_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "other": {
+          "name": "other",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        }
+      },
+      "indexes": {
+        "idx_tournament_dates_published_at": {
+          "name": "idx_tournament_dates_published_at",
+          "columns": [
+            "published_at"
+          ],
+          "isUnique": false
+        },
+        "idx_tournament_dates_concludes_at": {
+          "name": "idx_tournament_dates_concludes_at",
+          "columns": [
+            "concludes_at"
+          ],
+          "isUnique": false
+        },
+        "idx_tournament_dates_player_regs_open_at_player_regs_close_at": {
+          "name": "idx_tournament_dates_player_regs_open_at_player_regs_close_at",
+          "columns": [
+            "player_regs_open_at",
+            "player_regs_close_at"
+          ],
+          "isUnique": false
+        },
+        "idx_tournament_dates_staff_regs_open_at_regs_close_at": {
+          "name": "idx_tournament_dates_staff_regs_open_at_regs_close_at",
+          "columns": [
+            "staff_regs_open_at",
+            "staff_regs_close_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "tournament_dates_tournament_id_tournament_id_fk": {
+          "name": "tournament_dates_tournament_id_tournament_id_fk",
+          "tableFrom": "tournament_dates",
+          "tableTo": "tournament",
+          "columnsFrom": [
+            "tournament_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
     },
     "staff_member": {
       "name": "staff_member",

@@ -11,7 +11,6 @@ import {
   real,
   timestamp,
   uniqueIndex,
-  date,
   index
 } from 'drizzle-orm/pg-core';
 import { StageFormat, TournamentType } from './schema';
@@ -52,13 +51,6 @@ export const Tournament = pgTable(
     }>(),
     /** If null, then it's an open rank tournament */
     rankRange: jsonb('rank_range').$type<RankRange>(),
-    publishedAt: timestamp('published_at', { mode: 'string' }),
-    concludesAt: timestamp('concludes_at', { mode: 'string' }),
-    playerRegsOpenAt: date('player_regs_open_at', { mode: 'string' }),
-    playerRegsCloseAt: date('player_regs_close_at', { mode: 'string' }),
-    staffRegsOpenAt: date('staff_regs_open_at', { mode: 'string' }),
-    staffRegsCloseAt: date('staff_regs_close_at', { mode: 'string' }),
-    otherDates: jsonb('other_dates').notNull().$type<TournamentOtherDates[]>().default([]),
     teamSettings: jsonb('team_settings').$type<TeamSettings>(),
     /** If null, then the tournament doesn't use BWS */
     bwsValues: jsonb('bws_values').$type<BWSValues>(),
@@ -90,17 +82,31 @@ export const Tournament = pgTable(
       })
   },
   (table) => ({
-    uniqueIndexUrlSlug: uniqueIndex(uniqueConstraints.tournament.urlSlug).on(table.urlSlug),
-    indexPublishedAt: index('idx_tournament_published_at').on(table.publishedAt),
-    indexConcludesAt: index('idx_tournament_concludes_at').on(table.concludesAt),
-    indexPlayerRegsOpenAt: index('idx_tournament_player_regs_open_at').on(table.playerRegsOpenAt),
-    indexPlayerRegsCloseAt: index('idx_tournament_player_regs_close_at').on(
-      table.playerRegsCloseAt
-    ),
-    indexStaffRegsOpenAt: index('idx_tournament_staff_regs_open_at').on(table.staffRegsOpenAt),
-    indexStaffRegsCloseAt: index('idx_tournament_staff_regs_close_at').on(table.staffRegsCloseAt)
+    uniqueIndexUrlSlug: uniqueIndex(uniqueConstraints.tournament.urlSlug).on(table.urlSlug)
   })
 );
+
+export const TournamentDates = pgTable('tournament_dates', {
+  tournamentId: integer('tournament_id')
+    .primaryKey()
+    .references(() => Tournament.id, {
+      onDelete: 'cascade'
+    }),
+  publishedAt: timestamp('published_at', timestampConfig),
+  concludesAt: timestamp('concludes_at', timestampConfig),
+  playerRegsOpenAt: timestamp('player_regs_open_at', timestampConfig),
+  playerRegsCloseAt: timestamp('player_regs_close_at', timestampConfig),
+  staffRegsOpenAt: timestamp('staff_regs_open_at', timestampConfig),
+  staffRegsCloseAt: timestamp('staff_regs_close_at', timestampConfig),
+  other: jsonb('other').notNull().$type<TournamentOtherDates[]>().default([])
+}, (table) => ({
+  indexPublishedAt: index('idx_tournament_dates_published_at').on(table.publishedAt).desc(),
+  indexConcludesAt: index('idx_tournament_dates_concludes_at').on(table.concludesAt),
+  indexPlayerRegsOpenAtPlayerRegsCloseAt: index('idx_tournament_dates_player_regs_open_at_player_regs_close_at')
+    .on(table.playerRegsOpenAt, table.playerRegsCloseAt),
+  indexStaffRegsOpenAtStaffRegsCloseAt: index('idx_tournament_dates_staff_regs_open_at_regs_close_at')
+    .on(table.staffRegsOpenAt, table.staffRegsCloseAt)
+}));
 
 export const Stage = pgTable(
   'stage',

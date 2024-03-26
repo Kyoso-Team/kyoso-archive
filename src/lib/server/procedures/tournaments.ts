@@ -1,6 +1,6 @@
 import * as v from 'valibot';
 import postgres from 'postgres';
-import { db, StaffMember, StaffMemberRole, StaffRole, Tournament, uniqueConstraints } from '$db';
+import { db, StaffMember, StaffMemberRole, StaffRole, Tournament, TournamentDates, uniqueConstraints } from '$db';
 import { t } from '$trpc';
 import { isDatePast, pick, trpcUnknownError } from '$lib/server/utils';
 import { wrap } from '@typeschema/valibot';
@@ -82,6 +82,12 @@ const createTournament = t.procedure
           })
           .returning(pick(Tournament, ['id', 'urlSlug']))
           .then((rows) => rows[0]);
+
+        await tx
+          .insert(TournamentDates)
+          .values({
+            tournamentId: tournament.id
+          });
 
         const host = await tx
           .insert(StaffMember)
