@@ -220,7 +220,7 @@ const updateTournament = t.procedure
       keys(tournament || {}).some((key) => ['bwsValues', 'rankRange', 'type'].includes(key)) ||
       tournament?.teamSettings?.maxTeamSize ||
       tournament?.teamSettings?.minTeamSize ||
-      published;
+      dates?.publishedAt;
 
     if (published && hasDisabledKeys) {
       throw new TRPCError({
