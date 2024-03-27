@@ -271,7 +271,7 @@ const updateUser = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { data, userId } = input;
-    const { admin, approvedHost } = data;
+    const { admin } = data;
     const session = getSession(ctx.cookies, true);
 
     if (admin !== undefined && session.osu.id !== env.OWNER) {
@@ -299,10 +299,7 @@ const updateUser = t.procedure
       await db.transaction(async (tx) => {
         await tx
           .update(User)
-          .set({
-            admin,
-            approvedHost
-          })
+          .set(data)
           .where(eq(User.id, userId));
 
         await tx

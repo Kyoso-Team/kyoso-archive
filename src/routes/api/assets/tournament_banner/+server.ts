@@ -46,7 +46,7 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
           eq(Tournament.id, params.tournament_id),
           not(Tournament.deleted),
           params.public ? isNotNull(TournamentDates.publishedAt) : undefined,
-          params.public ? past(TournamentDates.publishedAt, true) : undefined
+          params.public ? past(TournamentDates.publishedAt) : undefined
         )
       )
       .leftJoin(TournamentDates, eq(TournamentDates.tournamentId, Tournament.id))

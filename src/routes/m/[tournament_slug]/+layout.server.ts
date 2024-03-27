@@ -9,16 +9,15 @@ export const load = (async ({ cookies, route, params }) => {
   const session = getSession(cookies, true);
 
   let tournament:
-    | (Pick<typeof Tournament.$inferSelect, 'id' | 'acronym' | 'deleted'> & {
-        concludesTime: Date | null;
-      })
+    | (Pick<typeof Tournament.$inferSelect, 'id' | 'acronym' | 'deleted'> &
+        Pick<typeof TournamentDates.$inferSelect, 'concludesAt'>)
     | undefined;
 
   try {
     tournament = await db
       .select({
         ...pick(Tournament, ['id', 'acronym', 'deleted']),
-        concludesTime: TournamentDates.concludesAt
+        ...pick(TournamentDates, ['concludesAt'])
       })
       .from(Tournament)
       .where(eq(Tournament.urlSlug, params.tournament_slug))
@@ -34,7 +33,7 @@ export const load = (async ({ cookies, route, params }) => {
   }
 
   if (tournament.deleted) {
-    throw error(403, 'This tournament has been deleted');
+    throw error(403, 'Tournament has been deleted');
   }
 
   const staffMember = await getStaffMember(session, tournament.id, route, true);
@@ -45,7 +44,7 @@ export const load = (async ({ cookies, route, params }) => {
     tournament: {
       id: tournament.id,
       acronym: tournament.acronym,
-      concludestime: tournament.concludesTime,
+      concludesAt: tournament.concludesAt,
       urlSlug: params.tournament_slug
     }
   };

@@ -1,6 +1,6 @@
 import { db, StaffMember, Tournament, TournamentDates } from '$db';
-import { and, eq, or, sql, gt, isNull, not } from 'drizzle-orm';
-import { pick } from '$lib/server/utils';
+import { and, eq, or, sql, isNull, not } from 'drizzle-orm';
+import { future, pick } from '$lib/server/utils';
 import { getSession } from '$lib/server/helpers/api';
 import type { PageServerLoad } from './$types';
 
@@ -23,7 +23,7 @@ export const load = (async ({ cookies }) => {
       and(
         eq(StaffMember.userId, session.userId),
         not(Tournament.deleted),
-        or(gt(TournamentDates.concludesAt, sql`now()`), isNull(TournamentDates.concludesAt))
+        or(future(TournamentDates.concludesAt), isNull(TournamentDates.concludesAt))
       )
     )
     .leftJoin(StaffMember, eq(StaffMember.tournamentId, Tournament.id))
