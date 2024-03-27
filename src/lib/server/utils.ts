@@ -209,14 +209,20 @@ export function trpcUnknownError(err: unknown, when: string) {
   });
 }
 
-export function future(column: AnyPgColumn | SQL, ms?: boolean) {
-  return ms
-    ? gt(column as any, sql`(${new Date().getTime()})::bigint`)
-    : gt(column as any, new Date());
+export function future(column: AnyPgColumn | SQL) {
+  return gt(column as any, sql`now()`);
 }
 
-export function past(column: AnyPgColumn | SQL, ms?: boolean) {
-  return ms
-    ? lte(column as any, sql`(${new Date().getTime()})::bigint`)
-    : lte(column as any, new Date());
+export function past(column: AnyPgColumn | SQL) {
+  return lte(column as any, sql`now()`);
+}
+
+export function isDatePast(date: Date | number | null) {
+  if (!date) return false;
+  return new Date(date).getTime() <= new Date().getTime();
+}
+
+export function isDateFuture(date: Date | number | null) {
+  if (!date) return false;
+  return new Date(date).getTime() > new Date().getTime();
 }

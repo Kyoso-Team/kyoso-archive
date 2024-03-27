@@ -1,21 +1,29 @@
 import * as v from 'valibot';
 import postgres from 'postgres';
-import { db, StaffMember, StaffMemberRole, StaffRole, Tournament, uniqueConstraints } from '$db';
+import {
+  db,
+  StaffMember,
+  StaffMemberRole,
+  StaffRole,
+  Tournament,
+  TournamentDates,
+  uniqueConstraints
+} from '$db';
 import { t } from '$trpc';
-import { pick, trpcUnknownError } from '$lib/server/utils';
+import { isDatePast, pick, trpcUnknownError } from '$lib/server/utils';
 import { wrap } from '@typeschema/valibot';
 import { getSession, getStaffMember } from '../helpers/trpc';
 import { TRPCError } from '@trpc/server';
 import { hasPermissions, keys } from '$lib/utils';
-import { eq, sql } from 'drizzle-orm';
+import { asc, eq, ilike, or } from 'drizzle-orm';
 import {
   bwsValuesSchema,
   positiveIntSchema,
   rankRangeSchema,
   refereeSettingsSchema,
   teamSettingsSchema,
-  tournamentDatesSchema,
   tournamentLinkSchema,
+  tournamentOtherDatesSchema,
   urlSlugSchema
 } from '$lib/schemas';
 
@@ -50,7 +58,7 @@ const mutationSchemas = {
 const createTournament = t.procedure
   .input(wrap(v.object(mutationSchemas)))
   .mutation(async ({ ctx, input }) => {
-    const { acronym, name, type, urlSlug, rankRange, teamSettings } = input;
+    const { teamSettings } = input;
     const session = getSession(ctx.cookies, true);
 
     if (!session.admin && !session.approvedHost) {
@@ -67,11 +75,7 @@ const createTournament = t.procedure
         const tournament = await tx
           .insert(Tournament)
           .values({
-            acronym,
-            name,
-            type,
-            urlSlug,
-            rankRange,
+            ...input,
             teamSettings: teamSettings
               ? {
                   maxTeamSize: teamSettings.maxTeamSize,
@@ -82,6 +86,10 @@ const createTournament = t.procedure
           })
           .returning(pick(Tournament, ['id', 'urlSlug']))
           .then((rows) => rows[0]);
+
+        await tx.insert(TournamentDates).values({
+          tournamentId: tournament.id
+        });
 
         const host = await tx
           .insert(StaffMember)
@@ -141,13 +149,27 @@ const updateTournament = t.procedure
         tournamentId: positiveIntSchema,
         data: v.partial(
           v.object({
-            ...mutationSchemas,
-            teamSettings: teamSettingsSchema,
-            bwsValues: bwsValuesSchema,
-            dates: tournamentDatesSchema,
-            links: v.array(tournamentLinkSchema),
-            refereeSettings: refereeSettingsSchema,
-            rules: v.string()
+            tournament: v.partial(
+              v.object({
+                ...mutationSchemas,
+                teamSettings: teamSettingsSchema,
+                bwsValues: bwsValuesSchema,
+                links: v.array(tournamentLinkSchema),
+                refereeSettings: refereeSettingsSchema,
+                rules: v.string()
+              })
+            ),
+            dates: v.partial(
+              v.object({
+                publishedAt: v.date(),
+                concludesAt: v.date(),
+                playerRegsOpenAt: v.date(),
+                playerRegsCloseAt: v.date(),
+                staffRegsOpenAt: v.date(),
+                staffRegsCloseAt: v.date(),
+                other: v.array(tournamentOtherDatesSchema)
+              })
+            )
           })
         )
       })
@@ -155,65 +177,50 @@ const updateTournament = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { data, tournamentId } = input;
-    const {
-      acronym,
-      name,
-      type,
-      urlSlug,
-      rankRange,
-      teamSettings,
-      bwsValues,
-      dates,
-      links,
-      refereeSettings,
-      rules
-    } = data;
+    const { tournament, dates } = data;
     const session = getSession(ctx.cookies, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
 
-    let tournament:
-      | {
-          publishTime: number;
-          concludesTime: number;
-        }
-      | undefined;
+    let info: (Pick<typeof Tournament.$inferSelect, 'deleted'> &
+      Pick<typeof TournamentDates.$inferSelect, 'publishedAt' | 'concludesAt'>) | undefined;
 
     try {
-      tournament = await db
+      info = await db
         .select({
-          publishTime: sql`${Tournament.dates} -> 'publish'`.mapWith(Number).as('publish_time'),
-          concludesTime: sql`${Tournament.dates} -> 'concludes'`
-            .mapWith(Number)
-            .as('concludes_time')
+          ...pick(Tournament, ['deleted']),
+          ...pick(TournamentDates, ['publishedAt', 'concludesAt'])
         })
         .from(Tournament)
         .where(eq(Tournament.id, tournamentId))
+        .innerJoin(TournamentDates, eq(TournamentDates.tournamentId, Tournament.id))
         .limit(1)
         .then((rows) => rows[0]);
     } catch (err) {
       throw trpcUnknownError(err, 'Getting the tournament');
     }
 
-    if (!tournament) {
+    if (!info) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Tournament not found'
       });
     }
 
-    const now = new Date().getTime();
-    const concluded = tournament.concludesTime <= now;
-    const published = tournament.publishTime <= now;
-    const disabledAfterPublishKeys: (keyof typeof Tournament.$inferSelect)[] = [
-      'bwsValues',
-      'rankRange',
-      'type'
-    ];
+    if (info.deleted) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'Tournament has been deleted'
+      });
+    }
+
+    const concluded = isDatePast(info.concludesAt);
+    const published = isDatePast(info.publishedAt);
+
     const hasDisabledKeys =
-      keys(data).some((key) => disabledAfterPublishKeys.includes(key)) ||
-      teamSettings?.maxTeamSize ||
-      teamSettings?.minTeamSize ||
-      dates?.publish;
+      keys(tournament || {}).some((key) => ['bwsValues', 'rankRange', 'type'].includes(key)) ||
+      tournament?.teamSettings?.maxTeamSize ||
+      tournament?.teamSettings?.minTeamSize ||
+      dates?.publishedAt;
 
     if (published && hasDisabledKeys) {
       throw new TRPCError({
@@ -238,7 +245,7 @@ const updateTournament = t.procedure
       });
     }
 
-    if (Object.keys(data).length === 0) {
+    if (Object.keys(tournament || {}).length === 0 && Object.keys(dates || {}).length === 0) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
         message: 'Nothing to update'
@@ -246,22 +253,19 @@ const updateTournament = t.procedure
     }
 
     try {
-      await db
-        .update(Tournament)
-        .set({
-          acronym,
-          name,
-          type,
-          urlSlug,
-          rankRange,
-          teamSettings,
-          bwsValues,
-          dates,
-          links,
-          refereeSettings,
-          rules
-        })
-        .where(eq(Tournament.id, tournamentId));
+      if (tournament) {
+        await db
+          .update(Tournament)
+          .set(tournament)
+          .where(eq(Tournament.id, tournamentId));
+      }
+
+      if (dates) {
+        await db
+          .update(TournamentDates)
+          .set(dates)
+          .where(eq(TournamentDates.tournamentId, tournamentId));
+      }
     } catch (err) {
       const uqErr = uniqueConstraintsError(err);
 
@@ -269,7 +273,7 @@ const updateTournament = t.procedure
         return uqErr;
       }
 
-      throw trpcUnknownError(err, 'Deleting the tournament');
+      throw trpcUnknownError(err, 'Updating the tournament');
     }
   });
 
@@ -305,8 +309,25 @@ const deleteTournament = t.procedure
     }
   });
 
+// const searchTournaments = t.procedure.input(wrap(v.string())).query(async ({ input }) => {
+//   return db
+//     .select()
+//     .from(Tournament)
+//     .where(
+//       or(
+//         eq(Tournament.id, +input),
+//         ilike(Tournament.name, `%${input}%`),
+//         ilike(Tournament.acronym, `%${input}%`),
+//         ilike(Tournament.urlSlug, `%${input}%`),
+//         eq(Tournament.deleted, false)
+//       )
+//     )
+//     .orderBy(({ name }) => asc(name))
+//     .limit(10);
+// });
 export const tournamentsRouter = t.router({
   createTournament,
   updateTournament,
   deleteTournament
+  // searchTournaments
 });

@@ -8,7 +8,7 @@ import type {
   rankRangeSchema,
   refereeSettingsSchema,
   teamSettingsSchema,
-  tournamentDatesSchema,
+  tournamentOtherDatesSchema,
   tournamentLinkSchema
 } from './schemas';
 
@@ -33,7 +33,7 @@ export type RefereeSettings = Output<typeof refereeSettingsSchema>;
 export type TournamentLink = Output<typeof tournamentLinkSchema>;
 export type BWSValues = Output<typeof bwsValuesSchema>;
 export type TeamSettings = Output<typeof teamSettingsSchema>;
-export type TournamentDates = Output<typeof tournamentDatesSchema>;
+export type TournamentOtherDates = Output<typeof tournamentOtherDatesSchema>;
 export type RankRange = Output<typeof rankRangeSchema>;
 
 export type RoundConfig = StandardRoundConfig | QualifierRoundConfig | BattleRoyaleRoundConfig;
@@ -127,10 +127,13 @@ export interface Asset<Put extends Record<string, any>, Delete extends Record<st
 }
 
 export interface Assets {
-  tournamentBanner: Asset<{
-    file: File;
-    tournamentId: number;
-  }, {
-    tournamentId: number;
-  }>;
-};
+  tournamentBanner: Asset<
+    {
+      file: File;
+      tournamentId: number;
+    },
+    {
+      tournamentId: number;
+    }
+  >;
+}

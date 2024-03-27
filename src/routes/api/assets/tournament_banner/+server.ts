@@ -1,8 +1,8 @@
 import * as v from 'valibot';
 import { error } from '@sveltejs/kit';
 import { generateFileId, past, pick, apiError } from '$lib/server/utils';
-import { Tournament, db } from '$db';
-import { and, eq, isNotNull, not, sql } from 'drizzle-orm';
+import { Tournament, db, TournamentDates } from '$db';
+import { and, eq, isNotNull, not } from 'drizzle-orm';
 import { boolStringSchema, fileIdSchema, fileSchema, positiveIntSchema } from '$lib/schemas';
 import {
   deleteFile,
@@ -45,10 +45,11 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
         and(
           eq(Tournament.id, params.tournament_id),
           not(Tournament.deleted),
-          params.public ? isNotNull(sql`(${Tournament.dates} -> 'publish')::bigint`) : undefined,
-          params.public ? past(sql`(${Tournament.dates} -> 'publish')::bigint`, true) : undefined
+          params.public ? isNotNull(TournamentDates.publishedAt) : undefined,
+          params.public ? past(TournamentDates.publishedAt) : undefined
         )
       )
+      .leftJoin(TournamentDates, eq(TournamentDates.tournamentId, Tournament.id))
       .limit(1)
       .then((rows) => rows[0].bannerMetadata?.fileId);
   } catch (err) {

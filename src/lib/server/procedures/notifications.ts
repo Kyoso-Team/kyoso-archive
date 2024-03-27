@@ -19,33 +19,31 @@ const markNotificationAsRead = t.procedure
         .set({
           read: true
         })
-        .where(and(
-          eq(UserNotification.userId, session.userId),
-          eq(UserNotification.notificationId, notificationId)
-        ));
+        .where(
+          and(
+            eq(UserNotification.userId, session.userId),
+            eq(UserNotification.notificationId, notificationId)
+          )
+        );
     } catch (err) {
       throw trpcUnknownError(err, 'Marking the notification as read');
     }
   });
 
-const markAllNotificationsAsRead = t.procedure
-  .mutation(async ({ ctx }) => {
-    const session = getSession(ctx.cookies, true);
+const markAllNotificationsAsRead = t.procedure.mutation(async ({ ctx }) => {
+  const session = getSession(ctx.cookies, true);
 
-    try {
-      await db
-        .update(UserNotification)
-        .set({
-          read: true
-        })
-        .where(and(
-          eq(UserNotification.userId, session.userId),
-          eq(UserNotification.read, false)
-        ));
-    } catch (err) {
-      throw trpcUnknownError(err, 'Marking all the user\'s notifications as read');
-    }
-  });
+  try {
+    await db
+      .update(UserNotification)
+      .set({
+        read: true
+      })
+      .where(and(eq(UserNotification.userId, session.userId), eq(UserNotification.read, false)));
+  } catch (err) {
+    throw trpcUnknownError(err, "Marking all the user's notifications as read");
+  }
+});
 
 export const notificationsRouter = t.router({
   markNotificationAsRead,
