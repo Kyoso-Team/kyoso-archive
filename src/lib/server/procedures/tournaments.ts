@@ -15,7 +15,7 @@ import { wrap } from '@typeschema/valibot';
 import { getSession, getStaffMember } from '../helpers/trpc';
 import { TRPCError } from '@trpc/server';
 import { hasPermissions, keys } from '$lib/utils';
-import { asc, eq, ilike, or } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import {
   bwsValuesSchema,
   positiveIntSchema,
@@ -309,25 +309,8 @@ const deleteTournament = t.procedure
     }
   });
 
-// const searchTournaments = t.procedure.input(wrap(v.string())).query(async ({ input }) => {
-//   return db
-//     .select()
-//     .from(Tournament)
-//     .where(
-//       or(
-//         eq(Tournament.id, +input),
-//         ilike(Tournament.name, `%${input}%`),
-//         ilike(Tournament.acronym, `%${input}%`),
-//         ilike(Tournament.urlSlug, `%${input}%`),
-//         eq(Tournament.deleted, false)
-//       )
-//     )
-//     .orderBy(({ name }) => asc(name))
-//     .limit(10);
-// });
 export const tournamentsRouter = t.router({
   createTournament,
   updateTournament,
   deleteTournament
-  // searchTournaments
 });
