@@ -4,7 +4,7 @@ import { notificationsRouter, tournamentsRouter, usersRouter } from '../procedur
 import { wrap } from '@typeschema/valibot';
 import { getSession } from '$lib/server/helpers/api';
 import { Ban, db, OsuUser, Tournament, User } from '$db';
-import { and, asc, eq, ilike, isNull, notExists, or, sql } from 'drizzle-orm';
+import { and, asc, eq, ilike, isNull, or, type SQL, sql } from 'drizzle-orm';
 import { future, pick, trpcUnknownError } from '$lib/server/utils';
 
 const search = t.procedure.input(wrap(v.string())).query(async ({ ctx, input }) => {
@@ -22,18 +22,25 @@ const search = t.procedure.input(wrap(v.string())).query(async ({ ctx, input }) 
         .select()
         .from(Ban)
         .where(
-          notExists(
-            sql`select 1
-                from ${Ban}
-                where ${and(
-                  eq(Ban.issuedToUserId, +input),
-                  and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
-                )}
-                limit 1
-            `
-          )
+          sql`select 1
+              from ${Ban}
+              where ${and(
+                eq(Ban.issuedToUserId, +input),
+                and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
+              )}
+              limit 1
+          `
         )
     );
+
+    const userWhereCondition: SQL[] = [
+      eq(User.discordUserId, input),
+      ilike(OsuUser.username, `%${input}%`)
+    ];
+
+    if (!isNaN(parseInt(input))) {
+      userWhereCondition.push(eq(User.id, +input), eq(User.osuUserId, +input));
+    }
 
     users = await db
       .with(isBanned)
@@ -43,18 +50,11 @@ const search = t.procedure.input(wrap(v.string())).query(async ({ ctx, input }) 
       })
       .from(User)
       .innerJoin(OsuUser, eq(User.osuUserId, OsuUser.osuUserId))
-      .where(
-        or(
-          eq(User.id, +input),
-          eq(User.osuUserId, +input),
-          eq(User.discordUserId, input),
-          ilike(OsuUser.username, `%${input}%`)
-        )
-      )
-      .orderBy(({ username }) => asc(username))
+      .where(or(...userWhereCondition))
+      .orderBy(asc(OsuUser.username))
       .limit(10);
   } catch (err) {
-    throw trpcUnknownError(err, 'Expiring the session');
+    throw trpcUnknownError(err, 'Searching for users');
   }
 
   let tournaments:
@@ -64,25 +64,27 @@ const search = t.procedure.input(wrap(v.string())).query(async ({ ctx, input }) 
       >[]
     | undefined;
 
+  const tournamentWhereCondition: SQL[] = [
+    ilike(Tournament.name, `%${input}%`),
+    ilike(Tournament.acronym, `%${input}%`),
+    ilike(Tournament.urlSlug, `%${input}%`)
+  ];
+
+  if (!isNaN(parseInt(input))) {
+    tournamentWhereCondition.push(eq(Tournament.id, +input));
+  }
+
   try {
     tournaments = await db
       .select({
         ...pick(Tournament, ['name', 'urlSlug', 'acronym', 'logoMetadata', 'bannerMetadata'])
       })
       .from(Tournament)
-      .where(
-        or(
-          eq(Tournament.id, +input),
-          ilike(Tournament.name, `%${input}%`),
-          ilike(Tournament.acronym, `%${input}%`),
-          ilike(Tournament.urlSlug, `%${input}%`),
-          eq(Tournament.deleted, false)
-        )
-      )
-      .orderBy(({ name }) => asc(name))
+      .where(and(eq(Tournament.deleted, false), or(...tournamentWhereCondition)))
+      .orderBy(asc(Tournament.name))
       .limit(10);
   } catch (err) {
-    throw trpcUnknownError(err, 'Expiring the session');
+    throw trpcUnknownError(err, 'Searching for tournaments');
   }
 
   return {
