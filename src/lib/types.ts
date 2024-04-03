@@ -136,4 +136,13 @@ export interface Assets {
       tournamentId: number;
     }
   >;
+  tournamentLogo: Asset<
+    {
+      file: File;
+      tournamentId: number;
+    },
+    {
+      tournamentId: number;
+    }
+  >;
 }
