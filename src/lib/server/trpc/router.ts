@@ -2,9 +2,9 @@ import * as v from 'valibot';
 import { t } from '$trpc';
 import { notificationsRouter, tournamentsRouter, usersRouter } from '../procedures';
 import { wrap } from '@typeschema/valibot';
-import { getSession } from '$lib/server/helpers/api';
+import { getSession } from '$lib/server/helpers/trpc';
 import { Ban, db, OsuUser, Tournament, User } from '$db';
-import { and, asc, eq, ilike, isNull, or, type SQL, sql } from 'drizzle-orm';
+import { and, asc, eq, ilike, isNull, notExists, or, type SQL, sql } from 'drizzle-orm';
 import { future, pick, trpcUnknownError } from '$lib/server/utils';
 
 const search = t.procedure.input(wrap(v.string())).query(async ({ ctx, input }) => {
@@ -50,7 +50,7 @@ const search = t.procedure.input(wrap(v.string())).query(async ({ ctx, input }) 
       })
       .from(User)
       .innerJoin(OsuUser, eq(User.osuUserId, OsuUser.osuUserId))
-      .where(or(...userWhereCondition))
+      .where(and(notExists(isBanned), or(...userWhereCondition)))
       .orderBy(asc(OsuUser.username))
       .limit(10);
   } catch (err) {
