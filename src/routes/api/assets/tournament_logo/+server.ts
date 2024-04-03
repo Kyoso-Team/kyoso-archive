@@ -39,7 +39,7 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
 
   try {
     fileId = await db
-      .select(pick(Tournament, ['bannerMetadata']))
+      .select(pick(Tournament, ['logoMetadata']))
       .from(Tournament)
       .where(
         and(
@@ -51,13 +51,13 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
       )
       .leftJoin(TournamentDates, eq(TournamentDates.tournamentId, Tournament.id))
       .limit(1)
-      .then((rows) => rows[0].bannerMetadata?.fileId);
+      .then((rows) => rows[0].logoMetadata?.fileId);
   } catch (err) {
     throw await apiError(err, 'Getting the tournament', route);
   }
 
   if (!fileId) {
-    error(404, "Either this tournament doesn't exist or it doesn't have a banner");
+    error(404, "Either this tournament doesn't exist or it doesn't have a logo");
   }
 
   if (fileId !== params.file_id) {
@@ -69,7 +69,7 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
   try {
     file = await getFile(
       route,
-      'tournament-banners',
+      'tournament-logos',
       `${formatDigits(params.tournament_id, 9)}-${params.size || 'thumb'}.jpeg`
     );
   } catch (err) {
@@ -81,14 +81,14 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
 
 export const PUT = (async ({ cookies, route, request }) => {
   const session = getSession(cookies, true);
-  const data: Assets['tournamentBanner']['put'] = await parseFormData(request, route, {
+  const data: Assets['tournamentLogo']['put'] = await parseFormData(request, route, {
     file: fileSchema,
     tournamentId: positiveIntSchema
   });
   const staffMember = await getStaffMember(session, data.tournamentId, route, true);
 
   if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament', 'manage_assets'])) {
-    error(401, "You do not have the required permissions to upload this tournament's banner");
+    error(401, "You do not have the required permissions to upload this tournament's logo");
   }
 
   const fileId = generateFileId();
@@ -106,21 +106,21 @@ export const PUT = (async ({ cookies, route, request }) => {
     resizes: [
       {
         name: names.full,
-        width: 1600,
-        height: 667,
+        width: 800,
+        height: 800,
         quality: 100
       },
       {
         name: names.thumb,
-        width: 620,
-        height: 258,
+        width: 250,
+        height: 250,
         quality: 75
       }
     ]
   });
 
   try {
-    await Promise.all(files.map((file) => uploadFile(route, 'tournament-banners', file)));
+    await Promise.all(files.map((file) => uploadFile(route, 'tournament-logos', file)));
   } catch (err) {
     throw await apiError(err, 'Uploading the files', route);
   }
@@ -129,7 +129,7 @@ export const PUT = (async ({ cookies, route, request }) => {
     await db
       .update(Tournament)
       .set({
-        bannerMetadata: {
+        logoMetadata: {
           originalFileName: data.file.name,
           fileId
         }
@@ -144,13 +144,13 @@ export const PUT = (async ({ cookies, route, request }) => {
 
 export const DELETE = (async ({ cookies, route, request }) => {
   const session = getSession(cookies, true);
-  const data: Assets['tournamentBanner']['delete'] = await parseFormData(request, route, {
+  const data: Assets['tournamentLogo']['delete'] = await parseFormData(request, route, {
     tournamentId: positiveIntSchema
   });
   const staffMember = await getStaffMember(session, data.tournamentId, route, true);
 
   if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament', 'manage_assets'])) {
-    error(401, "You do not have the required permissions to delete this tournament's banner");
+    error(401, "You do not have the required permissions to delete this tournament's logo");
   }
 
   const names = {
@@ -162,7 +162,7 @@ export const DELETE = (async ({ cookies, route, request }) => {
     await db
       .update(Tournament)
       .set({
-        bannerMetadata: null
+        logoMetadata: null
       })
       .where(eq(Tournament.id, data.tournamentId));
   } catch (err) {
@@ -171,7 +171,7 @@ export const DELETE = (async ({ cookies, route, request }) => {
 
   try {
     await Promise.all(
-      Object.values(names).map((fileName) => deleteFile(route, 'tournament-banners', fileName))
+      Object.values(names).map((fileName) => deleteFile(route, 'tournament-logos', fileName))
     );
   } catch (err) {
     throw await apiError(err, 'Deleting the files', route);
