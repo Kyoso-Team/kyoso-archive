@@ -23,7 +23,7 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
       tournament_id: positiveIntSchema,
       file_id: fileIdSchema,
       public: v.optional(boolStringSchema),
-      size: v.union([v.literal('full'), v.literal('thumb')], 'be "full" or "thumb"')
+      size: v.union([v.literal('full'), v.literal('sm')], 'be "full" or "sm"')
     },
     route
   );
@@ -70,7 +70,7 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
     file = await getFile(
       route,
       'tournament-logos',
-      `${formatDigits(params.tournament_id, 9)}-${params.size || 'thumb'}.jpeg`
+      `${formatDigits(params.tournament_id, 9)}-${params.size || 'sm'}.jpeg`
     );
   } catch (err) {
     throw await apiError(err, 'Getting the file', route);
@@ -94,7 +94,7 @@ export const PUT = (async ({ cookies, route, request }) => {
   const fileId = generateFileId();
   const names = {
     full: `${formatDigits(data.tournamentId, 9)}-full.jpeg`,
-    thumb: `${formatDigits(data.tournamentId, 9)}-thumb.jpeg`
+    sm: `${formatDigits(data.tournamentId, 9)}-sm.jpeg`
   };
 
   const files = await transformFile({
@@ -106,14 +106,14 @@ export const PUT = (async ({ cookies, route, request }) => {
     resizes: [
       {
         name: names.full,
-        width: 800,
-        height: 800,
+        width: 250,
+        height: 250,
         quality: 100
       },
       {
-        name: names.thumb,
-        width: 250,
-        height: 250,
+        name: names.sm,
+        width: 75,
+        height: 75,
         quality: 75
       }
     ]
@@ -155,7 +155,7 @@ export const DELETE = (async ({ cookies, route, request }) => {
 
   const names = {
     full: `${formatDigits(data.tournamentId, 9)}-full.jpeg`,
-    thumb: `${formatDigits(data.tournamentId, 9)}-thumb.jpeg`
+    sm: `${formatDigits(data.tournamentId, 9)}-sm.jpeg`
   };
 
   try {
