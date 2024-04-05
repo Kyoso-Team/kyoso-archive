@@ -167,15 +167,13 @@
 </script>
 
 <nav
-  class="h-full line-r grid grid-rows-[40px_auto_max-content] bg-surface-100-800-token"
+  class="h-full line-r grid grid-rows-[auto_max-content] bg-surface-100-800-token"
   use:portal={'#sidebar'}
 >
-  <div class="p-2 line-b flex justify-center items-center">
-    <a href="/" class="btn p-0 duration-150 hover:opacity-75">
+  <div class="w-full flex flex-col gap-2 p-2 overflow-y-auto">
+    <a href="/" class="btn p-2 duration-150 hover:variant-soft-primary">
       <Kyoso class="w-6 h-6 dark:fill-white fill-black" />
     </a>
-  </div>
-  <div class="w-full flex flex-col gap-2 p-2 overflow-y-auto">
     {#each links as { href, icon, tip, tipName, class: styles }}
       <a
         href={`/m/${data.tournament.urlSlug}${href}`}
@@ -217,7 +215,7 @@
     <UserMenu session={data.session} popupName="tournament-user-menu" />
   </div>
 </nav>
-<div class="w-full flex line-b bg-surface-100-800-token">
+<div class="w-full flex line-b bg-surface-100-800-token" use:portal={'#header'}>
   <div id="page-title" class="line-r w-52 flex items-center px-4 font-bold text-lg" />
   <div id="breadcrumbs" />
 </div>
