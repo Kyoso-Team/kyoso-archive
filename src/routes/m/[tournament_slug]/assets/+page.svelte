@@ -90,7 +90,7 @@
     loading.set(false);
 
     toggleShowDeleteBannerPrompt();
-    toastSuccess(toast, 'Deleted logo successfully');
+    toastSuccess(toast, 'Deleted banner successfully');
   }
 
   $: logoSrc = data.tournament.logoMetadata
