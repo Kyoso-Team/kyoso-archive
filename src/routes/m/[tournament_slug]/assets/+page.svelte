@@ -13,8 +13,8 @@
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
-  let showLogoModal = false;
-  let showBannerModal = false;
+  let showUploadLogoModal = false;
+  let showUploadBannerModal = false;
   let showDeleteLogoPrompt = false;
   let showDeleteBannerPrompt = false;
   let logoSrc: string | undefined;
@@ -23,12 +23,12 @@
   const logoUpload = createUploadClient<Assets['tournamentLogo']>(toast, '/api/assets/tournament_logo');
   const bannerUpload = createUploadClient<Assets['tournamentBanner']>(toast, '/api/assets/tournament_banner');
   
-  function toggleShowLogoModal() {
-    showLogoModal = !showLogoModal;
+  function toggleShowUploadLogoModal() {
+    showUploadLogoModal = !showUploadLogoModal;
   }
 
-  function toggleShowBannerModal() {
-    showBannerModal = !showBannerModal;
+  function toggleShowUploadBannerModal() {
+    showUploadBannerModal = !showUploadBannerModal;
   }
 
   function toggleShowDeleteLogoPrompt() {
@@ -49,7 +49,7 @@
     await invalidate('reload:manage_assets');
     loading.set(false);
 
-    toggleShowLogoModal();
+    toggleShowUploadLogoModal();
     toastSuccess(toast, 'Uploaded logo successfully');
   }
 
@@ -63,7 +63,7 @@
     await invalidate('reload:manage_assets');
     loading.set(false);
 
-    toggleShowBannerModal();
+    toggleShowUploadBannerModal();
     toastSuccess(toast, 'Uploaded banner successfully');
   }
 
@@ -96,6 +96,9 @@
   $: logoSrc = data.tournament.logoMetadata
     ? `${$page.url.origin}/api/assets/tournament_logo?tournament_id=${data.tournament.id}&file_id=${data.tournament.logoMetadata.fileId}&size=full`
     : undefined;
+  $: bannerSrc = data.tournament.bannerMetadata
+    ? `${$page.url.origin}/api/assets/tournament_banner?tournament_id=${data.tournament.id}&file_id=${data.tournament.bannerMetadata.fileId}&size=full`
+    : undefined;
 </script>
 
 <SEO page={$page} title={`${data.tournament.acronym} - Assets`} description="User settings" noIndex />
@@ -111,13 +114,34 @@
     </Modal>
   </Backdrop>
 {/if}
-{#if showLogoModal}
+{#if showDeleteBannerPrompt}
   <Backdrop>
-    <UploadImgModal imgAspectRatio="1/1" currentSrc={logoSrc} onUpload={uploadLogo} onCancel={toggleShowLogoModal}>
+    <Modal>
+      <span class="title">Delete Banner</span>
+      <p>Are you sure you want to delete this tournament's banner?</p>
+      <div class="actions">
+        <button class="btn variant-filled-error" on:click={deleteBanner}>Delete</button>
+        <button class="btn variant-filled" on:click={toggleShowDeleteBannerPrompt}>Cancel</button>
+      </div>
+    </Modal>
+  </Backdrop>
+{/if}
+{#if showUploadLogoModal}
+  <Backdrop>
+    <UploadImgModal imgAspectRatio="1/1" currentSrc={logoSrc} onUpload={uploadLogo} onCancel={toggleShowUploadLogoModal}>
       <span class="title">Upload Logo</span>
       <p><strong>Aspect ratio:</strong> 1:1</p>
       <p><strong>Dimensions:</strong> 250x250 (or greater)</p>
       <p class="mb-4">An image with a transparent background is preferred.</p>
+    </UploadImgModal>
+  </Backdrop>
+{/if}
+{#if showUploadBannerModal}
+  <Backdrop>
+    <UploadImgModal imgAspectRatio="21/9" currentSrc={bannerSrc} onUpload={uploadBanner} onCancel={toggleShowUploadBannerModal}>
+      <span class="title">Upload Banner</span>
+      <p><strong>Aspect ratio:</strong> 21:9</p>
+      <p class="mb-4"><strong>Dimensions:</strong> 1600x685 (or greater)</p>
     </UploadImgModal>
   </Backdrop>
 {/if}
@@ -129,7 +153,7 @@
 </ol>
 <main class="main flex justify-center items-center h-full">
   <div class="flex gap-4 flex-wrap justify-center h-max">
-    <Asset label="Logo" imgAspectRatio="1/1" src={logoSrc} onUpload={toggleShowLogoModal} onDelete={toggleShowDeleteLogoPrompt} />
-    <!-- <Asset label="Banner" show={!!data.tournament.bannerMetadata} class="aspect-[21/9]" /> -->
+    <Asset label="Logo" imgAspectRatio="1/1" src={logoSrc} onUpload={toggleShowUploadLogoModal} onDelete={toggleShowDeleteLogoPrompt} />
+    <Asset label="Banner" imgAspectRatio="21/9" src={bannerSrc} onUpload={toggleShowUploadBannerModal} onDelete={toggleShowDeleteBannerPrompt} />
   </div>
 </main>

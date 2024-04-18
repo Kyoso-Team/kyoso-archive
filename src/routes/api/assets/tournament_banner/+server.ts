@@ -107,13 +107,13 @@ export const PUT = (async ({ cookies, route, request }) => {
       {
         name: names.full,
         width: 1600,
-        height: 667,
+        height: 685,
         quality: 100
       },
       {
         name: names.thumb,
         width: 620,
-        height: 258,
+        height: 266,
         quality: 75
       }
     ]
