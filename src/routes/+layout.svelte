@@ -138,6 +138,7 @@
     {#if $showNavBar}
       <NavBar session={data.session} />
     {/if}
+    <div id="header" class="h-max" />
   </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
     <div id="sidebar" class="h-full" />

@@ -131,22 +131,18 @@ export async function parseSearchParams<T extends Record<string, v.BaseSchema>>(
   route: { id: string | null }
 ): Promise<{ [K in keyof T]: v.Output<T[K]> }> {
   const data: Record<string, any> = {};
+  let currentKey = '';
 
   try {
     for (const key in schemas) {
-      data[key] = v.parse(schemas[key], url.searchParams.get(key));
+      currentKey = key;
+      const value = url.searchParams.get(key) || undefined;
+      data[key] = v.parse(schemas[key], !isNaN(Number(value)) ? Number(value) : value);
     }
   } catch (err) {
     if (err instanceof v.ValiError) {
-      let str = 'Invalid input:\n';
-      const issues = v.flatten(err.issues).nested;
-
-      for (const key in issues) {
-        str += `- Param "${key}" should ${issues[key]}\n`;
-      }
-
-      str = str.trimEnd();
-      error(400, str);
+      const issue = (v.flatten(err.issues).root || [])[0];
+      error(400, `Invalid input: ${currentKey} should ${issue}`);
     } else {
       throw await apiError(err, 'Parsing the URL search parameters', route);
     }
