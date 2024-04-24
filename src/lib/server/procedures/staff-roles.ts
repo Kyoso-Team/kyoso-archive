@@ -212,17 +212,21 @@ const swapStaffRoleOrder = t.procedure
       targetStaffRole: staffRoles[1]
     };
 
-    await db.execute(sql`
-        UPDATE staff_role
-        SET "order" = CASE id
-                          WHEN ${sourceStaffRole.id} THEN (SELECT "order"
-                                                           FROM staff_role
-                                                           WHERE id = ${targetStaffRole.id})
-                          WHEN ${targetStaffRole.id} THEN (SELECT "order"
-                                                           FROM staff_role
-                                                           WHERE id = ${sourceStaffRole.id})
-            END
-        WHERE id IN (${sourceStaffRole.id}, ${targetStaffRole.id})`);
+    await db.transaction(async (tx) => {
+      await tx
+        .update(StaffRole)
+        .set({
+          order: targetStaffRole.order
+        })
+        .where(eq(StaffRole.id, sourceStaffRole.id));
+
+      await tx
+        .update(StaffRole)
+        .set({
+          order: sourceStaffRole.order
+        })
+        .where(eq(StaffRole.id, targetStaffRole.id));
+    });
   });
 
 const deleteStaffRole = t.procedure
