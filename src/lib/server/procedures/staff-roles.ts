@@ -82,7 +82,7 @@ const createStaffRole = t.procedure
     const staffRolesCount = db.$with('staff_roles_count').as(
       db
         .select({
-          count: count()
+          count: sql<number>`count(*) + 1`.mapWith(Number).as('count')
         })
         .from(StaffRole)
         .where(eq(StaffRole.tournamentId, tournamentId))
@@ -97,7 +97,7 @@ const createStaffRole = t.procedure
         .values({
           name,
           tournamentId,
-          order: sql<number>`((select * from ${staffRolesCount}) + 1)`
+          order: sql<number>`select * from ${staffRolesCount}`
         })
         .returning(pick(StaffRole, ['id', 'name', 'tournamentId', 'order']))
         .then((rows) => rows[0]);
