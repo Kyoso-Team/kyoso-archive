@@ -181,8 +181,10 @@ const updateTournament = t.procedure
     const session = getSession(ctx.cookies, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
 
-    let info: (Pick<typeof Tournament.$inferSelect, 'deleted'> &
-      Pick<typeof TournamentDates.$inferSelect, 'publishedAt' | 'concludesAt'>) | undefined;
+    let info:
+      | (Pick<typeof Tournament.$inferSelect, 'deleted'> &
+          Pick<typeof TournamentDates.$inferSelect, 'publishedAt' | 'concludesAt'>)
+      | undefined;
 
     try {
       info = await db
@@ -254,10 +256,7 @@ const updateTournament = t.procedure
 
     try {
       if (tournament) {
-        await db
-          .update(Tournament)
-          .set(tournament)
-          .where(eq(Tournament.id, tournamentId));
+        await db.update(Tournament).set(tournament).where(eq(Tournament.id, tournamentId));
       }
 
       if (dates) {

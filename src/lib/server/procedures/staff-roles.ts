@@ -3,7 +3,7 @@ import postgres from 'postgres';
 import { t } from '$trpc';
 import { wrap } from '@typeschema/valibot';
 import { db, StaffColor, StaffPermission, StaffRole, Tournament, uniqueConstraints } from '$db';
-import { count, eq, inArray, sql } from 'drizzle-orm';
+import { and, eq, gt, inArray, sql } from 'drizzle-orm';
 import { pick, trpcUnknownError } from '$lib/server/utils';
 import { positiveIntSchema } from '$lib/schemas';
 import { TRPCError } from '@trpc/server';
@@ -16,7 +16,7 @@ function uniqueConstraintsError(err: unknown) {
     const constraint = err.message.split('"')[1];
 
     if (constraint === uniqueConstraints.staffRoles.uniqueNameTournamentId) {
-      return 'The staff role name must be unique';
+      return "The staff role's name must be unique";
     }
   }
 
@@ -70,7 +70,7 @@ const createStaffRole = t.procedure
     wrap(
       v.object({
         name: v.string([v.minLength(2), v.maxLength(50)]),
-        tournamentId: v.number([v.minValue(1), v.integer()])
+        tournamentId: positiveIntSchema
       })
     )
   )
@@ -88,16 +88,15 @@ const createStaffRole = t.procedure
         .where(eq(StaffRole.tournamentId, tournamentId))
     );
 
-    let staffRole!: Pick<typeof StaffRole.$inferSelect, 'id' | 'name' | 'tournamentId' | 'order'>;
-
     try {
-      staffRole = await db
+      await db
         .with(staffRolesCount)
         .insert(StaffRole)
         .values({
           name,
           tournamentId,
-          order: sql<number>`select * from ${staffRolesCount}`
+          order: sql<number>`select *
+                             from ${staffRolesCount}`
         })
         .returning(pick(StaffRole, ['id', 'name', 'tournamentId', 'order']))
         .then((rows) => rows[0]);
@@ -110,8 +109,6 @@ const createStaffRole = t.procedure
 
       throw trpcUnknownError(err, 'Creating the staff role');
     }
-
-    return staffRole;
   });
 
 const updateStaffRole = t.procedure
@@ -121,7 +118,7 @@ const updateStaffRole = t.procedure
         staffRoleId: positiveIntSchema,
         data: v.partial(
           v.object({
-            name: v.string(),
+            name: v.string([v.minLength(2), v.maxLength(50)]),
             color: v.picklist(StaffColor.enumValues),
             permissions: v.array(v.picklist(StaffPermission.enumValues))
           })
@@ -133,26 +130,6 @@ const updateStaffRole = t.procedure
     await checkPermissions(ctx);
 
     const { staffRoleId, data } = input;
-
-    let staffRole: Pick<typeof StaffRole.$inferSelect, 'id'> | null;
-
-    try {
-      staffRole = await db
-        .select(pick(StaffRole, ['id']))
-        .from(StaffRole)
-        .where(eq(StaffRole.id, staffRoleId))
-        .limit(1)
-        .then((res) => res[0]);
-    } catch (err) {
-      throw trpcUnknownError(err, 'Updating the staff role');
-    }
-
-    if (!staffRole) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Staff role not found'
-      });
-    }
 
     if (Object.keys(data || {}).length === 0) {
       throw new TRPCError({
@@ -195,6 +172,7 @@ const swapStaffRoleOrder = t.procedure
         .select()
         .from(StaffRole)
         .where(inArray(StaffRole.id, [source, target]))
+        .limit(2)
         .then((res) => res);
     } catch (err) {
       throw trpcUnknownError(err, 'Getting staff roles');
@@ -207,10 +185,7 @@ const swapStaffRoleOrder = t.procedure
       });
     }
 
-    const { sourceStaffRole, targetStaffRole } = {
-      sourceStaffRole: staffRoles[0],
-      targetStaffRole: staffRoles[1]
-    };
+    const [sourceStaffRole, targetStaffRole] = staffRoles;
 
     await db.transaction(async (tx) => {
       await tx
@@ -242,39 +217,24 @@ const deleteStaffRole = t.procedure
 
     const { staffRoleId } = input;
 
-    let staffRole: Pick<typeof StaffRole.$inferSelect, 'id'> | undefined;
-
-    try {
-      staffRole = await db
-        .select(pick(StaffRole, ['id']))
-        .from(StaffRole)
-        .where(eq(StaffRole.id, staffRoleId))
-        .limit(1)
-        .then((res) => res[0]);
-    } catch (err) {
-      throw trpcUnknownError(err, 'Getting staff role');
-    }
-
-    if (!staffRole) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Staff role was not found'
-      });
-    }
-
-    const { id } = staffRole;
-
     await db.transaction(async (tx) => {
       const deletedStaffRole = await tx
         .delete(StaffRole)
-        .where(eq(StaffRole.id, id))
+        .where(eq(StaffRole.id, staffRoleId))
         .returning(pick(StaffRole, ['tournamentId', 'order']))
         .then((res) => res[0]);
 
-      await tx.execute(sql`UPDATE staff_role
-                           SET "order" = "order" - 1
-                           WHERE tournament_id = ${deletedStaffRole.tournamentId}
-                             AND "order" > ${deletedStaffRole.order}`);
+      await tx
+        .update(StaffRole)
+        .set({
+          order: sql<number>`${StaffRole.order} - 1`
+        })
+        .where(
+          and(
+            eq(StaffRole.tournamentId, deletedStaffRole.tournamentId),
+            gt(StaffRole.order, deletedStaffRole.order)
+          )
+        );
     });
   });
 
