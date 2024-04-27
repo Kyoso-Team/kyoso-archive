@@ -1,5 +1,6 @@
 <script lang="ts">
   import UserMenu from './UserMenu.svelte';
+  import { Bell } from 'lucide-svelte';
   import { AppBar, Avatar, popup } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
   import { page } from '$app/stores';
@@ -8,6 +9,7 @@
   import type { AuthSession } from '$types';
 
   export let session: AuthSession | undefined;
+  export let unreadNotificationCount: Promise<number>;
   const navLinks = [
     {
       href: 'dashboard',
@@ -67,8 +69,18 @@
     </nav>
   </svelte:fragment>
   <svelte:fragment slot="trail">
-    <div class="flex justify-center">
+    <div class="flex justify-center gap-2">
       {#if session}
+        <button class="relative btn-icon hover:variant-soft-primary">
+          {#await unreadNotificationCount}
+            <span class="hidden" />
+          {:then count}
+            <span class="badge absolute top-0 right-0 tracking-tighter z-[2] variant-filled-primary rounded-full w-6 h-6">
+              {count > 9 ? '9+' : count}
+            </span>
+          {/await}
+          <Bell size={24} class="stroke-black fill-black dark:stroke-white dark:fill-white !ml-0" />
+        </button>
         <button
           use:popup={{
             event: 'click',

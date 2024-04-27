@@ -136,7 +136,7 @@
 <AppShell regionPage="relative" slotPageHeader="sticky top-0 z-10">
   <svelte:fragment slot="header">
     {#if $showNavBar}
-      <NavBar session={data.session} />
+      <NavBar session={data.session} unreadNotificationCount={data.streamed.unreadNotificationCount} />
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
