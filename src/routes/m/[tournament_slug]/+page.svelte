@@ -6,6 +6,6 @@
 </script>
 
 <span use:portal={'#page-title'}>Home</span>
-<ol class="breadcrumb py-2 px-4" use:portal={'#breadcrumbs'}>
+<ol class="breadcrumb" use:portal={'#breadcrumbs'}>
   <li class="crumb">{data.tournament.acronym}</li>
 </ol>
