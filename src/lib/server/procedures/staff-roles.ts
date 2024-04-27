@@ -2,7 +2,7 @@ import * as v from 'valibot';
 import postgres from 'postgres';
 import { t } from '$trpc';
 import { wrap } from '@typeschema/valibot';
-import { db, StaffColor, StaffPermission, StaffRole, Tournament, uniqueConstraints } from '$db';
+import { db, StaffColor, StaffPermission, StaffRole, uniqueConstraints } from '$db';
 import { and, eq, gt, inArray, sql } from 'drizzle-orm';
 import { pick, trpcUnknownError } from '$lib/server/utils';
 import { positiveIntSchema } from '$lib/schemas';
@@ -23,39 +23,10 @@ function uniqueConstraintsError(err: unknown) {
   return undefined;
 }
 
-async function checkPermissions(ctx: Context, tournamentId?: number | undefined) {
+async function checkPermissions(ctx: Context, tournamentId: number) {
   const session = getSession(ctx.cookies, true);
 
-  if (tournamentId) {
-    const staffMember = await getStaffMember(session, tournamentId, true);
-
-    if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament'])) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message:
-          'You do not have the required permissions to create staff roles for this tournament'
-      });
-    }
-
-    return;
-  }
-
-  const tournamentSlug = ctx.url.pathname.split('/').at(-1)!;
-
-  let tournament!: Pick<typeof Tournament.$inferSelect, 'id'>;
-
-  try {
-    tournament = await db
-      .select(pick(Tournament, ['id']))
-      .from(Tournament)
-      .where(eq(Tournament.urlSlug, tournamentSlug))
-      .limit(1)
-      .then((res) => res[0]);
-  } catch (err) {
-    throw trpcUnknownError(err, 'Getting the tournament');
-  }
-
-  const staffMember = await getStaffMember(session, tournament.id, true);
+  const staffMember = await getStaffMember(session, tournamentId, true);
 
   if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament'])) {
     throw new TRPCError({
@@ -82,7 +53,11 @@ const createStaffRole = t.procedure
     const staffRolesCount = db.$with('staff_roles_count').as(
       db
         .select({
-          count: sql<number>`count(*) + 1`.mapWith(Number).as('count')
+          count: sql<number>`count
+              (*)
+              + 1`
+            .mapWith(Number)
+            .as('count')
         })
         .from(StaffRole)
         .where(eq(StaffRole.tournamentId, tournamentId))
@@ -115,6 +90,7 @@ const updateStaffRole = t.procedure
   .input(
     wrap(
       v.object({
+        tournamentId: positiveIntSchema,
         staffRoleId: positiveIntSchema,
         data: v.partial(
           v.object({
@@ -127,9 +103,9 @@ const updateStaffRole = t.procedure
     )
   )
   .mutation(async ({ ctx, input }) => {
-    await checkPermissions(ctx);
+    const { staffRoleId, tournamentId, data } = input;
 
-    const { staffRoleId, data } = input;
+    await checkPermissions(ctx, tournamentId);
 
     if (Object.keys(data || {}).length === 0) {
       throw new TRPCError({
@@ -155,15 +131,16 @@ const swapStaffRoleOrder = t.procedure
   .input(
     wrap(
       v.object({
+        tournamentId: positiveIntSchema,
         source: positiveIntSchema,
         target: positiveIntSchema
       })
     )
   )
   .mutation(async ({ ctx, input }) => {
-    await checkPermissions(ctx);
+    const { tournamentId, source, target } = input;
 
-    const { source, target } = input;
+    await checkPermissions(ctx, tournamentId);
 
     let staffRoles: (typeof StaffRole.$inferSelect)[];
 
@@ -208,14 +185,15 @@ const deleteStaffRole = t.procedure
   .input(
     wrap(
       v.object({
+        tournamentId: positiveIntSchema,
         staffRoleId: positiveIntSchema
       })
     )
   )
   .mutation(async ({ ctx, input }) => {
-    await checkPermissions(ctx);
+    const { tournamentId, staffRoleId } = input;
 
-    const { staffRoleId } = input;
+    await checkPermissions(ctx, tournamentId);
 
     await db.transaction(async (tx) => {
       const deletedStaffRole = await tx
