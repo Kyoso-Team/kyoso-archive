@@ -146,7 +146,7 @@
   </Backdrop>
 {/if}
 <span use:portal={'#page-title'}>Assets</span>
-<ol class="breadcrumb py-2 px-4" use:portal={'#breadcrumbs'}>
+<ol class="breadcrumb" use:portal={'#breadcrumbs'}>
   <li class="crumb"><a class="anchor" href={`/m/${data.tournament.urlSlug}`}>{data.tournament.acronym}</a></li>
 	<li class="crumb-separator" aria-hidden>&rsaquo;</li>
   <li class="crumb">Assets</li>

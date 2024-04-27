@@ -2,7 +2,6 @@
   import { portal } from 'svelte-portal';
   import { Tooltip } from '$components/general';
   import { UserMenu } from '$components/layout';
-  import { Kyoso } from '$components/icons';
   import {
     Settings,
     Home,
@@ -14,17 +13,22 @@
     LineChart,
     Table,
     Gamepad2,
-    Layout
+    Layout,
+    Menu
   } from 'lucide-svelte';
   import { hasPermissions, tooltip } from '$lib/utils';
   import { popup, Avatar } from '@skeletonlabs/skeleton';
   import { onDestroy, onMount } from 'svelte';
   import { showNavBar } from '$stores';
   import { buildUrl } from 'osu-web.js';
+  import { fade, fly } from 'svelte/transition';
+  import { browser } from '$app/environment';
   import type { LayoutServerData } from './$types';
   import type { AnyComponent } from '$types';
 
   export let data: LayoutServerData;
+  let showResponsiveMenu = false;
+  let smScreen: boolean;
   let links: {
     tip: string;
     tipName: string;
@@ -39,11 +43,25 @@
 
   onMount(() => {
     showNavBar.set(false);
+
+    if (!browser) return;
+    window.addEventListener('resize', isSmScreen);
   });
 
   onDestroy(() => {
     showNavBar.set(true);
+
+    if (!browser) return;
+    window.removeEventListener('resize', isSmScreen);
   });
+
+  function isSmScreen() {
+    smScreen = window.innerWidth <= 640;
+  }
+
+  function toggleResponsiveMenu() {
+    showResponsiveMenu = !showResponsiveMenu;
+  }
 
   $: {
     const baseRoles: typeof data.staffMember.permissions = ['host', 'debug', 'manage_tournament'];
@@ -166,57 +184,72 @@
   }
 </script>
 
-<nav
-  class="h-full line-r grid grid-rows-[auto_max-content] bg-surface-100-800-token"
-  use:portal={'#sidebar'}
->
-  <div class="w-full flex flex-col gap-2 p-2 overflow-y-auto">
-    <a href="/" class="btn p-2 duration-150 hover:variant-soft-primary">
-      <Kyoso class="w-6 h-6 dark:fill-white fill-black" />
-    </a>
-    {#each links as { href, icon, tip, tipName, class: styles }}
+{#if smScreen && showResponsiveMenu}
+  <button
+    class="bg-surface-backdrop-token fixed top-[41px] left-0 h-screen w-screen overflow-hidden z-[39] cursor-default"
+    transition:fade={{ duration: 150 }}
+    on:click={toggleResponsiveMenu}
+  />
+{/if}
+{#if !smScreen || showResponsiveMenu}
+  <nav
+    class="absolute top-[41px] left-0 sm:static w-48 sm:w-max h-[calc(100vh-41px)] sm:h-full line-r grid grid-rows-[auto_max-content] bg-surface-100-800-token z-40"
+    transition:fly={{ duration: 150, x: -100 }}
+    use:portal={'#sidebar'}
+  >
+    <div class="w-full flex flex-col gap-2 p-2 overflow-y-auto">
+      {#each links as { href, icon, tip, tipName, class: styles }}
+        <a
+          href={`/m/${data.tournament.urlSlug}${href}`}
+          class="btn p-2 duration-150 hover:variant-soft-primary [&>*]:pointer-events-none"
+          use:popup={tooltip(tipName, 'right')}
+        >
+          <svelte:component this={icon} size={24} class={`duration-150 ${styles}`.trim()} />
+          <span class="inline-block sm:hidden w-full text-left">{tip}</span>
+        </a>
+        <Tooltip target={tipName} label={tip} arrowBorders="border-l border-b" visibility="hidden sm:block" />
+      {/each}
+    </div>
+    <div class="line-t p-2 flex flex-col gap-2">
       <a
-        href={`/m/${data.tournament.urlSlug}${href}`}
+        href="/dashboard"
         class="btn p-2 duration-150 hover:variant-soft-primary [&>*]:pointer-events-none"
-        use:popup={tooltip(tipName, 'right')}
+        use:popup={tooltip(tooltips.dashboard, 'right')}
       >
-        <svelte:component this={icon} size={24} class={`duration-150 ${styles}`.trim()} />
+        <Layout size={24} />
+        <span class="inline-block sm:hidden w-full text-left">Dashboard</span>
       </a>
-      <Tooltip target={tipName} label={tip} arrowBorders="border-l border-b" />
-    {/each}
-  </div>
-  <div class="line-t p-2 flex flex-col gap-2">
-    <a
-      href="/dashboard"
-      class="btn p-2 duration-150 hover:variant-soft-primary [&>*]:pointer-events-none"
-      use:popup={tooltip(tooltips.dashboard, 'right')}
-    >
-      <Layout size={24} />
-    </a>
-    <Tooltip target={tooltips.dashboard} label="Dashboard" arrowBorders="border-l border-b" />
-    <button
-      class="btn duration-150 p-2 hover:variant-soft-primary"
-      use:popup={{
-        event: 'click',
-        placement: 'right-end',
-        target: 'tournament-user-menu',
-        middleware: {
-          offset: 24
-        }
-      }}
-    >
-      <Avatar
-        src={buildUrl.userAvatar(data.session.osu.id)}
-        rounded="rounded-md"
-        width="w-6"
-        border="border-white border-[3px]"
-      />
-    </button>
-    <UserMenu session={data.session} popupName="tournament-user-menu" />
-  </div>
-</nav>
+      <Tooltip target={tooltips.dashboard} label="Dashboard" arrowBorders="border-l border-b" visibility="hidden sm:block" />
+      <button
+        class="btn duration-150 p-2 hover:variant-soft-primary"
+        use:popup={{
+          event: 'click',
+          placement: 'right-end',
+          target: 'tournament-user-menu',
+          middleware: {
+            offset: 24
+          }
+        }}
+      >
+        <Avatar
+          src={buildUrl.userAvatar(data.session.osu.id)}
+          rounded="rounded-md"
+          width="w-6"
+          border="border-white border-[3px]"
+        />
+        <span class="inline-block sm:hidden w-full text-left">Profile</span>
+      </button>
+      <UserMenu session={data.session} popupName="tournament-user-menu" />
+    </div>
+  </nav>
+{/if}
 <div class="w-full flex line-b bg-surface-100-800-token" use:portal={'#header'}>
+  <div class="flex sm:hidden justify-center line-r">
+    <button class="px-2 hover:bg-surface-50-900-token duration-150 [&>*]:duration-150 [&>*]:active:scale-[1.15]" on:click={toggleResponsiveMenu}>
+      <Menu size={24} />
+    </button>
+  </div>
   <div id="page-title" class="line-r w-52 flex items-center px-4 font-bold text-lg" />
-  <div id="breadcrumbs" />
+  <div id="breadcrumbs" class="py-2 px-4 overflow-x-auto overflow-y-hidden" />
 </div>
 <slot />

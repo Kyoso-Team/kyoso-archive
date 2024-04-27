@@ -65,6 +65,6 @@
       use:popup={tooltip(tooltips.notApprovedHost)}
       disabled={!data.session.approvedHost}>Create Tournament</button
     >
-    <Tooltip label="You're not approved to host a tournament" target={tooltips.notApprovedHost} show={!data.session.approvedHost} />
+    <Tooltip label="You're not approved to host a tournament" target={tooltips.notApprovedHost} visibility={data.session.approvedHost ? 'hidden' : 'block'} />
   </div>
 </nav>
