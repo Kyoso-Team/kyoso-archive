@@ -12,7 +12,6 @@ import {
   jsonb,
   bigserial,
   index,
-  bigint,
   uniqueIndex
 } from 'drizzle-orm/pg-core';
 import { timestampConfig, citext } from './schema-utils';
@@ -174,39 +173,28 @@ export const Ban = pgTable(
   })
 );
 
-export const Notification = pgTable('notification', {
-  id: bigserial('id', {
-    mode: 'number'
-  }).primaryKey(),
-  /**
-   * This message can contain variables that can then be replaced client side. Example:
-   * ```plain
-   * "You've been added as a staff member for {tournament:id} by {user:id}."
-   * ```
-   */
-  message: text('message').notNull()
-});
-
-export const UserNotification = pgTable(
-  'user_notification',
+export const Notification = pgTable(
+  'notification',
   {
+    id: bigserial('id', {
+      mode: 'number'
+    }).primaryKey(),
     userId: integer('user_id')
       .notNull()
       .references(() => User.id, {
         onDelete: 'cascade'
       }),
-    notificationId: bigint('notification_id', {
-      mode: 'number'
-    })
-      .notNull()
-      .references(() => Notification.id),
+    /**
+     * This message can contain variables that can then be replaced client side. Example:
+     * ```plain
+     * "You've been added as a staff member for {tournament:id} by {user:id}."
+     * ```
+     */
+    message: text('message').notNull(),
     notifiedAt: timestamp('notified_at', timestampConfig).notNull().defaultNow(),
     read: boolean('read').notNull().default(false)
   },
   (table) => ({
-    pk: primaryKey({
-      columns: [table.userId, table.notificationId]
-    }),
     indexUserIdReadNotifiedAt: index('idx_user_notification_user_id_read_notified_at').on(
       table.userId,
       table.read,
