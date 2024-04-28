@@ -152,7 +152,7 @@
   <li class="crumb">Assets</li>
 </ol>
 <main class="main flex justify-center items-center h-full">
-  <div class="flex gap-4 flex-wrap justify-center h-max">
+  <div class="flex gap-4 max-2sm:flex-col flex-wrap justify-center h-max w-full">
     <Asset label="Logo" imgAspectRatio="1/1" src={logoSrc} onUpload={toggleShowUploadLogoModal} onDelete={toggleShowDeleteLogoPrompt} />
     <Asset label="Banner" imgAspectRatio="21/9" src={bannerSrc} onUpload={toggleShowUploadBannerModal} onDelete={toggleShowDeleteBannerPrompt} />
   </div>

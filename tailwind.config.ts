@@ -14,6 +14,7 @@ export default {
     extend: {
       screens: {
         '2lg': '1100px',
+        '2sm': '510px',
         'xs': '450px'
       }
     }

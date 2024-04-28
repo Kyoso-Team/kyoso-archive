@@ -3,16 +3,16 @@
   import { Tooltip } from '$components/general';
   import { UserMenu } from '$components/layout';
   import {
-    Settings,
+    // Settings,
     Home,
     Image,
-    Network,
-    Users,
-    LockKeyhole,
-    Swords,
-    LineChart,
-    Table,
-    Gamepad2,
+    // Network,
+    // Users,
+    // LockKeyhole,
+    // Swords,
+    // LineChart,
+    // Table,
+    // Gamepad2,
     Layout,
     Menu
   } from 'lucide-svelte';
@@ -75,36 +75,36 @@
     ];
 
     if (hasPermissions(data.staffMember, baseRoles)) {
-      shownLinks.push({
-        href: '/settings',
-        icon: Settings,
-        tip: 'Settings',
-        tipName: 'tooltip-settings'
-      });
+      // shownLinks.push({
+      //   href: '/settings',
+      //   icon: Settings,
+      //   tip: 'Settings',
+      //   tipName: 'tooltip-settings'
+      // });
 
-      shownLinks.push({
-        href: '/staff',
-        icon: LockKeyhole,
-        tip: 'Staff Team',
-        tipName: 'tooltip-staff'
-      });
+      // shownLinks.push({
+      //   href: '/staff',
+      //   icon: LockKeyhole,
+      //   tip: 'Staff Team',
+      //   tipName: 'tooltip-staff'
+      // });
 
-      shownLinks.push({
-        href: '/format',
-        icon: Network,
-        tip: 'Format',
-        tipName: 'tooltip-format',
-        class: 'rotate-90'
-      });
+      // shownLinks.push({
+      //   href: '/format',
+      //   icon: Network,
+      //   tip: 'Format',
+      //   tipName: 'tooltip-format',
+      //   class: 'rotate-90'
+      // });
     }
 
     if (hasPermissions(data.staffMember, baseRoles.concat(['manage_regs']))) {
-      shownLinks.push({
-        href: '/registrations',
-        icon: Users,
-        tip: 'Player Regs.',
-        tipName: 'tooltip-regs'
-      });
+      // shownLinks.push({
+      //   href: '/registrations',
+      //   icon: Users,
+      //   tip: 'Player Regs.',
+      //   tipName: 'tooltip-regs'
+      // });
     }
 
     if (
@@ -119,12 +119,12 @@
         ])
       )
     ) {
-      shownLinks.push({
-        href: '/matches',
-        icon: Swords,
-        tip: 'Matches',
-        tipName: 'tooltip-matches'
-      });
+      // shownLinks.push({
+      //   href: '/matches',
+      //   icon: Swords,
+      //   tip: 'Matches',
+      //   tipName: 'tooltip-matches'
+      // });
     }
 
     if (
@@ -140,12 +140,12 @@
         ])
       )
     ) {
-      shownLinks.push({
-        href: '/mappools',
-        icon: Table,
-        tip: 'Mappools',
-        tipName: 'tooltip-pools'
-      });
+      // shownLinks.push({
+      //   href: '/mappools',
+      //   icon: Table,
+      //   tip: 'Mappools',
+      //   tipName: 'tooltip-pools'
+      // });
     }
 
     if (
@@ -154,12 +154,12 @@
         baseRoles.concat(['view_feedback', 'can_playtest', 'can_submit_replays'])
       )
     ) {
-      shownLinks.push({
-        href: '/playtest',
-        icon: Gamepad2,
-        tip: 'Playtest',
-        tipName: 'tooltip-playtest'
-      });
+      // shownLinks.push({
+      //   href: '/playtest',
+      //   icon: Gamepad2,
+      //   tip: 'Playtest',
+      //   tipName: 'tooltip-playtest'
+      // });
     }
 
     if (hasPermissions(data.staffMember, baseRoles.concat(['manage_assets']))) {
@@ -172,12 +172,12 @@
     }
 
     if (hasPermissions(data.staffMember, baseRoles.concat(['manage_stats']))) {
-      shownLinks.push({
-        href: '/stats',
-        icon: LineChart,
-        tip: 'Statistics',
-        tipName: 'tooltip-stats'
-      });
+      // shownLinks.push({
+      //   href: '/stats',
+      //   icon: LineChart,
+      //   tip: 'Statistics',
+      //   tipName: 'tooltip-stats'
+      // });
     }
 
     links = shownLinks;

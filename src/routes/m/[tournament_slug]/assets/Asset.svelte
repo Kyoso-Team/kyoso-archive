@@ -30,7 +30,7 @@
   }
 </script>
 
-<div class="card p-4">
+<div class="card p-4 max-2sm:w-full flex flex-col">
   <div class="grid grid-cols-[auto_auto]">
     <span class="font-medium text-xl flex items-center">{label}</span>
     <div class="flex gap-2 justify-end">
@@ -44,7 +44,7 @@
       {/if}
     </div>
   </div>
-  <div class="h-48 mt-4" style={`aspect-ratio: ${imgAspectRatio};`}>
+  <div class="2sm:h-48 mt-4" style={`aspect-ratio: ${imgAspectRatio};`}>
     {#if src}
       <div class="w-full h-full card bg-surface-200-700-token relative">
         {#if isImgLoading}
