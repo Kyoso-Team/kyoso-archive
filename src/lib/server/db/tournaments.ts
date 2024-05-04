@@ -15,6 +15,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { StageFormat, TournamentType } from './schema';
 import { timestampConfig, uniqueConstraints, citext } from './schema-utils';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import type {
   BWSValues,
   RankRange,
@@ -79,9 +80,12 @@ export const Tournament = pgTable(
         alwaysForceNoFail: true,
         banAndProtectCancelOut: false,
         winCondition: 'score'
-      })
+      }),
+    mainStageId: integer('main_stage_id').references(() => Stage.id)
   },
   (table) => ({
+    indexDeleted: index('idx_tournament_deleted').on(table.deleted),
+    indexNameAcronymUrlSlug: index('idx_tournament_name_acronym_url_slug').on(table.name, table.acronym, table.urlSlug),
     uniqueIndexUrlSlug: uniqueIndex(uniqueConstraints.tournament.urlSlug).on(table.urlSlug)
   })
 );
@@ -120,10 +124,9 @@ export const Stage = pgTable(
     id: serial('id').primaryKey(),
     format: StageFormat('format').notNull(),
     order: smallint('order').notNull(),
-    isMainStage: boolean('is_main_stage').notNull().default(false),
     tournamentId: integer('tournament_id')
       .notNull()
-      .references(() => Tournament.id, {
+      .references((): AnyPgColumn => Tournament.id, {
         onDelete: 'cascade'
       })
   },
@@ -131,7 +134,8 @@ export const Stage = pgTable(
     uniqueTournamentIdFormat: unique('uni_stage_tournament_id_format').on(
       table.tournamentId,
       table.format
-    )
+    ),
+    indexTournamentIdOrder: index('idx_stage_tournament_id_order').on(table.tournamentId, table.order)
   })
 );
 
@@ -140,6 +144,16 @@ export const Round = pgTable(
   {
     id: serial('id').primaryKey(),
     name: citext('name').notNull(),
+    /**
+     * This order is based on the tournament as a whole, not the stage where it belongs. E.g.:
+     * 
+     * Qualifiers:
+     * 1- Qualifiers
+     * 
+     * Double elim.:
+     * 2- Round of 32
+     * 3- Round of 16
+    */
     order: smallint('order').notNull(),
     targetStarRating: real('target_star_rating').notNull(),
     playtestingPool: boolean('playtesting_pool').notNull().default(false),
@@ -162,6 +176,7 @@ export const Round = pgTable(
     uniqueNameTournamentId: unique('uni_round_name_tournament_id').on(
       table.name,
       table.tournamentId
-    )
+    ),
+    indexTournamentIdOrder: index('idx_round_tournament_id_order').on(table.tournamentId, table.order)
   })
 );
