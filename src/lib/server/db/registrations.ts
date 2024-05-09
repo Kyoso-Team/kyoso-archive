@@ -5,7 +5,9 @@ import {
   unique,
   smallint,
   timestamp,
-  primaryKey
+  primaryKey,
+  boolean,
+  index
 } from 'drizzle-orm/pg-core';
 import { StaffColor, StaffPermission, Tournament, User } from './schema';
 import { timestampConfig, citext } from './schema-utils';
@@ -37,6 +39,7 @@ export const StaffMember = pgTable(
   {
     id: serial('id').primaryKey(),
     joinedStaffAt: timestamp('joined_staff_at', timestampConfig).notNull().defaultNow(),
+    deleted: boolean('deleted').notNull().default(false),
     userId: integer('user_id')
       .notNull()
       .references(() => User.id, {
@@ -52,7 +55,8 @@ export const StaffMember = pgTable(
     uniqueUserIdTournamentId: unique('uni_staff_member_user_id_tournament_id').on(
       table.userId,
       table.tournamentId
-    )
+    ),
+    indexDeleted: index('idx_staff_member_deleted').on(table.deleted)
   })
 );
 
