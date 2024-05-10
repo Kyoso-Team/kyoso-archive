@@ -26,6 +26,9 @@ import {
   tournamentOtherDatesSchema,
   urlSlugSchema
 } from '$lib/schemas';
+import { rateLimitMiddleware } from '$trpc/middleware';
+import { TRPCChecks } from '../helpers/checks';
+import type { FullTournament } from '$types';
 
 function uniqueConstraintsError(err: unknown) {
   if (err instanceof postgres.PostgresError && err.code === '23505') {
@@ -56,17 +59,13 @@ const mutationSchemas = {
 };
 
 const createTournament = t.procedure
+  .use(rateLimitMiddleware)
   .input(wrap(v.object(mutationSchemas)))
   .mutation(async ({ ctx, input }) => {
     const { teamSettings } = input;
+    const checks = new TRPCChecks('create a tournament');
     const session = getSession(ctx.cookies, true);
-
-    if (!session.admin && !session.approvedHost) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'You do not have the required permissions to create a tournament'
-      });
-    }
+    checks.userIsApprovedHost(session);
 
     let tournament!: Pick<typeof Tournament.$inferSelect, 'urlSlug'>;
 
@@ -143,6 +142,7 @@ const createTournament = t.procedure
   });
 
 const updateTournament = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({
@@ -178,31 +178,14 @@ const updateTournament = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { data, tournamentId } = input;
     const { tournament, dates } = data;
-
-    if (Object.keys(tournament || {}).length === 0 && Object.keys(dates || {}).length === 0) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'Nothing to update'
-      });
-    }
+    const checks = new TRPCChecks('update this tournament');
+    checks.partialHasValues(tournament).partialHasValues(dates);
 
     const session = getSession(ctx.cookies, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
+    checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
-    if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament'])) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'You do not have the required permissions to update this tournament'
-      });
-    }
-
-    let info:
-      | (Pick<typeof Tournament.$inferSelect, 'deleted'> &
-          Pick<
-            typeof TournamentDates.$inferSelect,
-            Exclude<keyof typeof TournamentDates.$inferSelect, 'other' | 'tournamentId'>
-          >)
-      | undefined;
+    let info: Pick<FullTournament, 'deleted' | 'publishedAt' | 'concludesAt' | 'playerRegsCloseAt' | 'playerRegsOpenAt' | 'staffRegsCloseAt' | 'staffRegsOpenAt'> | undefined;
 
     try {
       info = await db
@@ -233,23 +216,7 @@ const updateTournament = t.procedure
       });
     }
 
-    if (info.deleted) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'Tournament has been deleted'
-      });
-    }
-
-    const concluded = isDatePast(info.concludesAt);
-    const published = isDatePast(info.publishedAt);
-
-    if (concluded) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message:
-          "This tournament has concluded. You can't create, update or delete any data related to this tournament"
-      });
-    }
+    checks.tournamentNotDeleted(info).tournamentNotConcluded(info);
 
     if (tournament) {
       const { name, acronym, urlSlug, teamSettings, type, rankRange, bwsValues } = tournament;
@@ -267,7 +234,7 @@ const updateTournament = t.procedure
       }
 
       // Only update if the tournament is not public yet
-      if (published && (type || teamSettings || rankRange || bwsValues)) {
+      if (isDatePast(info.publishedAt) && (type || teamSettings || rankRange || bwsValues)) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
           message:
@@ -286,7 +253,6 @@ const updateTournament = t.procedure
         publishedAt
       } = dates;
       const { other: _1, ...newDates } = dates;
-      const { deleted: _2, ...setDates } = info;
 
       if (
         !hasPermissions(staffMember, ['host']) &&
@@ -314,8 +280,8 @@ const updateTournament = t.procedure
       };
 
       for (const [key_, newDate] of Object.entries(newDates)) {
-        const key = key_ as keyof typeof setDates;
-        const setDate = setDates[key];
+        const key = key_ as keyof typeof newDates;
+        const setDate = info[key] as Date | null;
 
         // Don't update if the date is equal or less than 1 hour into the future
         if (new Date().getTime() - newDate.getTime() >= 3_600_000) {
@@ -357,6 +323,7 @@ const updateTournament = t.procedure
   });
 
 const deleteTournament = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({
@@ -366,15 +333,32 @@ const deleteTournament = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { tournamentId } = input;
+    const checks = new TRPCChecks('delete this tournament');
     const session = getSession(ctx.cookies, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
+    checks.staffHasPermissions(staffMember, ['host']);
 
-    if (!hasPermissions(staffMember, ['host'])) {
+    let tournament: Pick<typeof TournamentDates.$inferSelect, 'concludesAt'> | undefined;
+
+    try {
+      tournament = await db
+        .select(pick(TournamentDates, ['concludesAt']))
+        .from(TournamentDates)
+        .where(eq(TournamentDates.tournamentId, tournamentId))
+        .limit(1)
+        .then((rows) => rows[0]);
+    } catch (err) {
+      throw trpcUnknownError(err, 'Deleting the tournament');
+    }
+
+    if (!tournament) {
       throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'You do not have the required permissions to delete this tournament'
+        code: 'NOT_FOUND',
+        message: 'Tournament not found'
       });
     }
+
+    checks.tournamentNotConcluded(tournament);
 
     try {
       await db
