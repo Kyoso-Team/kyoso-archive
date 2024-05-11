@@ -101,7 +101,7 @@
     : undefined;
 </script>
 
-<SEO page={$page} title={`${data.tournament.acronym} - Assets`} description="User settings" noIndex />
+<SEO page={$page} title={`${data.tournament.acronym} - Assets`} description={`Manage assets for ${data.tournament.acronym}`} noIndex />
 {#if showDeleteLogoPrompt}
   <Backdrop>
     <Modal>
@@ -145,7 +145,7 @@
     </UploadImgModal>
   </Backdrop>
 {/if}
-<span use:portal={'#page-title'}>Assets</span>
+<h1 class="m-title" use:portal={'#page-title'}>Assets</h1>
 <ol class="breadcrumb" use:portal={'#breadcrumbs'}>
   <li class="crumb"><a class="anchor" href={`/m/${data.tournament.urlSlug}`}>{data.tournament.acronym}</a></li>
 	<li class="crumb-separator" aria-hidden>&rsaquo;</li>

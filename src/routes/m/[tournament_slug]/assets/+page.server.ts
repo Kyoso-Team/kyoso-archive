@@ -10,7 +10,7 @@ export const load = (async ({ parent, route, depends }) => {
   const { staffMember, tournament } = await parent();
 
   if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament', 'manage_assets'])) {
-    error(401, 'You don\'t have the necessary permissions to access this page.');
+    error(401, 'You don\'t have the necessary permissions to access this page');
   }
 
   let assets!: Pick<typeof Tournament.$inferSelect, 'logoMetadata' | 'bannerMetadata'>;
