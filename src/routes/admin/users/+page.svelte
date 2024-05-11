@@ -269,11 +269,11 @@
   </Backdrop>
 {/if}
 <main class="main flex justify-center">
-  <div class="w-full max-w-[56rem]">
+  <div class="w-full max-w-5xl">
     <h1>Manage Users</h1>
     <div class="line-b mt-4 mb-8" />
     <h2>Users</h2>
-    <p class="mt-2 mb-4">
+    <p class="my-4">
       There {data.counts.total === 1 ? 'is 1 user' : `are ${formatNumber(data.counts.total)} users`}
       registered to Kyoso. Use the search bar below if you wish to look one up using either their osu!
       username, osu! user ID, Discord user ID or Kyoso user ID. Hold the
@@ -281,30 +281,34 @@
       or <span class="badge variant-filled-secondary">⌘</span> key when hovering over users to search
       them up.
     </p>
-    <div class="mb-2">
-      <span>Search by: </span>
-      <select class="input w-36 text-sm py-1 px-2" bind:value={searchBy}>
-        <option value="username">osu! Username</option>
-        <option value="osu">osu! User ID</option>
-        <option value="discord">Discord User ID</option>
-        <option value="kyoso">Kyoso User ID</option>
-      </select>
-    </div>
-    <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
-      <div class="input-group-shim">
-        <Search size={24} />
+    <div class="gap-2 flex flex-col md:grid md:grid-cols-[calc(60%-0.5rem)_40%] lg:grid-cols-[calc(70%-0.5rem)_30%]">
+      <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
+        <div class="input-group-shim h-[42px]">
+          <Search size={24} />
+        </div>
+        <input
+          type="search"
+          placeholder="Search user..."
+          bind:value={search}
+          on:keypress={onSearchKeyDown}
+        />
+        <button
+          class="btn variant-filled-primary rounded-l-none"
+          disabled={!search}
+          on:click={onSearch}>Search</button
+        >
       </div>
-      <input
-        type="search"
-        placeholder="Search user..."
-        bind:value={search}
-        on:keypress={onSearchKeyDown}
-      />
-      <button
-        class="btn variant-filled-primary rounded-l-none"
-        disabled={!search}
-        on:click={onSearch}>Search</button
-      >
+      <div class="input-group input-group-divider grid-cols-[auto_1fr]">
+        <div class="input-group-shim h-[42px]">
+          Search By
+        </div>
+        <select class="input text-sm py-1 px-2" bind:value={searchBy}>
+          <option value="username">osu! Username</option>
+          <option value="osu">osu! User ID</option>
+          <option value="discord">Discord User ID</option>
+          <option value="kyoso">Kyoso User ID</option>
+        </select>
+      </div>
     </div>
     {#each userTypes as { description, nonFoundDescription, type, typeLabel, users: userList }}
       <div class="line-b my-8" />
@@ -313,7 +317,7 @@
         <p class="mt-2">{nonFoundDescription}</p>
       {:else}
         <p class="mt-2">{description}</p>
-        <div class="gap-2 mt-4 grid sm:grid-cols-[50%_50%] lg:grid-cols-[33.33%_33.34%_33.33%]">
+        <div class="gap-2 mt-4 grid sm:w-[calc(100%-0.5rem)] sm:grid-cols-[50%_50%] lg:w-[calc(100%-1rem)] lg:grid-cols-[33.33%_33.34%_33.33%] 2lg:w-[calc(100%-1.5rem)] 2lg:grid-cols-[25%_25%_25%_25%]">
           {#each userList as user}
             <User {ctx} {user} {type} isCurrentUserTheOwner={data.isCurrentUserTheOwner} />
           {/each}
