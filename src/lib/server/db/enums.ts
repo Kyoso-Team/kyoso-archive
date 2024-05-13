@@ -70,11 +70,18 @@ export const StaffColor = pgEnum('staff_color', [
   'pink'
 ]);
 
-// export const dbJoinRequestStatus = pgEnum('join_request_status', [
-//   'pending', // Pending response
-//   'accepted',
-//   'rejected'
-// ]);
+export const InviteStatus = pgEnum('invite_status', [
+  'pending',
+  'accepted',
+  'rejected',
+  'cancelled'
+]);
+
+export const InviteReason = pgEnum('invite_reason', [
+  'join_team',
+  'join_staff',
+  'delegate_host'
+]);
 
 // export const dbMod = pgEnum('mod', ['ez', 'hd', 'hr', 'sd', 'dt', 'rx', 'ht', 'fl', 'pf']);
 
