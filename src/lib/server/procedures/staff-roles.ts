@@ -2,14 +2,25 @@ import * as v from 'valibot';
 import postgres from 'postgres';
 import { t } from '$trpc';
 import { wrap } from '@typeschema/valibot';
-import { db, StaffColor, StaffPermission, StaffRole, uniqueConstraints } from '$db';
-import { and, eq, gt, inArray, sql } from 'drizzle-orm';
-import { pick, trpcUnknownError } from '$lib/server/utils';
+import {
+  db,
+  StaffColor,
+  StaffPermission,
+  StaffRole,
+  TournamentDates,
+  uniqueConstraints
+} from '$db';
+import { and, eq, exists, gt, inArray, sql } from 'drizzle-orm';
+import { past, pick, trpcUnknownError } from '$lib/server/utils';
 import { positiveIntSchema } from '$lib/schemas';
 import { TRPCError } from '@trpc/server';
 import { getSession, getStaffMember } from '$lib/server/helpers/trpc';
 import { hasPermissions } from '$lib/utils';
 import type { Context } from '$trpc/context';
+
+const DEFAULT_ROLES = ['Host', 'Debugger'];
+
+const DISALLOWED_PROPERTIES = ['name', 'permissions'];
 
 function uniqueConstraintsError(err: unknown) {
   if (err instanceof postgres.PostgresError && err.code === '23505') {
@@ -21,6 +32,25 @@ function uniqueConstraintsError(err: unknown) {
   }
 
   return undefined;
+}
+
+async function checkTournamentConclusion(tournamentId: number) {
+  const concluded = await db
+    .select(pick(TournamentDates, ['concludesAt']))
+    .from(TournamentDates)
+    .where(
+      and(eq(TournamentDates.tournamentId, tournamentId), exists(past(TournamentDates.concludesAt)))
+    )
+    .limit(1)
+    .then((rows) => rows[0]);
+
+  if (concluded) {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message:
+        "This tournament has concluded. You can't create, update or delete any data related to this tournament"
+    });
+  }
 }
 
 async function checkPermissions(ctx: Context, tournamentId: number) {
@@ -49,6 +79,7 @@ const createStaffRole = t.procedure
     const { name, tournamentId } = input;
 
     await checkPermissions(ctx, tournamentId);
+    await checkTournamentConclusion(tournamentId);
 
     const staffRolesCount = db.$with('staff_roles_count').as(
       db
@@ -73,7 +104,6 @@ const createStaffRole = t.procedure
           order: sql<number>`select *
                              from ${staffRolesCount}`
         })
-        .returning(pick(StaffRole, ['id', 'name', 'tournamentId', 'order']))
         .then((rows) => rows[0]);
     } catch (err) {
       const uqErr = uniqueConstraintsError(err);
@@ -106,16 +136,42 @@ const updateStaffRole = t.procedure
     const { staffRoleId, tournamentId, data } = input;
 
     await checkPermissions(ctx, tournamentId);
+    await checkTournamentConclusion(tournamentId);
 
-    if (Object.keys(data || {}).length === 0) {
+    const updateData = Object.keys(data || {});
+
+    if (updateData.length === 0) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
         message: 'Nothing to update'
       });
     }
 
+    let staffRole!: Pick<typeof StaffRole.$inferSelect, 'id' | 'name'>;
+
     try {
-      await db.update(StaffRole).set(data).where(eq(StaffRole.id, staffRoleId));
+      staffRole = await db
+        .select(pick(StaffRole, ['id', 'name']))
+        .from(StaffRole)
+        .limit(1)
+        .where(eq(StaffRole.id, staffRoleId))
+        .then((rows) => rows[0]);
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting the staff role for update');
+    }
+
+    if (
+      DEFAULT_ROLES.includes(staffRole.name) &&
+      updateData.some((key) => DISALLOWED_PROPERTIES.includes(key))
+    ) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Cannot modify any properties for default roles except color'
+      });
+    }
+
+    try {
+      await db.update(StaffRole).set(data).where(eq(StaffRole.id, staffRole.id));
     } catch (err) {
       const uqErr = uniqueConstraintsError(err);
 
@@ -141,6 +197,7 @@ const swapStaffRoleOrder = t.procedure
     const { tournamentId, source, target } = input;
 
     await checkPermissions(ctx, tournamentId);
+    await checkTournamentConclusion(tournamentId);
 
     let staffRoles: (typeof StaffRole.$inferSelect)[];
 
@@ -159,6 +216,13 @@ const swapStaffRoleOrder = t.procedure
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Source/target staff roles were not found'
+      });
+    }
+
+    if (staffRoles.some((staffRole) => DEFAULT_ROLES.includes(staffRole.name))) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Cannot perform order swap with a default role'
       });
     }
 
@@ -194,12 +258,13 @@ const deleteStaffRole = t.procedure
     const { tournamentId, staffRoleId } = input;
 
     await checkPermissions(ctx, tournamentId);
+    await checkTournamentConclusion(tournamentId);
 
     await db.transaction(async (tx) => {
       const deletedStaffRole = await tx
         .delete(StaffRole)
         .where(eq(StaffRole.id, staffRoleId))
-        .returning(pick(StaffRole, ['tournamentId', 'order']))
+        .returning(pick(StaffRole, ['order']))
         .then((res) => res[0]);
 
       await tx
@@ -208,10 +273,7 @@ const deleteStaffRole = t.procedure
           order: sql<number>`${StaffRole.order} - 1`
         })
         .where(
-          and(
-            eq(StaffRole.tournamentId, deletedStaffRole.tournamentId),
-            gt(StaffRole.order, deletedStaffRole.order)
-          )
+          and(eq(StaffRole.tournamentId, tournamentId), gt(StaffRole.order, deletedStaffRole.order))
         );
     });
   });
