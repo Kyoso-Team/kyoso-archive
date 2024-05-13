@@ -61,7 +61,8 @@ async function checkPermissions(ctx: Context, tournamentId: number) {
   if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament'])) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
-      message: 'You do not have the required permissions to create staff roles for this tournament'
+      message:
+        'You do not have the required permissions to create, modify or delete staff roles for this tournament'
     });
   }
 }
