@@ -15,6 +15,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { InviteReason, InviteStatus, StaffColor, StaffPermission, Tournament, User } from './schema';
 import { timestampConfig, citext } from './schema-utils';
+import { sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 export const StaffRole = pgTable(
@@ -107,7 +108,9 @@ export const Team = pgTable('team', {
     table.captainPlayerId,
     table.tournamentId
   ),
-  indexName: index('idx_team_name').on(table.name),
+  indexName: index('trgm_idx_team_name')
+    .on(table.name)
+    .using(sql`gin (${table.name} gin_trgm_ops)`),
   indexDeleted: index('idx_team_deleted').on(table.deleted)
 }));
 

@@ -16,6 +16,7 @@ import {
   uniqueIndex
 } from 'drizzle-orm/pg-core';
 import { timestampConfig, citext } from './schema-utils';
+import { sql } from 'drizzle-orm';
 import type { OAuthToken } from '$types';
 
 export const User = pgTable(
@@ -51,7 +52,7 @@ export const OsuUser = pgTable(
   'osu_user',
   {
     osuUserId: integer('osu_user_id').primaryKey(),
-    username: citext('username').notNull(),
+    username: citext('username').notNull().unique('uni_osu_user_username'),
     restricted: boolean('restricted').notNull(),
     globalStdRank: integer('global_std_rank'),
     token: jsonb('token').notNull().$type<OAuthToken>(),
@@ -62,7 +63,9 @@ export const OsuUser = pgTable(
       .references(() => Country.code)
   },
   (table) => ({
-    indexUsername: uniqueIndex('udx_osu_user_username').on(table.username)
+    indexUsername: index('trgm_idx_osu_user_username')
+      .on(table.username)
+      .using(sql`gin (${table.username} gin_trgm_ops)`)
   })
 );
 

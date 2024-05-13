@@ -15,6 +15,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { RoundType, TournamentType } from './schema';
 import { timestampConfig, uniqueConstraints, citext } from './schema-utils';
+import { sql } from 'drizzle-orm';
 import type {
   BWSValues,
   RankRange,
@@ -83,7 +84,9 @@ export const Tournament = pgTable(
   },
   (table) => ({
     indexDeleted: index('idx_tournament_deleted').on(table.deleted),
-    indexNameAcronymUrlSlug: index('idx_tournament_name_acronym_url_slug').on(table.name, table.acronym, table.urlSlug),
+    indexNameAcronymUrlSlug: index('trgm_idx_tournament_name_acronym_url_slug')
+      .on(table.name, table.acronym, table.urlSlug)
+      .using(sql`gin ((${table.name} || ' ' || ${table.acronym} || ' ' || ${table.urlSlug}) gin_trgm_ops)`),
     uniqueIndexUrlSlug: uniqueIndex(uniqueConstraints.tournament.urlSlug).on(table.urlSlug)
   })
 );
