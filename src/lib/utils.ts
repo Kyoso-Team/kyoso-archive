@@ -2,7 +2,7 @@ import colors from 'tailwindcss/colors';
 import { TRPCClientError } from '@trpc/client';
 import { loading } from '$stores';
 import type { PopupSettings, ToastStore } from '@skeletonlabs/skeleton';
-import type { InferEnum, PageStore } from '$types';
+import type { InferEnum } from '$types';
 import type { StaffPermission } from '$db';
 
 /**
@@ -225,13 +225,6 @@ export function dateToHtmlInput(date: Date) {
 
 export function keys<T extends Record<string, any>>(obj: T): (keyof T)[] {
   return Object.keys(obj) as any;
-}
-
-/**
- * Get the full URL a user uploaded file
- */
-export function getFileUrl(page: PageStore, path: string) {
-  return `${page.url.origin}/api/assets/${path}`;
 }
 
 export function hasPermissions(

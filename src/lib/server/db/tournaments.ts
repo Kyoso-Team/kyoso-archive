@@ -13,7 +13,7 @@ import {
   uniqueIndex,
   index
 } from 'drizzle-orm/pg-core';
-import { StageFormat, TournamentType } from './schema';
+import { RoundType, TournamentType } from './schema';
 import { timestampConfig, uniqueConstraints, citext } from './schema-utils';
 import type {
   BWSValues,
@@ -82,6 +82,8 @@ export const Tournament = pgTable(
       })
   },
   (table) => ({
+    indexDeleted: index('idx_tournament_deleted').on(table.deleted),
+    indexNameAcronymUrlSlug: index('idx_tournament_name_acronym_url_slug').on(table.name, table.acronym, table.urlSlug),
     uniqueIndexUrlSlug: uniqueIndex(uniqueConstraints.tournament.urlSlug).on(table.urlSlug)
   })
 );
@@ -114,32 +116,12 @@ export const TournamentDates = pgTable(
   })
 );
 
-export const Stage = pgTable(
-  'stage',
-  {
-    id: serial('id').primaryKey(),
-    format: StageFormat('format').notNull(),
-    order: smallint('order').notNull(),
-    isMainStage: boolean('is_main_stage').notNull().default(false),
-    tournamentId: integer('tournament_id')
-      .notNull()
-      .references(() => Tournament.id, {
-        onDelete: 'cascade'
-      })
-  },
-  (table) => ({
-    uniqueTournamentIdFormat: unique('uni_stage_tournament_id_format').on(
-      table.tournamentId,
-      table.format
-    )
-  })
-);
-
 export const Round = pgTable(
   'round',
   {
     id: serial('id').primaryKey(),
     name: citext('name').notNull(),
+    type: RoundType('type').notNull(),
     order: smallint('order').notNull(),
     targetStarRating: real('target_star_rating').notNull(),
     playtestingPool: boolean('playtesting_pool').notNull().default(false),
@@ -147,11 +129,6 @@ export const Round = pgTable(
     publishSchedules: boolean('publish_schedules').notNull().default(false),
     publishStats: boolean('publish_stats').notNull().default(false),
     config: jsonb('config').notNull().$type<RoundConfig>(),
-    stageId: integer('stage_id')
-      .notNull()
-      .references(() => Stage.id, {
-        onDelete: 'cascade'
-      }),
     tournamentId: integer('tournament_id')
       .notNull()
       .references(() => Tournament.id, {
@@ -162,6 +139,7 @@ export const Round = pgTable(
     uniqueNameTournamentId: unique('uni_round_name_tournament_id').on(
       table.name,
       table.tournamentId
-    )
+    ),
+    indexTournamentIdOrder: index('idx_round_tournament_id_order').on(table.tournamentId, table.order)
   })
 );

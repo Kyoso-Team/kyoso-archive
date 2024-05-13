@@ -2,7 +2,7 @@ import { pgEnum } from 'drizzle-orm/pg-core';
 
 export const TournamentType = pgEnum('tournament_type', ['teams', 'draft', 'solo']);
 
-export const StageFormat = pgEnum('stage_format', [
+export const RoundType = pgEnum('round_type', [
   'groups',
   'swiss',
   'qualifiers',

@@ -28,7 +28,7 @@
 {/if}
 <SEO page={$page} title="Dashboard" description="User dashboard" noIndex />
 <nav class="h-full w-64 line-r p-4 relative" use:portal={'#sidebar'}>
-  <div class="absolute inset-0 flex h-[calc(100%-74px)] flex-col gap-y-6 overflow-y-scroll p-4">
+  <div class="absolute inset-0 flex h-[calc(100%-74px)] flex-col gap-y-6 overflow-y-auto p-4">
     <div>
       <span class="font-bold text-primary-500">STAFFING</span>
       {#if data.tournamentsStaffing.length === 0}
@@ -65,6 +65,6 @@
       use:popup={tooltip(tooltips.notApprovedHost)}
       disabled={!data.session.approvedHost}>Create Tournament</button
     >
-    <Tooltip label="You're not approved to host a tournament" target={tooltips.notApprovedHost} show={!data.session.approvedHost} />
+    <Tooltip label="You're not approved to host a tournament" target={tooltips.notApprovedHost} visibility={data.session.approvedHost ? 'hidden' : 'block'} />
   </div>
 </nav>
