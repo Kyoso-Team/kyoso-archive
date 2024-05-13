@@ -84,8 +84,10 @@ export class TRPCChecks extends Checks<TRPC_ERROR_CODE_KEY> {
   /**
    * @param action Description of the action performed in the backend. Usually written as: {infitive verb} {thing}. Example: "update this tournament" which would result in an error message like "You do not have the required staff permissions to update this tournament"
    */
-  constructor(action: string) {
-    super(action, true, {
+  constructor(settings: {
+    action: string;
+  }) {
+    super(settings.action, true, {
       badRequest: 'BAD_REQUEST',
       unauthorized: 'UNAUTHORIZED',
       forbidden: 'FORBIDDEN'
@@ -97,8 +99,10 @@ export class APICheck extends Checks<number> {
   /**
    * @param action Description of the action performed in the backend. Usually written as: {infitive verb} {thing}. Example: "update this tournament" which would result in an error message like "You do not have the required staff permissions to update this tournament"
    */
-  constructor(action: string) {
-    super(action, false, {
+  constructor(settings: {
+    action: string;
+  }) {
+    super(settings.action, false, {
       badRequest: 400,
       unauthorized: 401,
       forbidden: 403

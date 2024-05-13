@@ -35,7 +35,7 @@ const getUser = t.procedure
   )
   .query(async ({ ctx, input }) => {
     const { userId } = input;
-    const checks = new TRPCChecks('get this user');
+    const checks = new TRPCChecks({ action: 'get this user' });
     const session = getSession(ctx.cookies, true);
     checks.userIsAdmin(session);
 
@@ -189,7 +189,7 @@ const searchUser = t.procedure
   )
   .query(async ({ ctx, input }) => {
     const { search, searchBy } = input;
-    const checks = new TRPCChecks('search this user');
+    const checks = new TRPCChecks({ action: 'search this user' });
     const session = getSession(ctx.cookies, true);
     checks.userIsAdmin(session);
 
@@ -265,7 +265,7 @@ const updateUser = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { data, userId } = input;
     const { admin, approvedHost } = data;
-    const checks = new TRPCChecks('update this user');
+    const checks = new TRPCChecks({ action: 'update this user' });
     const session = getSession(ctx.cookies, true);
     checks.userIsAdmin(session).partialHasValues(data);
 
@@ -312,7 +312,7 @@ const banUser = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { banReason, banTime, issuedToUserId } = input;
-    const checks = new TRPCChecks('ban this user');
+    const checks = new TRPCChecks({ action: 'ban this user' });
     const session = getSession(ctx.cookies, true);
     checks.userIsAdmin(session);
 
@@ -389,7 +389,7 @@ const revokeBan = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { banId, revokeReason } = input;
-    const checks = new TRPCChecks('revoke this ban');
+    const checks = new TRPCChecks({ action: 'revoke this ban' });
     const session = getSession(ctx.cookies, true);
     checks.userIsAdmin(session);
 

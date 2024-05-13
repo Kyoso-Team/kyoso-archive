@@ -63,7 +63,7 @@ const createTournament = t.procedure
   .input(wrap(v.object(mutationSchemas)))
   .mutation(async ({ ctx, input }) => {
     const { teamSettings } = input;
-    const checks = new TRPCChecks('create a tournament');
+    const checks = new TRPCChecks({ action: 'create a tournament' });
     const session = getSession(ctx.cookies, true);
     checks.userIsApprovedHost(session);
 
@@ -178,7 +178,7 @@ const updateTournament = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { data, tournamentId } = input;
     const { tournament, dates } = data;
-    const checks = new TRPCChecks('update this tournament');
+    const checks = new TRPCChecks({ action: 'update this tournament' });
     checks.partialHasValues(tournament).partialHasValues(dates);
 
     const session = getSession(ctx.cookies, true);
@@ -333,7 +333,7 @@ const deleteTournament = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { tournamentId } = input;
-    const checks = new TRPCChecks('delete this tournament');
+    const checks = new TRPCChecks({ action: 'delete this tournament' });
     const session = getSession(ctx.cookies, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
     checks.staffHasPermissions(staffMember, ['host']);
