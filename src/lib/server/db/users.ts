@@ -28,7 +28,7 @@ export const User = pgTable(
     approvedHost: boolean('approved_host').notNull().default(false),
     apiKey: varchar('api_key', {
       length: 24
-    }).unique('uni_user_api_key'),
+    }),
     // Relations
     osuUserId: integer('osu_user_id')
       .notNull()
@@ -41,7 +41,9 @@ export const User = pgTable(
   },
   (table) => ({
     uniqueIndexOsuUserId: uniqueIndex('udx_user_osu_user_id').on(table.osuUserId),
-    uniqueIndexDiscordUserId: uniqueIndex('udx_user_discord_user_id').on(table.discordUserId)
+    uniqueIndexDiscordUserId: uniqueIndex('udx_user_discord_user_id').on(table.discordUserId),
+    indexAdminApprovedHost: index('idx_user_admin_approved_host').on(table.admin, table.approvedHost),
+    uniqueApiKey: uniqueIndex('udx_user_api_key').on(table.apiKey)
   })
 );
 
