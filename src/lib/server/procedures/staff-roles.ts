@@ -15,8 +15,7 @@ import { past, pick, trpcUnknownError } from '$lib/server/utils';
 import { positiveIntSchema } from '$lib/schemas';
 import { TRPCError } from '@trpc/server';
 import { getSession, getStaffMember } from '$lib/server/helpers/trpc';
-import { hasPermissions } from '$lib/utils';
-import type { Context } from '$trpc/context';
+import { TRPCChecks } from '../helpers/checks';
 
 const DEFAULT_ROLES = ['Host', 'Debugger'];
 
@@ -53,20 +52,6 @@ async function checkTournamentConclusion(tournamentId: number) {
   }
 }
 
-async function checkPermissions(ctx: Context, tournamentId: number) {
-  const session = getSession(ctx.cookies, true);
-
-  const staffMember = await getStaffMember(session, tournamentId, true);
-
-  if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament'])) {
-    throw new TRPCError({
-      code: 'UNAUTHORIZED',
-      message:
-        'You do not have the required permissions to create, modify or delete staff roles for this tournament'
-    });
-  }
-}
-
 const createStaffRole = t.procedure
   .input(
     wrap(
@@ -78,8 +63,11 @@ const createStaffRole = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { name, tournamentId } = input;
+    const checks = new TRPCChecks({ action: 'create a staff role for this tournament' });
+    const session = getSession(ctx.cookies, true);
+    const staffMember = await getStaffMember(session, tournamentId, true);
+    checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
-    await checkPermissions(ctx, tournamentId);
     await checkTournamentConclusion(tournamentId);
 
     const staffRolesCount = db.$with('staff_roles_count').as(
@@ -135,18 +123,14 @@ const updateStaffRole = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { staffRoleId, tournamentId, data } = input;
+    const checks = new TRPCChecks({ action: 'update this staff role' });
+    const session = getSession(ctx.cookies, true);
+    const staffMember = await getStaffMember(session, tournamentId, true);
+    checks
+      .partialHasValues(data)
+      .staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
-    await checkPermissions(ctx, tournamentId);
     await checkTournamentConclusion(tournamentId);
-
-    const updateData = Object.keys(data || {});
-
-    if (updateData.length === 0) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'Nothing to update'
-      });
-    }
 
     let staffRole!: Pick<typeof StaffRole.$inferSelect, 'id' | 'name'>;
 
@@ -163,7 +147,7 @@ const updateStaffRole = t.procedure
 
     if (
       DEFAULT_ROLES.includes(staffRole.name) &&
-      updateData.some((key) => DISALLOWED_PROPERTIES.includes(key))
+      Object.keys(data || {}).some((key) => DISALLOWED_PROPERTIES.includes(key))
     ) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
@@ -196,8 +180,11 @@ const swapStaffRoleOrder = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { tournamentId, source, target } = input;
+    const checks = new TRPCChecks({ action: 'swap the order of these staff roles' });
+    const session = getSession(ctx.cookies, true);
+    const staffMember = await getStaffMember(session, tournamentId, true);
+    checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
-    await checkPermissions(ctx, tournamentId);
     await checkTournamentConclusion(tournamentId);
 
     let staffRoles: (typeof StaffRole.$inferSelect)[];
@@ -223,7 +210,7 @@ const swapStaffRoleOrder = t.procedure
     if (staffRoles.some((staffRole) => DEFAULT_ROLES.includes(staffRole.name))) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
-        message: 'Cannot perform order swap with a default role'
+        message: "Can't swap the order of a default role"
       });
     }
 
@@ -257,8 +244,11 @@ const deleteStaffRole = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { tournamentId, staffRoleId } = input;
+    const checks = new TRPCChecks({ action: 'delete this staff role' });
+    const session = getSession(ctx.cookies, true);
+    const staffMember = await getStaffMember(session, tournamentId, true);
+    checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
-    await checkPermissions(ctx, tournamentId);
     await checkTournamentConclusion(tournamentId);
 
     await db.transaction(async (tx) => {
