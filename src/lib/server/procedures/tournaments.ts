@@ -1,5 +1,4 @@
 import * as v from 'valibot';
-import postgres from 'postgres';
 import {
   db,
   StaffMember,
@@ -10,7 +9,7 @@ import {
   uniqueConstraints
 } from '$db';
 import { t } from '$trpc';
-import { isDatePast, pick, trpcUnknownError } from '$lib/server/utils';
+import { catchUniqueConstraintError$, isDatePast, pick, trpcUnknownError } from '$lib/server/utils';
 import { wrap } from '@typeschema/valibot';
 import { getSession, getStaffMember, getTournament } from '../helpers/trpc';
 import { TRPCError } from '@trpc/server';
@@ -29,19 +28,16 @@ import {
 import { rateLimitMiddleware } from '$trpc/middleware';
 import { TRPCChecks } from '../helpers/checks';
 
-function uniqueConstraintsError(err: unknown) {
-  if (err instanceof postgres.PostgresError && err.code === '23505') {
-    const constraint = err.message.split('"')[1];
-
-    if (constraint === uniqueConstraints.tournament.name) {
-      return "The tournament's name must be unique";
-    } else if (constraint === uniqueConstraints.tournament.urlSlug) {
-      return "The tournament's URL slug must be unique";
-    }
+const catchUniqueConstraintError = catchUniqueConstraintError$([
+  {
+    name: uniqueConstraints.tournament.name,
+    message: "The tournament's name must be unique"
+  },
+  {
+    name: uniqueConstraints.tournament.urlSlug,
+    message: "The tournament's URL slug must be unique"
   }
-
-  return undefined;
-}
+]);
 
 const mutationSchemas = {
   name: v.string([v.minLength(2), v.maxLength(50)]),
@@ -128,12 +124,8 @@ const createTournament = t.procedure
         };
       });
     } catch (err) {
-      const uqErr = uniqueConstraintsError(err);
-
-      if (uqErr) {
-        return uqErr;
-      }
-
+      const uqErr = catchUniqueConstraintError(err);
+      if (uqErr) return uqErr;
       throw trpcUnknownError(err, 'Creating the tournament');
     }
 
@@ -295,12 +287,8 @@ const updateTournament = t.procedure
           .where(eq(TournamentDates.tournamentId, tournamentId));
       }
     } catch (err) {
-      const uqErr = uniqueConstraintsError(err);
-
-      if (uqErr) {
-        return uqErr;
-      }
-
+      const uqErr = catchUniqueConstraintError(err);
+      if (uqErr) return uqErr;
       throw trpcUnknownError(err, 'Updating the tournament');
     }
   });

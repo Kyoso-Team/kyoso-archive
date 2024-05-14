@@ -1,10 +1,9 @@
 import * as v from 'valibot';
-import postgres from 'postgres';
 import { t } from '$trpc';
 import { wrap } from '@typeschema/valibot';
 import { db, StaffColor, StaffPermission, StaffRole, uniqueConstraints } from '$db';
 import { and, eq, gt, inArray, sql } from 'drizzle-orm';
-import { pick, trpcUnknownError } from '$lib/server/utils';
+import { catchUniqueConstraintError$, pick, trpcUnknownError } from '$lib/server/utils';
 import { positiveIntSchema } from '$lib/schemas';
 import { TRPCError } from '@trpc/server';
 import { getSession, getStaffMember, getTournament } from '$lib/server/helpers/trpc';
@@ -14,17 +13,12 @@ const DEFAULT_ROLES = ['Host', 'Debugger'];
 
 const DISALLOWED_PROPERTIES = ['name', 'permissions'];
 
-function uniqueConstraintsError(err: unknown) {
-  if (err instanceof postgres.PostgresError && err.code === '23505') {
-    const constraint = err.message.split('"')[1];
-
-    if (constraint === uniqueConstraints.staffRoles.nameTournamentId) {
-      return "The staff role's name must be unique";
-    }
+const catchUniqueConstraintError = catchUniqueConstraintError$([
+  {
+    name: uniqueConstraints.staffRoles.nameTournamentId,
+    message: "The staff role's name must be unique"
   }
-
-  return undefined;
-}
+]);
 
 const createStaffRole = t.procedure
   .input(
@@ -77,12 +71,8 @@ const createStaffRole = t.procedure
         })
         .then((rows) => rows[0]);
     } catch (err) {
-      const uqErr = uniqueConstraintsError(err);
-
-      if (uqErr) {
-        return uqErr;
-      }
-
+      const uqErr = catchUniqueConstraintError(err);
+      if (uqErr) return uqErr;
       throw trpcUnknownError(err, 'Creating the staff role');
     }
   });
@@ -148,12 +138,8 @@ const updateStaffRole = t.procedure
     try {
       await db.update(StaffRole).set(data).where(eq(StaffRole.id, staffRole.id));
     } catch (err) {
-      const uqErr = uniqueConstraintsError(err);
-
-      if (uqErr) {
-        return uqErr;
-      }
-
+      const uqErr = catchUniqueConstraintError(err);
+      if (uqErr) return uqErr;
       throw trpcUnknownError(err, 'Updating the staff role');
     }
   });

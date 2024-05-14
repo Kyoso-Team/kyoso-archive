@@ -209,6 +209,24 @@ export function trpcUnknownError(err: unknown, when: string) {
   });
 }
 
+export function catchUniqueConstraintError$(
+  constraints: {
+    name: string;
+    message: string;
+  }[]
+) {
+  return (err: unknown) => {
+    if (!(err instanceof postgres.PostgresError) || err.code !== '23505') return;
+    const constraint = err.message.split('"')[1];
+
+    for (let i = 0; i < constraints.length; i++) {
+      if (constraint === constraints[i].name) {
+        return constraints[i].message;
+      }
+    }
+  };
+}
+
 export function future(column: AnyPgColumn | SQL) {
   return gt(column as any, sql`now()`);
 }
