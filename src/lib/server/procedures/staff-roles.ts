@@ -8,6 +8,7 @@ import { positiveIntSchema } from '$lib/schemas';
 import { TRPCError } from '@trpc/server';
 import { getSession, getStaffMember, getTournament } from '$lib/server/helpers/trpc';
 import { TRPCChecks } from '../helpers/checks';
+import { rateLimitMiddleware } from '$trpc/middleware';
 
 const DEFAULT_ROLES = ['Host', 'Debugger'];
 
@@ -21,6 +22,7 @@ const catchUniqueConstraintError = catchUniqueConstraintError$([
 ]);
 
 const createStaffRole = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({
@@ -78,6 +80,7 @@ const createStaffRole = t.procedure
   });
 
 const updateStaffRole = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({
@@ -145,6 +148,7 @@ const updateStaffRole = t.procedure
   });
 
 const swapStaffRoleOrder = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({
@@ -218,6 +222,7 @@ const swapStaffRoleOrder = t.procedure
   });
 
 const deleteStaffRole = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({
