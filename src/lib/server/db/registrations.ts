@@ -1,14 +1,14 @@
 import {
-  pgTable,
-  serial,
   integer,
-  unique,
+  pgTable,
+  primaryKey,
+  serial,
   smallint,
   timestamp,
-  primaryKey
+  unique
 } from 'drizzle-orm/pg-core';
 import { StaffColor, StaffPermission, Tournament, User } from './schema';
-import { timestampConfig, citext } from './schema-utils';
+import { citext, timestampConfig, uniqueConstraints } from './schema-utils';
 
 export const StaffRole = pgTable(
   'staff_role',
@@ -25,7 +25,7 @@ export const StaffRole = pgTable(
       })
   },
   (table) => ({
-    uniqueNameTournamentId: unique('uni_staff_role_name_tournament_id').on(
+    uniqueNameTournamentId: unique(uniqueConstraints.staffRoles.uniqueNameTournamentId).on(
       table.name,
       table.tournamentId
     )
