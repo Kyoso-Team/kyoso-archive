@@ -6,6 +6,7 @@ import { getSession } from '$lib/server/helpers/trpc';
 import { Ban, db, OsuUser, Tournament, User } from '$db';
 import { and, asc, eq, ilike, isNull, notExists, or, type SQL, sql } from 'drizzle-orm';
 import { future, pick, trpcUnknownError } from '$lib/server/utils';
+import { staffRolesRouter } from '$lib/server/procedures/staff-roles';
 
 const search = t.procedure.input(wrap(v.string())).query(async ({ ctx, input }) => {
   getSession(ctx.cookies, true);
@@ -97,7 +98,8 @@ export const router = t.router({
   search,
   users: usersRouter,
   tournaments: tournamentsRouter,
-  notifications: notificationsRouter
+  notifications: notificationsRouter,
+  staffRoles: staffRolesRouter
 });
 
 export type Router = typeof router;
