@@ -12,7 +12,7 @@ import {
 import { t } from '$trpc';
 import { isDatePast, pick, trpcUnknownError } from '$lib/server/utils';
 import { wrap } from '@typeschema/valibot';
-import { getSession, getStaffMember } from '../helpers/trpc';
+import { getSession, getStaffMember, getTournament } from '../helpers/trpc';
 import { TRPCError } from '@trpc/server';
 import { hasPermissions } from '$lib/utils';
 import { eq } from 'drizzle-orm';
@@ -28,7 +28,6 @@ import {
 } from '$lib/schemas';
 import { rateLimitMiddleware } from '$trpc/middleware';
 import { TRPCChecks } from '../helpers/checks';
-import type { FullTournament } from '$types';
 
 function uniqueConstraintsError(err: unknown) {
   if (err instanceof postgres.PostgresError && err.code === '23505') {
@@ -185,37 +184,21 @@ const updateTournament = t.procedure
     const staffMember = await getStaffMember(session, tournamentId, true);
     checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
-    let info: Pick<FullTournament, 'deleted' | 'publishedAt' | 'concludesAt' | 'playerRegsCloseAt' | 'playerRegsOpenAt' | 'staffRegsCloseAt' | 'staffRegsOpenAt'> | undefined;
-
-    try {
-      info = await db
-        .select({
-          ...pick(Tournament, ['deleted']),
-          ...pick(TournamentDates, [
-            'publishedAt',
-            'concludesAt',
-            'playerRegsCloseAt',
-            'playerRegsOpenAt',
-            'staffRegsCloseAt',
-            'staffRegsOpenAt'
-          ])
-        })
-        .from(Tournament)
-        .where(eq(Tournament.id, tournamentId))
-        .innerJoin(TournamentDates, eq(TournamentDates.tournamentId, Tournament.id))
-        .limit(1)
-        .then((rows) => rows[0]);
-    } catch (err) {
-      throw trpcUnknownError(err, 'Getting the tournament');
-    }
-
-    if (!info) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Tournament not found'
-      });
-    }
-
+    const info = await getTournament(
+      tournamentId,
+      {
+        tournament: ['deleted'],
+        dates: [
+          'publishedAt',
+          'concludesAt',
+          'playerRegsCloseAt',
+          'playerRegsOpenAt',
+          'staffRegsCloseAt',
+          'staffRegsOpenAt'
+        ]
+      },
+      true
+    );
     checks.tournamentNotDeleted(info).tournamentNotConcluded(info);
 
     if (tournament) {
@@ -338,26 +321,13 @@ const deleteTournament = t.procedure
     const staffMember = await getStaffMember(session, tournamentId, true);
     checks.staffHasPermissions(staffMember, ['host']);
 
-    let tournament: Pick<typeof TournamentDates.$inferSelect, 'concludesAt'> | undefined;
-
-    try {
-      tournament = await db
-        .select(pick(TournamentDates, ['concludesAt']))
-        .from(TournamentDates)
-        .where(eq(TournamentDates.tournamentId, tournamentId))
-        .limit(1)
-        .then((rows) => rows[0]);
-    } catch (err) {
-      throw trpcUnknownError(err, 'Deleting the tournament');
-    }
-
-    if (!tournament) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Tournament not found'
-      });
-    }
-
+    const tournament = await getTournament(
+      tournamentId,
+      {
+        dates: ['concludesAt']
+      },
+      true
+    );
     checks.tournamentNotConcluded(tournament);
 
     try {

@@ -2,19 +2,12 @@ import * as v from 'valibot';
 import postgres from 'postgres';
 import { t } from '$trpc';
 import { wrap } from '@typeschema/valibot';
-import {
-  db,
-  StaffColor,
-  StaffPermission,
-  StaffRole,
-  TournamentDates,
-  uniqueConstraints
-} from '$db';
-import { and, eq, exists, gt, inArray, sql } from 'drizzle-orm';
-import { past, pick, trpcUnknownError } from '$lib/server/utils';
+import { db, StaffColor, StaffPermission, StaffRole, uniqueConstraints } from '$db';
+import { and, eq, gt, inArray, sql } from 'drizzle-orm';
+import { pick, trpcUnknownError } from '$lib/server/utils';
 import { positiveIntSchema } from '$lib/schemas';
 import { TRPCError } from '@trpc/server';
-import { getSession, getStaffMember } from '$lib/server/helpers/trpc';
+import { getSession, getStaffMember, getTournament } from '$lib/server/helpers/trpc';
 import { TRPCChecks } from '../helpers/checks';
 
 const DEFAULT_ROLES = ['Host', 'Debugger'];
@@ -25,31 +18,12 @@ function uniqueConstraintsError(err: unknown) {
   if (err instanceof postgres.PostgresError && err.code === '23505') {
     const constraint = err.message.split('"')[1];
 
-    if (constraint === uniqueConstraints.staffRoles.uniqueNameTournamentId) {
+    if (constraint === uniqueConstraints.staffRoles.nameTournamentId) {
       return "The staff role's name must be unique";
     }
   }
 
   return undefined;
-}
-
-async function checkTournamentConclusion(tournamentId: number) {
-  const concluded = await db
-    .select(pick(TournamentDates, ['concludesAt']))
-    .from(TournamentDates)
-    .where(
-      and(eq(TournamentDates.tournamentId, tournamentId), exists(past(TournamentDates.concludesAt)))
-    )
-    .limit(1)
-    .then((rows) => rows[0]);
-
-  if (concluded) {
-    throw new TRPCError({
-      code: 'FORBIDDEN',
-      message:
-        "This tournament has concluded. You can't create, update or delete any data related to this tournament"
-    });
-  }
 }
 
 const createStaffRole = t.procedure
@@ -68,7 +42,15 @@ const createStaffRole = t.procedure
     const staffMember = await getStaffMember(session, tournamentId, true);
     checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
-    await checkTournamentConclusion(tournamentId);
+    const tournament = await getTournament(
+      tournamentId,
+      {
+        tournament: ['deleted'],
+        dates: ['concludesAt']
+      },
+      true
+    );
+    checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
     const staffRolesCount = db.$with('staff_roles_count').as(
       db
@@ -124,13 +106,21 @@ const updateStaffRole = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { staffRoleId, tournamentId, data } = input;
     const checks = new TRPCChecks({ action: 'update this staff role' });
+    checks.partialHasValues(data);
+
     const session = getSession(ctx.cookies, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
-    checks
-      .partialHasValues(data)
-      .staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
+    checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
-    await checkTournamentConclusion(tournamentId);
+    const tournament = await getTournament(
+      tournamentId,
+      {
+        tournament: ['deleted'],
+        dates: ['concludesAt']
+      },
+      true
+    );
+    checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
     let staffRole!: Pick<typeof StaffRole.$inferSelect, 'id' | 'name'>;
 
@@ -185,7 +175,15 @@ const swapStaffRoleOrder = t.procedure
     const staffMember = await getStaffMember(session, tournamentId, true);
     checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
-    await checkTournamentConclusion(tournamentId);
+    const tournament = await getTournament(
+      tournamentId,
+      {
+        tournament: ['deleted'],
+        dates: ['concludesAt']
+      },
+      true
+    );
+    checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
     let staffRoles: (typeof StaffRole.$inferSelect)[];
 
@@ -249,7 +247,15 @@ const deleteStaffRole = t.procedure
     const staffMember = await getStaffMember(session, tournamentId, true);
     checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
-    await checkTournamentConclusion(tournamentId);
+    const tournament = await getTournament(
+      tournamentId,
+      {
+        tournament: ['deleted'],
+        dates: ['concludesAt']
+      },
+      true
+    );
+    checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
     await db.transaction(async (tx) => {
       const deletedStaffRole = await tx

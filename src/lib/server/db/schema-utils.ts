@@ -12,7 +12,7 @@ export const uniqueConstraints = {
     urlSlug: 'udx_tournament_url_slug'
   },
   staffRoles: {
-    uniqueNameTournamentId: 'uni_staff_role_name_tournament_id'
+    nameTournamentId: 'uni_staff_role_name_tournament_id'
   }
 } as const;
 

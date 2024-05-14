@@ -25,7 +25,7 @@ export const StaffRole = pgTable(
       })
   },
   (table) => ({
-    uniqueNameTournamentId: unique(uniqueConstraints.staffRoles.uniqueNameTournamentId).on(
+    uniqueNameTournamentId: unique(uniqueConstraints.staffRoles.nameTournamentId).on(
       table.name,
       table.tournamentId
     )
