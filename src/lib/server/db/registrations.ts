@@ -14,7 +14,14 @@ import {
   bigint,
   varchar
 } from 'drizzle-orm/pg-core';
-import { InviteReason, InviteStatus, StaffColor, StaffPermission, Tournament, User } from './schema';
+import {
+  InviteReason,
+  InviteStatus,
+  StaffColor,
+  StaffPermission,
+  Tournament,
+  User
+} from './schema';
 import { timestampConfig } from './schema-utils';
 import { sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
@@ -38,7 +45,10 @@ export const StaffRole = pgTable(
       table.name,
       table.tournamentId
     ),
-    tournamentIdOrder: index('idx_staff_role_tournament_id_order').on(table.tournamentId, table.order)
+    tournamentIdOrder: index('idx_staff_role_tournament_id_order').on(
+      table.tournamentId,
+      table.order
+    )
   })
 );
 
@@ -48,10 +58,9 @@ export const StaffMember = pgTable(
     id: serial('id').primaryKey(),
     joinedStaffAt: timestamp('joined_staff_at', timestampConfig).notNull().defaultNow(),
     deleted: boolean('deleted').notNull().default(false),
-    userId: integer('user_id')
-      .references(() => User.id, {
-        onDelete: 'set null'
-      }),
+    userId: integer('user_id').references(() => User.id, {
+      onDelete: 'set null'
+    }),
     tournamentId: integer('tournament_id')
       .notNull()
       .references(() => Tournament.id, {
@@ -88,99 +97,133 @@ export const StaffMemberRole = pgTable(
   })
 );
 
-export const Team = pgTable('team', {
-  id: serial('id').primaryKey(),
-  registeredAt: timestamp('registered_at', timestampConfig).notNull().defaultNow(),
-  deleted: boolean('deleted').notNull().default(false),
-  name: varchar('name', { length: 20 }).notNull(),
-  bannerMetadata: jsonb('banner_metadata').$type<{
-    fileId: string;
-    originalFileName: string;
-  }>(),
-  tournamentId: integer('tournament_id').notNull().references(() => Tournament.id, {
-    onDelete: 'cascade'
-  }),
-  captainPlayerId: integer('captain_player_id').notNull().references(() => Player.id)
-}, (table) => ({
-  uniqueNameTournamentId: unique('uni_team_name_tournament_id').on(table.name, table.tournamentId),
-  uniqueCaptainPlayerIdTournamentId: uniqueIndex('udx_team_captain_player_id_tournament_id').on(
-    table.captainPlayerId,
-    table.tournamentId
-  ),
-  indexName: index('trgm_idx_team_name')
-    .on(table.name)
-    .using(sql`gin (lower(${table.name}) gin_trgm_ops)`),
-  indexDeleted: index('idx_team_deleted').on(table.deleted)
-}));
+export const Team = pgTable(
+  'team',
+  {
+    id: serial('id').primaryKey(),
+    registeredAt: timestamp('registered_at', timestampConfig).notNull().defaultNow(),
+    deleted: boolean('deleted').notNull().default(false),
+    name: varchar('name', { length: 20 }).notNull(),
+    bannerMetadata: jsonb('banner_metadata').$type<{
+      fileId: string;
+      originalFileName: string;
+    }>(),
+    tournamentId: integer('tournament_id')
+      .notNull()
+      .references(() => Tournament.id, {
+        onDelete: 'cascade'
+      }),
+    captainPlayerId: integer('captain_player_id')
+      .notNull()
+      .references(() => Player.id)
+  },
+  (table) => ({
+    uniqueNameTournamentId: unique('uni_team_name_tournament_id').on(
+      table.name,
+      table.tournamentId
+    ),
+    uniqueCaptainPlayerIdTournamentId: uniqueIndex('udx_team_captain_player_id_tournament_id').on(
+      table.captainPlayerId,
+      table.tournamentId
+    ),
+    indexName: index('trgm_idx_team_name')
+      .on(table.name)
+      .using(sql`gin (lower(${table.name}) gin_trgm_ops)`),
+    indexDeletedRegisteredAt: index('idx_team_deleted_registered_at').on(
+      table.deleted,
+      table.registeredAt
+    )
+  })
+);
 
-export const Player = pgTable('player', {
-  id: serial('id').primaryKey(),
-  registeredAt: timestamp('registered_at', timestampConfig).notNull().defaultNow(),
-  joinedTeamAt: timestamp('joined_team_at', timestampConfig),
-  deleted: boolean('deleted').notNull().default(false),
-  /** No gamemode is specified unlike the User table because (in the case we support more gamemodes in the future) an STD tournament won't be interested in the user's Taiko BWS rank and the same applied for other gamemodes */
-  bwsRank: integer('bws_rank'),
-  /**
-   * The player's availability to play matches across the weekend.
-   * Each element in the array represents a day of the week in the following order: Friday, Saturday, Sunday and Monday
-   * The value of each element is an integer that represents the user's availability that can be decoded into an array of 24 elements representing the 24 hours of the day and each value being either 0 (not available) or 1 (available)
-   */
-  availability: integer('availability').array(4).notNull().default([0, 0, 0, 0]),
-  userId: integer('user_id')
-    .references(() => User.id, {
+export const Player = pgTable(
+  'player',
+  {
+    id: serial('id').primaryKey(),
+    registeredAt: timestamp('registered_at', timestampConfig).notNull().defaultNow(),
+    joinedTeamAt: timestamp('joined_team_at', timestampConfig),
+    deleted: boolean('deleted').notNull().default(false),
+    /** No gamemode is specified unlike the User table because (in the case we support more gamemodes in the future) an STD tournament won't be interested in the user's Taiko BWS rank and the same applied for other gamemodes */
+    bwsRank: integer('bws_rank'),
+    /**
+     * The player's availability to play matches across the weekend.
+     * Each element in the array represents a day of the week in the following order: Friday, Saturday, Sunday and Monday
+     * The value of each element is an integer that represents the user's availability that can be decoded into an array of 24 elements representing the 24 hours of the day and each value being either 0 (not available) or 1 (available)
+     */
+    availability: integer('availability').array(4).notNull().default([0, 0, 0, 0]),
+    userId: integer('user_id').references(() => User.id, {
       onDelete: 'set null'
     }),
-  tournamentId: integer('tournament_id')
-    .notNull()
-    .references(() => Tournament.id, {
-      onDelete: 'cascade'
-    }),
-  teamId: integer('team_id').references((): AnyPgColumn => Team.id)
-}, (table) => ({
-  uniqueTournamentIdTeamIdUserId: uniqueIndex('udx_player_tournament_id_team_id_user_id').on(
-    table.tournamentId,
-    table.teamId,
-    table.userId
-  ),
-  indexDeleted: index('idx_player_deleted').on(table.deleted)
-}));
+    tournamentId: integer('tournament_id')
+      .notNull()
+      .references(() => Tournament.id, {
+        onDelete: 'cascade'
+      }),
+    teamId: integer('team_id').references((): AnyPgColumn => Team.id)
+  },
+  (table) => ({
+    uniqueTournamentIdTeamIdUserId: uniqueIndex('udx_player_tournament_id_team_id_user_id').on(
+      table.tournamentId,
+      table.teamId,
+      table.userId
+    ),
+    indexDeletedRegisteredAt: index('idx_player_deleted_registered_at').on(
+      table.deleted,
+      table.registeredAt
+    )
+  })
+);
 
-export const Invite = pgTable('invite', {
-  id: bigserial('id', { mode: 'number' }).primaryKey(),
-  sentAt: timestamp('sent_at', timestampConfig).notNull().defaultNow(),
-  status: InviteStatus('status').notNull().default('pending'),
-  reason: InviteReason('reason').notNull(),
-  byUserId: integer('by_user_id')
-    .references(() => User.id, {
+export const Invite = pgTable(
+  'invite',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    sentAt: timestamp('sent_at', timestampConfig).notNull().defaultNow(),
+    status: InviteStatus('status').notNull().default('pending'),
+    reason: InviteReason('reason').notNull(),
+    byUserId: integer('by_user_id').references(() => User.id, {
       onDelete: 'set null'
     }),
-  toUserId: integer('to_user_id')
-    .references(() => User.id, {
+    toUserId: integer('to_user_id').references(() => User.id, {
       onDelete: 'set null'
     }),
-  /** Must be not null if reason is "join_team" */
-  teamId: integer('team_id').references(() => Team.id),
-  /** Must be not null if reason is "join_staff" or "delegate_host" */
-  tournamentId: integer('tournament_id')
-    .references(() => Tournament.id, {
+    /** Must be not null if reason is "join_team" */
+    teamId: integer('team_id').references(() => Team.id),
+    /** Must be not null if reason is "join_staff" or "delegate_host" */
+    tournamentId: integer('tournament_id').references(() => Tournament.id, {
       onDelete: 'cascade'
     })
-});
+  },
+  (table) => ({
+    indexStatusReasonToUserIdSentAt: index('idx_invite_status_reason_to_user_id_sent_at').on(
+      table.status,
+      table.reason,
+      table.toUserId,
+      table.sentAt
+    ),
+    indexTeamId: index('idx_invite_team_id').on(table.teamId),
+    indexTournamentId: index('idx_invite_tournament_id').on(table.tournamentId)
+  })
+);
 
 /** Only used when Invite.reason is "join_staff" */
-export const InviteWithRole = pgTable('invite_with_role', {
-  inviteId: bigint('invite_id', { mode: 'number' })
-    .notNull()
-    .references(() => Invite.id, {
-      onDelete: 'cascade'
-    }),
-  staffRoleId: integer('staff_role_id')
-    .notNull()
-    .references(() => StaffRole.id, {
-      onDelete: 'cascade'
+export const InviteWithRole = pgTable(
+  'invite_with_role',
+  {
+    inviteId: bigint('invite_id', { mode: 'number' })
+      .notNull()
+      .references(() => Invite.id, {
+        onDelete: 'cascade'
+      }),
+    staffRoleId: integer('staff_role_id')
+      .notNull()
+      .references(() => StaffRole.id, {
+        onDelete: 'cascade'
+      })
+  },
+  (table) => ({
+    pk: primaryKey({
+      columns: [table.inviteId, table.staffRoleId]
     })
-}, (table) => ({
-  pk: primaryKey({
-    columns: [table.inviteId, table.staffRoleId]
   })
-}));
+);

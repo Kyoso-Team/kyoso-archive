@@ -43,8 +43,12 @@ export const User = pgTable(
   (table) => ({
     uniqueIndexOsuUserId: uniqueIndex('udx_user_osu_user_id').on(table.osuUserId),
     uniqueIndexDiscordUserId: uniqueIndex('udx_user_discord_user_id').on(table.discordUserId),
-    indexAdminApprovedHost: index('idx_user_admin_approved_host').on(table.admin, table.approvedHost),
-    uniqueApiKey: uniqueIndex('udx_user_api_key').on(table.apiKey)
+    indexAdminApprovedHost: index('idx_user_admin_approved_host').on(
+      table.admin,
+      table.approvedHost
+    ),
+    uniqueIndexApiKey: uniqueIndex('udx_user_api_key').on(table.apiKey),
+    indexUpdatedApiDataAt: index('idx_user_updated_api_data_at').on(table.updatedApiDataAt)
   })
 );
 

@@ -1,4 +1,4 @@
-import { customType, type PgTimestampConfig } from 'drizzle-orm/pg-core';
+import type { PgTimestampConfig } from 'drizzle-orm/pg-core';
 
 export const timestampConfig: PgTimestampConfig = {
   mode: 'date',

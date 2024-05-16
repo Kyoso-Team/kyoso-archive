@@ -90,7 +90,9 @@ export const Tournament = pgTable(
     indexDeleted: index('idx_tournament_deleted').on(table.deleted),
     indexNameAcronymUrlSlug: index('trgm_idx_tournament_name_acronym_url_slug')
       .on(table.name, table.acronym, table.urlSlug)
-      .using(sql`gin ((lower(${table.name}) || ' ' || lower(${table.acronym}) || ' ' || lower(${table.urlSlug})) gin_trgm_ops)`),
+      .using(
+        sql`gin ((lower(${table.name}) || ' ' || lower(${table.acronym}) || ' ' || lower(${table.urlSlug})) gin_trgm_ops)`
+      ),
     uniqueIndexUrlSlug: uniqueIndex(uniqueConstraints.tournament.urlSlug).on(table.urlSlug)
   })
 );
@@ -148,6 +150,9 @@ export const Round = pgTable(
       table.name,
       table.tournamentId
     ),
-    indexTournamentIdOrder: index('idx_round_tournament_id_order').on(table.tournamentId, table.order)
+    indexTournamentIdOrder: index('idx_round_tournament_id_order').on(
+      table.tournamentId,
+      table.order
+    )
   })
 );

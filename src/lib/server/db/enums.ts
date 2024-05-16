@@ -77,8 +77,13 @@ export const InviteStatus = pgEnum('invite_status', [
   'cancelled'
 ]);
 
-export const InviteReason = pgEnum('invite_reason', [
-  'join_team',
-  'join_staff',
-  'delegate_host'
+export const InviteReason = pgEnum('invite_reason', ['join_team', 'join_staff', 'delegate_host']);
+
+export const TournamentFormType = pgEnum('tournament_form_type', ['general', 'staff_registration']);
+
+export const TournamentFormTarget = pgEnum('tournament_form_target', [
+  'public',
+  'staff',
+  'players',
+  'team_captains'
 ]);
