@@ -61,6 +61,16 @@ export interface BattleRoyaleRoundConfig {
   playersEliminatedPerMap: number;
 }
 
+export interface ModMultiplier {
+  /** Easy, Hidden, Hard Rock, Sudden Death, Flashlight, Perfect, Blinds */
+  mods: ('ez' | 'hd' | 'hr' | 'sd' | 'fl' | 'pf' | 'bl')[];
+  /** The object only applies to SD and PF */
+  multiplier: number | {
+    ifSuccessful: number;
+    ifFailed: number;
+  };
+}
+
 export type InferEnum<
   T extends {
     enumValues: string[];

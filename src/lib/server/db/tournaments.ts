@@ -23,7 +23,8 @@ import type {
   RoundConfig,
   TeamSettings,
   TournamentOtherDates,
-  TournamentLink
+  TournamentLink,
+  ModMultiplier
 } from '$types';
 
 export const Tournament = pgTable(
@@ -55,6 +56,7 @@ export const Tournament = pgTable(
     teamSettings: jsonb('team_settings').$type<TeamSettings>(),
     /** If null, then the tournament doesn't use BWS */
     bwsValues: jsonb('bws_values').$type<BWSValues>(),
+    modMultipliers: jsonb('mod_multipliers').$type<ModMultiplier[]>().default([]),
     links: jsonb('links').notNull().$type<TournamentLink[]>().default([]),
     refereeSettings: jsonb('referee_settings')
       .notNull()

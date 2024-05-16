@@ -168,6 +168,7 @@ export const Invite = pgTable('invite', {
     })
 });
 
+/** Only used when Invite.reason is "join_staff" */
 export const InviteWithRole = pgTable('invite_with_role', {
   inviteId: bigint('invite_id', { mode: 'number' })
     .notNull()
