@@ -14,7 +14,7 @@ import {
   index
 } from 'drizzle-orm/pg-core';
 import { RoundType, TournamentType } from './schema';
-import { timestampConfig, uniqueConstraints, citext } from './schema-utils';
+import { timestampConfig, uniqueConstraints } from './schema-utils';
 import { sql } from 'drizzle-orm';
 import type {
   BWSValues,
@@ -33,7 +33,7 @@ export const Tournament = pgTable(
     id: serial('id').primaryKey(),
     createdAt: timestamp('created_at', timestampConfig).notNull().defaultNow(),
     deleted: boolean('deleted').notNull().default(false),
-    name: citext('name').notNull().unique(uniqueConstraints.tournament.name),
+    name: varchar('name', { length: 50 }).notNull().unique(uniqueConstraints.tournament.name),
     urlSlug: varchar('url_slug', {
       length: 16
     }).notNull(),
@@ -56,7 +56,9 @@ export const Tournament = pgTable(
     teamSettings: jsonb('team_settings').$type<TeamSettings>(),
     /** If null, then the tournament doesn't use BWS */
     bwsValues: jsonb('bws_values').$type<BWSValues>(),
+    /** Limit of 5 mod multipliers */
     modMultipliers: jsonb('mod_multipliers').$type<ModMultiplier[]>().default([]),
+    /** Limit of 20 links */
     links: jsonb('links').notNull().$type<TournamentLink[]>().default([]),
     refereeSettings: jsonb('referee_settings')
       .notNull()
@@ -88,7 +90,7 @@ export const Tournament = pgTable(
     indexDeleted: index('idx_tournament_deleted').on(table.deleted),
     indexNameAcronymUrlSlug: index('trgm_idx_tournament_name_acronym_url_slug')
       .on(table.name, table.acronym, table.urlSlug)
-      .using(sql`gin ((${table.name} || ' ' || ${table.acronym} || ' ' || ${table.urlSlug}) gin_trgm_ops)`),
+      .using(sql`gin ((lower(${table.name}) || ' ' || lower(${table.acronym}) || ' ' || lower(${table.urlSlug})) gin_trgm_ops)`),
     uniqueIndexUrlSlug: uniqueIndex(uniqueConstraints.tournament.urlSlug).on(table.urlSlug)
   })
 );
@@ -107,6 +109,7 @@ export const TournamentDates = pgTable(
     playerRegsCloseAt: timestamp('player_regs_close_at', timestampConfig),
     staffRegsOpenAt: timestamp('staff_regs_open_at', timestampConfig),
     staffRegsCloseAt: timestamp('staff_regs_close_at', timestampConfig),
+    /** Limit of 20 other dates */
     other: jsonb('other').notNull().$type<TournamentOtherDates[]>().default([])
   },
   (table) => ({
@@ -125,7 +128,7 @@ export const Round = pgTable(
   'round',
   {
     id: serial('id').primaryKey(),
-    name: citext('name').notNull(),
+    name: varchar('name', { length: 20 }).notNull(),
     type: RoundType('type').notNull(),
     order: smallint('order').notNull(),
     targetStarRating: real('target_star_rating').notNull(),

@@ -11,10 +11,11 @@ import {
   jsonb,
   uniqueIndex,
   bigserial,
-  bigint
+  bigint,
+  varchar
 } from 'drizzle-orm/pg-core';
 import { InviteReason, InviteStatus, StaffColor, StaffPermission, Tournament, User } from './schema';
-import { timestampConfig, citext } from './schema-utils';
+import { timestampConfig } from './schema-utils';
 import { sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
@@ -22,8 +23,7 @@ export const StaffRole = pgTable(
   'staff_role',
   {
     id: serial('id').primaryKey(),
-    /** Limit of 50 characters */
-    name: citext('name').notNull(),
+    name: varchar('name', { length: 50 }).notNull(),
     color: StaffColor('color').notNull().default('slate'),
     order: smallint('order').notNull(),
     permissions: StaffPermission('permissions').array().notNull().default([]),
@@ -92,8 +92,7 @@ export const Team = pgTable('team', {
   id: serial('id').primaryKey(),
   registeredAt: timestamp('registered_at', timestampConfig).notNull().defaultNow(),
   deleted: boolean('deleted').notNull().default(false),
-  /** Limit of 20 characters */
-  name: citext('name').notNull(),
+  name: varchar('name', { length: 20 }).notNull(),
   bannerMetadata: jsonb('banner_metadata').$type<{
     fileId: string;
     originalFileName: string;
@@ -110,7 +109,7 @@ export const Team = pgTable('team', {
   ),
   indexName: index('trgm_idx_team_name')
     .on(table.name)
-    .using(sql`gin (${table.name} gin_trgm_ops)`),
+    .using(sql`gin (lower(${table.name}) gin_trgm_ops)`),
   indexDeleted: index('idx_team_deleted').on(table.deleted)
 }));
 

@@ -12,9 +12,3 @@ export const uniqueConstraints = {
     urlSlug: 'udx_tournament_url_slug'
   }
 } as const;
-
-export const citext = customType<{ data: string }>({
-  dataType() {
-    return 'citext';
-  }
-});
