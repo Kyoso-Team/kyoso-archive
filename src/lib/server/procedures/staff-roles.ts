@@ -9,6 +9,7 @@ import { TRPCError } from '@trpc/server';
 import { getSession, getStaffMember, getTournament } from '$lib/server/helpers/trpc';
 import { TRPCChecks } from '../helpers/checks';
 import { rateLimitMiddleware } from '$trpc/middleware';
+import { getCount } from '../helpers/queries';
 
 const DEFAULT_ROLES = ['Host', 'Debugger'];
 
@@ -48,28 +49,28 @@ const createStaffRole = t.procedure
     );
     checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
-    const staffRolesCount = db.$with('staff_roles_count').as(
-      db
-        .select({
-          count: sql<number>`count
-              (*)
-              + 1`
-            .mapWith(Number)
-            .as('count')
-        })
-        .from(StaffRole)
-        .where(eq(StaffRole.tournamentId, tournamentId))
-    );
+    let staffRolesCount!: number;
+
+    try {
+      staffRolesCount = await getCount(StaffRole, eq(StaffRole.tournamentId, tournamentId));
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting amount of staff roles');
+    }
+
+    if (staffRolesCount >= 25) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You can\'t have more than 25 staff roles per tournament'
+      });
+    }
 
     try {
       await db
-        .with(staffRolesCount)
         .insert(StaffRole)
         .values({
           name,
           tournamentId,
-          order: sql<number>`select *
-                             from ${staffRolesCount}`
+          order: staffRolesCount + 1
         })
         .then((rows) => rows[0]);
     } catch (err) {

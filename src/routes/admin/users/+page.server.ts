@@ -11,14 +11,14 @@ export const load = (async ({ parent, route, depends, url }) => {
 
   const userCountQuery = db
     .select({
-      count: count(User.id).as('count'),
+      count: count().as('count'),
       order: sql`1`.as('order')
     })
     .from(User);
 
   const adminCountQuery = db
     .select({
-      count: count(User.id).as('count'),
+      count: count().as('count'),
       order: sql`2`.as('order')
     })
     .from(User)
@@ -26,7 +26,7 @@ export const load = (async ({ parent, route, depends, url }) => {
 
   const hostCountQuery = db
     .select({
-      count: count(User.id).as('count'),
+      count: count().as('count'),
       order: sql`3`.as('order')
     })
     .from(User)
