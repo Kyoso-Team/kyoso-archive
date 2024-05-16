@@ -52,7 +52,13 @@
             <Loader2 size={64} class="dark:stroke-white stroke-black animate-spin opacity-50" />
           </div>
         {/if}
-        <img {src} alt="asset" class="w-full h-full" on:load={onLoad} bind:naturalWidth={imgWidth} />
+        <img
+          {src}
+          alt="asset"
+          class="w-full h-full"
+          on:load={onLoad}
+          bind:naturalWidth={imgWidth}
+        />
       </div>
     {:else}
       <NoFile img />

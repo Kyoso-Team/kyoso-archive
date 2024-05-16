@@ -40,7 +40,6 @@ abstract class Checks<ErrCodeT = number | TRPC_ERROR_CODE_KEY> {
     throw this.error(this.codes.unauthorized, `You must be a website admin to ${this.action}`);
   }
 
-
   /**
    * Error if the user is not an approved host
    */
@@ -76,7 +75,10 @@ abstract class Checks<ErrCodeT = number | TRPC_ERROR_CODE_KEY> {
    */
   public tournamentNotConcluded(tournament: { concludesAt: Date | null }) {
     if (!isDatePast(tournament.concludesAt)) return this;
-    throw this.error(this.codes.forbidden, `This tournament has concluded. You can't ${this.action}`);
+    throw this.error(
+      this.codes.forbidden,
+      `This tournament has concluded. You can't ${this.action}`
+    );
   }
 }
 
@@ -84,9 +86,7 @@ export class TRPCChecks extends Checks<TRPC_ERROR_CODE_KEY> {
   /**
    * @param action Description of the action performed in the backend. Usually written as: {infitive verb} {thing}. Example: "update this tournament" which would result in an error message like "You do not have the required staff permissions to update this tournament"
    */
-  constructor(settings: {
-    action: string;
-  }) {
+  constructor(settings: { action: string }) {
     super(settings.action, true, {
       badRequest: 'BAD_REQUEST',
       unauthorized: 'UNAUTHORIZED',
@@ -99,9 +99,7 @@ export class APICheck extends Checks<number> {
   /**
    * @param action Description of the action performed in the backend. Usually written as: {infitive verb} {thing}. Example: "update this tournament" which would result in an error message like "You do not have the required staff permissions to update this tournament"
    */
-  constructor(settings: {
-    action: string;
-  }) {
+  constructor(settings: { action: string }) {
     super(settings.action, false, {
       badRequest: 400,
       unauthorized: 401,

@@ -20,9 +20,15 @@
   let logoSrc: string | undefined;
   let bannerSrc: string | undefined;
   const toast = getToastStore();
-  const logoUpload = createUploadClient<Assets['tournamentLogo']>(toast, '/api/assets/tournament_logo');
-  const bannerUpload = createUploadClient<Assets['tournamentBanner']>(toast, '/api/assets/tournament_banner');
-  
+  const logoUpload = createUploadClient<Assets['tournamentLogo']>(
+    toast,
+    '/api/assets/tournament_logo'
+  );
+  const bannerUpload = createUploadClient<Assets['tournamentBanner']>(
+    toast,
+    '/api/assets/tournament_banner'
+  );
+
   function toggleShowUploadLogoModal() {
     showUploadLogoModal = !showUploadLogoModal;
   }
@@ -101,7 +107,12 @@
     : undefined;
 </script>
 
-<SEO page={$page} title={`${data.tournament.acronym} - Assets`} description={`Manage assets for ${data.tournament.acronym}`} noIndex />
+<SEO
+  page={$page}
+  title={`${data.tournament.acronym} - Assets`}
+  description={`Manage assets for ${data.tournament.acronym}`}
+  noIndex
+/>
 {#if showDeleteLogoPrompt}
   <Backdrop>
     <Modal>
@@ -128,7 +139,12 @@
 {/if}
 {#if showUploadLogoModal}
   <Backdrop>
-    <UploadImgModal imgAspectRatio="1/1" currentSrc={logoSrc} onUpload={uploadLogo} onCancel={toggleShowUploadLogoModal}>
+    <UploadImgModal
+      imgAspectRatio="1/1"
+      currentSrc={logoSrc}
+      onUpload={uploadLogo}
+      onCancel={toggleShowUploadLogoModal}
+    >
       <span class="title">Upload Logo</span>
       <p><strong>Aspect ratio:</strong> 1:1</p>
       <p><strong>Dimensions:</strong> 250x250 (or greater)</p>
@@ -138,7 +154,12 @@
 {/if}
 {#if showUploadBannerModal}
   <Backdrop>
-    <UploadImgModal imgAspectRatio="21/9" currentSrc={bannerSrc} onUpload={uploadBanner} onCancel={toggleShowUploadBannerModal}>
+    <UploadImgModal
+      imgAspectRatio="21/9"
+      currentSrc={bannerSrc}
+      onUpload={uploadBanner}
+      onCancel={toggleShowUploadBannerModal}
+    >
       <span class="title">Upload Banner</span>
       <p><strong>Aspect ratio:</strong> 21:9</p>
       <p class="mb-4"><strong>Dimensions:</strong> 1600x685 (or greater)</p>
@@ -147,13 +168,27 @@
 {/if}
 <h1 class="m-title" use:portal={'#page-title'}>Assets</h1>
 <ol class="breadcrumb" use:portal={'#breadcrumbs'}>
-  <li class="crumb"><a class="anchor" href={`/m/${data.tournament.urlSlug}`}>{data.tournament.acronym}</a></li>
-	<li class="crumb-separator" aria-hidden>&rsaquo;</li>
+  <li class="crumb">
+    <a class="anchor" href={`/m/${data.tournament.urlSlug}`}>{data.tournament.acronym}</a>
+  </li>
+  <li class="crumb-separator" aria-hidden>&rsaquo;</li>
   <li class="crumb">Assets</li>
 </ol>
 <main class="main flex justify-center items-center h-full">
   <div class="flex gap-4 max-2sm:flex-col flex-wrap justify-center h-max max-w-5xl">
-    <Asset label="Logo" imgAspectRatio="1/1" src={logoSrc} onUpload={toggleShowUploadLogoModal} onDelete={toggleShowDeleteLogoPrompt} />
-    <Asset label="Banner" imgAspectRatio="21/9" src={bannerSrc} onUpload={toggleShowUploadBannerModal} onDelete={toggleShowDeleteBannerPrompt} />
+    <Asset
+      label="Logo"
+      imgAspectRatio="1/1"
+      src={logoSrc}
+      onUpload={toggleShowUploadLogoModal}
+      onDelete={toggleShowDeleteLogoPrompt}
+    />
+    <Asset
+      label="Banner"
+      imgAspectRatio="21/9"
+      src={bannerSrc}
+      onUpload={toggleShowUploadBannerModal}
+      onDelete={toggleShowDeleteBannerPrompt}
+    />
   </div>
 </main>

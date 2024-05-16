@@ -138,7 +138,8 @@
         </div>
         <div class="flex flex-col">
           <strong class="text-lg">{data.session.discord.username}</strong>
-          <span class="text-xs xs:text-sm"><strong>User ID:</strong> {data.session.discord.id}</span>
+          <span class="text-xs xs:text-sm"><strong>User ID:</strong> {data.session.discord.id}</span
+          >
         </div>
         <div class="absolute top-0 right-4 h-full flex items-center">
           <button class="btn-icon variant-filled-primary" on:click={toggleChangeDiscordPrompt}>
@@ -161,12 +162,7 @@
     {#if data.user.apiKey}
       <div class="p-4 card flex max-2sm:flex-col gap-4 relative">
         {#if viewApiKey}
-          <input
-            type="text"
-            class="input w-full md:w-80"
-            readonly
-            bind:value={data.user.apiKey}
-          />
+          <input type="text" class="input w-full md:w-80" readonly bind:value={data.user.apiKey} />
         {:else}
           <input
             type="password"
@@ -186,10 +182,7 @@
           <button class="btn-icon variant-filled" on:click={copyApiKey}>
             <Copy size={24} />
           </button>
-          <button
-            class="btn-icon variant-filled-primary"
-            on:click={toggleGenerateApiKeyPrompt}
-          >
+          <button class="btn-icon variant-filled-primary" on:click={toggleGenerateApiKeyPrompt}>
             <RotateCcw size={24} />
           </button>
         </div>

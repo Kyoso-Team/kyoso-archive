@@ -281,7 +281,9 @@
       or <span class="badge variant-filled-secondary">⌘</span> key when hovering over users to search
       them up.
     </p>
-    <div class="gap-2 flex flex-col md:grid md:grid-cols-[calc(60%-0.5rem)_40%] lg:grid-cols-[calc(70%-0.5rem)_30%]">
+    <div
+      class="gap-2 flex flex-col md:grid md:grid-cols-[calc(60%-0.5rem)_40%] lg:grid-cols-[calc(70%-0.5rem)_30%]"
+    >
       <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
         <div class="input-group-shim h-[42px]">
           <Search size={24} />
@@ -299,9 +301,7 @@
         >
       </div>
       <div class="input-group input-group-divider grid-cols-[auto_1fr]">
-        <div class="input-group-shim h-[42px]">
-          Search By
-        </div>
+        <div class="input-group-shim h-[42px]">Search By</div>
         <select class="input text-sm py-1 px-2" bind:value={searchBy}>
           <option value="username">osu! Username</option>
           <option value="osu">osu! User ID</option>
@@ -317,7 +317,9 @@
         <p class="mt-2">{nonFoundDescription}</p>
       {:else}
         <p class="mt-2">{description}</p>
-        <div class="gap-2 mt-4 grid sm:w-[calc(100%-0.5rem)] sm:grid-cols-[50%_50%] lg:w-[calc(100%-1rem)] lg:grid-cols-[33.33%_33.34%_33.33%] 2lg:w-[calc(100%-1.5rem)] 2lg:grid-cols-[25%_25%_25%_25%]">
+        <div
+          class="gap-2 mt-4 grid sm:w-[calc(100%-0.5rem)] sm:grid-cols-[50%_50%] lg:w-[calc(100%-1rem)] lg:grid-cols-[33.33%_33.34%_33.33%] 2lg:w-[calc(100%-1.5rem)] 2lg:grid-cols-[25%_25%_25%_25%]"
+        >
           {#each userList as user}
             <User {ctx} {user} {type} isCurrentUserTheOwner={data.isCurrentUserTheOwner} />
           {/each}

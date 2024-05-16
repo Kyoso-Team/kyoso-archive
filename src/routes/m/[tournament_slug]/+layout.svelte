@@ -81,14 +81,12 @@
       //   tip: 'Settings',
       //   tipName: 'tooltip-settings'
       // });
-
       // shownLinks.push({
       //   href: '/staff',
       //   icon: LockKeyhole,
       //   tip: 'Staff Team',
       //   tipName: 'tooltip-staff'
       // });
-
       // shownLinks.push({
       //   href: '/format',
       //   icon: Network,
@@ -207,7 +205,12 @@
           <svelte:component this={icon} size={24} class={`duration-150 ${styles}`.trim()} />
           <span class="inline-block sm:hidden w-full text-left">{tip}</span>
         </a>
-        <Tooltip target={tipName} label={tip} arrowBorders="border-l border-b" visibility="hidden sm:block" />
+        <Tooltip
+          target={tipName}
+          label={tip}
+          arrowBorders="border-l border-b"
+          visibility="hidden sm:block"
+        />
       {/each}
     </div>
     <div class="line-t p-2 flex flex-col gap-2">
@@ -219,7 +222,12 @@
         <Layout size={24} />
         <span class="inline-block sm:hidden w-full text-left">Dashboard</span>
       </a>
-      <Tooltip target={tooltips.dashboard} label="Dashboard" arrowBorders="border-l border-b" visibility="hidden sm:block" />
+      <Tooltip
+        target={tooltips.dashboard}
+        label="Dashboard"
+        arrowBorders="border-l border-b"
+        visibility="hidden sm:block"
+      />
       <button
         class="btn duration-150 p-2 hover:variant-soft-primary"
         use:popup={{
@@ -245,7 +253,10 @@
 {/if}
 <div class="w-full flex line-b bg-surface-100-800-token" use:portal={'#header'}>
   <div class="flex sm:hidden justify-center line-r">
-    <button class="px-2 hover:bg-surface-50-900-token duration-150 [&>*]:duration-150 [&>*]:active:scale-[1.15]" on:click={toggleResponsiveMenu}>
+    <button
+      class="px-2 hover:bg-surface-50-900-token duration-150 [&>*]:duration-150 [&>*]:active:scale-[1.15]"
+      on:click={toggleResponsiveMenu}
+    >
       <Menu size={24} />
     </button>
   </div>

@@ -60,7 +60,7 @@ const createStaffRole = t.procedure
     if (staffRolesCount >= 25) {
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: 'You can\'t have more than 25 staff roles per tournament'
+        message: "You can't have more than 25 staff roles per tournament"
       });
     }
 

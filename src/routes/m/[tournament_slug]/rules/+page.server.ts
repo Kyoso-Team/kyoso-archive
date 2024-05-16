@@ -10,7 +10,7 @@ export const load = (async ({ parent, route, depends }) => {
   const { staffMember, tournament } = await parent();
 
   if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament'])) {
-    error(401, 'You don\'t have the necessary permissions to access this page');
+    error(401, "You don't have the necessary permissions to access this page");
   }
 
   let rules!: Pick<typeof Tournament.$inferSelect, 'rules'>;
@@ -23,7 +23,7 @@ export const load = (async ({ parent, route, depends }) => {
       .limit(1)
       .then((tournaments) => tournaments[0]);
   } catch (err) {
-    throw await apiError(err, 'Getting the tournament\'s rules', route);
+    throw await apiError(err, "Getting the tournament's rules", route);
   }
 
   return {

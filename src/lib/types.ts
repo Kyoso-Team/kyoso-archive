@@ -39,7 +39,8 @@ export type RankRange = Output<typeof rankRangeSchema>;
 
 export type RoundConfig = StandardRoundConfig | QualifierRoundConfig | BattleRoyaleRoundConfig;
 
-export type FullTournament = typeof Tournament.$inferSelect & Omit<typeof TournamentDates.$inferSelect, 'tournamentId'>;
+export type FullTournament = typeof Tournament.$inferSelect &
+  Omit<typeof TournamentDates.$inferSelect, 'tournamentId'>;
 
 /** Applies to: Groups, swiss, single and double elim. */
 export interface StandardRoundConfig {
