@@ -37,7 +37,7 @@ export const load = (async ({ cookies }) => {
   const tournamentsStaffing: typeof tournamentsPlaying = [];
 
   tournaments.forEach((tournament) => {
-    const { staffs, plays, ...rest  } = tournament;
+    const { staffs, plays, ...rest } = tournament;
 
     if (staffs) {
       tournamentsStaffing.push(rest);

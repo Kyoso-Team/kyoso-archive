@@ -1,18 +1,18 @@
 import {
-  pgTable,
-  serial,
   integer,
-  unique,
+  pgTable,
+  primaryKey,
+  serial,
   smallint,
   timestamp,
-  primaryKey,
   boolean,
   index,
   jsonb,
   uniqueIndex,
   bigserial,
   bigint,
-  varchar
+  varchar,
+  unique
 } from 'drizzle-orm/pg-core';
 import {
   InviteReason,
@@ -22,7 +22,7 @@ import {
   Tournament,
   User
 } from './schema';
-import { timestampConfig } from './schema-utils';
+import { timestampConfig, uniqueConstraints } from './schema-utils';
 import { sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
@@ -41,7 +41,7 @@ export const StaffRole = pgTable(
       })
   },
   (table) => ({
-    uniqueNameTournamentId: unique('uni_staff_role_name_tournament_id').on(
+    uniqueNameTournamentId: unique(uniqueConstraints.staffRoles.nameTournamentId).on(
       table.name,
       table.tournamentId
     ),

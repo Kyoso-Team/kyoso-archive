@@ -40,24 +40,33 @@
     <button class="btn btn-sm variant-filled-primary" on:click={onSelectFileBtnclick}>
       Select File
     </button>
-    <span class="inline-block truncate max-w-64 [&>*]:pointer-events-none" use:popup={tooltip(tooltips.fileName)}>
+    <span
+      class="inline-block truncate max-w-64 [&>*]:pointer-events-none"
+      use:popup={tooltip(tooltips.fileName)}
+    >
       {file?.name || 'No file selected'}
     </span>
     <Tooltip label={file?.name || ''} target={tooltips.fileName} show={!!file} />
   </div>
-  <FileButton name="upload-files" accept="image/*" class="hidden" bind:files={files} bind:fileInput={fileInput} />
+  <FileButton name="upload-files" accept="image/*" class="hidden" bind:files bind:fileInput />
   <div class="w-full flex justify-center gap-2 mt-4">
     <div class={imgAspectRatio === '1/1' ? 'w-56' : 'w-[90%]'}>
       {#if currentSrc || (showNewImg && newSrc)}
-        <div class="card w-full bg-surface-200-700-token overflow-hidden" style={`aspect-ratio: ${imgAspectRatio};`}>
+        <div
+          class="card w-full bg-surface-200-700-token overflow-hidden"
+          style={`aspect-ratio: ${imgAspectRatio};`}
+        >
           {#if showNewImg && newSrc}
-            <img src={newSrc} alt="new logo" class="w-full h-full">
+            <img src={newSrc} alt="new logo" class="w-full h-full" />
           {:else}
-            <img src={currentSrc} alt="logo" class="w-full h-full">
+            <img src={currentSrc} alt="logo" class="w-full h-full" />
           {/if}
         </div>
       {:else}
-        <div class="card w-full bg-surface-200-700-token" style={`aspect-ratio: ${imgAspectRatio};`}>
+        <div
+          class="card w-full bg-surface-200-700-token"
+          style={`aspect-ratio: ${imgAspectRatio};`}
+        >
           <NoFile img />
         </div>
       {/if}
@@ -69,7 +78,9 @@
     </div>
   </div>
   <div class="actions">
-    <button class="btn variant-filled-primary" disabled={!file} on:click={onUploadBtnclick}>Upload</button>
+    <button class="btn variant-filled-primary" disabled={!file} on:click={onUploadBtnclick}
+      >Upload</button
+    >
     <button class="btn variant-filled" on:click={onCancel}>Cancel</button>
   </div>
 </div>

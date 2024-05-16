@@ -4,7 +4,9 @@
   export let img = false;
 </script>
 
-<div class="w-full h-full card flex justify-center items-center gap-2 flex-col bg-surface-200-700-token p-4 opacity-50">
+<div
+  class="w-full h-full card flex justify-center items-center gap-2 flex-col bg-surface-200-700-token p-4 opacity-50"
+>
   {#if img}
     <ImageOff size={48} />
   {:else}

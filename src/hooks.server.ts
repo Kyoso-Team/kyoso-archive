@@ -189,7 +189,7 @@ const mainHandle: Handle = async ({ event, resolve }) => {
   const rateLimitAttempt = await ratelimit.limit(ip);
 
   if (!rateLimitAttempt.success) {
-    error(429, 'Too many requests. Please try again later.');
+    error(429, 'Too many requests. Please try again later');
   }
 
   const sessionData = await verifySession(event);

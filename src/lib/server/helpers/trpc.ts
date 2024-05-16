@@ -1,7 +1,8 @@
 import { trpcUnknownError } from '$lib/server/utils';
-import { baseGetSession, baseGetStaffMember } from './base';
+import { baseGetSession, baseGetStaffMember, baseGetTournament } from './base';
 import type { AuthSession } from '$types';
 import type { Cookies } from '@sveltejs/kit';
+import type { Tournament, TournamentDates } from '$db';
 
 export async function getStaffMember<T extends boolean>(
   session: AuthSession | undefined,
@@ -18,6 +19,31 @@ export async function getStaffMember<T extends boolean>(
       }
     },
     mustBeStaffMember
+  );
+}
+
+export async function getTournament<
+  MustExist extends boolean,
+  TournamentFields extends (keyof Omit<typeof Tournament.$inferSelect, 'id'>)[] = [],
+  DatesFields extends (keyof Omit<typeof TournamentDates.$inferSelect, 'tournamentId'>)[] = []
+>(
+  tournamentId: number,
+  fields: {
+    tournament?: TournamentFields;
+    dates?: DatesFields;
+  },
+  tournamentMustExist?: MustExist
+) {
+  return baseGetTournament<MustExist, TournamentFields, DatesFields>(
+    tournamentId,
+    fields,
+    true,
+    {
+      onGetTournamentError: async (err) => {
+        throw trpcUnknownError(err, 'Getting the tournament');
+      }
+    },
+    tournamentMustExist
   );
 }
 

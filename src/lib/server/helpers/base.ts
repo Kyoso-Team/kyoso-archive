@@ -1,9 +1,10 @@
-import { StaffMember, StaffMemberRole, StaffRole, db } from '$db';
+import { StaffMember, StaffMemberRole, StaffRole, Tournament, TournamentDates, db } from '$db';
 import { and, eq } from 'drizzle-orm';
-import { verifyJWT } from '$lib/server/utils';
-import { error, type Cookies } from '@sveltejs/kit';
+import { pick, verifyJWT } from '$lib/server/utils';
+import { error } from '@sveltejs/kit';
 import { TRPCError } from '@trpc/server';
-import type { AuthSession, InferEnum, OnServerError } from '$types';
+import type { Cookies } from '@sveltejs/kit';
+import type { AuthSession, InferEnum, OnServerError, Simplify } from '$types';
 import type { StaffPermission } from '$db';
 
 export async function baseGetStaffMember<T extends boolean>(
@@ -65,6 +66,72 @@ export async function baseGetStaffMember<T extends boolean>(
   }
 
   return staffMember as any;
+}
+
+export async function baseGetTournament<
+  MustExist extends boolean,
+  TournamentFields extends (keyof Omit<typeof Tournament.$inferSelect, 'id'>)[] = [],
+  DatesFields extends (keyof Omit<typeof TournamentDates.$inferSelect, 'tournamentId'>)[] = []
+>(
+  tournamentId: number,
+  fields: {
+    tournament?: TournamentFields;
+    dates?: DatesFields;
+  },
+  trpc: boolean,
+  errors: {
+    onGetTournamentError: OnServerError;
+  },
+  tournamentMustExist?: MustExist
+): Promise<
+  MustExist extends true
+    ? Simplify<
+        Pick<typeof Tournament.$inferSelect, TournamentFields[number]> &
+          Pick<typeof TournamentDates.$inferSelect, DatesFields[number]>
+      >
+    : undefined
+> {
+  let tournament: Record<string, any> | undefined;
+  let q!: any; // Don't know how to make this type safe
+
+  const qBase = db.select({
+    ...(fields.tournament ? pick(Tournament, fields.tournament) : {}),
+    ...(fields.dates ? pick(TournamentDates, fields.dates) : {})
+  });
+
+  if (fields.tournament) {
+    q = qBase.from(Tournament);
+
+    if (fields.dates) {
+      q = q.innerJoin(TournamentDates, eq(TournamentDates.tournamentId, Tournament.id));
+    }
+  } else {
+    q = qBase.from(TournamentDates);
+  }
+
+  try {
+    tournament = await q
+      .where(eq(Tournament.id, tournamentId))
+      .limit(1)
+      .then((rows: any[]) => rows[0]);
+  } catch (err) {
+    await errors.onGetTournamentError(err);
+  }
+
+  if (!tournament && tournamentMustExist) {
+    const errMessage = 'Tournament not found';
+
+    if (trpc) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: errMessage
+      });
+    } else {
+      error(401, errMessage);
+    }
+  }
+
+  return tournament as any;
 }
 
 export function baseGetSession<T extends boolean>(

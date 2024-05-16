@@ -11,6 +11,7 @@ import type {
   tournamentOtherDatesSchema,
   tournamentLinkSchema
 } from './schemas';
+import type { Tournament, TournamentDates } from '$db';
 
 export type AnyComponent = any;
 
@@ -37,6 +38,9 @@ export type TournamentOtherDates = Output<typeof tournamentOtherDatesSchema>;
 export type RankRange = Output<typeof rankRangeSchema>;
 
 export type RoundConfig = StandardRoundConfig | QualifierRoundConfig | BattleRoyaleRoundConfig;
+
+export type FullTournament = typeof Tournament.$inferSelect &
+  Omit<typeof TournamentDates.$inferSelect, 'tournamentId'>;
 
 /** Applies to: Groups, swiss, single and double elim. */
 export interface StandardRoundConfig {

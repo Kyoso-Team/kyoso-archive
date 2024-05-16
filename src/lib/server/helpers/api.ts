@@ -1,8 +1,16 @@
 import * as v from 'valibot';
 import { apiError, pick } from '$lib/server/utils';
 import { error } from '@sveltejs/kit';
-import { baseGetSession, baseGetStaffMember } from './base';
-import { Notification, OsuUser, Tournament, User, UserNotification, db } from '$db';
+import { baseGetSession, baseGetStaffMember, baseGetTournament } from './base';
+import {
+  Notification,
+  OsuUser,
+  Tournament,
+  TournamentDates,
+  User,
+  UserNotification,
+  db
+} from '$db';
 import { desc, eq, inArray } from 'drizzle-orm';
 import type { Cookies } from '@sveltejs/kit';
 import type { AuthSession } from '$types';
@@ -23,6 +31,32 @@ export async function getStaffMember<T extends boolean>(
       }
     },
     mustBeStaffMember
+  );
+}
+
+export async function getTournament<
+  MustExist extends boolean,
+  TournamentFields extends (keyof Omit<typeof Tournament.$inferSelect, 'id'>)[] = [],
+  DatesFields extends (keyof Omit<typeof TournamentDates.$inferSelect, 'tournamentId'>)[] = []
+>(
+  tournamentId: number,
+  fields: {
+    tournament?: TournamentFields;
+    dates?: DatesFields;
+  },
+  route: { id: string | null },
+  tournamentMustExist?: MustExist
+) {
+  return baseGetTournament<MustExist, TournamentFields, DatesFields>(
+    tournamentId,
+    fields,
+    true,
+    {
+      onGetTournamentError: async (err) => {
+        throw await apiError(err, 'Getting the tournament', route);
+      }
+    },
+    tournamentMustExist
   );
 }
 

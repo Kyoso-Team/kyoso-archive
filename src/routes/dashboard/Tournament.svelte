@@ -2,7 +2,10 @@
   import { page } from '$app/stores';
   import type { Tournament } from '$db';
 
-  export let tournament: Pick<typeof Tournament.$inferSelect, 'id' | 'urlSlug' | 'name' | 'bannerMetadata'>;
+  export let tournament: Pick<
+    typeof Tournament.$inferSelect,
+    'id' | 'urlSlug' | 'name' | 'bannerMetadata'
+  >;
   export let playing = false;
 
   $: bannerSrc = tournament.bannerMetadata
@@ -16,7 +19,9 @@
   style={`background-image: url("${bannerSrc}");`}
 >
   {#if !tournament.bannerMetadata}
-    <span class="absolute inset-0 z-[1] flex justify-center items-center font-violet-sans text-xs text-white px-4 text-center">
+    <span
+      class="absolute inset-0 z-[1] flex justify-center items-center font-violet-sans text-xs text-white px-4 text-center"
+    >
       {tournament.name}
     </span>
   {/if}
