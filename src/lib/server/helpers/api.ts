@@ -36,10 +36,10 @@ export async function getStaffMember<T extends boolean>(
 
 export async function getTournament<
   MustExist extends boolean,
-  TournamentFields extends (keyof Omit<typeof Tournament.$inferSelect, 'id'>)[] = [],
+  TournamentFields extends (keyof typeof Tournament.$inferSelect)[] = [],
   DatesFields extends (keyof Omit<typeof TournamentDates.$inferSelect, 'tournamentId'>)[] = []
 >(
-  tournamentId: number,
+  tournamentId: number | string,
   fields: {
     tournament?: TournamentFields;
     dates?: DatesFields;

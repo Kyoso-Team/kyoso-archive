@@ -70,10 +70,10 @@ export async function baseGetStaffMember<T extends boolean>(
 
 export async function baseGetTournament<
   MustExist extends boolean,
-  TournamentFields extends (keyof Omit<typeof Tournament.$inferSelect, 'id'>)[] = [],
+  TournamentFields extends (keyof typeof Tournament.$inferSelect)[] = [],
   DatesFields extends (keyof Omit<typeof TournamentDates.$inferSelect, 'tournamentId'>)[] = []
 >(
-  tournamentId: number,
+  tournamentId: number | string,
   fields: {
     tournament?: TournamentFields;
     dates?: DatesFields;
@@ -111,7 +111,9 @@ export async function baseGetTournament<
 
   try {
     tournament = await q
-      .where(eq(Tournament.id, tournamentId))
+      .where(
+        typeof tournamentId === 'number' ? eq(Tournament.id, tournamentId) : eq(Tournament.urlSlug, tournamentId)
+      )
       .limit(1)
       .then((rows: any[]) => rows[0]);
   } catch (err) {
