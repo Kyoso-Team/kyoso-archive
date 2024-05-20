@@ -22,6 +22,7 @@ export const load = (async ({ parent, route, depends }) => {
       urlSlug: tournament.urlSlug,
       acronym: tournament.acronym,
       ...settings
-    }
+    },
+    isHost: staffMember.permissions.includes('host')
   };
 }) satisfies PageServerLoad;

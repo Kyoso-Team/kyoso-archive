@@ -50,7 +50,7 @@ export async function getTournament<
   return baseGetTournament<MustExist, TournamentFields, DatesFields>(
     tournamentId,
     fields,
-    true,
+    false,
     {
       onGetTournamentError: async (err) => {
         throw await apiError(err, 'Getting the tournament', route);

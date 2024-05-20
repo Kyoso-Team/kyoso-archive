@@ -125,11 +125,11 @@ export async function baseGetTournament<
 
     if (trpc) {
       throw new TRPCError({
-        code: 'UNAUTHORIZED',
+        code: 'NOT_FOUND',
         message: errMessage
       });
     } else {
-      error(401, errMessage);
+      error(404, errMessage);
     }
   }
 
