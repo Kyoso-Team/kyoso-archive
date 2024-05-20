@@ -143,7 +143,7 @@
         </div>
         <div class="absolute top-0 right-4 h-full flex items-center">
           <button class="btn-icon variant-filled-primary" on:click={toggleChangeDiscordPrompt}>
-            <Pencil size={24} />
+            <Pencil size={20} />
           </button>
         </div>
       </div>
@@ -174,16 +174,16 @@
         <div class="flex gap-2 md:absolute md:top-0 md:right-4 h-full items-center">
           <button class="btn-icon variant-filled" on:click={toggleApiKeyVisibility}>
             {#if viewApiKey}
-              <EyeOff size={24} />
+              <EyeOff size={20} />
             {:else}
-              <Eye size={24} />
+              <Eye size={20} />
             {/if}
           </button>
           <button class="btn-icon variant-filled" on:click={copyApiKey}>
-            <Copy size={24} />
+            <Copy size={20} />
           </button>
           <button class="btn-icon variant-filled-primary" on:click={toggleGenerateApiKeyPrompt}>
-            <RotateCcw size={24} />
+            <RotateCcw size={20} />
           </button>
         </div>
       </div>
