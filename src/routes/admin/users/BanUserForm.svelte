@@ -19,7 +19,7 @@
   });
 
   const time = createForm({
-    timeAmount: f.number([f.minValue(1), f.maxSafeInt()])
+    timeAmount: f.number([f.minValue(1), f.maxIntLimit()])
   });
 
   const labels = {

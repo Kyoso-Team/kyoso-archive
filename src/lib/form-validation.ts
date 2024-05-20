@@ -57,19 +57,19 @@ export function maxValue<T extends number | bigint, R extends T>(requirement: R)
   );
 }
 
-export function maxSafeInt() {
-  const maxSafeInt = Number.MAX_SAFE_INTEGER;
+export function maxIntLimit() {
+  const value = 2147483647;
   return v.maxValue<number, number>(
-    maxSafeInt,
-    `Input must be less than or equal to ${maxSafeInt.toString()}`
+    value,
+    `Input must be less than or equal to ${value.toString()}`
   );
 }
 
-export function minSafeInt() {
-  const minSafeInt = Number.MIN_SAFE_INTEGER;
+export function minIntLimit() {
+  const value = -2147483648;
   return v.maxValue<number, number>(
-    minSafeInt,
-    `Input must be less than or equal to ${minSafeInt.toString()}`
+    value,
+    `Input must be less than or equal to ${value.toString()}`
   );
 }
 

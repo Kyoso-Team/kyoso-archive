@@ -26,6 +26,6 @@ export const baseTeamSettingsFormSchemas = {
 };
 
 export const rankRangeFormSchemas = {
-  lower: f.number([f.integer(), f.minValue(1), f.maxSafeInt()]),
-  upper: f.optional(f.number([f.integer(), f.minValue(1), f.maxSafeInt()]))
+  lower: f.number([f.integer(), f.minValue(1), f.maxIntLimit()]),
+  upper: f.optional(f.number([f.integer(), f.minValue(1), f.maxIntLimit()]))
 };
