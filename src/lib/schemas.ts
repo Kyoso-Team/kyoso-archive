@@ -59,11 +59,11 @@ export const oldestPossibleDateMsSchema = v.number('be a number', [
 
 export const refereeSettingsSchema = v.object({
   timerLength: v.object({
-    pick: positiveIntSchema,
-    ban: positiveIntSchema,
-    protect: positiveIntSchema,
-    ready: positiveIntSchema,
-    start: positiveIntSchema
+    pick: v.number([v.integer(), v.minValue(1), v.maxValue(600)]),
+    ban: v.number([v.integer(), v.minValue(1), v.maxValue(600)]),
+    protect: v.number([v.integer(), v.minValue(1), v.maxValue(600)]),
+    ready: v.number([v.integer(), v.minValue(1), v.maxValue(600)]),
+    start: v.number([v.integer(), v.minValue(1), v.maxValue(600)])
   }),
   allow: v.object({
     doublePick: v.boolean(),

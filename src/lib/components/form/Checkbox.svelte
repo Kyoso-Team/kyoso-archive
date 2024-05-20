@@ -14,7 +14,7 @@
 
 <label class="label">
   {#if $$slots.default}
-    <p class="inline-block my-2 text-sm dark:text-surface-300 text-surface-700">
+    <p class="inline-block my-2 text-sm text-surface-600-300-token">
       <slot />
     </p>
   {/if}

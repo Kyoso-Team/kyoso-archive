@@ -6,7 +6,7 @@
   import { Checkbox, Number, Select, Text } from '$components/form';
   import { getToastStore, popup } from '@skeletonlabs/skeleton';
   import { goto, invalidate } from '$app/navigation';
-  import { displayError, isDatePast, toastError, toastSuccess, tooltip } from '$lib/utils';
+  import { displayError, isDatePast, keys, toastError, toastSuccess, tooltip } from '$lib/utils';
   import { User, AlertTriangle } from 'lucide-svelte';
   import { createForm, createFunctionQueue, loading } from '$stores';
   import {
@@ -18,17 +18,31 @@
   import { fade } from 'svelte/transition';
   import { trpc } from '$lib/trpc';
   import { Modal, Backdrop } from '$components/layout';
-  import type { TRPCRouter } from '$types';
+  import type { RefereeSettings, TRPCRouter } from '$types';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
   let t: typeof data.tournament = data.tournament;
   let canUpdateGeneralSettings = false;
+  let canUpdateRefereeSettings = false;
   let generalSettingsHasUpdated = false;
   let showUpdateUrlSlugPrompt = false;
   let showUpdateNameAcronymPrompt = false;
   const toast = getToastStore();
   const fnQueue = createFunctionQueue();
+  export const orderTypeOptions: Record<'linear' | 'snake', string> = {
+    linear: 'Linear (ABABAB)',
+    snake: 'Snake (ABBAAB)'
+  };
+  export const banAndProtectBehaviorOptions: Record<'true' | 'false', string> = {
+    true: 'A ban on a protected map cancels out protection',
+    false: 'A protected map can\'t be banned'
+  };
+  export const winConditionOptions: Record<RefereeSettings['winCondition'], string> = {
+    accuracy: 'Best accuracy',
+    combo: 'Best combo',
+    score: 'Best score'
+  };
   const tournamentForm = createForm(
     {
       ...baseTournamentFormSchemas,
@@ -55,16 +69,33 @@
     },
     bwsInitialValues()
   );
+  const refereeSettingsForm = createForm({
+    pickTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
+    banTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
+    protectTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
+    readyTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
+    startTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
+    allowDoubleBan: f.boolean(),
+    allowDoublePick: f.boolean(),
+    allowDoubleProtect: f.boolean(),
+    banOrder: f.union(keys(orderTypeOptions)),
+    pickOrder: f.union(keys(orderTypeOptions)),
+    protectOrder: f.union(keys(orderTypeOptions)),
+    alwaysForceNoFail: f.boolean(),
+    banAndProtectBehavior: f.union(keys(banAndProtectBehaviorOptions)),
+    winCondition: f.union(keys(winConditionOptions))
+  }, refereeSettingsInitialValues());
   const labels = {
     ...tournamentForm.labels,
     ...teamForm.labels,
     ...rankRangeForm.labels,
-    ...bwsForm.labels
+    ...bwsForm.labels,
+    ...refereeSettingsForm.labels
   };
   const grid1Styles =
     'grid md:w-[calc(100%-1rem)] 2lg:w-[calc(100%-2rem)] md:grid-cols-[50%_50%] 2lg:grid-cols-[33.33%_33.34%_33.33%] gap-4';
   const grid2Styles =
-    'grid 2lg:w-[calc(100%-1rem)] md:grid-cols-[100%] 2lg:grid-cols-[33.34%_66.66%] gap-4';
+    'grid 2lg:w-[calc(100%-2rem)] md:grid-cols-[100%] 2lg:grid-cols-[33.33%_calc(66.67%+1rem)] gap-4';
 
   function tournamentInitialValues() {
     return {
@@ -106,11 +137,31 @@
         };
   }
 
+  function refereeSettingsInitialValues() {
+    return {
+      pickTimerLength: t.refereeSettings.timerLength.pick,
+      banTimerLength: t.refereeSettings.timerLength.ban,
+      protectTimerLength: t.refereeSettings.timerLength.protect,
+      readyTimerLength: t.refereeSettings.timerLength.ready,
+      startTimerLength: t.refereeSettings.timerLength.start,
+      allowDoubleBan: t.refereeSettings.allow.doubleBan,
+      allowDoublePick: t.refereeSettings.allow.doublePick,
+      allowDoubleProtect: t.refereeSettings.allow.doubleProtect,
+      banOrder: t.refereeSettings.order.ban,
+      pickOrder: t.refereeSettings.order.pick,
+      protectOrder: t.refereeSettings.order.protect,
+      alwaysForceNoFail: t.refereeSettings.alwaysForceNoFail,
+      banAndProtectBehavior: t.refereeSettings.banAndProtectCancelOut ? 'true' : 'false',
+      winCondition: t.refereeSettings.winCondition
+    };
+  }
+
   function overrideInitialValues() {
     tournamentForm.overrideInitialValues(tournamentInitialValues());
     teamForm.overrideInitialValues(teamSettingsInitialValues() || {});
     rankRangeForm.overrideInitialValues(rankRangeInitialValues() || {});
     bwsForm.overrideInitialValues(bwsInitialValues());
+    refereeSettingsForm.overrideInitialValues(refereeSettingsInitialValues());
   }
 
   async function updateTournament<T extends 'updateTournament' | 'updateTournamentDates'>(procedure: T, input: TRPCRouter<true>['tournaments'][T]['data'], successMsg: string) {
@@ -201,6 +252,35 @@
     fnQueue.nextFunction($fnQueue);
   }
 
+  async function updateRefereeSettings() {
+    const { allowDoubleBan, allowDoublePick, allowDoubleProtect, banOrder, pickOrder, protectOrder, alwaysForceNoFail, banAndProtectBehavior, winCondition, startTimerLength, readyTimerLength, banTimerLength, protectTimerLength, pickTimerLength } = refereeSettingsForm.getFinalValue($refereeSettingsForm);
+
+    await updateTournament('updateTournament', {
+      refereeSettings: {
+        alwaysForceNoFail,
+        winCondition,
+        banAndProtectCancelOut: banAndProtectBehavior === 'true',
+        allow: {
+          doubleBan: allowDoubleBan,
+          doublePick: allowDoublePick,
+          doubleProtect: allowDoubleProtect
+        },
+        order: {
+          ban: banOrder,
+          pick: pickOrder,
+          protect: protectOrder
+        },
+        timerLength: {
+          start: startTimerLength,
+          ready: readyTimerLength,
+          ban: banTimerLength,
+          protect: protectTimerLength,
+          pick: pickTimerLength
+        }
+      }
+    }, 'Updated referee settings successfully');
+  }
+
   function onUpdateUrlSlug() {
     showUpdateUrlSlugPrompt = false;
     fnQueue.nextFunction($fnQueue);
@@ -233,6 +313,7 @@
     canUpdateGeneralSettings = generalSettingsHasUpdated && isValid;
   }
 
+  $: canUpdateRefereeSettings = $refereeSettingsForm.hasUpdated && $refereeSettingsForm.canSubmit;
   $: t = data.tournament;
   $: isPublic = isDatePast(t.publishedAt);
   $: isTeamBased = ['teams', 'draft'].includes($tournamentForm.value.type as any);
@@ -365,12 +446,12 @@
               disabled={isOpenRank || !data.isHost}
             />
           </div>
-          <span class="inline-block col-span-2 text-sm dark:text-surface-300 text-surface-700"
+          <span class="inline-block col-span-2 text-sm text-surface-600-300-token"
             >If the upper rank range is not set, it'll default to infinity.</span
           >
         </div>
       </div>
-      <div class="line-b my-2" />
+      <div class="line-b" />
       <div class={grid2Styles}>
         <div>
           <Checkbox
@@ -402,7 +483,7 @@
             />
           </div>
           <span
-            class="inline-block col-span-2 text-sm dark:text-surface-300 text-surface-700 italic font-mono"
+            class="inline-block col-span-2 text-sm text-surface-600-300-token italic font-mono"
             >BWS = rank ^ ({$bwsForm.value.x || 'null'} ^ (badges ^ {$bwsForm.value.y || 'null'}) / {$bwsForm
               .value.z || 'null'})</span
           >
@@ -423,5 +504,108 @@
       </div>
     </div>
     <div class="line-b my-8" />
+    <h2>Referee Settings</h2>
+    <div class="mt-4 w-full card p-4 flex flex-col gap-4">
+      <div class={grid2Styles}>
+        <Select
+          form={refereeSettingsForm}
+          label={labels.winCondition}
+          options={winConditionOptions}
+          legend="Win condition"
+        />
+        <Select
+          form={refereeSettingsForm}
+          label={labels.banAndProtectBehavior}
+          options={banAndProtectBehaviorOptions}
+          legend="Ban and protect behavior"
+        />
+      </div>
+      <div class="line-b" />
+      <p class="text-surface-600-300-token">All timer lengths are measured in seconds.</p>
+      <div class={grid1Styles}>
+        <Number
+          form={refereeSettingsForm}
+          label={labels.pickTimerLength}
+          legend="Pick timer length"
+        />
+        <Number
+          form={refereeSettingsForm}
+          label={labels.banTimerLength}
+          legend="Ban timer length"
+        />
+        <Number
+          form={refereeSettingsForm}
+          label={labels.protectTimerLength}
+          legend="Protect timer length"
+        />
+        <Number
+          form={refereeSettingsForm}
+          label={labels.readyTimerLength}
+          legend="Ready timer length"
+        />
+        <Number
+          form={refereeSettingsForm}
+          label={labels.startTimerLength}
+          legend="Start timer length"
+        />
+      </div>
+      <div class="line-b" />
+      <div class={grid1Styles}>
+        <Checkbox
+          form={refereeSettingsForm}
+          label={labels.allowDoublePick}
+          legend="Allow double pick?"
+        />
+        <Checkbox
+          form={refereeSettingsForm}
+          label={labels.allowDoubleBan}
+          legend="Allow double ban?"
+        />
+        <Checkbox
+          form={refereeSettingsForm}
+          label={labels.allowDoubleProtect}
+          legend="Allow double protect?"
+        />
+        <Checkbox
+          form={refereeSettingsForm}
+          label={labels.alwaysForceNoFail}
+          legend="Always force NoFail?"
+        />
+      </div>
+      <div class="line-b" />
+      <div class={grid1Styles}>
+        <Select
+          form={refereeSettingsForm}
+          label={labels.pickOrder}
+          options={orderTypeOptions}
+          legend="Pick order"
+        />
+        <Select
+          form={refereeSettingsForm}
+          label={labels.banOrder}
+          options={orderTypeOptions}
+          legend="Ban order"
+        />
+        <Select
+          form={refereeSettingsForm}
+          label={labels.protectOrder}
+          options={orderTypeOptions}
+          legend="Protect order"
+        />
+      </div>
+    </div>
+    <div class="grid sm:grid-cols-[50%_50%] max-sm:gap-4 w-full mt-4">
+      <div>
+        {#if $refereeSettingsForm.hasUpdated}
+          <div class="card variant-soft-warning flex justify-center items-center py-[9px] px-5 sm:w-max" transition:fade={{ duration: 150 }}>
+            <AlertTriangle size={20} class="mr-2" />
+            You have unsaved changes
+          </div>
+        {/if}
+      </div>
+      <div class="flex justify-end w-full">
+        <button class="btn variant-filled-primary" disabled={!canUpdateRefereeSettings} on:click={updateRefereeSettings}>Update</button>
+      </div>
+    </div>
   </div>
 </main>
