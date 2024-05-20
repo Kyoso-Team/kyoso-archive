@@ -4,7 +4,8 @@
   export let form: FormStore;
   export let label: string;
   export let legend: string;
-  let value = false;
+  export let disabled = false;
+  let value = $form.value[label] !== undefined ? $form.value[label] : false;
 
   $: {
     form.setValue(label, value);
@@ -18,7 +19,7 @@
     </p>
   {/if}
   <div class="flex items-center gap-2">
-    <input type="checkbox" class="checkbox" bind:checked={value} />
+    <input type="checkbox" class="checkbox disabled:opacity-50 disabled:cursor-not-allowed duration-150" {disabled} bind:checked={value} />
     <legend>{legend}</legend>
   </div>
   {#if $$slots.preview}

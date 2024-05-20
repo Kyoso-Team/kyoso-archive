@@ -3,7 +3,7 @@
   import { Tooltip } from '$components/general';
   import { UserMenu } from '$components/layout';
   import {
-    // Settings,
+    Settings,
     Home,
     Image,
     // Network,
@@ -75,12 +75,13 @@
     ];
 
     if (hasPermissions(data.staffMember, baseRoles)) {
-      // shownLinks.push({
-      //   href: '/settings',
-      //   icon: Settings,
-      //   tip: 'Settings',
-      //   tipName: 'tooltip-settings'
-      // });
+      shownLinks.push({
+        href: '/settings',
+        icon: Settings,
+        tip: 'Settings',
+        tipName: 'tooltip-settings'
+      });
+
       // shownLinks.push({
       //   href: '/staff',
       //   icon: LockKeyhole,

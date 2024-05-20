@@ -1,43 +1,19 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
   import { trpc } from '$lib/trpc';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { Form, Section, Text, Number, Select, Checkbox } from '$components/form';
   import { createForm, loading } from '$stores';
-  import { keys, displayError, toastError } from '$lib/utils';
-  import type { TournamentType } from '$db';
-  import type { InferEnum, TRPCRouter } from '$types';
+  import { displayError, toastError } from '$lib/utils';
+  import { tournamentTypeOptions, baseTournamentFormSchemas, baseTeamSettingsFormSchemas, rankRangeFormSchemas } from '$lib/constants';
+  import type { TRPCRouter } from '$types';
 
   export let show: boolean;
-
   const toast = getToastStore();
-
-  const typeOptions: Record<InferEnum<typeof TournamentType>, string> = {
-    draft: 'Draft',
-    solo: 'Solo',
-    teams: 'Teams'
-  };
-
-  const main = createForm({
-    name: f.string([f.minStrLength(2), f.maxStrLength(50)]),
-    acronym: f.string([f.minStrLength(2), f.maxStrLength(8)]),
-    urlSlug: f.string([f.minStrLength(2), f.maxStrLength(16), f.slug()]),
-    type: f.union(keys(typeOptions)),
-    openRank: f.boolean()
-  });
-
-  const team = createForm({
-    minTeamSize: f.number([f.integer(), f.minValue(1), f.maxValue(16)]),
-    maxTeamSize: f.number([f.integer(), f.minValue(1), f.maxValue(16)])
-  });
-
-  const rankRange = createForm({
-    lower: f.number([f.integer(), f.minValue(1), f.maxSafeInt()]),
-    upper: f.optional(f.number([f.integer(), f.minValue(1), f.maxSafeInt()]))
-  });
-
+  const main = createForm(baseTournamentFormSchemas);
+  const team = createForm(baseTeamSettingsFormSchemas);
+  const rankRange = createForm(rankRangeFormSchemas);
   const labels = {
     ...main.labels,
     ...team.labels,
@@ -46,8 +22,8 @@
 
   async function submit() {
     const { acronym, name, type, urlSlug } = main.getFinalValue($main);
-    const teamValue = teamCondition ? team.getFinalValue($team) : undefined;
-    const rankRangeValue = rankRangeCondition ? rankRange.getFinalValue($rankRange) : undefined;
+    const teamValue = isTeamBased ? team.getFinalValue($team) : undefined;
+    const rankRangeValue = isOpenRank ? rankRange.getFinalValue($rankRange) : undefined;
     let tournament!: TRPCRouter['tournaments']['createTournament'];
 
     if (teamValue && teamValue.minTeamSize > teamValue.maxTeamSize) {
@@ -85,23 +61,23 @@
       displayError(toast, err);
     }
 
-    loading.set(false);
-
     if (typeof tournament === 'string') {
+      loading.set(false);
       toastError(toast, tournament);
       return;
     }
 
     show = false;
-    goto(`/m/${tournament.urlSlug}`);
+    await goto(`/m/${tournament.urlSlug}`);
+    loading.set(false);
   }
 
   function cancel() {
     show = false;
   }
 
-  $: teamCondition = ['teams', 'draft'].includes($main.value.type as any);
-  $: rankRangeCondition = !$main.value.openRank;
+  $: isTeamBased = ['teams', 'draft'].includes($main.value.type as any);
+  $: isOpenRank = $main.value.openRank;
 </script>
 
 <Form {submit}>
@@ -117,15 +93,15 @@
       {$page.url.origin}/t/{$main.value.urlSlug ? $main.value.urlSlug : '[slug]'}
     </svelte:fragment>
   </Text>
-  <Select form={main} label={labels.type} legend="Tournament type" options={typeOptions} />
-  {#if teamCondition}
+  <Select form={main} label={labels.type} legend="Tournament type" options={tournamentTypeOptions} />
+  {#if isTeamBased}
     <Section>
       <Number form={team} label={labels.minTeamSize} legend="Min. team size" />
       <Number form={team} label={labels.maxTeamSize} legend="Max. team size" />
     </Section>
   {/if}
   <Checkbox form={main} label={labels.openRank} legend="Is it open rank?" />
-  {#if rankRangeCondition}
+  {#if !isOpenRank}
     <Section>
       <Number form={rankRange} label={labels.lower} legend="Lower rank range" />
       <Number form={rankRange} label={labels.upper} legend="Upper rank range">
@@ -139,8 +115,8 @@
       class="btn variant-filled-primary"
       disabled={!(
         $main.canSubmit &&
-        (teamCondition ? $team.canSubmit : true) &&
-        (rankRangeCondition ? $rankRange.canSubmit : true)
+        (isTeamBased ? $team.canSubmit : true) &&
+        (!isOpenRank ? $rankRange.canSubmit : true)
       )}>Submit</button
     >
     <button type="button" class="btn variant-filled" on:click={cancel}>Cancel</button>

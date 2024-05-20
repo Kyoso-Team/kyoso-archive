@@ -1,13 +1,15 @@
 <script lang="ts">
+  import { slide } from 'svelte/transition';
   import type { FormStore } from '$types';
 
   export let form: FormStore;
   export let label: string;
   export let legend: string;
+  export let disabled = false;
   export let time = false;
   let hasWritten = false;
   let optional = false;
-  let value: number | null;
+  let value: number | null = !$form.value[label] ? null : $form.value[label];
   let error = $form.errors?.[label];
   const timeValue = {
     multiplier: 'undefined',
@@ -55,10 +57,11 @@
       <input
         type="number"
         class={`input ${error && hasWritten ? 'input-error' : ''}`}
+        {disabled}
         on:input={onInput}
         bind:value={timeValue.value}
       />
-      <select bind:value={timeValue.multiplier}>
+      <select {disabled} bind:value={timeValue.multiplier}>
         <option value="undefined">---</option>
         <option value="1000">Seconds</option>
         <option value="60000">Minutes</option>
@@ -73,6 +76,7 @@
     <input
       type="number"
       class={`input ${error && hasWritten ? 'input-error' : ''}`}
+      {disabled}
       on:input={onInput}
       bind:value
     />
@@ -83,6 +87,6 @@
     </span>
   {/if}
   {#if error && hasWritten}
-    <span class="block text-sm text-error-600">{error}.</span>
+    <span class="block text-sm text-error-600" transition:slide={{ duration: 150 }}>{error}.</span>
   {/if}
 </label>

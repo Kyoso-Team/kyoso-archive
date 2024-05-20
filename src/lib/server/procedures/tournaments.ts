@@ -9,11 +9,11 @@ import {
   uniqueConstraints
 } from '$db';
 import { t } from '$trpc';
-import { catchUniqueConstraintError$, isDatePast, pick, trpcUnknownError } from '$lib/server/utils';
+import { catchUniqueConstraintError$, pick, trpcUnknownError } from '$lib/server/utils';
 import { wrap } from '@typeschema/valibot';
 import { getSession, getStaffMember, getTournament } from '../helpers/trpc';
 import { TRPCError } from '@trpc/server';
-import { hasPermissions } from '$lib/utils';
+import { hasPermissions, isDatePast } from '$lib/utils';
 import { eq } from 'drizzle-orm';
 import {
   bwsValuesSchema,
@@ -53,6 +53,22 @@ const mutationSchemas = {
   )
 };
 
+function inputChecks({ teamSettings, rankRange }: { teamSettings?: { minTeamSize: number; maxTeamSize: number; } | null; rankRange?: { lower: number; upper?: number; } | null; }) {
+  if (teamSettings && teamSettings.minTeamSize > teamSettings.maxTeamSize) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'The minimum team size must be less than or equal to the maximum'
+    });
+  }
+
+  if (rankRange && rankRange.upper && rankRange.lower > rankRange.upper) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'The lower rank range limit must be less than or equal to the maximum'
+    });
+  }
+}
+
 const createTournament = t.procedure
   .use(rateLimitMiddleware)
   .input(wrap(v.object(mutationSchemas)))
@@ -61,6 +77,7 @@ const createTournament = t.procedure
     const checks = new TRPCChecks({ action: 'create a tournament' });
     const session = getSession(ctx.cookies, true);
     checks.userIsApprovedHost(session);
+    inputChecks(input);
 
     let tournament!: Pick<typeof Tournament.$inferSelect, 'urlSlug'>;
 
@@ -140,27 +157,13 @@ const updateTournament = t.procedure
         tournamentId: positiveIntSchema,
         data: v.partial(
           v.object({
-            tournament: v.partial(
-              v.object({
-                ...mutationSchemas,
-                teamSettings: teamSettingsSchema,
-                bwsValues: bwsValuesSchema,
-                links: v.array(tournamentLinkSchema),
-                refereeSettings: refereeSettingsSchema,
-                rules: v.string()
-              })
-            ),
-            dates: v.partial(
-              v.object({
-                publishedAt: v.date(),
-                concludesAt: v.date(),
-                playerRegsOpenAt: v.date(),
-                playerRegsCloseAt: v.date(),
-                staffRegsOpenAt: v.date(),
-                staffRegsCloseAt: v.date(),
-                other: v.array(tournamentOtherDatesSchema)
-              })
-            )
+            ...mutationSchemas,
+            rankRange: v.nullable(rankRangeSchema),
+            teamSettings: v.nullable(teamSettingsSchema),
+            bwsValues: v.nullable(bwsValuesSchema),
+            links: v.array(tournamentLinkSchema),
+            refereeSettings: refereeSettingsSchema,
+            rules: v.nullable(v.string())
           })
         )
       })
@@ -168,9 +171,83 @@ const updateTournament = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { data, tournamentId } = input;
-    const { tournament, dates } = data;
     const checks = new TRPCChecks({ action: 'update this tournament' });
-    checks.partialHasValues(tournament).partialHasValues(dates);
+    checks.partialHasValues(data);
+    inputChecks(data);
+
+    const session = getSession(ctx.cookies, true);
+    const staffMember = await getStaffMember(session, tournamentId, true);
+    checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
+
+    const info = await getTournament(
+      tournamentId,
+      {
+        tournament: ['deleted'],
+        dates: [
+          'publishedAt',
+          'concludesAt'
+        ]
+      },
+      true
+    );
+    checks.tournamentNotDeleted(info).tournamentNotConcluded(info);
+
+    const { name, acronym, urlSlug, teamSettings, type, rankRange, bwsValues } = data;
+
+    // Only the host can update these properties
+    if (
+      !hasPermissions(staffMember, ['host']) &&
+      (name || acronym || urlSlug || teamSettings || type || rankRange || bwsValues)
+    ) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message:
+          "You do not have the required permissions to update this tournament's name, acronym, URL slug, team settings (if applicable), type, rank range or BWS formula"
+      });
+    }
+
+    // Only update if the tournament is not public yet
+    if (isDatePast(info.publishedAt) && (type || teamSettings || rankRange || bwsValues)) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message:
+          "This tournament is public. You can no longer update this tournament's type, team settings (if applicable), rank range or BWS formula"
+      });
+    }
+
+    try {
+      await db.update(Tournament).set(data).where(eq(Tournament.id, tournamentId));
+    } catch (err) {
+      const uqErr = catchUniqueConstraintError(err);
+      if (uqErr) return uqErr;
+      throw trpcUnknownError(err, 'Updating the tournament');
+    }
+  });
+
+const updateTournamentDates = t.procedure
+  .use(rateLimitMiddleware)
+  .input(
+    wrap(
+      v.object({
+        tournamentId: positiveIntSchema,
+        data: v.partial(
+          v.object({
+            publishedAt: v.date(),
+            concludesAt: v.date(),
+            playerRegsOpenAt: v.date(),
+            playerRegsCloseAt: v.date(),
+            staffRegsOpenAt: v.date(),
+            staffRegsCloseAt: v.date(),
+            other: v.array(tournamentOtherDatesSchema)
+          })
+        )
+      })
+    )
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { data, tournamentId } = input;
+    const checks = new TRPCChecks({ action: 'update this tournament\'s dates' });
+    checks.partialHasValues(data);
 
     const session = getSession(ctx.cookies, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
@@ -193,103 +270,68 @@ const updateTournament = t.procedure
     );
     checks.tournamentNotDeleted(info).tournamentNotConcluded(info);
 
-    if (tournament) {
-      const { name, acronym, urlSlug, teamSettings, type, rankRange, bwsValues } = tournament;
+    const {
+      playerRegsCloseAt,
+      playerRegsOpenAt,
+      staffRegsCloseAt,
+      staffRegsOpenAt,
+      concludesAt,
+      publishedAt
+    } = data;
+    const { other: _1, ...newDates } = data;
 
-      // Only the host can update these properties
-      if (
-        !hasPermissions(staffMember, ['host']) &&
-        (name || acronym || urlSlug || teamSettings || type || rankRange || bwsValues)
-      ) {
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message:
-            "You do not have the required permissions to update this tournament's name, acronym, URL slug, team settings (if applicable), type, rank range or BWS formula"
-        });
-      }
-
-      // Only update if the tournament is not public yet
-      if (isDatePast(info.publishedAt) && (type || teamSettings || rankRange || bwsValues)) {
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message:
-            "This tournament is public. You can no longer update this tournament's type, team settings (if applicable), rank range or BWS formula"
-        });
-      }
+    if (
+      !hasPermissions(staffMember, ['host']) &&
+      (playerRegsCloseAt ||
+        playerRegsOpenAt ||
+        staffRegsCloseAt ||
+        staffRegsOpenAt ||
+        concludesAt ||
+        publishedAt)
+    ) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message:
+          "You do not have the required permissions to update this tournament's dates in which player and staff registrations open and close and when the tournament becomes public and when it concludes"
+      });
     }
 
-    if (dates) {
-      const {
-        playerRegsCloseAt,
-        playerRegsOpenAt,
-        staffRegsCloseAt,
-        staffRegsOpenAt,
-        concludesAt,
-        publishedAt
-      } = dates;
-      const { other: _1, ...newDates } = dates;
+    const msg: Record<keyof typeof newDates, string> = {
+      concludesAt: 'it concludes',
+      publishedAt: 'it becomes public',
+      playerRegsCloseAt: 'player registrations close',
+      playerRegsOpenAt: 'player registrations open',
+      staffRegsCloseAt: 'staff registrations close',
+      staffRegsOpenAt: 'staff registrations open'
+    };
 
-      if (
-        !hasPermissions(staffMember, ['host']) &&
-        (playerRegsCloseAt ||
-          playerRegsOpenAt ||
-          staffRegsCloseAt ||
-          staffRegsOpenAt ||
-          concludesAt ||
-          publishedAt)
-      ) {
+    for (const [key_, newDate] of Object.entries(newDates)) {
+      const key = key_ as keyof typeof newDates;
+      const setDate = info[key] as Date | null;
+
+      // Don't update if the date is equal or less than 1 hour into the future
+      if (new Date().getTime() - newDate.getTime() >= 3_600_000) {
         throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message:
-            "You do not have the required permissions to update this tournament's dates in which player and staff registrations open and close and when the tournament becomes public and when it concludes"
+          code: 'BAD_REQUEST',
+          message: `You can't update the tournament's date in which ${msg[key]} due to the inputted date being in the past, present or 1 hour into the future`
         });
       }
 
-      const msg: Record<keyof typeof newDates, string> = {
-        concludesAt: 'it concludes',
-        publishedAt: 'it becomes public',
-        playerRegsCloseAt: 'player registrations close',
-        playerRegsOpenAt: 'player registrations open',
-        staffRegsCloseAt: 'staff registrations close',
-        staffRegsOpenAt: 'staff registrations open'
-      };
-
-      for (const [key_, newDate] of Object.entries(newDates)) {
-        const key = key_ as keyof typeof newDates;
-        const setDate = info[key] as Date | null;
-
-        // Don't update if the date is equal or less than 1 hour into the future
-        if (new Date().getTime() - newDate.getTime() >= 3_600_000) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: `You can't update the tournament's date in which ${msg[key]} due to the inputted date being in the past, present or 1 hour into the future`
-          });
-        }
-
-        if (setDate && isDatePast(setDate.getTime())) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: `You can't update the tournament's date in which ${msg[key]} due to the currently set date being in the past`
-          });
-        }
+      if (setDate && isDatePast(setDate.getTime())) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `You can't update the tournament's date in which ${msg[key]} due to the currently set date being in the past`
+        });
       }
     }
 
     try {
-      if (tournament) {
-        await db.update(Tournament).set(tournament).where(eq(Tournament.id, tournamentId));
-      }
-
-      if (dates) {
-        await db
-          .update(TournamentDates)
-          .set(dates)
-          .where(eq(TournamentDates.tournamentId, tournamentId));
-      }
+      await db
+        .update(TournamentDates)
+        .set(data)
+        .where(eq(TournamentDates.tournamentId, tournamentId));
     } catch (err) {
-      const uqErr = catchUniqueConstraintError(err);
-      if (uqErr) return uqErr;
-      throw trpcUnknownError(err, 'Updating the tournament');
+      throw trpcUnknownError(err, 'Updating the tournament\'s dates');
     }
   });
 
@@ -333,5 +375,6 @@ const deleteTournament = t.procedure
 export const tournamentsRouter = t.router({
   createTournament,
   updateTournament,
+  updateTournamentDates,
   deleteTournament
 });

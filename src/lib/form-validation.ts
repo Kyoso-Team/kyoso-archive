@@ -35,6 +35,10 @@ export function number(pipe: Parameters<typeof v.number>[1]) {
   return v.number(required, pipe);
 }
 
+export function notvalue<T extends string | number | bigint | boolean | Date, R extends T>(requirement: R) {
+  return v.notValue<T, R>(requirement, `Input must not be equal to ${requirement.toString()}`);
+}
+
 export function integer() {
   return v.integer('Input must be an integer');
 }
@@ -58,6 +62,14 @@ export function maxSafeInt() {
   return v.maxValue<number, number>(
     maxSafeInt,
     `Input must be less than or equal to ${maxSafeInt.toString()}`
+  );
+}
+
+export function minSafeInt() {
+  const minSafeInt = Number.MIN_SAFE_INTEGER;
+  return v.maxValue<number, number>(
+    minSafeInt,
+    `Input must be less than or equal to ${minSafeInt.toString()}`
   );
 }
 

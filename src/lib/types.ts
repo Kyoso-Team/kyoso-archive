@@ -73,13 +73,15 @@ export type InferEnum<
 
 export type FileType = 'png' | 'jpg' | 'jpeg' | 'webp' | 'gif' | 'osr' | 'osz';
 
-export type TRPCRouter = {
+export type TRPCRouter<Input extends boolean = false> = {
   [K1 in Exclude<keyof Router, '_def' | 'createCaller' | 'getErrorShape'>]: {
     [K2 in Exclude<
       keyof Router[K1],
       '_def' | 'createCaller' | 'getErrorShape'
-    >]: Router[K1][K2] extends { _def: { _output_out: any } }
-      ? Router[K1][K2]['_def']['_output_out']
+    >]: Router[K1][K2] extends { _def: { _output_out: any; _input_in: any } }
+      ? Input extends true
+        ? Router[K1][K2]['_def']['_input_in']
+        : Router[K1][K2]['_def']['_output_out']
       : never;
   };
 };

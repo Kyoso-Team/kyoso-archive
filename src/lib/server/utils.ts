@@ -234,13 +234,3 @@ export function future(column: AnyPgColumn | SQL) {
 export function past(column: AnyPgColumn | SQL) {
   return lte(column as any, sql`now()`);
 }
-
-export function isDatePast(date: Date | number | null) {
-  if (!date) return false;
-  return new Date(date).getTime() <= new Date().getTime();
-}
-
-export function isDateFuture(date: Date | number | null) {
-  if (!date) return false;
-  return new Date(date).getTime() > new Date().getTime();
-}
