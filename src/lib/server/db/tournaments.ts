@@ -135,9 +135,9 @@ export const Round = pgTable(
     order: smallint('order').notNull(),
     targetStarRating: real('target_star_rating').notNull(),
     playtestingPool: boolean('playtesting_pool').notNull().default(false),
-    publishPool: boolean('publish_pool').notNull().default(false),
-    publishSchedules: boolean('publish_schedules').notNull().default(false),
-    publishStats: boolean('publish_stats').notNull().default(false),
+    publishPoolAt: timestamp('publish_pool_at', timestampConfig),
+    publishSchedulesAt: timestamp('publish_schedules_at', timestampConfig),
+    publishStatsAt: timestamp('publish_stats_at', timestampConfig),
     config: jsonb('config').notNull().$type<RoundConfig>(),
     tournamentId: integer('tournament_id')
       .notNull()
