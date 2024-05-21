@@ -19,7 +19,7 @@ export const Form = pgTable(
   {
     id: serial('id').primaryKey(),
     createdAt: timestamp('created_at', timestampConfig).notNull().defaultNow(),
-    deleted: boolean('deleted').notNull().default(false),
+    deletedAt: timestamp('deleted_at', timestampConfig),
     public: boolean('public').notNull().default(false),
     anonymousResponses: boolean('anonymous_responses').notNull().default(false),
     acceptingResponses: boolean('accepting_responses').notNull().default(false),
@@ -37,8 +37,8 @@ export const Form = pgTable(
     fields: jsonb('fields').notNull().$type<UserFormField[]>().default([])
   },
   (table) => ({
-    indexDeletedPublicCreatedAt: index('idx_form_deleted_public_created_at').on(
-      table.deleted,
+    indexDeletedAtPublicCreatedAt: index('idx_form_deleted_at_public_created_at').on(
+      table.deletedAt,
       table.public,
       table.createdAt
     ),

@@ -32,7 +32,7 @@ export const Tournament = pgTable(
   {
     id: serial('id').primaryKey(),
     createdAt: timestamp('created_at', timestampConfig).notNull().defaultNow(),
-    deleted: boolean('deleted').notNull().default(false),
+    deletedAt: timestamp('deleted_at', timestampConfig),
     name: varchar('name', { length: 50 }).notNull().unique(uniqueConstraints.tournament.name),
     urlSlug: varchar('url_slug', {
       length: 16
@@ -87,7 +87,7 @@ export const Tournament = pgTable(
       })
   },
   (table) => ({
-    indexDeleted: index('idx_tournament_deleted').on(table.deleted),
+    indexDeletedAt: index('idx_tournament_deleted_at').on(table.deletedAt),
     indexNameAcronymUrlSlug: index('trgm_idx_tournament_name_acronym_url_slug')
       .on(table.name, table.acronym, table.urlSlug)
       .using(

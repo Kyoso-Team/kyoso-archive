@@ -5,7 +5,6 @@ import {
   serial,
   smallint,
   timestamp,
-  boolean,
   index,
   jsonb,
   uniqueIndex,
@@ -57,7 +56,7 @@ export const StaffMember = pgTable(
   {
     id: serial('id').primaryKey(),
     joinedStaffAt: timestamp('joined_staff_at', timestampConfig).notNull().defaultNow(),
-    deleted: boolean('deleted').notNull().default(false),
+    deletedAt: timestamp('deleted_at', timestampConfig),
     userId: integer('user_id').references(() => User.id, {
       onDelete: 'set null'
     }),
@@ -72,7 +71,7 @@ export const StaffMember = pgTable(
       table.userId,
       table.tournamentId
     ),
-    indexDeleted: index('idx_staff_member_deleted').on(table.deleted)
+    indexDeletedAt: index('idx_staff_member_deleted_at').on(table.deletedAt)
   })
 );
 
@@ -102,7 +101,7 @@ export const Team = pgTable(
   {
     id: serial('id').primaryKey(),
     registeredAt: timestamp('registered_at', timestampConfig).notNull().defaultNow(),
-    deleted: boolean('deleted').notNull().default(false),
+    deletedAt: timestamp('deleted_at', timestampConfig),
     name: varchar('name', { length: 20 }).notNull(),
     bannerMetadata: jsonb('banner_metadata').$type<{
       fileId: string;
@@ -129,8 +128,8 @@ export const Team = pgTable(
     indexName: index('trgm_idx_team_name')
       .on(table.name)
       .using(sql`gin (lower(${table.name}) gin_trgm_ops)`),
-    indexDeletedRegisteredAt: index('idx_team_deleted_registered_at').on(
-      table.deleted,
+    indexDeletedRegisteredAt: index('idx_team_deleted_at_registered_at').on(
+      table.deletedAt,
       table.registeredAt
     )
   })
@@ -142,7 +141,7 @@ export const Player = pgTable(
     id: serial('id').primaryKey(),
     registeredAt: timestamp('registered_at', timestampConfig).notNull().defaultNow(),
     joinedTeamAt: timestamp('joined_team_at', timestampConfig),
-    deleted: boolean('deleted').notNull().default(false),
+    deletedAt: timestamp('deleted_at', timestampConfig),
     /** No gamemode is specified unlike the User table because (in the case we support more gamemodes in the future) an STD tournament won't be interested in the user's Taiko BWS rank and the same applied for other gamemodes */
     bwsRank: integer('bws_rank'),
     /**
@@ -167,8 +166,8 @@ export const Player = pgTable(
       table.teamId,
       table.userId
     ),
-    indexDeletedRegisteredAt: index('idx_player_deleted_registered_at').on(
-      table.deleted,
+    indexDeletedRegisteredAt: index('idx_player_deleted_at_registered_at').on(
+      table.deletedAt,
       table.registeredAt
     )
   })
