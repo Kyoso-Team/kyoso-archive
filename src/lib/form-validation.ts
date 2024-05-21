@@ -1,10 +1,11 @@
 import * as v from 'valibot';
+import { formatDate, formatTime } from './utils';
 
 const required = 'This field is required';
 
 export const boolean = v.boolean;
 export const literal = v.literal;
-export const optional = v.optional;
+export const optional = v.nullable;
 
 export function string(pipe: Parameters<typeof v.string>[1]) {
   return v.string(required, pipe);
@@ -78,4 +79,16 @@ export function union<T extends readonly string[]>(options: T) {
     options.map((type) => v.literal(type)) as any,
     required
   );
+}
+
+export function date(pipe?: Parameters<typeof v.date>[1]) {
+  return v.date(required, pipe);
+}
+
+export function minDate(date: Date) {
+  return v.minValue<Date, Date>(date, `Inputted date must be after ${formatDate(date)} - ${formatTime(date)}`);
+}
+
+export function maxDate(date: Date) {
+  return v.maxValue<Date, Date>(date, `Inputtted date must be before ${formatDate(date)} - ${formatTime(date)}`);
 }

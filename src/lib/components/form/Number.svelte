@@ -21,11 +21,11 @@
   }
 
   $: {
-    optional = (form.schemas[label] as any)?.type === 'optional';
+    optional = (form.schemas[label] as any)?.type === 'nullable';
   }
 
   $: {
-    form.setValue(label, value === null ? undefined : value);
+    form.setValue(label, value);
   }
 
   $: {

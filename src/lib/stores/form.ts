@@ -7,28 +7,29 @@ export function createForm<
   TLiveValue = {
     [K in keyof TFinalValue]: TFinalValue[K] extends boolean
       ? TFinalValue[K]
-      : TFinalValue[K] | undefined;
+      : TFinalValue[K] | null;
   }
->(formSchema: TSchema, defaults?: { [K in keyof TFinalValue]?: TFinalValue[K] } | null) {
+>(formSchema: TSchema, defaults?: { [K in keyof TSchema]?: v.Output<TSchema[K]> | null } | null) {
   const labels: Record<string, string> = {};
   const value: Record<string, any> = {};
-  defaults ||= {};
+  const defaulValue: Record<string, any> = defaults || {};
 
   for (const key in formSchema) {
     const schema = formSchema[key];
+    defaulValue[key] = defaulValue[key] === undefined ? null : defaulValue[key];
 
     // Make boolean fields default to false instead of null
-    if (((schema as any)?.type === 'boolean' || (schema as any)?.wrapped?.type === 'boolean') && (defaults as any)[key] === undefined) {
-      (defaults as any)[key] = false;
+    if (((schema as any)?.type === 'boolean' || (schema as any)?.wrapped?.type === 'boolean') && defaulValue[key] === null) {
+      defaulValue[key] = false;
     }
-    
-    value[key] = (defaults as any)?.[key];
+
+    value[key] = defaulValue[key];
     labels[key] = key;
   }
 
   const form = writable<{
     value: TLiveValue;
-    defaults: { [K in keyof TFinalValue]?: TFinalValue[K] };
+    defaults: { [K in keyof TFinalValue]?: TFinalValue[K] | null };
     errors: { [K in keyof TFinalValue]?: string };
     updated: { [K in keyof TFinalValue]?: true };
     canSubmit: boolean;
@@ -67,7 +68,11 @@ export function createForm<
         errors[key] = v.flatten(parsed.issues).root?.[0];
       }
 
-      if (input === defaults[key]) {
+      if (
+        input === defaults[key] ||
+        ((input === null || input === undefined) && (defaults[key] === null || defaults[key] === undefined)) ||
+        (input instanceof Date && defaults[key] instanceof Date && input.getTime() === defaults[key].getTime())
+      ) {
         delete updated[key];
       } else {
         updated[key] = true;
@@ -109,7 +114,7 @@ export function createForm<
     });
   }
 
-  function overrideInitialValues(newDefaults: { [K in keyof TFinalValue]?: TFinalValue[K] }) {
+  function overrideInitialValues(newDefaults: { [K in keyof TFinalValue]?: TFinalValue[K] | null }) {
     form.update((form) => {
       const defaults: Record<string, any> = {};
       const value = form.value as Record<string, any>;
@@ -119,13 +124,17 @@ export function createForm<
         const schema = formSchema[key];
     
         // Make boolean fields default to false instead of null
-        if (((schema as any)?.type === 'boolean' || (schema as any)?.wrapped?.type === 'boolean') && (newDefaults as any)[key] === undefined) {
+        if (((schema as any)?.type === 'boolean' || (schema as any)?.wrapped?.type === 'boolean') && ((newDefaults as any)[key] === undefined || (newDefaults as any)[key] === null)) {
           defaults[key] = false;
         } else {
-          defaults[key] = (newDefaults as any)[key];
+          defaults[key] = (newDefaults as any)?.[key] === undefined ? null: (newDefaults as any)?.[key];
         }
 
-        if (value[key] === defaults[key]) {
+        if (
+          value[key] === defaults[key] ||
+          ((value[key] === null || value[key] === undefined) && (defaults[key] === null || defaults[key] === undefined)) ||
+          (value[key] instanceof Date && defaults[key] instanceof Date && value[key].getTime() === defaults[key].getTime())
+        ) {
           delete updated[key];
         } else {
           updated[key] = true;

@@ -3,7 +3,7 @@
   import { page } from '$app/stores';
   import { portal } from 'svelte-portal';
   import { SEO, Tooltip } from '$components/general';
-  import { Checkbox, Number, Select, Text } from '$components/form';
+  import { Checkbox, Number, Select, Text, DateTime } from '$components/form';
   import { getToastStore, popup } from '@skeletonlabs/skeleton';
   import { goto, invalidate } from '$app/navigation';
   import { displayError, isDatePast, keys, toastError, toastSuccess, tooltip } from '$lib/utils';
@@ -18,6 +18,7 @@
   import { fade } from 'svelte/transition';
   import { trpc } from '$lib/trpc';
   import { Modal, Backdrop } from '$components/layout';
+  import { tournamentChecks, tournamentDatesChecks } from '$lib/helpers';
   import type { RefereeSettings, TRPCRouter } from '$types';
   import type { PageServerData } from './$types';
 
@@ -25,20 +26,25 @@
   let t: typeof data.tournament = data.tournament;
   let canUpdateGeneralSettings = false;
   let canUpdateRefereeSettings = false;
+  let canUpdateDates = false;
+  let datesHaveUpdated = false;
+  let otherDatesHaveUpdated = false;
   let generalSettingsHasUpdated = false;
   let showUpdateUrlSlugPrompt = false;
   let showUpdateNameAcronymPrompt = false;
+  const now = new Date().getTime();
+  const aYear = new Date(31_556_952_000).getTime();
   const toast = getToastStore();
   const fnQueue = createFunctionQueue();
-  export const orderTypeOptions: Record<'linear' | 'snake', string> = {
+  const orderTypeOptions: Record<'linear' | 'snake', string> = {
     linear: 'Linear (ABABAB)',
     snake: 'Snake (ABBAAB)'
   };
-  export const banAndProtectBehaviorOptions: Record<'true' | 'false', string> = {
+  const banAndProtectBehaviorOptions: Record<'true' | 'false', string> = {
     true: 'A ban on a protected map cancels out protection',
     false: 'A protected map can\'t be banned'
   };
-  export const winConditionOptions: Record<RefereeSettings['winCondition'], string> = {
+  const winConditionOptions: Record<RefereeSettings['winCondition'], string> = {
     accuracy: 'Best accuracy',
     combo: 'Best combo',
     score: 'Best score'
@@ -85,12 +91,21 @@
     banAndProtectBehavior: f.union(keys(banAndProtectBehaviorOptions)),
     winCondition: f.union(keys(winConditionOptions))
   }, refereeSettingsInitialValues());
+  const datesForm = createForm({
+    publishedAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])),
+    concludesAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])),
+    playerRegsOpenAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])),
+    playerRegsCloseAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])),
+    staffRegsOpenAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])),
+    staffRegsCloseAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))]))
+  }, datesInitialValues());
   const labels = {
     ...tournamentForm.labels,
     ...teamForm.labels,
     ...rankRangeForm.labels,
     ...bwsForm.labels,
-    ...refereeSettingsForm.labels
+    ...refereeSettingsForm.labels,
+    ...datesForm.labels
   };
   const grid1Styles =
     'grid md:w-[calc(100%-1rem)] 2lg:w-[calc(100%-2rem)] md:grid-cols-[50%_50%] 2lg:grid-cols-[33.33%_33.34%_33.33%] gap-4';
@@ -151,8 +166,19 @@
       pickOrder: t.refereeSettings.order.pick,
       protectOrder: t.refereeSettings.order.protect,
       alwaysForceNoFail: t.refereeSettings.alwaysForceNoFail,
-      banAndProtectBehavior: t.refereeSettings.banAndProtectCancelOut ? 'true' : 'false',
+      banAndProtectBehavior: t.refereeSettings.banAndProtectCancelOut ? 'true' as const : 'false' as const,
       winCondition: t.refereeSettings.winCondition
+    };
+  }
+
+  function datesInitialValues() {
+    return {
+      publishedAt: t.publishedAt,
+      concludesAt: t.concludesAt,
+      playerRegsOpenAt: t.playerRegsOpenAt,
+      playerRegsCloseAt: t.playerRegsCloseAt,
+      staffRegsOpenAt: t.staffRegsOpenAt,
+      staffRegsCloseAt: t.staffRegsCloseAt
     };
   }
 
@@ -162,10 +188,11 @@
     rankRangeForm.overrideInitialValues(rankRangeInitialValues() || {});
     bwsForm.overrideInitialValues(bwsInitialValues());
     refereeSettingsForm.overrideInitialValues(refereeSettingsInitialValues());
+    datesForm.overrideInitialValues(datesInitialValues());
   }
 
   async function updateTournament<T extends 'updateTournament' | 'updateTournamentDates'>(procedure: T, input: TRPCRouter<true>['tournaments'][T]['data'], successMsg: string) {
-    let tournament!: TRPCRouter['tournaments']['updateTournament'];
+    let tournament!: TRPCRouter['tournaments']['updateTournament'] | TRPCRouter['tournaments']['updateTournamentDates'];
     loading.set(true);
 
     try {
@@ -175,7 +202,7 @@
           data: input
         });
       } else {
-        await trpc($page).tournaments.updateTournamentDates.mutate({
+        tournament = await trpc($page).tournaments.updateTournamentDates.mutate({
           tournamentId: data.tournament.id,
           data: input
         });
@@ -206,14 +233,10 @@
     const teamSettings = isTeamBased ? teamForm.getFinalValue($teamForm) : undefined;
     const rankRange = !isOpenRank ? rankRangeForm.getFinalValue($rankRangeForm) : undefined;
     const bwsValues = useBWS ? bwsForm.getFinalValue($bwsForm) : undefined;
+    const err = tournamentChecks({ teamSettings, rankRange });
 
-    if (teamSettings && teamSettings.minTeamSize > teamSettings.maxTeamSize) {
-      toastError(toast, 'The minimum team size must be less than or equal to the maximum');
-      return;
-    }
-
-    if (rankRange && rankRange.upper && rankRange.lower > rankRange.upper) {
-      toastError(toast, 'The lower rank range limit must be less than or equal to the maximum');
+    if (err) {
+      toastError(toast, err);
       return;
     }
 
@@ -241,7 +264,10 @@
           type,
           urlSlug,
           teamSettings: teamSettings ? teamSettings : null,
-          rankRange: rankRange ? rankRange : null,
+          rankRange: rankRange ? {
+            lower: rankRange.lower,
+            upper: rankRange.upper || undefined
+          } : null,
           bwsValues: bwsValues ? bwsValues : null
         }, 'Updated general settings successfully');
 
@@ -281,6 +307,18 @@
     }, 'Updated referee settings successfully');
   }
 
+  async function updateDates() {
+    const dates = datesForm.getFinalValue($datesForm);
+    const err = tournamentDatesChecks(dates, dates);
+
+    if (err) {
+      toastError(toast, err);
+      return;
+    }
+
+    await updateTournament('updateTournamentDates', dates, 'Updated dates successfully');
+  }
+
   function onUpdateUrlSlug() {
     showUpdateUrlSlugPrompt = false;
     fnQueue.nextFunction($fnQueue);
@@ -307,14 +345,19 @@
 
     generalSettingsHasUpdated =
       $tournamentForm.hasUpdated ||
-      $teamForm.hasUpdated ||
-      $rankRangeForm.hasUpdated ||
-      $bwsForm.hasUpdated;
+      (isTeamBased ? $teamForm.hasUpdated : false) ||
+      (!isOpenRank ? $rankRangeForm.hasUpdated : false) ||
+      (useBWS ? $bwsForm.hasUpdated : false);
     canUpdateGeneralSettings = generalSettingsHasUpdated && isValid;
   }
 
-  $: canUpdateRefereeSettings = $refereeSettingsForm.hasUpdated && $refereeSettingsForm.canSubmit;
+  $: {
+    datesHaveUpdated = $datesForm.hasUpdated || otherDatesHaveUpdated;
+    canUpdateDates = datesHaveUpdated && $datesForm.canSubmit;
+  }
+
   $: t = data.tournament;
+  $: canUpdateRefereeSettings = $refereeSettingsForm.hasUpdated && $refereeSettingsForm.canSubmit;
   $: isPublic = isDatePast(t.publishedAt);
   $: isTeamBased = ['teams', 'draft'].includes($tournamentForm.value.type as any);
   $: isOpenRank = $tournamentForm.value.openRank;
@@ -501,6 +544,61 @@
       </div>
       <div class="flex justify-end w-full">
         <button class="btn variant-filled-primary" disabled={!canUpdateGeneralSettings} on:click={updateGeneralSettings}>Update</button>
+      </div>
+    </div>
+    <div class="line-b my-8" />
+    <h2>Dates</h2>
+    <div class="mt-4 w-full card p-4 flex flex-col gap-4">
+      <div class={grid1Styles}>
+        <DateTime
+          form={datesForm}
+          label={labels.publishedAt}
+          legend="Publish at"
+          disabled={!data.isHost}
+        />
+        <DateTime
+          form={datesForm}
+          label={labels.concludesAt}
+          legend="Concludes at"
+          disabled={!data.isHost}
+        />
+        <DateTime
+          form={datesForm}
+          label={labels.playerRegsOpenAt}
+          legend="Player regs. open at"
+          disabled={!data.isHost}
+        />
+        <DateTime
+          form={datesForm}
+          label={labels.playerRegsCloseAt}
+          legend="Player regs. close at"
+          disabled={!data.isHost}
+        />
+        <DateTime
+          form={datesForm}
+          label={labels.staffRegsOpenAt}
+          legend="Staff regs. open at"
+          disabled={!data.isHost}
+        />
+        <DateTime
+          form={datesForm}
+          label={labels.staffRegsCloseAt}
+          legend="Staff regs. close at"
+          disabled={!data.isHost}
+        />
+      </div>
+    </div>
+    <div class="grid sm:grid-cols-[50%_50%] max-sm:gap-4 w-full mt-4">
+      <div>
+        {#if datesHaveUpdated}
+          <div class="card variant-soft-warning flex justify-center items-center py-[9px] px-5 sm:w-max" transition:fade={{ duration: 150 }}>
+            <AlertTriangle size={20} class="mr-2" />
+            You have unsaved changes
+          </div>
+        {/if}
+      </div>
+      <div class="flex justify-end w-full">
+        <button class="btn variant-filled-primary" disabled={!canUpdateDates} on:click={updateDates}>Update</button>
       </div>
     </div>
     <div class="line-b my-8" />
