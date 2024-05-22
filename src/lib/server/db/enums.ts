@@ -26,6 +26,8 @@ export const StaffPermission = pgEnum('staff_permission', [
   'manage_tournament',
   // Tournament assets (upload and delete banner and logo)
   'manage_assets',
+  // Custom tournament theme
+  'manage_theme',
   // Player regs.
   'manage_regs',
   // Mappool structure,
