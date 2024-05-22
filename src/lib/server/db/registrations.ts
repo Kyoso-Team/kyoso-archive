@@ -125,9 +125,9 @@ export const Team = pgTable(
       table.captainPlayerId,
       table.tournamentId
     ),
-    indexName: index('trgm_idx_team_name')
+    indexName: index('idx_trgm_team_name')
       .on(table.name)
-      .using(sql`gin (lower(${table.name}) gin_trgm_ops)`),
+      .using(sql`gist (lower(${table.name}) gist_trgm_ops)`),
     indexDeletedRegisteredAt: index('idx_team_deleted_at_registered_at').on(
       table.deletedAt,
       table.registeredAt

@@ -88,10 +88,10 @@ export const Tournament = pgTable(
   },
   (table) => ({
     indexDeletedAt: index('idx_tournament_deleted_at').on(table.deletedAt),
-    indexNameAcronymUrlSlug: index('trgm_idx_tournament_name_acronym_url_slug')
-      .on(table.name, table.acronym, table.urlSlug)
+    indexNameAcronymUrlSlug: index('idx_trgm_tournament_name_acronym')
+      .on(table.name, table.acronym)
       .using(
-        sql`gin ((lower(${table.name}) || ' ' || lower(${table.acronym}) || ' ' || lower(${table.urlSlug})) gin_trgm_ops)`
+        sql`gist ((lower(${table.name}) || ' ' || lower(${table.acronym})) gist_trgm_ops)`
       ),
     uniqueIndexUrlSlug: uniqueIndex(uniqueConstraints.tournament.urlSlug).on(table.urlSlug)
   })

@@ -67,9 +67,9 @@ export const OsuUser = pgTable(
       .references(() => Country.code)
   },
   (table) => ({
-    indexUsername: index('trgm_idx_osu_user_username')
+    indexUsername: index('idx_trgm_osu_user_username')
       .on(table.username)
-      .using(sql`gin (lower(${table.username}) gin_trgm_ops)`)
+      .using(sql`gist (lower(${table.username}) gist_trgm_ops)`)
   })
 );
 
