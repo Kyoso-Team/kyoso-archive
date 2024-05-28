@@ -4,10 +4,11 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
-DROP TABLE "stage";--> statement-breakpoint
 ALTER TABLE "round" DROP CONSTRAINT "round_stage_id_stage_id_fk";
 --> statement-breakpoint
 ALTER TABLE "tournament" DROP CONSTRAINT "tournament_main_stage_id_stage_id_fk";
+--> statement-breakpoint
+DROP TABLE "stage";
 --> statement-breakpoint
 ALTER TABLE "round" ADD COLUMN "type" "round_type" NOT NULL;--> statement-breakpoint
 ALTER TABLE "round" DROP COLUMN IF EXISTS "stage_id";--> statement-breakpoint
