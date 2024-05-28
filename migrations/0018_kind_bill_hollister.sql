@@ -1,4 +1,4 @@
-CREATE EXTENSION "pg_trgm";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 --> statement-breakpoint
 DO $$ BEGIN
  CREATE TYPE "invite_reason" AS ENUM('join_team', 'join_staff', 'delegate_host');
@@ -179,3 +179,5 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 ALTER TABLE "osu_user" ADD CONSTRAINT "uni_osu_user_username" UNIQUE("username");
+--> statement-breakpoint
+DROP EXTENSION IF EXISTS "citext";
