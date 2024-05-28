@@ -1,8 +1,8 @@
 import * as v from 'valibot';
 import { error } from '@sveltejs/kit';
-import { generateFileId, past, pick, apiError } from '$lib/server/utils';
+import { generateFileId, past, pick, apiError, future } from '$lib/server/utils';
 import { Tournament, db, TournamentDates } from '$db';
-import { and, eq, isNotNull, not } from 'drizzle-orm';
+import { and, eq, isNotNull, isNull, or } from 'drizzle-orm';
 import { boolStringSchema, fileIdSchema, fileSchema, positiveIntSchema } from '$lib/schemas';
 import {
   deleteFile,
@@ -44,7 +44,7 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
       .where(
         and(
           eq(Tournament.id, params.tournament_id),
-          not(Tournament.deleted),
+          or(isNull(Tournament.deletedAt), future(Tournament.deletedAt)),
           params.public ? isNotNull(TournamentDates.publishedAt) : undefined,
           params.public ? past(TournamentDates.publishedAt) : undefined
         )

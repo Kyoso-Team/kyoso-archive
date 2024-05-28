@@ -42,7 +42,7 @@ const createStaffRole = t.procedure
     const tournament = await getTournament(
       tournamentId,
       {
-        tournament: ['deleted'],
+        tournament: ['deletedAt'],
         dates: ['concludesAt']
       },
       true
@@ -109,7 +109,7 @@ const updateStaffRole = t.procedure
     const tournament = await getTournament(
       tournamentId,
       {
-        tournament: ['deleted'],
+        tournament: ['deletedAt'],
         dates: ['concludesAt']
       },
       true
@@ -169,7 +169,7 @@ const swapStaffRoleOrder = t.procedure
     const tournament = await getTournament(
       tournamentId,
       {
-        tournament: ['deleted'],
+        tournament: ['deletedAt'],
         dates: ['concludesAt']
       },
       true
@@ -242,7 +242,7 @@ const deleteStaffRole = t.procedure
     const tournament = await getTournament(
       tournamentId,
       {
-        tournament: ['deleted'],
+        tournament: ['deletedAt'],
         dates: ['concludesAt']
       },
       true

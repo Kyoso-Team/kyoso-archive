@@ -1,5 +1,5 @@
 import { hasPermissions } from '$lib/utils';
-import { isDatePast } from '../utils';
+import { isDateFuture } from '../utils';
 import { error } from '@sveltejs/kit';
 import { TRPCError } from '@trpc/server';
 import type { AuthSession, InferEnum } from '$types';
@@ -65,8 +65,8 @@ abstract class Checks<ErrCodeT = number | TRPC_ERROR_CODE_KEY> {
   /**
    * Error if the tournament is deleted
    */
-  public tournamentNotDeleted(tournament: { deleted: boolean }) {
-    if (!tournament.deleted) return this;
+  public tournamentNotDeleted(tournament: { deletedAt: Date | null; }) {
+    if (!tournament.deletedAt || isDateFuture(tournament.deletedAt)) return this;
     throw this.error(this.codes.forbidden, `This tournament is deleted. You can't ${this.action}`);
   }
 
@@ -74,7 +74,7 @@ abstract class Checks<ErrCodeT = number | TRPC_ERROR_CODE_KEY> {
    * Error if the tournament has concluded
    */
   public tournamentNotConcluded(tournament: { concludesAt: Date | null }) {
-    if (!isDatePast(tournament.concludesAt)) return this;
+    if (!tournament.concludesAt || isDateFuture(tournament.concludesAt)) return this;
     throw this.error(
       this.codes.forbidden,
       `This tournament has concluded. You can't ${this.action}`

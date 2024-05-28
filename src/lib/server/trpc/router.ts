@@ -91,7 +91,12 @@ const search = t.procedure.input(wrap(v.string([v.minLength(1)]))).query(async (
         ...pick(Tournament, ['name', 'urlSlug', 'acronym', 'logoMetadata', 'bannerMetadata'])
       })
       .from(Tournament)
-      .where(and(future(Tournament.deletedAt), or(...tournamentWhereCondition)))
+      .where(
+        and(
+          or(isNull(Tournament.deletedAt), future(Tournament.deletedAt)),
+          or(...tournamentWhereCondition)
+        )
+      )
       .orderBy(asc(Tournament.name))
       .limit(10);
   } catch (err) {

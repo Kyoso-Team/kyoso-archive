@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { getSession, getStaffMember } from '$lib/server/helpers/api';
 import { db, Tournament, TournamentDates } from '$db';
-import { apiError, pick } from '$lib/server/utils';
+import { apiError, isDatePast, pick } from '$lib/server/utils';
 import { eq } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
 
@@ -9,14 +9,14 @@ export const load = (async ({ cookies, route, params }) => {
   const session = getSession(cookies, true);
 
   let tournament:
-    | (Pick<typeof Tournament.$inferSelect, 'id' | 'acronym' | 'deleted'> &
+    | (Pick<typeof Tournament.$inferSelect, 'id' | 'acronym' | 'deletedAt'> &
         Pick<typeof TournamentDates.$inferSelect, 'concludesAt'>)
     | undefined;
 
   try {
     tournament = await db
       .select({
-        ...pick(Tournament, ['id', 'acronym', 'deleted']),
+        ...pick(Tournament, ['id', 'acronym', 'deletedAt']),
         ...pick(TournamentDates, ['concludesAt'])
       })
       .from(Tournament)
@@ -32,7 +32,7 @@ export const load = (async ({ cookies, route, params }) => {
     throw error(404, 'Tournament not found');
   }
 
-  if (tournament.deleted) {
+  if (tournament.deletedAt && isDatePast(tournament.deletedAt)) {
     throw error(403, 'Tournament has been deleted');
   }
 
