@@ -5,16 +5,31 @@ import {
   serial,
   smallint,
   timestamp,
+  index,
+  jsonb,
+  uniqueIndex,
+  bigserial,
+  bigint,
+  varchar,
   unique
 } from 'drizzle-orm/pg-core';
-import { StaffColor, StaffPermission, Tournament, User } from './schema';
-import { citext, timestampConfig, uniqueConstraints } from './schema-utils';
+import {
+  InviteReason,
+  InviteStatus,
+  StaffColor,
+  StaffPermission,
+  Tournament,
+  User
+} from './schema';
+import { timestampConfig, uniqueConstraints } from './schema-utils';
+import { sql } from 'drizzle-orm';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 export const StaffRole = pgTable(
   'staff_role',
   {
     id: serial('id').primaryKey(),
-    name: citext('name').notNull(),
+    name: varchar('name', { length: 50 }).notNull(),
     color: StaffColor('color').notNull().default('slate'),
     order: smallint('order').notNull(),
     permissions: StaffPermission('permissions').array().notNull().default([]),
@@ -28,6 +43,10 @@ export const StaffRole = pgTable(
     uniqueNameTournamentId: unique(uniqueConstraints.staffRoles.nameTournamentId).on(
       table.name,
       table.tournamentId
+    ),
+    tournamentIdOrder: index('idx_staff_role_tournament_id_order').on(
+      table.tournamentId,
+      table.order
     )
   })
 );
@@ -37,11 +56,10 @@ export const StaffMember = pgTable(
   {
     id: serial('id').primaryKey(),
     joinedStaffAt: timestamp('joined_staff_at', timestampConfig).notNull().defaultNow(),
-    userId: integer('user_id')
-      .notNull()
-      .references(() => User.id, {
-        onDelete: 'cascade'
-      }),
+    deletedAt: timestamp('deleted_at', timestampConfig),
+    userId: integer('user_id').references(() => User.id, {
+      onDelete: 'set null'
+    }),
     tournamentId: integer('tournament_id')
       .notNull()
       .references(() => Tournament.id, {
@@ -49,10 +67,11 @@ export const StaffMember = pgTable(
       })
   },
   (table) => ({
-    uniqueUserIdTournamentId: unique('uni_staff_member_user_id_tournament_id').on(
+    uniqueUserIdTournamentId: uniqueIndex('udx_staff_member_user_id_tournament_id').on(
       table.userId,
       table.tournamentId
-    )
+    ),
+    indexDeletedAt: index('idx_staff_member_deleted_at').on(table.deletedAt)
   })
 );
 
@@ -77,100 +96,133 @@ export const StaffMemberRole = pgTable(
   })
 );
 
-// export const dbStaffApplication = pgTable('staff_application', {
-//   title: varchar('title', length(90)).notNull(),
-//   description: text('description'),
-//   forTournamentId: integer('tournament_id')
-//     .primaryKey()
-//     .references(() => dbTournament.id, actions('cascade'))
-// });
+export const Team = pgTable(
+  'team',
+  {
+    id: serial('id').primaryKey(),
+    registeredAt: timestamp('registered_at', timestampConfig).notNull().defaultNow(),
+    deletedAt: timestamp('deleted_at', timestampConfig),
+    name: varchar('name', { length: 20 }).notNull(),
+    bannerMetadata: jsonb('banner_metadata').$type<{
+      fileId: string;
+      originalFileName: string;
+    }>(),
+    tournamentId: integer('tournament_id')
+      .notNull()
+      .references(() => Tournament.id, {
+        onDelete: 'cascade'
+      }),
+    captainPlayerId: integer('captain_player_id')
+      .notNull()
+      .references(() => Player.id)
+  },
+  (table) => ({
+    uniqueNameTournamentId: unique('uni_team_name_tournament_id').on(
+      table.name,
+      table.tournamentId
+    ),
+    uniqueCaptainPlayerIdTournamentId: uniqueIndex('udx_team_captain_player_id_tournament_id').on(
+      table.captainPlayerId,
+      table.tournamentId
+    ),
+    indexName: index('idx_trgm_team_name')
+      .on(table.name)
+      .using(sql`gist (lower(${table.name}) gist_trgm_ops)`),
+    indexDeletedRegisteredAt: index('idx_team_deleted_at_registered_at').on(
+      table.deletedAt,
+      table.registeredAt
+    )
+  })
+);
 
-// export const dbStaffAppRole = pgTable(
-//   'staff_application_role',
-//   {
-//     id: serial('id').primaryKey(),
-//     name: varchar('name', length(45)).notNull(),
-//     description: text('description'),
-//     staffApplicationId: integer('staff_application_id')
-//       .notNull()
-//       .references(() => dbStaffApplication.forTournamentId, actions('cascade'))
-//   },
-//   (tbl) => ({
-//     nameStaffApplicationIdKey: uniqueIndex(
-//       'staff_application_role_name_staff_application_id_key'
-//     ).on(tbl.name, tbl.staffApplicationId)
-//   })
-// );
+export const Player = pgTable(
+  'player',
+  {
+    id: serial('id').primaryKey(),
+    registeredAt: timestamp('registered_at', timestampConfig).notNull().defaultNow(),
+    joinedTeamAt: timestamp('joined_team_at', timestampConfig),
+    deletedAt: timestamp('deleted_at', timestampConfig),
+    /** No gamemode is specified unlike the User table because (in the case we support more gamemodes in the future) an STD tournament won't be interested in the user's Taiko BWS rank and the same applied for other gamemodes */
+    bwsRank: integer('bws_rank'),
+    /**
+     * The player's availability to play matches across the weekend.
+     * Each element in the array represents a day of the week in the following order: Friday, Saturday, Sunday and Monday
+     * The value of each element is an integer that represents the user's availability that can be decoded into an array of 24 elements representing the 24 hours of the day and each value being either 0 (not available) or 1 (available)
+     */
+    availability: integer('availability').array(4).notNull().default([0, 0, 0, 0]),
+    userId: integer('user_id').references(() => User.id, {
+      onDelete: 'set null'
+    }),
+    tournamentId: integer('tournament_id')
+      .notNull()
+      .references(() => Tournament.id, {
+        onDelete: 'cascade'
+      }),
+    teamId: integer('team_id').references((): AnyPgColumn => Team.id)
+  },
+  (table) => ({
+    uniqueTournamentIdTeamIdUserId: uniqueIndex('udx_player_tournament_id_team_id_user_id').on(
+      table.tournamentId,
+      table.teamId,
+      table.userId
+    ),
+    indexDeletedRegisteredAt: index('idx_player_deleted_at_registered_at').on(
+      table.deletedAt,
+      table.registeredAt
+    )
+  })
+);
 
-// export const dbStaffAppSubmission = pgTable('staff_application_submission', {
-//   id: serial('id').primaryKey(),
-//   submittedAt: timestamp('submitted_at', timestampConfig).notNull().defaultNow(),
-//   applyingFor: varchar('applying_for', length(45)).array().notNull().default([]),
-//   status: dbJoinRequestStatus('status').notNull().default('pending'),
-//   staffingExperience: text('staffing_experience').notNull(),
-//   additionalComments: text('additional_comments'),
-//   staffApplicationId: integer('staff_application_id')
-//     .notNull()
-//     .references(() => dbStaffApplication.forTournamentId, actions('cascade')),
-//   submittedById: integer('submitted_by_id')
-//     .notNull()
-//     .references(() => User.id, actions('cascade'))
-// });
+export const Invite = pgTable(
+  'invite',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    sentAt: timestamp('sent_at', timestampConfig).notNull().defaultNow(),
+    status: InviteStatus('status').notNull().default('pending'),
+    reason: InviteReason('reason').notNull(),
+    byUserId: integer('by_user_id').references(() => User.id, {
+      onDelete: 'set null'
+    }),
+    toUserId: integer('to_user_id').references(() => User.id, {
+      onDelete: 'set null'
+    }),
+    /** Must be not null if reason is "join_team" */
+    teamId: integer('team_id').references(() => Team.id),
+    /** Must be not null if reason is "join_staff" or "delegate_host" */
+    tournamentId: integer('tournament_id').references(() => Tournament.id, {
+      onDelete: 'cascade'
+    })
+  },
+  (table) => ({
+    indexStatusReasonToUserIdSentAt: index('idx_invite_status_reason_to_user_id_sent_at').on(
+      table.status,
+      table.reason,
+      table.toUserId,
+      table.sentAt
+    ),
+    indexTeamId: index('idx_invite_team_id').on(table.teamId),
+    indexTournamentId: index('idx_invite_tournament_id').on(table.tournamentId)
+  })
+);
 
-// export const dbTeam = pgTable(
-//   'team',
-//   {
-//     id: serial('id').primaryKey(),
-//     registeredAt: timestamp('registered_at', timestampConfig).notNull().defaultNow(),
-//     name: varchar('name', length(20)).notNull(),
-//     inviteId: char('invite_id', length(8)).notNull().unique('team_invite_id_key'),
-//     hasBanner: boolean('has_banner').notNull().default(false),
-//     avgRank: real('average_rank').notNull(),
-//     avgBwsRank: real('average_bws_rank').notNull(),
-//     tournamentId: integer('tournament_id')
-//       .notNull()
-//       .references(() => dbTournament.id, actions('cascade')),
-//     captainId: integer('captain_id')
-//       .notNull()
-//       .references(() => dbPlayer.id)
-//       .unique('team_captain_id_key')
-//   },
-//   (tbl) => ({
-//     nameTournamentIdKey: unique('team_name_tournament_id_key').on(tbl.name, tbl.tournamentId)
-//   })
-// );
-
-// export const dbJoinTeamRequest = pgTable('join_team_request', {
-//   id: serial('id').primaryKey(),
-//   requestedAt: timestamp('requested_at', timestampConfig).notNull().defaultNow(),
-//   status: dbJoinRequestStatus('status').notNull().default('pending'),
-//   sentById: integer('sent_by_id')
-//     .notNull()
-//     .references(() => dbPlayer.id),
-//   teamId: integer('team_id')
-//     .notNull()
-//     .references(() => dbTeam.id)
-// });
-
-// // If the player is in a team tournament and doesn't have a team, then they're a free agent
-// export const dbPlayer = pgTable(
-//   'player',
-//   {
-//     id: serial('id').primaryKey(),
-//     registeredAt: timestamp('registered_at', timestampConfig).notNull().defaultNow(),
-//     bwsRank: integer('bws_rank'),
-//     tournamentId: integer('tournament_id')
-//       .notNull()
-//       .references(() => dbTournament.id, actions('cascade')),
-//     userId: integer('user_id')
-//       .notNull()
-//       .references(() => User.id, actions('cascade')),
-//     teamId: integer('team_id').references((): AnyPgColumn => dbTeam.id)
-//   },
-//   (tbl) => ({
-//     userIdTournamentIdKey: unique('player_user_id_tournament_id_key').on(
-//       tbl.userId,
-//       tbl.tournamentId
-//     )
-//   })
-// );
+/** Only used when Invite.reason is "join_staff" */
+export const InviteWithRole = pgTable(
+  'invite_with_role',
+  {
+    inviteId: bigint('invite_id', { mode: 'number' })
+      .notNull()
+      .references(() => Invite.id, {
+        onDelete: 'cascade'
+      }),
+    staffRoleId: integer('staff_role_id')
+      .notNull()
+      .references(() => StaffRole.id, {
+        onDelete: 'cascade'
+      })
+  },
+  (table) => ({
+    pk: primaryKey({
+      columns: [table.inviteId, table.staffRoleId]
+    })
+  })
+);
