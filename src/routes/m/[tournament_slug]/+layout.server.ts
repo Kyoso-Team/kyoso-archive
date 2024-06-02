@@ -1,16 +1,17 @@
 import { error } from '@sveltejs/kit';
 import { getSession, getStaffMember, getTournament } from '$lib/server/helpers/api';
+import { isDatePast } from '$lib/server/utils';
 import type { LayoutServerLoad } from './$types';
 
 export const load = (async ({ cookies, route, params }) => {
   const session = getSession(cookies, true);
 
   const tournament = await getTournament(params.tournament_slug, {
-    tournament: ['id', 'acronym', 'deleted'],
+    tournament: ['id', 'acronym', 'deletedAt'],
     dates: ['concludesAt']
   }, route, true);
 
-  if (tournament.deleted) {
+  if (tournament.deletedAt && isDatePast(tournament.deletedAt)) {
     throw error(403, 'Tournament has been deleted');
   }
 

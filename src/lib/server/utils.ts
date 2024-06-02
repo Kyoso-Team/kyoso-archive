@@ -105,29 +105,6 @@ export function paginate(page: number, elementsPerPage: number = 30) {
 }
 
 /**
- * Enable text search capabilities provided the table's columns and the search term (query)
- */
-// export function textSearch(...columns: AnyColumn[]) {
-//   let q = sql``;
-
-//   for (let i = 0; i < columns.length - 1; i++) {
-//     let sq = sql`lower(${columns[i]}) || ' ' || `;
-//     q.append(sq);
-//   }
-
-//   let sq = sql`lower(${columns.at(-1)}) ilike `;
-//   q.append(sq);
-
-//   return {
-//     query: (str: string) => {
-//       let sq = sql`'${str}'`;
-//       q.append(sq);
-//       return q;
-//     }
-//   };
-// }
-
-/**
  * Maps the table's columns in a select clause to avoid writing verbose objects.
  * Example:
  *
@@ -233,4 +210,25 @@ export function future(column: AnyPgColumn | SQL) {
 
 export function past(column: AnyPgColumn | SQL) {
   return lte(column as any, sql`now()`);
+}
+
+export function isDatePast(date: Date | number | null) {
+  if (!date) return false;
+  return new Date(date).getTime() <= new Date().getTime();
+}
+
+export function isDateFuture(date: Date | number | null) {
+  if (!date) return false;
+  return new Date(date).getTime() > new Date().getTime();
+}
+
+export function trgmSearch(searchStr: string, columns: [AnyPgColumn, ...AnyPgColumn[]]) {
+  const q = sql`${searchStr} % (lower(${columns[0]})`;
+
+  for (const col in columns.slice(1)) {
+    q.append(sql` || ' ' || lower(${col})`);
+  }
+
+  q.append(sql`)`);
+  return q;
 }

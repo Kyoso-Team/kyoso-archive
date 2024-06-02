@@ -14,7 +14,7 @@ import { wrap } from '@typeschema/valibot';
 import { getSession, getStaffMember, getTournament } from '../helpers/trpc';
 import { TRPCError } from '@trpc/server';
 import { hasPermissions, isDatePast } from '$lib/utils';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import {
   bwsValuesSchema,
   positiveIntSchema,
@@ -196,7 +196,7 @@ const updateTournament = t.procedure
     const info = await getTournament(
       tournamentId,
       {
-        tournament: ['deleted'],
+        tournament: ['deletedAt'],
         dates: [
           'publishedAt',
           'concludesAt'
@@ -303,7 +303,7 @@ const updateTournamentDates = t.procedure
     }
 
     const tournament = await getTournament(tournamentId, {
-      tournament: ['deleted'],
+      tournament: ['deletedAt'],
       dates: [
         'publishedAt',
         'concludesAt',
@@ -389,7 +389,7 @@ const deleteTournament = t.procedure
       await db
         .update(Tournament)
         .set({
-          deleted: true
+          deletedAt: sql`now()`
         })
         .where(eq(Tournament.id, tournamentId));
     } catch (err) {
