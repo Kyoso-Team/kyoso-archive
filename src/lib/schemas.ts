@@ -109,59 +109,27 @@ export const rankRangeSchema = v.object({
   upper: v.optional(v.number([v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER)]))
 });
 
-// export const whereIdSchema = z.object({
-//   id: z.number().int()
-// });
-
-// export const sortSchema = z.union([z.literal('asc'), z.literal('desc')]);
-
-// export const withTournamentSchema = z.object({
-//   tournamentId: z.number().int()
-// });
-
-// export const withRoundSchema = withTournamentSchema.extend({
-//   roundId: z.number().int()
-// });
-
-// export const mToN = z.object({
-//   addIds: z.array(z.number().int()).optional().default([]),
-//   removeIds: z.array(z.number().int()).optional().default([])
-// });
-
-// export const modSchema = z.union([
-//   z.literal('ez'),
-//   z.literal('hd'),
-//   z.literal('hr'),
-//   z.literal('sd'),
-//   z.literal('dt'),
-//   z.literal('rx'),
-//   z.literal('ht'),
-//   z.literal('fl'),
-//   z.literal('pf')
-// ]);
-
-// export const skillsetSchema = z.union([
-//   z.literal('consistency'),
-//   z.literal('streams'),
-//   z.literal('tech'),
-//   z.literal('alt'),
-//   z.literal('speed'),
-//   z.literal('gimmick'),
-//   z.literal('rhythm'),
-//   z.literal('aim'),
-//   z.literal('awkward_aim'),
-//   z.literal('flow_aim'),
-//   z.literal('reading'),
-//   z.literal('precision'),
-//   z.literal('stamina'),
-//   z.literal('finger_control'),
-//   z.literal('jack_of_all_trades')
-// ]);
-
-// export const availabilitySchema = z
-//   .string()
-//   .length(99)
-//   .refine((str) => {
-//     const regex = /(1|0){24}\.(1|0){24}\.(1|0){24}\.(1|0){24}/g;
-//     return regex.test(str);
-//   }, "Input doesn't match availability string format");
+export const modMultiplierSchema = v.union([
+  v.object({
+    /** Easy, Hidden, Hard Rock, Flashlight, Blinds */
+    mods: v.union([
+      v.literal('ez'),
+      v.literal('hd'),
+      v.literal('hr'),
+      v.literal('fl'),
+      v.literal('bl')
+    ]),
+    multiplier: v.number([v.integer(), v.minValue(-5), v.maxValue(5)])
+  }),
+  v.object({
+    /** Sudden Death, Perfect */
+    mods: v.union([
+      v.literal('sd'),
+      v.literal('pf')
+    ]),
+    multiplier: v.object({
+      ifSuccessful: v.number([v.integer(), v.minValue(-5), v.maxValue(5)]),
+      ifFailed: v.number([v.integer(), v.minValue(-5), v.maxValue(5)])
+    })
+  })
+]);

@@ -9,7 +9,8 @@ import type {
   refereeSettingsSchema,
   teamSettingsSchema,
   tournamentOtherDatesSchema,
-  tournamentLinkSchema
+  tournamentLinkSchema,
+  modMultiplierSchema
 } from './schemas';
 import type { Tournament, TournamentDates } from '$db';
 
@@ -36,6 +37,7 @@ export type BWSValues = Output<typeof bwsValuesSchema>;
 export type TeamSettings = Output<typeof teamSettingsSchema>;
 export type TournamentOtherDates = Output<typeof tournamentOtherDatesSchema>;
 export type RankRange = Output<typeof rankRangeSchema>;
+export type ModMultiplier = Output<typeof modMultiplierSchema>;
 
 export type RoundConfig = StandardRoundConfig | QualifierRoundConfig | BattleRoyaleRoundConfig;
 
@@ -63,18 +65,6 @@ export interface QualifierRoundConfig {
 
 export interface BattleRoyaleRoundConfig {
   playersEliminatedPerMap: number;
-}
-
-export interface ModMultiplier {
-  /** Easy, Hidden, Hard Rock, Sudden Death, Flashlight, Perfect, Blinds */
-  mods: ('ez' | 'hd' | 'hr' | 'sd' | 'fl' | 'pf' | 'bl')[];
-  /** The object only applies to SD and PF */
-  multiplier:
-    | number
-    | {
-        ifSuccessful: number;
-        ifFailed: number;
-      };
 }
 
 export interface BaseUserFormField {

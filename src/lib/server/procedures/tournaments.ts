@@ -17,6 +17,7 @@ import { hasPermissions, isDatePast } from '$lib/utils';
 import { eq, sql } from 'drizzle-orm';
 import {
   bwsValuesSchema,
+  modMultiplierSchema,
   positiveIntSchema,
   rankRangeSchema,
   refereeSettingsSchema,
@@ -156,7 +157,8 @@ const updateTournament = t.procedure
             bwsValues: v.nullable(bwsValuesSchema),
             links: v.array(tournamentLinkSchema),
             refereeSettings: refereeSettingsSchema,
-            rules: v.nullable(v.string())
+            rules: v.nullable(v.string()),
+            modMultipliers: v.array(modMultiplierSchema)
           })
         )
       })

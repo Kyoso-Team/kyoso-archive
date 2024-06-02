@@ -57,7 +57,7 @@ export const Tournament = pgTable(
     /** If null, then the tournament doesn't use BWS */
     bwsValues: jsonb('bws_values').$type<BWSValues>(),
     /** Limit of 5 mod multipliers */
-    modMultipliers: jsonb('mod_multipliers').$type<ModMultiplier[]>().default([]),
+    modMultipliers: jsonb('mod_multipliers').notNull().$type<ModMultiplier[]>().default([]),
     /** Limit of 20 links */
     links: jsonb('links').notNull().$type<TournamentLink[]>().default([]),
     refereeSettings: jsonb('referee_settings')
