@@ -1,10 +1,8 @@
 {
-  "id": "0ce46668-e1c9-45ec-8b00-e5ee13200570",
-  "prevId": "cb94bc24-34a0-48cc-86e7-c786c8f925a8",
-  "version": "5",
-  "dialect": "pg",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "ban": {
+    "public.ban": {
       "name": "ban",
       "schema": "",
       "columns": {
@@ -66,12 +64,24 @@
       },
       "indexes": {
         "idx_ban_issued_to_user_id_issued_at": {
-          "name": "idx_ban_issued_to_user_id_issued_at",
           "columns": [
-            "issued_to_user_id",
-            "issued_at"
+            {
+              "expression": "issued_to_user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "issued_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "name": "idx_ban_issued_to_user_id_issued_at",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
@@ -118,7 +128,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "country": {
+    "public.country": {
       "name": "country",
       "schema": "",
       "columns": {
@@ -140,7 +150,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "discord_user": {
+    "public.discord_user": {
       "name": "discord_user",
       "schema": "",
       "columns": {
@@ -168,7 +178,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "notification": {
+    "public.notification": {
       "name": "notification",
       "schema": "",
       "columns": {
@@ -204,7 +214,7 @@
         }
       }
     },
-    "osu_badge": {
+    "public.osu_badge": {
       "name": "osu_badge",
       "schema": "",
       "columns": {
@@ -229,18 +239,25 @@
       },
       "indexes": {
         "udx_osu_badge_img_file_name": {
-          "name": "udx_osu_badge_img_file_name",
           "columns": [
-            "img_file_name"
+            {
+              "expression": "img_file_name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "name": "udx_osu_badge_img_file_name",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "osu_user": {
+    "public.osu_user": {
       "name": "osu_user",
       "schema": "",
       "columns": {
@@ -283,11 +300,18 @@
       },
       "indexes": {
         "udx_osu_user_username": {
-          "name": "udx_osu_user_username",
           "columns": [
-            "username"
+            {
+              "expression": "username",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "name": "udx_osu_user_username",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
@@ -308,7 +332,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "osu_user_awarded_badge": {
+    "public.osu_user_awarded_badge": {
       "name": "osu_user_awarded_badge",
       "schema": "",
       "columns": {
@@ -333,11 +357,18 @@
       },
       "indexes": {
         "idx_osu_user_awarded_badge_osu_user_id": {
-          "name": "idx_osu_user_awarded_badge_osu_user_id",
           "columns": [
-            "osu_user_id"
+            {
+              "expression": "osu_user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "name": "idx_osu_user_awarded_badge_osu_user_id",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
@@ -379,7 +410,7 @@
       },
       "uniqueConstraints": {}
     },
-    "session": {
+    "public.session": {
       "name": "session",
       "schema": "",
       "columns": {
@@ -444,20 +475,44 @@
       },
       "indexes": {
         "idx_session_id_expired": {
-          "name": "idx_session_id_expired",
           "columns": [
-            "id",
-            "expired"
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "expired",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "name": "idx_session_id_expired",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "idx_session_user_id_expired": {
-          "name": "idx_session_user_id_expired",
           "columns": [
-            "user_id",
-            "expired"
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "expired",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "name": "idx_session_user_id_expired",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
@@ -478,7 +533,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "user": {
+    "public.user": {
       "name": "user",
       "schema": "",
       "columns": {
@@ -537,18 +592,32 @@
       },
       "indexes": {
         "udx_user_osu_user_id": {
-          "name": "udx_user_osu_user_id",
           "columns": [
-            "osu_user_id"
+            {
+              "expression": "osu_user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "name": "udx_user_osu_user_id",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         },
         "udx_user_discord_user_id": {
-          "name": "udx_user_discord_user_id",
           "columns": [
-            "discord_user_id"
+            {
+              "expression": "discord_user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "name": "udx_user_discord_user_id",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
@@ -590,7 +659,7 @@
         }
       }
     },
-    "user_notification": {
+    "public.user_notification": {
       "name": "user_notification",
       "schema": "",
       "columns": {
@@ -623,19 +692,38 @@
       },
       "indexes": {
         "idx_user_notification_notification_id": {
-          "name": "idx_user_notification_notification_id",
           "columns": [
-            "notification_id"
+            {
+              "expression": "notification_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "name": "idx_user_notification_notification_id",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "idx_user_notification_user_id_notified_at": {
-          "name": "idx_user_notification_user_id_notified_at",
           "columns": [
-            "user_id",
-            "notified_at"
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "notified_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "name": "idx_user_notification_user_id_notified_at",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
@@ -677,7 +765,7 @@
       },
       "uniqueConstraints": {}
     },
-    "round": {
+    "public.round": {
       "name": "round",
       "schema": "",
       "columns": {
@@ -793,7 +881,7 @@
         }
       }
     },
-    "stage": {
+    "public.stage": {
       "name": "stage",
       "schema": "",
       "columns": {
@@ -857,7 +945,7 @@
         }
       }
     },
-    "tournament": {
+    "public.tournament": {
       "name": "tournament",
       "schema": "",
       "columns": {
@@ -965,11 +1053,18 @@
       },
       "indexes": {
         "udx_tournament_url_slug": {
-          "name": "udx_tournament_url_slug",
           "columns": [
-            "url_slug"
+            {
+              "expression": "url_slug",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": true
+          "name": "udx_tournament_url_slug",
+          "isUnique": true,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {},
@@ -984,7 +1079,7 @@
         }
       }
     },
-    "staff_member": {
+    "public.staff_member": {
       "name": "staff_member",
       "schema": "",
       "columns": {
@@ -1055,7 +1150,7 @@
         }
       }
     },
-    "staff_member_role": {
+    "public.staff_member_role": {
       "name": "staff_member_role",
       "schema": "",
       "columns": {
@@ -1112,7 +1207,7 @@
       },
       "uniqueConstraints": {}
     },
-    "staff_role": {
+    "public.staff_role": {
       "name": "staff_role",
       "schema": "",
       "columns": {
@@ -1185,75 +1280,81 @@
     }
   },
   "enums": {
-    "staff_color": {
+    "public.staff_color": {
       "name": "staff_color",
-      "values": {
-        "slate": "slate",
-        "gray": "gray",
-        "red": "red",
-        "orange": "orange",
-        "yellow": "yellow",
-        "lime": "lime",
-        "green": "green",
-        "emerald": "emerald",
-        "cyan": "cyan",
-        "blue": "blue",
-        "indigo": "indigo",
-        "purple": "purple",
-        "fuchsia": "fuchsia",
-        "pink": "pink"
-      }
+      "schema": "public",
+      "values": [
+        "slate",
+        "gray",
+        "red",
+        "orange",
+        "yellow",
+        "lime",
+        "green",
+        "emerald",
+        "cyan",
+        "blue",
+        "indigo",
+        "purple",
+        "fuchsia",
+        "pink"
+      ]
     },
-    "staff_permission": {
+    "public.staff_permission": {
       "name": "staff_permission",
-      "values": {
-        "host": "host",
-        "debug": "debug",
-        "manage_tournament": "manage_tournament",
-        "manage_assets": "manage_assets",
-        "manage_regs": "manage_regs",
-        "manage_pool_structure": "manage_pool_structure",
-        "view_pool_suggestions": "view_pool_suggestions",
-        "create_pool_suggestions": "create_pool_suggestions",
-        "delete_pool_suggestions": "delete_pool_suggestions",
-        "view_pooled_maps": "view_pooled_maps",
-        "manage_pooled_maps": "manage_pooled_maps",
-        "view_feedback": "view_feedback",
-        "can_playtest": "can_playtest",
-        "can_submit_replays": "can_submit_replays",
-        "view_matches": "view_matches",
-        "manage_matches": "manage_matches",
-        "ref_matches": "ref_matches",
-        "commentate_matches": "commentate_matches",
-        "stream_matches": "stream_matches",
-        "manage_stats": "manage_stats",
-        "can_play": "can_play"
-      }
+      "schema": "public",
+      "values": [
+        "host",
+        "debug",
+        "manage_tournament",
+        "manage_assets",
+        "manage_regs",
+        "manage_pool_structure",
+        "view_pool_suggestions",
+        "create_pool_suggestions",
+        "delete_pool_suggestions",
+        "view_pooled_maps",
+        "manage_pooled_maps",
+        "view_feedback",
+        "can_playtest",
+        "can_submit_replays",
+        "view_matches",
+        "manage_matches",
+        "ref_matches",
+        "commentate_matches",
+        "stream_matches",
+        "manage_stats",
+        "can_play"
+      ]
     },
-    "stage_format": {
+    "public.stage_format": {
       "name": "stage_format",
-      "values": {
-        "groups": "groups",
-        "swiss": "swiss",
-        "qualifiers": "qualifiers",
-        "single_elim": "single_elim",
-        "double_elim": "double_elim",
-        "battle_royale": "battle_royale"
-      }
+      "schema": "public",
+      "values": [
+        "groups",
+        "swiss",
+        "qualifiers",
+        "single_elim",
+        "double_elim",
+        "battle_royale"
+      ]
     },
-    "tournament_type": {
+    "public.tournament_type": {
       "name": "tournament_type",
-      "values": {
-        "teams": "teams",
-        "draft": "draft",
-        "solo": "solo"
-      }
+      "schema": "public",
+      "values": [
+        "teams",
+        "draft",
+        "solo"
+      ]
     }
   },
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "0ce46668-e1c9-45ec-8b00-e5ee13200570",
+  "prevId": "cb94bc24-34a0-48cc-86e7-c786c8f925a8"
 }
