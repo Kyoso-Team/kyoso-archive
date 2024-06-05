@@ -24,7 +24,7 @@
   async function submit() {
     const { acronym, name, type, urlSlug } = mainForm.getFinalValue($mainForm);
     const teamSettings = isTeamBased ? teamForm.getFinalValue($teamForm) : undefined;
-    const rankRange = isOpenRank ? rankRangeForm.getFinalValue($rankRangeForm) : undefined;
+    const rankRange = !isOpenRank ? rankRangeForm.getFinalValue($rankRangeForm) : undefined;
     let tournament!: TRPCRouter['tournaments']['createTournament'];
 
     const err = tournamentChecks({ teamSettings, rankRange });
@@ -65,8 +65,8 @@
       return;
     }
 
-    show = false;
     await goto(`/m/${tournament.urlSlug}`);
+    show = false;
     loading.set(false);
   }
 

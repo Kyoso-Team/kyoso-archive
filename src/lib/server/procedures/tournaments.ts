@@ -13,7 +13,7 @@ import { catchUniqueConstraintError$, pick, trpcUnknownError } from '$lib/server
 import { wrap } from '@typeschema/valibot';
 import { getSession, getStaffMember, getTournament } from '../helpers/trpc';
 import { TRPCError } from '@trpc/server';
-import { hasPermissions, isDatePast } from '$lib/utils';
+import { hasPermissions, isDatePast, sortByKey } from '$lib/utils';
 import { eq, sql } from 'drizzle-orm';
 import {
   bwsValuesSchema,
@@ -28,7 +28,7 @@ import {
 } from '$lib/schemas';
 import { rateLimitMiddleware } from '$trpc/middleware';
 import { TRPCChecks } from '../helpers/checks';
-import { tournamentChecks, tournamentDatesChecks } from '$lib/helpers';
+import { tournamentChecks, tournamentDatesChecks, tournamentOtherDatesChecks } from '$lib/helpers';
 
 const catchUniqueConstraintError = catchUniqueConstraintError$([
   {
@@ -240,7 +240,7 @@ const updateTournamentDates = t.procedure
             playerRegsCloseAt: v.nullable(v.date()),
             staffRegsOpenAt: v.nullable(v.date()),
             staffRegsCloseAt: v.nullable(v.date()),
-            other: v.array(tournamentOtherDatesSchema)
+            other: v.array(tournamentOtherDatesSchema, [v.maxLength(20)])
           })
         )
       })
@@ -267,8 +267,23 @@ const updateTournamentDates = t.procedure
       concludesAt,
       publishedAt
     } = data;
-    const { other: _1, ...newDates } = data;
+    const { other: _, ...newDates } = data;
+    let { other } = data;
     const now = new Date().getTime();
+
+    if (other) {
+      const checksErr = tournamentOtherDatesChecks(other);
+
+      if (checksErr) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: checksErr
+        });
+      }
+
+      other = sortByKey(other, 'fromDate', 'asc');
+    }
+
 
     for (const [key_, newDate] of Object.entries(newDates)) {
       const key = key_ as keyof typeof newDates;

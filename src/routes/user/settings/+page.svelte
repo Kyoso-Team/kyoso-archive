@@ -46,16 +46,15 @@
       displayError(toast, err);
     }
 
-    loading.set(false);
-
     data.user = {
       ...data.user,
       apiKey: user.apiKey
     };
     data = Object.assign({}, data);
 
-    toastSuccess(toast, 'New API key generated successfully');
     showGenerateApiKeyPrompt = false;
+    loading.set(false);
+    toastSuccess(toast, 'New API key generated successfully');
   }
 
   async function deleteSession(sessionId: number) {
@@ -68,12 +67,11 @@
     } catch (err) {
       displayError(toast, err);
     }
-
-    loading.set(false);
-
+    
     data.activeSessions = data.activeSessions.filter((session) => session.id !== sessionId);
     data = Object.assign({}, data);
 
+    loading.set(false);
     toastSuccess(toast, 'Session deleted successfully');
   }
 </script>
@@ -142,7 +140,7 @@
           >
         </div>
         <div class="absolute top-0 right-4 h-full flex items-center">
-          <button class="btn-icon variant-filled-primary" on:click={toggleChangeDiscordPrompt}>
+          <button class="btn-icon variant-filled" on:click={toggleChangeDiscordPrompt}>
             <Pencil size={20} />
           </button>
         </div>

@@ -1,5 +1,7 @@
 <script lang="ts">
   import * as f from '$lib/form-validation';
+  import OtherDate from './OtherDate.svelte';
+  import ManageOtherDateForm from './ManageOtherDateForm.svelte';
   import { page } from '$app/stores';
   import { portal } from 'svelte-portal';
   import { SEO, Tooltip } from '$components/general';
@@ -24,6 +26,7 @@
 
   export let data: PageServerData;
   let t: typeof data.tournament = data.tournament;
+  let otherDates = t.other;
   let canUpdateGeneralSettings = false;
   let canUpdateRefereeSettings = false;
   let canUpdateDates = false;
@@ -32,6 +35,8 @@
   let generalSettingsHasUpdated = false;
   let showUpdateUrlSlugPrompt = false;
   let showUpdateNameAcronymPrompt = false;
+  let showManageOtherDateForm = false;
+  let updatingOtherDateIndex: number | undefined;
   const now = new Date().getTime();
   const aYear = new Date(31_556_952_000).getTime();
   const toast = getToastStore();
@@ -69,9 +74,9 @@
   );
   const bwsForm = createForm(
     {
-      x: f.number([f.notvalue(0), f.minValue(-10), f.maxValue(10)]),
-      y: f.number([f.notvalue(0), f.minValue(-10), f.maxValue(10)]),
-      z: f.number([f.notvalue(0), f.minValue(-10), f.maxValue(10)])
+      x: f.number([f.notValue(0), f.minValue(-10), f.maxValue(10)]),
+      y: f.number([f.notValue(0), f.minValue(-10), f.maxValue(10)]),
+      z: f.number([f.notValue(0), f.minValue(-10), f.maxValue(10)])
     },
     bwsInitialValues()
   );
@@ -222,7 +227,8 @@
     } else {
       await invalidate('reload:manage_settings');
     }
-    
+
+    otherDatesHaveUpdated = false;
     overrideInitialValues();
     loading.set(false);
     toastSuccess(toast, successMsg);
@@ -316,7 +322,10 @@
       return;
     }
 
-    await updateTournament('updateTournamentDates', dates, 'Updated dates successfully');
+    await updateTournament('updateTournamentDates', {
+      ...dates,
+      other: otherDates
+    }, 'Updated dates successfully');
   }
 
   function onUpdateUrlSlug() {
@@ -333,6 +342,21 @@
     fnQueue.clearQueue();
     showUpdateUrlSlugPrompt = false;
     showUpdateNameAcronymPrompt = false;
+  }
+
+  function onCreateOtherDate() {
+    showManageOtherDateForm = true;
+  }
+
+  function onDeleteOtherDate(i: number) {
+    otherDates.splice(i, 1);
+    otherDates = [...otherDates];
+    otherDatesHaveUpdated = true;
+  }
+
+  function onUpdateOtherDate(i: number) {
+    showManageOtherDateForm = true;
+    updatingOtherDateIndex = i;
   }
 
   $: {
@@ -357,6 +381,7 @@
   }
 
   $: t = data.tournament;
+  $: otherDates = t.other;
   $: canUpdateRefereeSettings = $refereeSettingsForm.hasUpdated && $refereeSettingsForm.canSubmit;
   $: isPublic = isDatePast(t.publishedAt);
   $: isTeamBased = ['teams', 'draft'].includes($tournamentForm.value.type as any);
@@ -392,6 +417,11 @@
         <button class="btn variant-filled" on:click={clearFnQueue}>Cancel</button>
       </div>
     </Modal>
+  </Backdrop>
+{/if}
+{#if showManageOtherDateForm}
+  <Backdrop>
+    <ManageOtherDateForm bind:show={showManageOtherDateForm} bind:otherDates={otherDates} bind:otherDatesHaveUpdated={otherDatesHaveUpdated} bind:editIndex={updatingOtherDateIndex} />
   </Backdrop>
 {/if}
 <h1 class="m-title" use:portal={'#page-title'}>Settings</h1>
@@ -533,7 +563,7 @@
         </div>
       </div>
     </div>
-    <div class="grid sm:grid-cols-[50%_50%] max-sm:gap-4 w-full mt-4">
+    <div class="grid sm:grid-cols-[50%_50%] gap-4 sm:w-[calc(100%-1rem)] mt-4">
       <div>
         {#if generalSettingsHasUpdated}
           <div class="card variant-soft-warning flex justify-center items-center py-[9px] px-5 sm:w-max" transition:fade={{ duration: 150 }}>
@@ -587,8 +617,16 @@
           disabled={!data.isHost}
         />
       </div>
+      {#if otherDates.length > 0}
+        <div class="line-b" />
+        <div>
+          {#each otherDates as date, i}
+            <OtherDate {date} onUpdate={() => onUpdateOtherDate(i)} onDelete={() => onDeleteOtherDate(i)} />
+          {/each}
+        </div>
+      {/if}
     </div>
-    <div class="grid sm:grid-cols-[50%_50%] max-sm:gap-4 w-full mt-4">
+    <div class="grid sm:grid-cols-[50%_50%] gap-4 sm:w-[calc(100%-1rem)] mt-4">
       <div>
         {#if datesHaveUpdated}
           <div class="card variant-soft-warning flex justify-center items-center py-[9px] px-5 sm:w-max" transition:fade={{ duration: 150 }}>
@@ -597,10 +635,12 @@
           </div>
         {/if}
       </div>
-      <div class="flex justify-end w-full">
+      <div class="flex justify-end w-full gap-2">
+        <button class="btn btn-sm variant-filled" disabled={otherDates.length > 20} on:click={onCreateOtherDate}>Add</button>
         <button class="btn variant-filled-primary" disabled={!canUpdateDates} on:click={updateDates}>Update</button>
       </div>
     </div>
+    
     <div class="line-b my-8" />
     <h2>Referee Settings</h2>
     <div class="mt-4 w-full card p-4 flex flex-col gap-4">
@@ -692,7 +732,7 @@
         />
       </div>
     </div>
-    <div class="grid sm:grid-cols-[50%_50%] max-sm:gap-4 w-full mt-4">
+    <div class="grid sm:grid-cols-[50%_50%] gap-4 sm:w-[calc(100%-1rem)] mt-4">
       <div>
         {#if $refereeSettingsForm.hasUpdated}
           <div class="card variant-soft-warning flex justify-center items-center py-[9px] px-5 sm:w-max" transition:fade={{ duration: 150 }}>

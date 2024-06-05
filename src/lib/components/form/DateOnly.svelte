@@ -1,16 +1,15 @@
 <script lang="ts">
   import { slide } from 'svelte/transition';
+  import { dateToHtmlInput } from '$lib/utils';
   import type { FormStore } from '$types';
 
   export let form: FormStore;
   export let label: string;
   export let legend: string;
-  export let options: Record<string, string>;
   export let disabled = false;
-  export let onChange: (() => void) | undefined = undefined;
   let hasSelected = false;
   let optional = false;
-  let value: string = !$form.value[label] ? 'null' : $form.value[label];
+  let value: string | undefined = $form.value[label] ? dateToHtmlInput($form.value[label], true) : undefined;
   let error = $form.errors?.[label];
 
   function onInput() {
@@ -22,7 +21,13 @@
   }
 
   $: {
-    form.setValue(label, value === 'null' ? null : value);
+    if (!value) {
+      form.setValue(label, null);
+    } else {
+      const date = new Date(value);
+      const localDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60 * 1000));
+      form.setValue(label, !value ? null : localDate);
+    }
   }
 
   $: {
@@ -39,18 +44,13 @@
       <slot />
     </p>
   {/if}
-  <select
-    class={`select ${error && hasSelected ? 'input-error' : ''}`}
+  <input
+    type="date"
+    class={`input ${error && hasSelected ? 'input-error' : ''}`}
     {disabled}
     on:input={onInput}
-    on:change={onChange}
     bind:value
-  >
-    <option value="null">---</option>
-    {#each Object.entries(options) as [value, option]}
-      <option {value}>{option}</option>
-    {/each}
-  </select>
+  />
   {#if $$slots.preview}
     <span class="block text-xs text-primary-500">
       <slot name="preview" />

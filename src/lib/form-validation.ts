@@ -36,7 +36,7 @@ export function number(pipe: Parameters<typeof v.number>[1]) {
   return v.number(required, pipe);
 }
 
-export function notvalue<T extends string | number | bigint | boolean | Date, R extends T>(requirement: R) {
+export function notValue<T extends string | number | bigint | boolean | Date, R extends T>(requirement: R) {
   return v.notValue<T, R>(requirement, `Input must not be equal to ${requirement.toString()}`);
 }
 

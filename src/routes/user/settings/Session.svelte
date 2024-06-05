@@ -98,7 +98,7 @@
       {/if}
       {session.ipAddress}
     </span>
-    <span class="dark:text-zinc-300 text-zinc-700 text-xs">
+    <span class="text-surface-600-300-token text-xs">
       {session.ipMetadata.city}, {session.ipMetadata.region}, {session.ipMetadata.country}
     </span>
   </div>

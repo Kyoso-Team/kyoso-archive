@@ -128,3 +128,20 @@ export function tournamentDatesChecks(
     }
   }
 }
+
+export function tournamentOtherDatesChecks(dates: (typeof TournamentDates.$inferSelect)['other']): string | undefined {
+  if (dates.length > 20) {
+    return 'The tournament can only have up to 20 dates (not counting default dates)';
+  }
+
+  for (const date of dates) {
+    const err = tournamentOtherDateChecks(date);
+    if (err) return err;
+  }
+}
+
+export function tournamentOtherDateChecks({ label, fromDate, toDate }: (typeof TournamentDates.$inferSelect)['other'][number]): string | undefined {
+  if (toDate && fromDate > toDate) {
+    return `The starting date must be less than or equal to the maximum ("${label}")`;
+  }
+}

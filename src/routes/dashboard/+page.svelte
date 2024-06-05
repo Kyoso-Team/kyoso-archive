@@ -32,7 +32,7 @@
     <div>
       <span class="font-bold text-primary-500">STAFFING</span>
       {#if data.tournamentsStaffing.length === 0}
-        <span class="inline-block text-sm text-surface-600/75 dark:text-surface-300/75 mt-2"
+        <span class="inline-block text-sm text-surface-600-300-token mt-2"
           >You're currently not staffing in any tournaments</span
         >
       {:else}
@@ -46,7 +46,7 @@
     <div>
       <span class="font-bold text-primary-500">PLAYING</span>
       {#if data.tournamentsPlaying.length === 0}
-        <span class="inline-block text-sm text-surface-600/75 dark:text-surface-300/75 mt-2"
+        <span class="inline-block text-sm text-surface-600-300-token mt-2"
           >You're currently not playing in any tournaments</span
         >
       {:else}

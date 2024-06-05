@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { oldestDatePossible } from './constants';
+import { maxPossibleDate, oldestDatePossible } from './constants';
 
 // When writing the error messages for scehmas, keep in mind that the message will be formated like:
 // "Invalid input: {object_name}.{property} should {message}"
@@ -51,10 +51,6 @@ export const tournamentLinkIconSchema = v.union(
   'be "osu", "discord", "google_sheets", "google_forms", "twitch", "youtube", "x", "challonge", "donate" or "website"'
 );
 
-export const oldestPossibleDateMsSchema = v.number('be a number', [
-  v.minValue(oldestDatePossible.getTime(), `be greater or equal to ${oldestDatePossible.getTime()}`)
-]);
-
 // Schemas below this do not require error messages to be set
 
 export const refereeSettingsSchema = v.object({
@@ -81,15 +77,15 @@ export const refereeSettingsSchema = v.object({
 });
 
 export const tournamentLinkSchema = v.object({
-  label: v.string([v.minLength(1), v.maxLength(20)]),
+  label: v.string([v.minLength(2), v.maxLength(20)]),
   url: v.string([v.url()]),
   icon: tournamentLinkIconSchema
 });
 
 export const bwsValuesSchema = v.object({
-  x: v.number(),
-  y: v.number(),
-  z: v.number()
+  x: v.number([v.notValue(0), v.minValue(-10), v.maxValue(10)]),
+  y: v.number([v.notValue(0), v.minValue(-10), v.maxValue(10)]),
+  z: v.number([v.notValue(0), v.minValue(-10), v.maxValue(10)])
 });
 
 export const teamSettingsSchema = v.object({
@@ -99,9 +95,10 @@ export const teamSettingsSchema = v.object({
 });
 
 export const tournamentOtherDatesSchema = v.object({
-  label: v.string(),
-  fromDate: v.number(),
-  toDate: v.nullable(v.number())
+  label: v.string([v.minLength(2), v.maxLength(35)]),
+  onlyDate: v.boolean(),
+  fromDate: v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())]),
+  toDate: v.nullable(v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())]))
 });
 
 export const rankRangeSchema = v.object({

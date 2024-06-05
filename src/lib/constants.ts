@@ -5,6 +5,8 @@ import type { InferEnum } from '$types';
 
 /** GMT: Saturday, February 24, 2024 12:00:00 AM */
 export const oldestDatePossible = new Date(1708732800000);
+/** GMT: Wednesday, Janaury 1st, 3000 12:00:00 PM */
+export const maxPossibleDate = new Date(32503680000000);
 
 export const tournamentTypeOptions: Record<InferEnum<typeof TournamentType>, string> = {
   draft: 'Draft',
