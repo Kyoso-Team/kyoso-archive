@@ -10,6 +10,13 @@
   $: {
     form.setValue(label, value);
   }
+
+  $: {
+    if ($form.overwritten?.[label]) {
+      value = $form.defaults[label];
+      form.setOverwrittenState(label, false);
+    }
+  }
 </script>
 
 <label class="label">

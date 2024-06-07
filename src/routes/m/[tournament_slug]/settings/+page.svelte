@@ -1,5 +1,6 @@
 <script lang="ts">
   import * as f from '$lib/form-validation';
+  import Actions from './Actions.svelte';
   import OtherDate from './OtherDate.svelte';
   import Link from './Link.svelte';
   import ManageOtherDateForm from './ManageOtherDateForm.svelte';
@@ -11,10 +12,9 @@
   import { getToastStore, popup } from '@skeletonlabs/skeleton';
   import { goto, invalidate } from '$app/navigation';
   import { displayError, isDatePast, keys, toastError, toastSuccess, tooltip } from '$lib/utils';
-  import { User, AlertTriangle } from 'lucide-svelte';
+  import { User } from 'lucide-svelte';
   import { createForm, createFunctionQueue, loading } from '$stores';
   import { dragHandleZone } from 'svelte-dnd-action';
-  import { fade } from 'svelte/transition';
   import { trpc } from '$lib/trpc';
   import { Modal, Backdrop } from '$components/layout';
   import { tournamentChecks, tournamentDatesChecks } from '$lib/helpers';
@@ -124,8 +124,6 @@
     'grid md:w-[calc(100%-1rem)] 2lg:w-[calc(100%-2rem)] md:grid-cols-[50%_50%] 2lg:grid-cols-[33.33%_33.34%_33.33%] gap-4';
   const grid2Styles =
     'grid 2lg:w-[calc(100%-2rem)] md:grid-cols-[100%] 2lg:grid-cols-[33.33%_calc(66.67%+1rem)] gap-4';
-  const grid3Styles =
-    'grid sm:grid-cols-[50%_50%] gap-4 sm:w-[calc(100%-1rem)]';
 
   function tournamentInitialValues() {
     return {
@@ -242,6 +240,29 @@
     overrideInitialValues();
     loading.set(false);
     toastSuccess(toast, successMsg);
+  }
+
+  function resetGeneralSettings() {
+    tournamentForm.reset();
+    teamForm.reset();
+    rankRangeForm.reset();
+    bwsForm.reset();
+  }
+
+  function resetDates() {
+    datesForm.reset();
+
+    otherDatesHaveUpdated = false;
+    otherDates = t.other;
+  }
+
+  function resetLinks() {
+    linksHaveUpdated = false;
+    links = t.links.map((link) => ({ ...link, id: link.label }));
+  }
+
+  function resetRefereeSettings() {
+    refereeSettingsForm.reset();
   }
 
   async function updateGeneralSettings() {
@@ -609,19 +630,7 @@
         </div>
       </div>
     </div>
-    <div class={`${grid3Styles} mt-4`}>
-      <div>
-        {#if generalSettingsHasUpdated}
-          <div class="card variant-soft-warning flex justify-center items-center py-[9px] px-5 sm:w-max" transition:fade={{ duration: 150 }}>
-            <AlertTriangle size={20} class="mr-2" />
-            You have unsaved changes
-          </div>
-        {/if}
-      </div>
-      <div class="flex justify-end w-full">
-        <button class="btn variant-filled-primary" disabled={!canUpdateGeneralSettings} on:click={updateGeneralSettings}>Update</button>
-      </div>
-    </div>
+    <Actions hasUpdated={generalSettingsHasUpdated} disableUpdateBtn={!canUpdateGeneralSettings} onUpdate={updateGeneralSettings} onReset={resetGeneralSettings} />
     <div class="line-b my-8" />
     <h2>Dates</h2>
     <div class="mt-4 w-full card p-4 flex flex-col gap-4">
@@ -674,20 +683,7 @@
         </div>
       {/if}
     </div>
-    <div class={`${grid3Styles} mt-4`}>
-      <div>
-        {#if datesHaveUpdated}
-          <div class="card variant-soft-warning flex justify-center items-center py-[9px] px-5 sm:w-max" transition:fade={{ duration: 150 }}>
-            <AlertTriangle size={20} class="mr-2" />
-            You have unsaved changes
-          </div>
-        {/if}
-      </div>
-      <div class="flex justify-end w-full gap-2">
-        <button class="btn btn-sm variant-filled" disabled={otherDates.length > 20} on:click={onCreateOtherDate}>Add</button>
-        <button class="btn variant-filled-primary" disabled={!canUpdateDates} on:click={updateDates}>Update</button>
-      </div>
-    </div>
+    <Actions hasUpdated={datesHaveUpdated} disableUpdateBtn={!canUpdateDates} onUpdate={updateDates} onReset={resetDates} disableAddBtn={otherDates.length > 20} onAdd={onCreateOtherDate} />
     <div class="line-b my-8" />
     <h2>Links</h2>
     <span class="text-warning-500 mt-2 block"><strong>Note for testers:</strong> We're working on designing the icons so it matches the rest of the website's icons, so for now, all icons are displayed with the default "link" icon.</span>
@@ -711,20 +707,7 @@
         </div>
       {/if}
     </div>
-    <div class={`${grid3Styles} mt-4`}>
-      <div>
-        {#if linksHaveUpdated}
-          <div class="card variant-soft-warning flex justify-center items-center py-[9px] px-5 sm:w-max" transition:fade={{ duration: 150 }}>
-            <AlertTriangle size={20} class="mr-2" />
-            You have unsaved changes
-          </div>
-        {/if}
-      </div>
-      <div class="flex justify-end w-full gap-2">
-        <button class="btn btn-sm variant-filled" disabled={links.length > 20} on:click={onCreateLink}>Add</button>
-        <button class="btn variant-filled-primary" disabled={!linksHaveUpdated} on:click={updateLinks}>Update</button>
-      </div>
-    </div>
+    <Actions hasUpdated={linksHaveUpdated} disableUpdateBtn={!linksHaveUpdated} onUpdate={updateLinks} onReset={resetLinks} disableAddBtn={links.length > 20} onAdd={onCreateLink} />
     <div class="line-b my-8" />
     <h2>Referee Settings</h2>
     <div class="mt-4 w-full card p-4 flex flex-col gap-4">
@@ -816,18 +799,6 @@
         />
       </div>
     </div>
-    <div class={`${grid3Styles} mt-4`}>
-      <div>
-        {#if $refereeSettingsForm.hasUpdated}
-          <div class="card variant-soft-warning flex justify-center items-center py-[9px] px-5 sm:w-max" transition:fade={{ duration: 150 }}>
-            <AlertTriangle size={20} class="mr-2" />
-            You have unsaved changes
-          </div>
-        {/if}
-      </div>
-      <div class="flex justify-end w-full">
-        <button class="btn variant-filled-primary" disabled={!canUpdateRefereeSettings} on:click={updateRefereeSettings}>Update</button>
-      </div>
-    </div>
+    <Actions hasUpdated={$refereeSettingsForm.hasUpdated} disableUpdateBtn={!canUpdateRefereeSettings} onUpdate={updateRefereeSettings} onReset={resetRefereeSettings} />
   </div>
 </main>

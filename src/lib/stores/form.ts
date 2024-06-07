@@ -28,20 +28,57 @@ export function createForm<
   }
 
   const form = writable<{
-    value: TLiveValue;
-    defaults: { [K in keyof TFinalValue]?: TFinalValue[K] | null };
     errors: { [K in keyof TFinalValue]?: string };
     updated: { [K in keyof TFinalValue]?: true };
+    overwritten: { [K in keyof TFinalValue]?: true };
     canSubmit: boolean;
     hasUpdated: boolean;
+    defaults: { [K in keyof TFinalValue]?: TFinalValue[K] | null };
+    value: TLiveValue;
   }>({
     errors: {},
     updated: {},
+    overwritten: {},
     canSubmit: false,
     hasUpdated: false,
     defaults: (defaults || {}) as any,
     value: value as any
   });
+
+  function reset() {
+    form.update((form) => {
+      const newForm = {
+        errors: {},
+        updated: {},
+        overwritten: Object.keys(formSchema).reduce((obj, key) => ({ ...obj, [key]: true }), {}),
+        defaults: form.defaults,
+        value: value as any
+      } as any;
+
+      return {
+        ...newForm,
+        canSubmit: canSubmit(newForm),
+        hasUpdated: hasUpdated(newForm)
+      };
+    });
+  }
+
+  function setOverwrittenState(key: string, state: boolean) {
+    form.update((form) => {
+      const overwritten = form.overwritten as Record<string, true | undefined>;
+      
+      if (state) {
+        overwritten[key] = true;
+      } else {
+        delete overwritten[key];
+      }
+
+      return {
+        ...form,
+        overwritten
+      };
+    });
+  }
 
   function canSubmit(form: { value: TLiveValue; errors: { [K in keyof TFinalValue]?: string }; }) {
     const { value, errors } = form;
@@ -84,7 +121,8 @@ export function createForm<
         value,
         errors,
         updated,
-        defaults
+        defaults,
+        overwritten: form.overwritten
       } as any;
 
       return {
@@ -104,7 +142,8 @@ export function createForm<
         errors,
         value: form.value,
         updated: form.updated,
-        defaults: form.defaults
+        defaults: form.defaults,
+        overwritten: form.overwritten
       } as any;
 
       return {
@@ -145,7 +184,8 @@ export function createForm<
       const newForm = {
         ...form,
         updated,
-        defaults
+        defaults,
+        overwritten: form.overwritten
       } as any;
 
       return {
@@ -185,10 +225,12 @@ export function createForm<
 
   return {
     ...form,
+    reset,
     setValue,
     getFinalValue,
     setGlobalError,
     overrideInitialValues,
+    setOverwrittenState,
     labels: labels as { [K in keyof TFinalValue]: K },
     schemas: formSchema
   };

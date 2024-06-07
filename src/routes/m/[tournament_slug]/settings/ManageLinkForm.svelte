@@ -63,18 +63,24 @@
     links = [...links];
     show = false;
     linksHaveUpdated = true;
-    editIndex = undefined;
+
+    setTimeout(() => {
+      editIndex = undefined;
+    }, 150);
   }
 
   function cancel() {
     show = false;
-    editIndex = undefined;
+
+    setTimeout(() => {
+      editIndex = undefined;
+    }, 150);
   }
 </script>
 
 <Form {submit}>
   <svelte:fragment slot="header">
-    <span class="title">{editIndex ? 'Edit' : 'Add'} Link</span>
+    <span class="title">{editIndex !== undefined ? 'Edit' : 'Add'} Link</span>
   </svelte:fragment>
   <Text form={mainForm} label={labels.label} legend="Link label">
     What is this link for?

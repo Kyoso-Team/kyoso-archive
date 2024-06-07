@@ -178,6 +178,8 @@ export type PageStore = Page<Record<string, string>, string | null>;
 
 export type FormStore = Writable<{
   value: Record<string, any>;
+  defaults: Record<string, any>;
+  overwritten: Record<string, any>;
   errors: Record<string, string | undefined>;
   canSubmit: boolean;
 }> & {
@@ -185,6 +187,7 @@ export type FormStore = Writable<{
   labels: Record<string, string>;
   setGlobalError: (err: string) => void;
   setValue: (key: string, input: any) => void;
+  setOverwrittenState: (key: string, state: boolean) => void;
   getFinalValue: (form: any) => Record<string, any>;
 };
 

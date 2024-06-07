@@ -63,12 +63,18 @@
     otherDates = [...sortByKey(otherDates, 'fromDate', 'asc')];    
     show = false;
     otherDatesHaveUpdated = true;
-    editIndex = undefined;
+    
+    setTimeout(() => {
+      editIndex = undefined;
+    }, 150);
   }
 
   function cancel() {
     show = false;
-    editIndex = undefined;
+    
+    setTimeout(() => {
+      editIndex = undefined;
+    }, 150);
   }
 
   function onDisplayChange() {
@@ -82,7 +88,7 @@
 
 <Form {submit}>
   <svelte:fragment slot="header">
-    <span class="title">{editIndex ? 'Edit' : 'Add'} Date</span>
+    <span class="title">{editIndex !== undefined ? 'Edit' : 'Add'} Date</span>
   </svelte:fragment>
   <Text form={mainForm} label={labels.label} legend="Date label">
     What is this date/are these dates for?

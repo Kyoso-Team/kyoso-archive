@@ -28,6 +28,14 @@
   $: {
     error = $form.errors?.[label];
   }
+
+  $: {
+    if ($form.overwritten?.[label]) {
+      hasSelected = false;
+      value = $form.defaults[label];
+      form.setOverwrittenState(label, false);
+    }
+  }
 </script>
 
 <label class="label">

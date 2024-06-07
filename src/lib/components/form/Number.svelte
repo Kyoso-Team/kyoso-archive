@@ -41,6 +41,14 @@
       }
     }
   }
+
+  $: {
+    if ($form.overwritten?.[label]) {
+      hasWritten = false;
+      value = $form.defaults[label];
+      form.setOverwrittenState(label, false);
+    }
+  }
 </script>
 
 <label class="label">
