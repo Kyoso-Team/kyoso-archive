@@ -501,304 +501,312 @@
 </ol>
 <main class="main flex justify-center">
   <div class="w-full max-w-5xl">
-    <h2>General Settings</h2>
-    <div class="mt-4 w-full card p-4 flex flex-col gap-4">
-      <div class={grid1Styles}>
-        <Text form={tournamentForm} label={labels.name} legend="Name" disabled={!data.isHost}>
-          <svelte:fragment slot="corner">
-            {#if !data.isHost}
-              <div
-                class="absolute top-0 right-0 !mt-0 bg-error-500 rounded-md w-6 h-6 flex justify-center items-center [&>*]:pointer-events-none"
-                use:popup={tooltip(`not-host-${labels.name}`)}
-              >
-                <User size={20} class="stroke-black" />
-              </div>
-              <Tooltip
-                target={`not-host-${labels.name}`}
-                label="Only the host can update this setting"
-              />
-            {/if}
-          </svelte:fragment>
-        </Text>
-        <Text
-          form={tournamentForm}
-          label={labels.acronym}
-          legend="Acronym"
-          disabled={!data.isHost}
-        />
-        <Text
-          form={tournamentForm}
-          label={labels.urlSlug}
-          legend="URL slug"
-          disabled={!data.isHost}
-        />
-      </div>
-      <div class="line-b" />
-      <div class={grid1Styles}>
-        <Select
-          form={tournamentForm}
-          label={labels.type}
-          legend="Type"
-          options={tournamentTypeOptions}
-          disabled={!data.isHost}
-        />
-        <Number
-          form={teamForm}
-          label={labels.minTeamSize}
-          legend="Min. team size"
-          disabled={!isTeamBased || !data.isHost}
-        />
-        <Number
-          form={teamForm}
-          label={labels.maxTeamSize}
-          legend="Max. team size"
-          disabled={!isTeamBased || !data.isHost}
-        />
-        <Checkbox
-          form={teamForm}
-          label={labels.useTeamBanners}
-          legend="Team banners?"
-          disabled={!isTeamBased || !data.isHost}
-        />
-      </div>
-      <div class="line-b" />
-      <div class={grid2Styles}>
-        <div>
-          <Checkbox
+    <section>
+      <h2>General Settings</h2>
+      <div class="mt-4 w-full card p-4 flex flex-col gap-4">
+        <div class={grid1Styles}>
+          <Text form={tournamentForm} label={labels.name} legend="Name" disabled={!data.isHost}>
+            <svelte:fragment slot="corner">
+              {#if !data.isHost}
+                <div
+                  class="absolute top-0 right-0 !mt-0 bg-error-500 rounded-md w-6 h-6 flex justify-center items-center [&>*]:pointer-events-none"
+                  use:popup={tooltip(`not-host-${labels.name}`)}
+                >
+                  <User size={20} class="stroke-black" />
+                </div>
+                <Tooltip
+                  target={`not-host-${labels.name}`}
+                  label="Only the host can update this setting"
+                />
+              {/if}
+            </svelte:fragment>
+          </Text>
+          <Text
             form={tournamentForm}
-            label={labels.openRank}
-            legend="Open rank?"
+            label={labels.acronym}
+            legend="Acronym"
+            disabled={!data.isHost}
+          />
+          <Text
+            form={tournamentForm}
+            label={labels.urlSlug}
+            legend="URL slug"
             disabled={!data.isHost}
           />
         </div>
-        <div class="flex flex-col gap-2">
-          <div class="grid sm:w-[calc(100%-1rem)] sm:grid-cols-[50%_50%] gap-4">
-            <Number
-              form={rankRangeForm}
-              label={labels.lower}
-              legend="Lower rank range"
-              disabled={isOpenRank || !data.isHost}
-            />
-            <Number
-              form={rankRangeForm}
-              label={labels.upper}
-              legend="Upper rank range"
-              disabled={isOpenRank || !data.isHost}
-            />
-          </div>
-          <span class="inline-block col-span-2 text-sm text-surface-600-300-token"
-            >If the upper rank range is not set, it'll default to infinity.</span
-          >
-        </div>
-      </div>
-      <div class="line-b" />
-      <div class={grid2Styles}>
-        <div>
-          <Checkbox
-            form={tournamentForm}
-            label={labels.useBWS}
-            legend="Use BWS?"
-            disabled={!data.isHost}
-          />
-        </div>
-        <div class="flex flex-col gap-2">
-          <div class="grid sm:w-[calc(100%-2rem)] sm:grid-cols-[33.33%_33.34%_33.33%] gap-4">
-            <Number
-              form={bwsForm}
-              label={labels.x}
-              legend="Value for X"
-              disabled={!useBWS || !data.isHost}
-            />
-            <Number
-              form={bwsForm}
-              label={labels.y}
-              legend="Value for Y"
-              disabled={!useBWS || !data.isHost}
-            />
-            <Number
-              form={bwsForm}
-              label={labels.z}
-              legend="Value for Z"
-              disabled={!useBWS || !data.isHost}
-            />
-          </div>
-          <span
-            class="inline-block col-span-2 text-sm text-surface-600-300-token italic font-mono"
-            >BWS = rank ^ ({$bwsForm.value.x || 'null'} ^ (badges ^ {$bwsForm.value.y || 'null'}) / {$bwsForm
-              .value.z || 'null'})</span
-          >
-        </div>
-      </div>
-    </div>
-    <Actions hasUpdated={generalSettingsHasUpdated} disableUpdateBtn={!canUpdateGeneralSettings} onUpdate={updateGeneralSettings} onReset={resetGeneralSettings} />
-    <div class="line-b my-8" />
-    <h2>Dates</h2>
-    <div class="mt-4 w-full card p-4 flex flex-col gap-4">
-      <div class={grid1Styles}>
-        <DateTime
-          form={datesForm}
-          label={labels.publishedAt}
-          legend="Publish at"
-          disabled={!data.isHost}
-        />
-        <DateTime
-          form={datesForm}
-          label={labels.concludesAt}
-          legend="Concludes at"
-          disabled={!data.isHost}
-        />
-        <DateTime
-          form={datesForm}
-          label={labels.playerRegsOpenAt}
-          legend="Player regs. open at"
-          disabled={!data.isHost}
-        />
-        <DateTime
-          form={datesForm}
-          label={labels.playerRegsCloseAt}
-          legend="Player regs. close at"
-          disabled={!data.isHost}
-        />
-        <DateTime
-          form={datesForm}
-          label={labels.staffRegsOpenAt}
-          legend="Staff regs. open at"
-          disabled={!data.isHost}
-        />
-        <DateTime
-          form={datesForm}
-          label={labels.staffRegsCloseAt}
-          legend="Staff regs. close at"
-          disabled={!data.isHost}
-        />
-      </div>
-      {#if otherDates.length > 0}
         <div class="line-b" />
-        <div class="flex flex-col gap-4">
-          {#each otherDates as date, i (date.label)}
-            <div animate:flip={{ duration: 150 }}>
-              <OtherDate {date} onUpdate={() => onUpdateOtherDate(i)} onDelete={() => onDeleteOtherDate(i)} />
-            </div>
-          {/each}
+        <div class={grid1Styles}>
+          <Select
+            form={tournamentForm}
+            label={labels.type}
+            legend="Type"
+            options={tournamentTypeOptions}
+            disabled={!data.isHost}
+          />
+          <Number
+            form={teamForm}
+            label={labels.minTeamSize}
+            legend="Min. team size"
+            disabled={!isTeamBased || !data.isHost}
+          />
+          <Number
+            form={teamForm}
+            label={labels.maxTeamSize}
+            legend="Max. team size"
+            disabled={!isTeamBased || !data.isHost}
+          />
+          <Checkbox
+            form={teamForm}
+            label={labels.useTeamBanners}
+            legend="Team banners?"
+            disabled={!isTeamBased || !data.isHost}
+          />
         </div>
-      {/if}
-    </div>
-    <Actions hasUpdated={datesHaveUpdated} disableUpdateBtn={!canUpdateDates} onUpdate={updateDates} onReset={resetDates} disableAddBtn={otherDates.length > 20} onAdd={onCreateOtherDate} />
-    <div class="line-b my-8" />
-    <h2>Links</h2>
-    <span class="text-warning-500 mt-2 block"><strong>Note for testers:</strong> We're working on designing the icons so it matches the rest of the website's icons, so for now, all icons are displayed with the default "link" icon.</span>
-    <div class="mt-4 w-full card p-4 flex flex-col gap-4">
-      {#if links.length === 0}
-        <span class="text-surface-600-300-token">This tournament doesn't have any links.</span>
-      {:else}
-        <div class="flex flex-col gap-4" use:dragHandleZone={{
-          items: links,
-          flipDurationMs: 150,
-          dropTargetClasses: ['card', 'variant-soft-surface'],
-          dropTargetStyle: {
-            border: 'none'
-          }
-        }} on:consider={sortLinks} on:finalize={(e) => sortLinks(e, true)}>
-          {#each links as link, i (link.id)}
-            <div animate:flip={{ duration: 150 }}>
-              <Link {link} onUpdate={() => onUpdateLink(i)} onDelete={() => onDeleteLink(i)} />
+        <div class="line-b" />
+        <div class={grid2Styles}>
+          <div>
+            <Checkbox
+              form={tournamentForm}
+              label={labels.openRank}
+              legend="Open rank?"
+              disabled={!data.isHost}
+            />
+          </div>
+          <div class="flex flex-col gap-2">
+            <div class="grid sm:w-[calc(100%-1rem)] sm:grid-cols-[50%_50%] gap-4">
+              <Number
+                form={rankRangeForm}
+                label={labels.lower}
+                legend="Lower rank range"
+                disabled={isOpenRank || !data.isHost}
+              />
+              <Number
+                form={rankRangeForm}
+                label={labels.upper}
+                legend="Upper rank range"
+                disabled={isOpenRank || !data.isHost}
+              />
             </div>
-          {/each}
+            <span class="inline-block col-span-2 text-sm text-surface-600-300-token"
+              >If the upper rank range is not set, it'll default to infinity.</span
+            >
+          </div>
         </div>
-      {/if}
-    </div>
-    <Actions hasUpdated={linksHaveUpdated} disableUpdateBtn={!linksHaveUpdated} onUpdate={updateLinks} onReset={resetLinks} disableAddBtn={links.length > 20} onAdd={onCreateLink} />
+        <div class="line-b" />
+        <div class={grid2Styles}>
+          <div>
+            <Checkbox
+              form={tournamentForm}
+              label={labels.useBWS}
+              legend="Use BWS?"
+              disabled={!data.isHost}
+            />
+          </div>
+          <div class="flex flex-col gap-2">
+            <div class="grid sm:w-[calc(100%-2rem)] sm:grid-cols-[33.33%_33.34%_33.33%] gap-4">
+              <Number
+                form={bwsForm}
+                label={labels.x}
+                legend="Value for X"
+                disabled={!useBWS || !data.isHost}
+              />
+              <Number
+                form={bwsForm}
+                label={labels.y}
+                legend="Value for Y"
+                disabled={!useBWS || !data.isHost}
+              />
+              <Number
+                form={bwsForm}
+                label={labels.z}
+                legend="Value for Z"
+                disabled={!useBWS || !data.isHost}
+              />
+            </div>
+            <span
+              class="inline-block col-span-2 text-sm text-surface-600-300-token italic font-mono"
+              >BWS = rank ^ ({$bwsForm.value.x || 'null'} ^ (badges ^ {$bwsForm.value.y || 'null'}) / {$bwsForm
+                .value.z || 'null'})</span
+            >
+          </div>
+        </div>
+      </div>
+      <Actions hasUpdated={generalSettingsHasUpdated} disableUpdateBtn={!canUpdateGeneralSettings} onUpdate={updateGeneralSettings} onReset={resetGeneralSettings} />
+    </section>
     <div class="line-b my-8" />
-    <h2>Referee Settings</h2>
-    <div class="mt-4 w-full card p-4 flex flex-col gap-4">
-      <div class={grid2Styles}>
-        <Select
-          form={refereeSettingsForm}
-          label={labels.winCondition}
-          options={winConditionOptions}
-          legend="Win condition"
-        />
-        <Select
-          form={refereeSettingsForm}
-          label={labels.banAndProtectBehavior}
-          options={banAndProtectBehaviorOptions}
-          legend="Ban and protect behavior"
-        />
+    <section>
+      <h2>Dates</h2>
+      <div class="mt-4 w-full card p-4 flex flex-col gap-4">
+        <div class={grid1Styles}>
+          <DateTime
+            form={datesForm}
+            label={labels.publishedAt}
+            legend="Publish at"
+            disabled={!data.isHost}
+          />
+          <DateTime
+            form={datesForm}
+            label={labels.concludesAt}
+            legend="Concludes at"
+            disabled={!data.isHost}
+          />
+          <DateTime
+            form={datesForm}
+            label={labels.playerRegsOpenAt}
+            legend="Player regs. open at"
+            disabled={!data.isHost}
+          />
+          <DateTime
+            form={datesForm}
+            label={labels.playerRegsCloseAt}
+            legend="Player regs. close at"
+            disabled={!data.isHost}
+          />
+          <DateTime
+            form={datesForm}
+            label={labels.staffRegsOpenAt}
+            legend="Staff regs. open at"
+            disabled={!data.isHost}
+          />
+          <DateTime
+            form={datesForm}
+            label={labels.staffRegsCloseAt}
+            legend="Staff regs. close at"
+            disabled={!data.isHost}
+          />
+        </div>
+        {#if otherDates.length > 0}
+          <div class="line-b" />
+          <div class="flex flex-col gap-4">
+            {#each otherDates as date, i (date.label)}
+              <div animate:flip={{ duration: 150 }}>
+                <OtherDate {date} onUpdate={() => onUpdateOtherDate(i)} onDelete={() => onDeleteOtherDate(i)} />
+              </div>
+            {/each}
+          </div>
+        {/if}
       </div>
-      <div class="line-b" />
-      <p class="text-surface-600-300-token">All timer lengths are measured in seconds.</p>
-      <div class={grid1Styles}>
-        <Number
-          form={refereeSettingsForm}
-          label={labels.pickTimerLength}
-          legend="Pick timer length"
-        />
-        <Number
-          form={refereeSettingsForm}
-          label={labels.banTimerLength}
-          legend="Ban timer length"
-        />
-        <Number
-          form={refereeSettingsForm}
-          label={labels.protectTimerLength}
-          legend="Protect timer length"
-        />
-        <Number
-          form={refereeSettingsForm}
-          label={labels.readyTimerLength}
-          legend="Ready timer length"
-        />
-        <Number
-          form={refereeSettingsForm}
-          label={labels.startTimerLength}
-          legend="Start timer length"
-        />
+      <Actions hasUpdated={datesHaveUpdated} disableUpdateBtn={!canUpdateDates} onUpdate={updateDates} onReset={resetDates} disableAddBtn={otherDates.length > 20} onAdd={onCreateOtherDate} />
+    </section>
+    <div class="line-b my-8" />
+    <section>
+      <h2>Links</h2>
+      <span class="text-warning-500 mt-2 block"><strong>Note for testers:</strong> We're working on designing the icons so it matches the rest of the website's icons, so for now, all icons are displayed with the default "link" icon.</span>
+      <div class="mt-4 w-full card p-4 flex flex-col gap-4">
+        {#if links.length === 0}
+          <span class="text-surface-600-300-token">This tournament doesn't have any links.</span>
+        {:else}
+          <div class="flex flex-col gap-4" use:dragHandleZone={{
+            items: links,
+            flipDurationMs: 150,
+            dropTargetClasses: ['card', 'variant-soft-surface'],
+            dropTargetStyle: {
+              border: 'none'
+            }
+          }} on:consider={sortLinks} on:finalize={(e) => sortLinks(e, true)}>
+            {#each links as link, i (link.id)}
+              <div animate:flip={{ duration: 150 }}>
+                <Link {link} onUpdate={() => onUpdateLink(i)} onDelete={() => onDeleteLink(i)} />
+              </div>
+            {/each}
+          </div>
+        {/if}
       </div>
-      <div class="line-b" />
-      <div class={grid1Styles}>
-        <Checkbox
-          form={refereeSettingsForm}
-          label={labels.allowDoublePick}
-          legend="Allow double pick?"
-        />
-        <Checkbox
-          form={refereeSettingsForm}
-          label={labels.allowDoubleBan}
-          legend="Allow double ban?"
-        />
-        <Checkbox
-          form={refereeSettingsForm}
-          label={labels.allowDoubleProtect}
-          legend="Allow double protect?"
-        />
-        <Checkbox
-          form={refereeSettingsForm}
-          label={labels.alwaysForceNoFail}
-          legend="Always force NoFail?"
-        />
+      <Actions hasUpdated={linksHaveUpdated} disableUpdateBtn={!linksHaveUpdated} onUpdate={updateLinks} onReset={resetLinks} disableAddBtn={links.length > 20} onAdd={onCreateLink} />
+    </section>
+    <div class="line-b my-8" />
+    <section>
+      <h2>Referee Settings</h2>
+      <div class="mt-4 w-full card p-4 flex flex-col gap-4">
+        <div class={grid2Styles}>
+          <Select
+            form={refereeSettingsForm}
+            label={labels.winCondition}
+            options={winConditionOptions}
+            legend="Win condition"
+          />
+          <Select
+            form={refereeSettingsForm}
+            label={labels.banAndProtectBehavior}
+            options={banAndProtectBehaviorOptions}
+            legend="Ban and protect behavior"
+          />
+        </div>
+        <div class="line-b" />
+        <p class="text-surface-600-300-token">All timer lengths are measured in seconds.</p>
+        <div class={grid1Styles}>
+          <Number
+            form={refereeSettingsForm}
+            label={labels.pickTimerLength}
+            legend="Pick timer length"
+          />
+          <Number
+            form={refereeSettingsForm}
+            label={labels.banTimerLength}
+            legend="Ban timer length"
+          />
+          <Number
+            form={refereeSettingsForm}
+            label={labels.protectTimerLength}
+            legend="Protect timer length"
+          />
+          <Number
+            form={refereeSettingsForm}
+            label={labels.readyTimerLength}
+            legend="Ready timer length"
+          />
+          <Number
+            form={refereeSettingsForm}
+            label={labels.startTimerLength}
+            legend="Start timer length"
+          />
+        </div>
+        <div class="line-b" />
+        <div class={grid1Styles}>
+          <Checkbox
+            form={refereeSettingsForm}
+            label={labels.allowDoublePick}
+            legend="Allow double pick?"
+          />
+          <Checkbox
+            form={refereeSettingsForm}
+            label={labels.allowDoubleBan}
+            legend="Allow double ban?"
+          />
+          <Checkbox
+            form={refereeSettingsForm}
+            label={labels.allowDoubleProtect}
+            legend="Allow double protect?"
+          />
+          <Checkbox
+            form={refereeSettingsForm}
+            label={labels.alwaysForceNoFail}
+            legend="Always force NoFail?"
+          />
+        </div>
+        <div class="line-b" />
+        <div class={grid1Styles}>
+          <Select
+            form={refereeSettingsForm}
+            label={labels.pickOrder}
+            options={orderTypeOptions}
+            legend="Pick order"
+          />
+          <Select
+            form={refereeSettingsForm}
+            label={labels.banOrder}
+            options={orderTypeOptions}
+            legend="Ban order"
+          />
+          <Select
+            form={refereeSettingsForm}
+            label={labels.protectOrder}
+            options={orderTypeOptions}
+            legend="Protect order"
+          />
+        </div>
       </div>
-      <div class="line-b" />
-      <div class={grid1Styles}>
-        <Select
-          form={refereeSettingsForm}
-          label={labels.pickOrder}
-          options={orderTypeOptions}
-          legend="Pick order"
-        />
-        <Select
-          form={refereeSettingsForm}
-          label={labels.banOrder}
-          options={orderTypeOptions}
-          legend="Ban order"
-        />
-        <Select
-          form={refereeSettingsForm}
-          label={labels.protectOrder}
-          options={orderTypeOptions}
-          legend="Protect order"
-        />
-      </div>
-    </div>
-    <Actions hasUpdated={$refereeSettingsForm.hasUpdated} disableUpdateBtn={!canUpdateRefereeSettings} onUpdate={updateRefereeSettings} onReset={resetRefereeSettings} />
+      <Actions hasUpdated={$refereeSettingsForm.hasUpdated} disableUpdateBtn={!canUpdateRefereeSettings} onUpdate={updateRefereeSettings} onReset={resetRefereeSettings} />
+    </section>
   </div>
 </main>
