@@ -25,6 +25,10 @@ export function maxStrLength<T extends string, R extends number>(requirement: R)
   );
 }
 
+export function url() {
+  return v.url('Input must be a URL');
+}
+
 export function slug() {
   return v.custom(
     (input: string) => /^[a-z0-9_]+$/g.test(input),

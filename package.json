@@ -79,6 +79,7 @@
     "sharp": "^0.33.2",
     "showdown": "^2.1.0",
     "superjson": "^2.2.1",
+    "svelte-dnd-action": "^0.9.48",
     "svelte-portal": "^2.2.1",
     "trpc-sveltekit": "^3.6.1",
     "valibot": "^0.30.0"

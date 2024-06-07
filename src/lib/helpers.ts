@@ -1,4 +1,5 @@
 import type { TournamentDates } from '$db';
+import type { TournamentLink } from '$types';
 
 export function tournamentChecks({
   teamSettings,
@@ -130,18 +131,31 @@ export function tournamentDatesChecks(
 }
 
 export function tournamentOtherDatesChecks(dates: (typeof TournamentDates.$inferSelect)['other']): string | undefined {
-  if (dates.length > 20) {
-    return 'The tournament can only have up to 20 dates (not counting default dates)';
-  }
-
-  for (const date of dates) {
-    const err = tournamentOtherDateChecks(date);
-    if (err) return err;
+  for (let i = 0; i < dates.length; i++) {
+    const err = tournamentOtherDateChecks(dates, dates[i]);
+    if (err) return `${err} (at index ${i})`;
   }
 }
 
-export function tournamentOtherDateChecks({ label, fromDate, toDate }: (typeof TournamentDates.$inferSelect)['other'][number]): string | undefined {
-  if (toDate && fromDate > toDate) {
-    return `The starting date must be less than or equal to the maximum ("${label}")`;
+export function tournamentOtherDateChecks(allOtherDates: (typeof TournamentDates.$inferSelect)['other'], date: (typeof TournamentDates.$inferSelect)['other'][number]): string | undefined {
+  if (date.toDate && date.fromDate > date.toDate) {
+    return 'The starting date must be less than or equal to the maximum';
+  }
+
+  if (allOtherDates.some(({ label }, i) => label === date.label && i !== allOtherDates.indexOf(date))) {
+    return `Date labeled "${date.label}" already exists in this tournament`;
+  }
+}
+
+export function tournamentLinksChecks(links: TournamentLink[]) {
+  for (let i = 0; i < links.length; i++) {
+    const err = tournamentLinkChecks(links, links[i]);
+    if (err) return `${err} (at index ${i})`;
+  }
+}
+
+export function tournamentLinkChecks(allLinks: TournamentLink[], link: TournamentLink) {
+  if (allLinks.some(({ label }, i) => label === link.label && i !== allLinks.indexOf(link))) {
+    return `Link labeled "${link.label}" already exists in this tournament`;
   }
 }

@@ -41,14 +41,16 @@ export const tournamentLinkIconSchema = v.union(
     v.literal('discord'),
     v.literal('google_sheets'),
     v.literal('google_forms'),
+    v.literal('google_docs'),
     v.literal('twitch'),
     v.literal('youtube'),
     v.literal('x'),
     v.literal('challonge'),
-    v.literal('donate'),
+    v.literal('liquipedia'),
+    v.literal('donation'),
     v.literal('website')
   ],
-  'be "osu", "discord", "google_sheets", "google_forms", "twitch", "youtube", "x", "challonge", "donate" or "website"'
+  'be "osu", "discord", "google_sheets", "google_forms", "google_docs", "twitch", "youtube", "x", "challonge", "liquipedia", "donation" or "website"'
 );
 
 // Schemas below this do not require error messages to be set
@@ -77,7 +79,7 @@ export const refereeSettingsSchema = v.object({
 });
 
 export const tournamentLinkSchema = v.object({
-  label: v.string([v.minLength(2), v.maxLength(20)]),
+  label: v.string([v.minLength(2), v.maxLength(30)]),
   url: v.string([v.url()]),
   icon: tournamentLinkIconSchema
 });

@@ -78,7 +78,6 @@ export function createForm<
         updated[key] = true;
       }
 
-      console.log(input instanceof Date && defaults[key] instanceof Date ? [input.getTime(), defaults[key].getTime()] : []);
       value[key] = input;
 
       const newForm = {

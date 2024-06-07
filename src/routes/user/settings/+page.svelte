@@ -9,6 +9,7 @@
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { Copy, Eye, EyeOff, RotateCcw, Pencil } from 'lucide-svelte';
   import { displayError, toastSuccess } from '$lib/utils';
+  import { flip } from 'svelte/animate';
   import type { PageServerData } from './$types';
   import type { TRPCRouter } from '$types';
 
@@ -192,10 +193,12 @@
     {/if}
     <div class="line-b my-8" />
     <h2>Sessions</h2>
-    <p class="dark:text-zinc-300/75 text-zinc-700/75 text-sm">Some details may be inaccurate.</p>
+    <p class="text-surface-600-300-token text-sm">Some details may be inaccurate.</p>
     <div class="mt-4 flex flex-col gap-2">
-      {#each data.activeSessions as session}
-        <Session {session} {deleteSession} current={data.session.sessionId === session.id} />
+      {#each data.activeSessions as session (session.id)}
+        <div animate:flip={{ duration: 150 }}>
+          <Session {session} {deleteSession} current={data.session.sessionId === session.id} />
+        </div>
       {/each}
     </div>
   </div>

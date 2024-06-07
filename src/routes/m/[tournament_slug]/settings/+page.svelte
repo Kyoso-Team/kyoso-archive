@@ -1,7 +1,9 @@
 <script lang="ts">
   import * as f from '$lib/form-validation';
   import OtherDate from './OtherDate.svelte';
+  import Link from './Link.svelte';
   import ManageOtherDateForm from './ManageOtherDateForm.svelte';
+  import ManageLinkForm from './ManageLinkForm.svelte';
   import { page } from '$app/stores';
   import { portal } from 'svelte-portal';
   import { SEO, Tooltip } from '$components/general';
@@ -11,32 +13,38 @@
   import { displayError, isDatePast, keys, toastError, toastSuccess, tooltip } from '$lib/utils';
   import { User, AlertTriangle } from 'lucide-svelte';
   import { createForm, createFunctionQueue, loading } from '$stores';
+  import { dragHandleZone } from 'svelte-dnd-action';
+  import { fade } from 'svelte/transition';
+  import { trpc } from '$lib/trpc';
+  import { Modal, Backdrop } from '$components/layout';
+  import { tournamentChecks, tournamentDatesChecks } from '$lib/helpers';
+  import { flip } from 'svelte/animate';
   import {
     baseTournamentFormSchemas,
     rankRangeFormSchemas,
     baseTeamSettingsFormSchemas,
     tournamentTypeOptions
   } from '$lib/constants';
-  import { fade } from 'svelte/transition';
-  import { trpc } from '$lib/trpc';
-  import { Modal, Backdrop } from '$components/layout';
-  import { tournamentChecks, tournamentDatesChecks } from '$lib/helpers';
   import type { RefereeSettings, TRPCRouter } from '$types';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
   let t: typeof data.tournament = data.tournament;
   let otherDates = t.other;
+  let links = t.links.map((link) => ({ ...link, id: link.label }));
   let canUpdateGeneralSettings = false;
   let canUpdateRefereeSettings = false;
   let canUpdateDates = false;
   let datesHaveUpdated = false;
   let otherDatesHaveUpdated = false;
+  let linksHaveUpdated = false;
   let generalSettingsHasUpdated = false;
   let showUpdateUrlSlugPrompt = false;
   let showUpdateNameAcronymPrompt = false;
   let showManageOtherDateForm = false;
+  let showManageLinkForm = false;
   let updatingOtherDateIndex: number | undefined;
+  let updatingLinkIndex: number | undefined;
   const now = new Date().getTime();
   const aYear = new Date(31_556_952_000).getTime();
   const toast = getToastStore();
@@ -116,6 +124,8 @@
     'grid md:w-[calc(100%-1rem)] 2lg:w-[calc(100%-2rem)] md:grid-cols-[50%_50%] 2lg:grid-cols-[33.33%_33.34%_33.33%] gap-4';
   const grid2Styles =
     'grid 2lg:w-[calc(100%-2rem)] md:grid-cols-[100%] 2lg:grid-cols-[33.33%_calc(66.67%+1rem)] gap-4';
+  const grid3Styles =
+    'grid sm:grid-cols-[50%_50%] gap-4 sm:w-[calc(100%-1rem)]';
 
   function tournamentInitialValues() {
     return {
@@ -227,8 +237,8 @@
     } else {
       await invalidate('reload:manage_settings');
     }
-
-    otherDatesHaveUpdated = false;
+    
+    t = data.tournament;
     overrideInitialValues();
     loading.set(false);
     toastSuccess(toast, successMsg);
@@ -326,6 +336,16 @@
       ...dates,
       other: otherDates
     }, 'Updated dates successfully');
+
+    otherDatesHaveUpdated = false;
+    otherDates = t.other;
+  }
+
+  async function updateLinks() {
+    await updateTournament('updateTournament', { links }, 'Updated links successfully');
+
+    linksHaveUpdated = false;
+    links = t.links.map((link) => ({ ...link, id: link.label }));
   }
 
   function onUpdateUrlSlug() {
@@ -359,6 +379,29 @@
     updatingOtherDateIndex = i;
   }
 
+  function onCreateLink() {
+    showManageLinkForm = true;
+  }
+
+  function onDeleteLink(i: number) {
+    links.splice(i, 1);
+    links = [...links];
+    linksHaveUpdated = true;
+  }
+
+  function onUpdateLink(i: number) {
+    showManageLinkForm = true;
+    updatingLinkIndex = i;
+  }
+
+  function sortLinks(e: CustomEvent, finalize?: boolean) {
+    links = e.detail.items;
+    
+    if (finalize && links.some(({ label }, i) => label !== t.links[i].label)) {
+      linksHaveUpdated = true;
+    }
+  }
+
   $: {
     const tournamentFormIsValid = $tournamentForm.canSubmit;
     const teamSettingsFormIsValid = isTeamBased ? $teamForm.canSubmit : true;
@@ -380,8 +423,6 @@
     canUpdateDates = datesHaveUpdated && $datesForm.canSubmit;
   }
 
-  $: t = data.tournament;
-  $: otherDates = t.other;
   $: canUpdateRefereeSettings = $refereeSettingsForm.hasUpdated && $refereeSettingsForm.canSubmit;
   $: isPublic = isDatePast(t.publishedAt);
   $: isTeamBased = ['teams', 'draft'].includes($tournamentForm.value.type as any);
@@ -422,6 +463,11 @@
 {#if showManageOtherDateForm}
   <Backdrop>
     <ManageOtherDateForm bind:show={showManageOtherDateForm} bind:otherDates={otherDates} bind:otherDatesHaveUpdated={otherDatesHaveUpdated} bind:editIndex={updatingOtherDateIndex} />
+  </Backdrop>
+{/if}
+{#if showManageLinkForm}
+  <Backdrop>
+    <ManageLinkForm bind:show={showManageLinkForm} bind:links={links} bind:linksHaveUpdated={linksHaveUpdated} bind:editIndex={updatingLinkIndex} />
   </Backdrop>
 {/if}
 <h1 class="m-title" use:portal={'#page-title'}>Settings</h1>
@@ -563,7 +609,7 @@
         </div>
       </div>
     </div>
-    <div class="grid sm:grid-cols-[50%_50%] gap-4 sm:w-[calc(100%-1rem)] mt-4">
+    <div class={`${grid3Styles} mt-4`}>
       <div>
         {#if generalSettingsHasUpdated}
           <div class="card variant-soft-warning flex justify-center items-center py-[9px] px-5 sm:w-max" transition:fade={{ duration: 150 }}>
@@ -619,14 +665,16 @@
       </div>
       {#if otherDates.length > 0}
         <div class="line-b" />
-        <div>
-          {#each otherDates as date, i}
-            <OtherDate {date} onUpdate={() => onUpdateOtherDate(i)} onDelete={() => onDeleteOtherDate(i)} />
+        <div class="flex flex-col gap-4">
+          {#each otherDates as date, i (date.label)}
+            <div animate:flip={{ duration: 150 }}>
+              <OtherDate {date} onUpdate={() => onUpdateOtherDate(i)} onDelete={() => onDeleteOtherDate(i)} />
+            </div>
           {/each}
         </div>
       {/if}
     </div>
-    <div class="grid sm:grid-cols-[50%_50%] gap-4 sm:w-[calc(100%-1rem)] mt-4">
+    <div class={`${grid3Styles} mt-4`}>
       <div>
         {#if datesHaveUpdated}
           <div class="card variant-soft-warning flex justify-center items-center py-[9px] px-5 sm:w-max" transition:fade={{ duration: 150 }}>
@@ -640,7 +688,43 @@
         <button class="btn variant-filled-primary" disabled={!canUpdateDates} on:click={updateDates}>Update</button>
       </div>
     </div>
-    
+    <div class="line-b my-8" />
+    <h2>Links</h2>
+    <span class="text-warning-500 mt-2 block"><strong>Note for testers:</strong> We're working on designing the icons so it matches the rest of the website's icons, so for now, all icons are displayed with the default "link" icon.</span>
+    <div class="mt-4 w-full card p-4 flex flex-col gap-4">
+      {#if links.length === 0}
+        <span class="text-surface-600-300-token">This tournament doesn't have any links.</span>
+      {:else}
+        <div class="flex flex-col gap-4" use:dragHandleZone={{
+          items: links,
+          flipDurationMs: 150,
+          dropTargetClasses: ['card', 'variant-soft-surface'],
+          dropTargetStyle: {
+            border: 'none'
+          }
+        }} on:consider={sortLinks} on:finalize={(e) => sortLinks(e, true)}>
+          {#each links as link, i (link.id)}
+            <div animate:flip={{ duration: 150 }}>
+              <Link {link} onUpdate={() => onUpdateLink(i)} onDelete={() => onDeleteLink(i)} />
+            </div>
+          {/each}
+        </div>
+      {/if}
+    </div>
+    <div class={`${grid3Styles} mt-4`}>
+      <div>
+        {#if linksHaveUpdated}
+          <div class="card variant-soft-warning flex justify-center items-center py-[9px] px-5 sm:w-max" transition:fade={{ duration: 150 }}>
+            <AlertTriangle size={20} class="mr-2" />
+            You have unsaved changes
+          </div>
+        {/if}
+      </div>
+      <div class="flex justify-end w-full gap-2">
+        <button class="btn btn-sm variant-filled" disabled={links.length > 20} on:click={onCreateLink}>Add</button>
+        <button class="btn variant-filled-primary" disabled={!linksHaveUpdated} on:click={updateLinks}>Update</button>
+      </div>
+    </div>
     <div class="line-b my-8" />
     <h2>Referee Settings</h2>
     <div class="mt-4 w-full card p-4 flex flex-col gap-4">
@@ -732,7 +816,7 @@
         />
       </div>
     </div>
-    <div class="grid sm:grid-cols-[50%_50%] gap-4 sm:w-[calc(100%-1rem)] mt-4">
+    <div class={`${grid3Styles} mt-4`}>
       <div>
         {#if $refereeSettingsForm.hasUpdated}
           <div class="card variant-soft-warning flex justify-center items-center py-[9px] px-5 sm:w-max" transition:fade={{ duration: 150 }}>

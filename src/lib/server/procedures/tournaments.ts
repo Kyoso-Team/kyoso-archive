@@ -28,7 +28,7 @@ import {
 } from '$lib/schemas';
 import { rateLimitMiddleware } from '$trpc/middleware';
 import { TRPCChecks } from '../helpers/checks';
-import { tournamentChecks, tournamentDatesChecks, tournamentOtherDatesChecks } from '$lib/helpers';
+import { tournamentChecks, tournamentDatesChecks, tournamentLinksChecks, tournamentOtherDatesChecks } from '$lib/helpers';
 
 const catchUniqueConstraintError = catchUniqueConstraintError$([
   {
@@ -166,17 +166,28 @@ const updateTournament = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { data, tournamentId } = input;
-    const { name, acronym, urlSlug, teamSettings, type, rankRange, bwsValues } = data;
+    const { name, acronym, urlSlug, teamSettings, type, rankRange, bwsValues, links } = data;
     const checks = new TRPCChecks({ action: 'update this tournament' });
     checks.partialHasValues(data);
 
-    const checksErr = tournamentChecks({ teamSettings, rankRange });
+    let checksErr = tournamentChecks({ teamSettings, rankRange });
 
     if (checksErr) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
         message: checksErr
       });
+    }
+
+    if (links) {
+      checksErr = tournamentLinksChecks(links);
+
+      if (checksErr) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: checksErr
+        });
+      }
     }
 
     const session = getSession(ctx.cookies, true);

@@ -40,14 +40,14 @@
   async function submit() {
     const { label, display, fromDate, toDate, type } = mainForm.getFinalValue($mainForm);
 
-    const newDate: (typeof TournamentDates.$inferSelect)['other'][number] = {
+    const newDate: (typeof otherDates)[number] = {
       label,
       onlyDate: display === 'date',
       fromDate: fromDate.getTime(),
       toDate: toDate && type === 'range' ? toDate.getTime() : null
     };
 
-    const err = tournamentOtherDateChecks(newDate);
+    const err = tournamentOtherDateChecks(otherDates, newDate);
 
     if (err) {
       toastError(toast, err);
