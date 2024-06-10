@@ -64,6 +64,7 @@
     <div class="input-group input-group-divider grid-cols-[1fr_auto]">
       <input
         type="number"
+        step="any"
         class={`input ${error && hasWritten ? 'input-error' : ''}`}
         {disabled}
         on:input={onInput}
@@ -83,6 +84,7 @@
   {:else}
     <input
       type="number"
+      step="any"
       class={`input ${error && hasWritten ? 'input-error' : ''}`}
       {disabled}
       on:input={onInput}

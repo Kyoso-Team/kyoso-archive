@@ -111,24 +111,37 @@ export const rankRangeSchema = v.object({
 export const modMultiplierSchema = v.union([
   v.object({
     /** Easy, Hidden, Hard Rock, Flashlight, Blinds */
-    mods: v.union([
-      v.literal('ez'),
-      v.literal('hd'),
-      v.literal('hr'),
-      v.literal('fl'),
-      v.literal('bl')
-    ]),
-    multiplier: v.number([v.integer(), v.minValue(-5), v.maxValue(5)])
+    mods: v.array(
+      v.union([
+        v.literal('ez'),
+        v.literal('hd'),
+        v.literal('hr'),
+        v.literal('fl'),
+        v.literal('bl')
+      ]),
+      [v.minLength(1), v.maxLength(5)]
+    ),
+    multiplier: v.number([v.minValue(-5), v.maxValue(5)])
   }),
   v.object({
     /** Sudden Death, Perfect */
-    mods: v.union([
-      v.literal('sd'),
-      v.literal('pf')
-    ]),
+    mods: v.array(
+      v.union([
+        // Same as above
+        v.literal('ez'),
+        v.literal('hd'),
+        v.literal('hr'),
+        v.literal('fl'),
+        v.literal('bl'),
+        // -------------
+        v.literal('sd'),
+        v.literal('pf')
+      ]),
+      [v.minLength(1), v.maxLength(5)]
+    ),
     multiplier: v.object({
-      ifSuccessful: v.number([v.integer(), v.minValue(-5), v.maxValue(5)]),
-      ifFailed: v.number([v.integer(), v.minValue(-5), v.maxValue(5)])
+      ifSuccessful: v.number([v.minValue(-5), v.maxValue(5)]),
+      ifFailed: v.number([v.minValue(-5), v.maxValue(5)])
     })
   })
 ]);

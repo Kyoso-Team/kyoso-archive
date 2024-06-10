@@ -1,5 +1,6 @@
 import type { TournamentDates } from '$db';
-import type { TournamentLink } from '$types';
+import type { ModMultiplier, TournamentLink } from '$types';
+import { arraysHaveSameElements } from './utils';
 
 export function tournamentChecks({
   teamSettings,
@@ -142,7 +143,8 @@ export function tournamentOtherDateChecks(allOtherDates: (typeof TournamentDates
     return 'The starting date must be less than or equal to the maximum';
   }
 
-  if (allOtherDates.some(({ label }, i) => label === date.label && i !== allOtherDates.indexOf(date))) {
+  const allOtherDatesLabels = allOtherDates.map(({ label }) => label);
+  if (allOtherDates.some(({ label }, i) => label === date.label && i !== allOtherDatesLabels.indexOf(date.label))) {
     return `Date labeled "${date.label}" already exists in this tournament`;
   }
 }
@@ -155,7 +157,35 @@ export function tournamentLinksChecks(links: TournamentLink[]) {
 }
 
 export function tournamentLinkChecks(allLinks: TournamentLink[], link: TournamentLink) {
-  if (allLinks.some(({ label }, i) => label === link.label && i !== allLinks.indexOf(link))) {
+  const allLinksLabels = allLinks.map(({ label }) => label);
+  if (allLinks.some(({ label }, i) => label === link.label && i !== allLinksLabels.indexOf(label))) {
     return `Link labeled "${link.label}" already exists in this tournament`;
+  }
+}
+
+export function tournamentModMultipliersChecks(modMultipliers: ModMultiplier[]) {
+  for (let i = 0; i < modMultipliers.length; i++) {
+    const err = modMultiplierchecks(modMultipliers, modMultipliers[i]);
+    if (err) return `${err} (at index ${i})`;
+  }
+}
+
+export function modMultiplierchecks(allModMultipliers: ModMultiplier[], modMultiplier: ModMultiplier) {
+  const allModMultipliersMods = allModMultipliers.map(({ mods }) => mods.join(''));
+  if (allModMultipliers.some(({ mods }, i) => arraysHaveSameElements(mods, modMultiplier.mods) && i !== allModMultipliersMods.indexOf(modMultiplier.mods.join('')))) {
+    return `Mod multiplier with the mod combination ${modMultiplier.mods.join('').toUpperCase()} already exists in this tournament`;
+  }
+
+  const { mods } = modMultiplier as Extract<ModMultiplier, { multiplier: Record<string, any>; }>;
+  if (
+    (mods.includes('ez') && mods.includes('hr')) ||
+    (mods.includes('sd') && mods.includes('pf')) ||
+    (mods.includes('fl') && mods.includes('bl'))
+  ) {
+    return 'The mod combination is invalid';
+  }
+
+  if (typeof modMultiplier.multiplier !== 'number' && modMultiplier.multiplier.ifFailed >= modMultiplier.multiplier.ifSuccessful) {
+    return 'The multiplier in case of failure must be less than the multiplier in case of success';
   }
 }

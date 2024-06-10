@@ -28,7 +28,7 @@ import {
 } from '$lib/schemas';
 import { rateLimitMiddleware } from '$trpc/middleware';
 import { TRPCChecks } from '../helpers/checks';
-import { tournamentChecks, tournamentDatesChecks, tournamentLinksChecks, tournamentOtherDatesChecks } from '$lib/helpers';
+import { tournamentChecks, tournamentDatesChecks, tournamentLinksChecks, tournamentModMultipliersChecks, tournamentOtherDatesChecks } from '$lib/helpers';
 
 const catchUniqueConstraintError = catchUniqueConstraintError$([
   {
@@ -155,10 +155,10 @@ const updateTournament = t.procedure
             rankRange: v.nullable(rankRangeSchema),
             teamSettings: v.nullable(teamSettingsSchema),
             bwsValues: v.nullable(bwsValuesSchema),
-            links: v.array(tournamentLinkSchema),
+            links: v.array(tournamentLinkSchema, [v.maxLength(20)]),
             refereeSettings: refereeSettingsSchema,
             rules: v.nullable(v.string()),
-            modMultipliers: v.array(modMultiplierSchema)
+            modMultipliers: v.array(modMultiplierSchema, [v.maxLength(5)])
           })
         )
       })
@@ -166,28 +166,25 @@ const updateTournament = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { data, tournamentId } = input;
-    const { name, acronym, urlSlug, teamSettings, type, rankRange, bwsValues, links } = data;
+    const { name, acronym, urlSlug, teamSettings, type, rankRange, bwsValues, links, modMultipliers } = data;
     const checks = new TRPCChecks({ action: 'update this tournament' });
     checks.partialHasValues(data);
 
     let checksErr = tournamentChecks({ teamSettings, rankRange });
+
+    if (links && checksErr === undefined) {
+      checksErr = tournamentLinksChecks(links);
+    }
+
+    if (modMultipliers && checksErr === undefined) {
+      checksErr = tournamentModMultipliersChecks(modMultipliers);
+    }
 
     if (checksErr) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
         message: checksErr
       });
-    }
-
-    if (links) {
-      checksErr = tournamentLinksChecks(links);
-
-      if (checksErr) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: checksErr
-        });
-      }
     }
 
     const session = getSession(ctx.cookies, true);

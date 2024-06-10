@@ -3,8 +3,10 @@
   import Actions from './Actions.svelte';
   import OtherDate from './OtherDate.svelte';
   import Link from './Link.svelte';
+  import ModMultiplier from './ModMultiplier.svelte';
   import ManageOtherDateForm from './ManageOtherDateForm.svelte';
   import ManageLinkForm from './ManageLinkForm.svelte';
+  import ManageModMultiplierForm from './ManageModMultiplierForm.svelte';
   import { page } from '$app/stores';
   import { portal } from 'svelte-portal';
   import { SEO, Tooltip } from '$components/general';
@@ -19,6 +21,7 @@
   import { Modal, Backdrop } from '$components/layout';
   import { tournamentChecks, tournamentDatesChecks } from '$lib/helpers';
   import { flip } from 'svelte/animate';
+  import { slide } from 'svelte/transition';
   import {
     baseTournamentFormSchemas,
     rankRangeFormSchemas,
@@ -30,21 +33,25 @@
 
   export let data: PageServerData;
   let t: typeof data.tournament = data.tournament;
-  let otherDates = t.other;
-  let links = t.links.map((link) => ({ ...link, id: link.label }));
+  let otherDates = [...t.other];
+  let links = [...t.links.map((link) => ({ ...link, id: link.label }))];
+  let modMultipliers = [...t.modMultipliers];
   let canUpdateGeneralSettings = false;
   let canUpdateRefereeSettings = false;
   let canUpdateDates = false;
   let datesHaveUpdated = false;
   let otherDatesHaveUpdated = false;
   let linksHaveUpdated = false;
+  let modMultipliersHaveUpdated = false;
   let generalSettingsHasUpdated = false;
   let showUpdateUrlSlugPrompt = false;
   let showUpdateNameAcronymPrompt = false;
   let showManageOtherDateForm = false;
   let showManageLinkForm = false;
+  let showManageModMultiplierForm = false;
   let updatingOtherDateIndex: number | undefined;
   let updatingLinkIndex: number | undefined;
+  let updatingModMultiplierIndex: number | undefined;
   const now = new Date().getTime();
   const aYear = new Date(31_556_952_000).getTime();
   const toast = getToastStore();
@@ -253,16 +260,21 @@
     datesForm.reset();
 
     otherDatesHaveUpdated = false;
-    otherDates = t.other;
+    otherDates = [...t.other];
   }
 
   function resetLinks() {
     linksHaveUpdated = false;
-    links = t.links.map((link) => ({ ...link, id: link.label }));
+    links = [...t.links.map((link) => ({ ...link, id: link.label }))];
   }
 
   function resetRefereeSettings() {
     refereeSettingsForm.reset();
+  }
+
+  function resetModMultipliers() {
+    modMultipliersHaveUpdated = false;
+    modMultipliers = [...t.modMultipliers];
   }
 
   async function updateGeneralSettings() {
@@ -369,6 +381,13 @@
     links = t.links.map((link) => ({ ...link, id: link.label }));
   }
 
+  async function updateModMultipliers() {
+    await updateTournament('updateTournament', { modMultipliers }, 'Updated mod multipliers successfully');
+
+    modMultipliersHaveUpdated = false;
+    modMultipliers = t.modMultipliers;
+  }
+
   function onUpdateUrlSlug() {
     showUpdateUrlSlugPrompt = false;
     fnQueue.nextFunction($fnQueue);
@@ -421,6 +440,21 @@
     if (finalize && links.some(({ label }, i) => label !== t.links[i].label)) {
       linksHaveUpdated = true;
     }
+  }
+
+  function onCreateModMultiplier() {
+    showManageModMultiplierForm = true;
+  }
+
+  function onDeleteModMultiplier(i: number) {
+    modMultipliers.splice(i, 1);
+    modMultipliers = [...modMultipliers];
+    modMultipliersHaveUpdated = true;
+  }
+
+  function onUpdateModMultiplier(i: number) {
+    showManageModMultiplierForm = true;
+    updatingModMultiplierIndex = i;
   }
 
   $: {
@@ -489,6 +523,11 @@
 {#if showManageLinkForm}
   <Backdrop>
     <ManageLinkForm bind:show={showManageLinkForm} bind:links={links} bind:linksHaveUpdated={linksHaveUpdated} bind:editIndex={updatingLinkIndex} />
+  </Backdrop>
+{/if}
+{#if showManageModMultiplierForm}
+  <Backdrop>
+    <ManageModMultiplierForm bind:show={showManageModMultiplierForm} bind:modMultipliers={modMultipliers} bind:modMultipliersHaveUpdated={modMultipliersHaveUpdated} bind:editIndex={updatingModMultiplierIndex} />
   </Backdrop>
 {/if}
 <h1 class="m-title" use:portal={'#page-title'}>Settings</h1>
@@ -678,15 +717,15 @@
         {#if otherDates.length > 0}
           <div class="line-b" />
           <div class="flex flex-col gap-4">
-            {#each otherDates as date, i (date.label)}
-              <div animate:flip={{ duration: 150 }}>
+            {#each otherDates as date, i}
+              <div transition:slide|global={{ duration: 150 }}>
                 <OtherDate {date} onUpdate={() => onUpdateOtherDate(i)} onDelete={() => onDeleteOtherDate(i)} />
               </div>
             {/each}
           </div>
         {/if}
       </div>
-      <Actions hasUpdated={datesHaveUpdated} disableUpdateBtn={!canUpdateDates} onUpdate={updateDates} onReset={resetDates} disableAddBtn={otherDates.length > 20} onAdd={onCreateOtherDate} />
+      <Actions hasUpdated={datesHaveUpdated} disableUpdateBtn={!canUpdateDates} onUpdate={updateDates} onReset={resetDates} disableAddBtn={otherDates.length >= 20} onAdd={onCreateOtherDate} />
     </section>
     <div class="line-b my-8" />
     <section>
@@ -712,7 +751,7 @@
           </div>
         {/if}
       </div>
-      <Actions hasUpdated={linksHaveUpdated} disableUpdateBtn={!linksHaveUpdated} onUpdate={updateLinks} onReset={resetLinks} disableAddBtn={links.length > 20} onAdd={onCreateLink} />
+      <Actions hasUpdated={linksHaveUpdated} disableUpdateBtn={!linksHaveUpdated} onUpdate={updateLinks} onReset={resetLinks} disableAddBtn={links.length >= 20} onAdd={onCreateLink} />
     </section>
     <div class="line-b my-8" />
     <section>
@@ -807,6 +846,25 @@
         </div>
       </div>
       <Actions hasUpdated={$refereeSettingsForm.hasUpdated} disableUpdateBtn={!canUpdateRefereeSettings} onUpdate={updateRefereeSettings} onReset={resetRefereeSettings} />
+    </section>
+    <div class="line-b my-8" />
+    <section>
+      <h2>Mod Multipliers</h2>
+      <span class="text-warning-500 mt-2 block"><strong>Note for testers:</strong> We're likely changing how the mod multipliers are displayed by using icons instead of the mod acronyms.</span>
+      <div class="mt-4 w-full card p-4 flex flex-col gap-4">
+        {#if modMultipliers.length === 0}
+          <span class="text-surface-600-300-token" transition:slide={{ duration: 150 }}>This tournament doesn't have any mod multipliers.</span>
+        {:else}
+          <div class="flex flex-col gap-4">
+            {#each modMultipliers as modMultiplier, i}
+              <div transition:slide|global={{ duration: 150 }}>
+                <ModMultiplier {modMultiplier} onUpdate={() => onUpdateModMultiplier(i)} onDelete={() => onDeleteModMultiplier(i)} />
+              </div>
+            {/each}
+          </div>
+        {/if}
+      </div>
+      <Actions hasUpdated={modMultipliersHaveUpdated} disableUpdateBtn={!modMultipliersHaveUpdated} onUpdate={updateModMultipliers} onReset={resetModMultipliers} disableAddBtn={modMultipliers.length >= 5} onAdd={onCreateModMultiplier} />
     </section>
   </div>
 </main>

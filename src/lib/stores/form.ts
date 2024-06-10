@@ -5,7 +5,7 @@ export function createForm<
   TSchema extends Record<string, v.BaseSchema>,
   TFinalValue = { [K in keyof TSchema]: v.Output<TSchema[K]> },
   TLiveValue = {
-    [K in keyof TFinalValue]: TFinalValue[K] extends boolean
+    [K in keyof TFinalValue]: TFinalValue[K] extends boolean | any[]
       ? TFinalValue[K]
       : TFinalValue[K] | null;
   }
@@ -18,9 +18,15 @@ export function createForm<
     const schema = formSchema[key];
     defaulValue[key] = defaulValue[key] === undefined ? null : defaulValue[key];
 
-    // Make boolean fields default to false instead of null
-    if (((schema as any)?.type === 'boolean' || (schema as any)?.wrapped?.type === 'boolean') && defaulValue[key] === null) {
-      defaulValue[key] = false;
+    // Make boolean fields default to false instead of null and array fields default to []
+    if (defaulValue[key] === null) {
+      if ((schema as any)?.type === 'boolean' || (schema as any)?.wrapped?.type === 'boolean') {
+        defaulValue[key] = false;
+      }
+
+      if ((schema as any)?.type === 'array' || (schema as any)?.wrapped?.type === 'array') {
+        defaulValue[key] = [];
+      }
     }
 
     value[key] = defaulValue[key];

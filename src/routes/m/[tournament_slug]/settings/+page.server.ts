@@ -12,7 +12,7 @@ export const load = (async ({ parent, route, depends }) => {
   }
 
   const settings = await getTournament(tournament.id, {
-    tournament: ['name', 'type', 'rankRange', 'teamSettings', 'bwsValues', 'links', 'refereeSettings'],
+    tournament: ['name', 'type', 'rankRange', 'teamSettings', 'bwsValues', 'links', 'refereeSettings', 'modMultipliers'],
     dates: ['publishedAt', 'concludesAt', 'playerRegsOpenAt', 'playerRegsCloseAt', 'staffRegsOpenAt', 'staffRegsCloseAt', 'other']
   }, route, true);
 

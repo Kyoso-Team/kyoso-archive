@@ -7,6 +7,24 @@ export const boolean = v.boolean;
 export const literal = v.literal;
 export const optional = v.nullable;
 
+export function array<TItem extends v.BaseSchema>(item: TItem, pipe?: Parameters<typeof v.array>[2]) {
+  return v.array(item, required, pipe);
+}
+
+export function minArrayLength<T extends any[], R extends number>(requirement: R) {
+  return v.minLength<T, R>(
+    requirement,
+    `Select ${requirement.toString()} or more options`
+  );
+}
+
+export function maxArrayLength<T extends any[], R extends number>(requirement: R) {
+  return v.maxLength<T, R>(
+    requirement,
+    `Select ${requirement.toString()} or less options`
+  );
+}
+
 export function string(pipe: Parameters<typeof v.string>[1]) {
   return v.string(required, pipe);
 }

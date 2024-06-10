@@ -9,7 +9,7 @@
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { Copy, Eye, EyeOff, RotateCcw, Pencil } from 'lucide-svelte';
   import { displayError, toastSuccess } from '$lib/utils';
-  import { flip } from 'svelte/animate';
+  import { slide } from 'svelte/transition';
   import type { PageServerData } from './$types';
   import type { TRPCRouter } from '$types';
 
@@ -195,8 +195,8 @@
     <h2>Sessions</h2>
     <p class="text-surface-600-300-token text-sm">Some details may be inaccurate.</p>
     <div class="mt-4 flex flex-col gap-2">
-      {#each data.activeSessions as session (session.id)}
-        <div animate:flip={{ duration: 150 }}>
+      {#each data.activeSessions as session}
+        <div transition:slide|global={{ duration: 150 }}>
           <Session {session} {deleteSession} current={data.session.sessionId === session.id} />
         </div>
       {/each}

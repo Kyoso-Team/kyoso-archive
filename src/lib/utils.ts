@@ -255,6 +255,10 @@ export function sortByKey<T extends Record<string, any>>(arr: T[], key: keyof T,
   });
 }
 
+export function arraysHaveSameElements<T>(arr1: T[], arr2: T[]) {
+  return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
+}
+
 /**
  * Apply a certain Tailwind color based off of a mod acronym
  */
