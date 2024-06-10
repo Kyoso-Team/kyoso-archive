@@ -37,7 +37,7 @@
   $: {
     if ($form.overwritten?.[label]) {
       hasSelected = false;
-      value = $form.defaults[label];
+      value = $form.value[label] ? dateToHtmlInput($form.value[label], true) : undefined;
       form.setOverwrittenState(label, false);
     }
   }

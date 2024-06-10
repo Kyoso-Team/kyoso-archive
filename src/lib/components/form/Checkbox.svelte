@@ -13,7 +13,7 @@
 
   $: {
     if ($form.overwritten?.[label]) {
-      value = $form.defaults[label];
+      value = $form.value[label] !== undefined ? $form.value[label] : false;
       form.setOverwrittenState(label, false);
     }
   }

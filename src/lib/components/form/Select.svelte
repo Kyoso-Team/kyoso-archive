@@ -32,7 +32,7 @@
   $: {
     if ($form.overwritten?.[label]) {
       hasSelected = false;
-      value = $form.defaults[label];
+      value = !$form.value[label] ? 'null' : $form.value[label];
       form.setOverwrittenState(label, false);
     }
   }
