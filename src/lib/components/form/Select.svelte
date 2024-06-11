@@ -1,4 +1,6 @@
 <script lang="ts">
+  import Warning from './Warning.svelte';
+  import NotAllowed from './NotAllowed.svelte';
   import { slide } from 'svelte/transition';
   import type { FormStore } from '$types';
 
@@ -8,6 +10,8 @@
   export let options: Record<string, string>;
   export let disabled = false;
   export let onChange: (() => void) | undefined = undefined;
+  export let warningMsg: string | undefined = undefined;
+  export let notAllowedMsg: string | undefined = undefined;
   let hasSelected = false;
   let optional = false;
   let value: string = !$form.value[label] ? 'null' : $form.value[label];
@@ -38,8 +42,16 @@
   }
 </script>
 
-<label class="label">
-  <legend>
+<label class="label relative">
+  <div class="flex gap-1 absolute top-0 right-0 !mt-0">
+    {#if warningMsg}
+      <Warning inputLabel={label} tooltipLabel={warningMsg} />
+    {/if}
+    {#if notAllowedMsg}
+      <NotAllowed inputLabel={label} tooltipLabel={notAllowedMsg} />
+    {/if}
+  </div>
+  <legend class="!mt-0">
     {legend}<span class="text-error-600">{optional ? '' : '*'}</span>
   </legend>
   {#if $$slots.default}

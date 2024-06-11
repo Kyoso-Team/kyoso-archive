@@ -9,12 +9,11 @@
   import ManageModMultiplierForm from './ManageModMultiplierForm.svelte';
   import { page } from '$app/stores';
   import { portal } from 'svelte-portal';
-  import { SEO, Tooltip } from '$components/general';
+  import { SEO } from '$components/general';
   import { Checkbox, Number, Select, Text, DateTime } from '$components/form';
-  import { getToastStore, popup } from '@skeletonlabs/skeleton';
+  import { getToastStore } from '@skeletonlabs/skeleton';
   import { goto, invalidate } from '$app/navigation';
-  import { displayError, isDatePast, keys, toastError, toastSuccess, tooltip } from '$lib/utils';
-  import { User } from 'lucide-svelte';
+  import { displayError, formatDate, formatTime, isDateFuture, isDatePast, keys, toastError, toastSuccess } from '$lib/utils';
   import { createForm, createFunctionQueue, loading } from '$stores';
   import { dragHandleZone } from 'svelte-dnd-action';
   import { trpc } from '$lib/trpc';
@@ -131,6 +130,7 @@
     'grid md:w-[calc(100%-1rem)] 2lg:w-[calc(100%-2rem)] md:grid-cols-[50%_50%] 2lg:grid-cols-[33.33%_33.34%_33.33%] gap-4';
   const grid2Styles =
     'grid 2lg:w-[calc(100%-2rem)] md:grid-cols-[100%] 2lg:grid-cols-[33.33%_calc(66.67%+1rem)] gap-4';
+  const dateWarningMsg = 'You can\'t update this date after the currently set date ';
 
   function tournamentInitialValues() {
     return {
@@ -483,6 +483,8 @@
   $: isTeamBased = ['teams', 'draft'].includes($tournamentForm.value.type as any);
   $: isOpenRank = $tournamentForm.value.openRank;
   $: useBWS = $tournamentForm.value.useBWS;
+  $: notHostMsg = !data.isHost ? 'Only the host can update this setting' : undefined;
+  $: isGoingPublicWarningMsg = t.publishedAt && isDateFuture(t.publishedAt) ? `You can't update this setting after the tournament has been published (${formatDate(t.publishedAt, 'shortened')}, ${formatTime(t.publishedAt)})` : undefined;
 </script>
 
 <SEO
@@ -544,18 +546,26 @@
       <h2>General Settings</h2>
       <div class="mt-4 w-full card p-4 flex flex-col gap-4">
         <div class={grid1Styles}>
-          <Text form={tournamentForm} label={labels.name} legend="Name" disabled={!data.isHost} notAllowedMsg={!data.isHost ? 'Only the host can update this setting' : ''} />
+          <Text
+            form={tournamentForm}
+            label={labels.name}
+            legend="Name"
+            disabled={!data.isHost}
+            notAllowedMsg={notHostMsg}
+          />
           <Text
             form={tournamentForm}
             label={labels.acronym}
             legend="Acronym"
             disabled={!data.isHost}
+            notAllowedMsg={notHostMsg}
           />
           <Text
             form={tournamentForm}
             label={labels.urlSlug}
             legend="URL slug"
             disabled={!data.isHost}
+            notAllowedMsg={notHostMsg}
           />
         </div>
         <div class="line-b" />
@@ -565,25 +575,33 @@
             label={labels.type}
             legend="Type"
             options={tournamentTypeOptions}
-            disabled={!data.isHost}
+            disabled={!data.isHost || isPublic}
+            warningMsg={isGoingPublicWarningMsg}
+            notAllowedMsg={notHostMsg}
           />
           <Number
             form={teamForm}
             label={labels.minTeamSize}
             legend="Min. team size"
-            disabled={!isTeamBased || !data.isHost}
+            disabled={!isTeamBased || !data.isHost || isPublic}
+            warningMsg={isGoingPublicWarningMsg}
+            notAllowedMsg={notHostMsg}
           />
           <Number
             form={teamForm}
             label={labels.maxTeamSize}
             legend="Max. team size"
-            disabled={!isTeamBased || !data.isHost}
+            disabled={!isTeamBased || !data.isHost || isPublic}
+            warningMsg={isGoingPublicWarningMsg}
+            notAllowedMsg={notHostMsg}
           />
           <Checkbox
             form={teamForm}
             label={labels.useTeamBanners}
             legend="Team banners?"
-            disabled={!isTeamBased || !data.isHost}
+            disabled={!isTeamBased || !data.isHost || isPublic}
+            warningMsg={isGoingPublicWarningMsg}
+            notAllowedMsg={notHostMsg}
           />
         </div>
         <div class="line-b" />
@@ -593,7 +611,9 @@
               form={tournamentForm}
               label={labels.openRank}
               legend="Open rank?"
-              disabled={!data.isHost}
+              disabled={!data.isHost || isPublic}
+              warningMsg={isGoingPublicWarningMsg}
+              notAllowedMsg={notHostMsg}
             />
           </div>
           <div class="flex flex-col gap-2">
@@ -602,13 +622,17 @@
                 form={rankRangeForm}
                 label={labels.lower}
                 legend="Lower rank range"
-                disabled={isOpenRank || !data.isHost}
+                disabled={isOpenRank || !data.isHost || isPublic}
+                warningMsg={isGoingPublicWarningMsg}
+                notAllowedMsg={notHostMsg}
               />
               <Number
                 form={rankRangeForm}
                 label={labels.upper}
                 legend="Upper rank range"
-                disabled={isOpenRank || !data.isHost}
+                disabled={isOpenRank || !data.isHost || isPublic}
+                warningMsg={isGoingPublicWarningMsg}
+                notAllowedMsg={notHostMsg}
               />
             </div>
             <span class="inline-block col-span-2 text-sm text-surface-600-300-token"
@@ -623,7 +647,9 @@
               form={tournamentForm}
               label={labels.useBWS}
               legend="Use BWS?"
-              disabled={!data.isHost}
+              disabled={!data.isHost || isPublic}
+              warningMsg={isGoingPublicWarningMsg}
+              notAllowedMsg={notHostMsg}
             />
           </div>
           <div class="flex flex-col gap-2">
@@ -632,19 +658,25 @@
                 form={bwsForm}
                 label={labels.x}
                 legend="Value for X"
-                disabled={!useBWS || !data.isHost}
+                disabled={!useBWS || !data.isHost || isPublic}
+                warningMsg={isGoingPublicWarningMsg}
+                notAllowedMsg={notHostMsg}
               />
               <Number
                 form={bwsForm}
                 label={labels.y}
                 legend="Value for Y"
-                disabled={!useBWS || !data.isHost}
+                disabled={!useBWS || !data.isHost || isPublic}
+                warningMsg={isGoingPublicWarningMsg}
+                notAllowedMsg={notHostMsg}
               />
               <Number
                 form={bwsForm}
                 label={labels.z}
                 legend="Value for Z"
-                disabled={!useBWS || !data.isHost}
+                disabled={!useBWS || !data.isHost || isPublic}
+                warningMsg={isGoingPublicWarningMsg}
+                notAllowedMsg={notHostMsg}
               />
             </div>
             <span
@@ -666,37 +698,49 @@
             form={datesForm}
             label={labels.publishedAt}
             legend="Publish at"
-            disabled={!data.isHost}
+            disabled={!data.isHost || (!!t.publishedAt && isDatePast(t.publishedAt))}
+            warningMsg={t.publishedAt ? `${dateWarningMsg} (${formatDate(t.publishedAt, 'shortened')}, ${formatTime(t.publishedAt)})` : undefined}
+            notAllowedMsg={notHostMsg}
           />
           <DateTime
             form={datesForm}
             label={labels.concludesAt}
             legend="Concludes at"
-            disabled={!data.isHost}
+            disabled={!data.isHost || (!!t.concludesAt && isDatePast(t.concludesAt))}
+            warningMsg={t.concludesAt ? `${dateWarningMsg} (${formatDate(t.concludesAt, 'shortened')}, ${formatTime(t.concludesAt)})` : undefined}
+            notAllowedMsg={notHostMsg}
           />
           <DateTime
             form={datesForm}
             label={labels.playerRegsOpenAt}
             legend="Player regs. open at"
-            disabled={!data.isHost}
+            disabled={!data.isHost || (!!t.playerRegsOpenAt && isDatePast(t.playerRegsOpenAt))}
+            warningMsg={t.playerRegsOpenAt ? `${dateWarningMsg} (${formatDate(t.playerRegsOpenAt, 'shortened')}, ${formatTime(t.playerRegsOpenAt)})` : undefined}
+            notAllowedMsg={notHostMsg}
           />
           <DateTime
             form={datesForm}
             label={labels.playerRegsCloseAt}
             legend="Player regs. close at"
-            disabled={!data.isHost}
+            disabled={!data.isHost || (!!t.playerRegsCloseAt && isDatePast(t.playerRegsCloseAt))}
+            warningMsg={t.playerRegsCloseAt ? `${dateWarningMsg} (${formatDate(t.playerRegsCloseAt, 'shortened')}, ${formatTime(t.playerRegsCloseAt)})` : undefined}
+            notAllowedMsg={notHostMsg}
           />
           <DateTime
             form={datesForm}
             label={labels.staffRegsOpenAt}
             legend="Staff regs. open at"
-            disabled={!data.isHost}
+            disabled={!data.isHost || (!!t.staffRegsOpenAt && isDatePast(t.staffRegsOpenAt))}
+            warningMsg={t.staffRegsOpenAt ? `${dateWarningMsg} (${formatDate(t.staffRegsOpenAt, 'shortened')}, ${formatTime(t.staffRegsOpenAt)})` : undefined}
+            notAllowedMsg={notHostMsg}
           />
           <DateTime
             form={datesForm}
             label={labels.staffRegsCloseAt}
             legend="Staff regs. close at"
-            disabled={!data.isHost}
+            disabled={!data.isHost || (!!t.staffRegsCloseAt && isDatePast(t.staffRegsCloseAt))}
+            warningMsg={t.staffRegsCloseAt ? `${dateWarningMsg} (${formatDate(t.staffRegsCloseAt, 'shortened')}, ${formatTime(t.staffRegsCloseAt)})` : undefined}
+            notAllowedMsg={notHostMsg}
           />
         </div>
         {#if otherDates.length > 0}

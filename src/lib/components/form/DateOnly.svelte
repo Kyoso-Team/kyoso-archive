@@ -1,4 +1,6 @@
 <script lang="ts">
+  import Warning from './Warning.svelte';
+  import NotAllowed from './NotAllowed.svelte';
   import { slide } from 'svelte/transition';
   import { dateToHtmlInput } from '$lib/utils';
   import type { FormStore } from '$types';
@@ -7,6 +9,8 @@
   export let label: string;
   export let legend: string;
   export let disabled = false;
+  export let warningMsg: string | undefined = undefined;
+  export let notAllowedMsg: string | undefined = undefined;
   let hasSelected = false;
   let optional = false;
   let value: string | undefined = $form.value[label] ? dateToHtmlInput($form.value[label], true) : undefined;
@@ -43,8 +47,16 @@
   }
 </script>
 
-<label class="label">
-  <legend>
+<label class="label relative">
+  <div class="flex gap-1 absolute top-0 right-0 !mt-0">
+    {#if warningMsg}
+      <Warning inputLabel={label} tooltipLabel={warningMsg} />
+    {/if}
+    {#if notAllowedMsg}
+      <NotAllowed inputLabel={label} tooltipLabel={notAllowedMsg} />
+    {/if}
+  </div>
+  <legend class="!mt-0">
     {legend}<span class="text-error-600">{optional ? '' : '*'}</span>
   </legend>
   {#if $$slots.default}
@@ -54,7 +66,7 @@
   {/if}
   <input
     type="date"
-    class={`input ${error && hasSelected ? 'input-error' : ''}`}
+    class={`input dark:[color-scheme:dark] ${error && hasSelected ? 'input-error' : ''}`}
     {disabled}
     on:input={onInput}
     bind:value
