@@ -1,4 +1,5 @@
-<!-- <script lang="ts">
+<!-- NOTE: To be re-implemented
+<script lang="ts">
   import { getModalStore, popup } from '@skeletonlabs/skeleton';
   import { tooltip } from '$lib/utils';
   import Tooltip from './Tooltip.svelte';
