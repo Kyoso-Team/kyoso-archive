@@ -31,7 +31,7 @@
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
-  let t: typeof data.tournament = data.tournament;
+  let t = data.tournament;
   let otherDates = [...t.other];
   let links = [...t.links.map((link) => ({ ...link, id: link.label }))];
   let modMultipliers = [...t.modMultipliers];
@@ -52,7 +52,7 @@
   let updatingLinkIndex: number | undefined;
   let updatingModMultiplierIndex: number | undefined;
   const now = new Date().getTime();
-  const aYear = new Date(31_556_952_000).getTime();
+  const aYear = 31_556_952_000; // A year in MS
   const toast = getToastStore();
   const fnQueue = createFunctionQueue();
   const orderTypeOptions: Record<'linear' | 'snake', string> = {
