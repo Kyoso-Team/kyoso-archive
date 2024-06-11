@@ -90,7 +90,7 @@ export const Tournament = pgTable(
     indexDeletedAt: index('idx_tournament_deleted_at').on(table.deletedAt),
     indexNameAcronymUrlSlug: index('idx_trgm_tournament_name_acronym').using(
       'gist',
-      sql`(lower(${table.name}) || ' ' || lower(${table.acronym}) gist_trgm_ops)`
+      sql`(lower(${table.name}) || ' ' || lower(${table.acronym})) gist_trgm_ops)`
     ),
     uniqueIndexUrlSlug: uniqueIndex(uniqueConstraints.tournament.urlSlug).on(table.urlSlug)
   })
