@@ -28,7 +28,13 @@ import {
 } from '$lib/schemas';
 import { rateLimitMiddleware } from '$trpc/middleware';
 import { TRPCChecks } from '../helpers/checks';
-import { tournamentChecks, tournamentDatesChecks, tournamentLinksChecks, tournamentModMultipliersChecks, tournamentOtherDatesChecks } from '$lib/helpers';
+import {
+  tournamentChecks,
+  tournamentDatesChecks,
+  tournamentLinksChecks,
+  tournamentModMultipliersChecks,
+  tournamentOtherDatesChecks
+} from '$lib/helpers';
 
 const catchUniqueConstraintError = catchUniqueConstraintError$([
   {
@@ -166,7 +172,17 @@ const updateTournament = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { data, tournamentId } = input;
-    const { name, acronym, urlSlug, teamSettings, type, rankRange, bwsValues, links, modMultipliers } = data;
+    const {
+      name,
+      acronym,
+      urlSlug,
+      teamSettings,
+      type,
+      rankRange,
+      bwsValues,
+      links,
+      modMultipliers
+    } = data;
     const checks = new TRPCChecks({ action: 'update this tournament' });
     checks.partialHasValues(data);
 
@@ -207,10 +223,7 @@ const updateTournament = t.procedure
       tournamentId,
       {
         tournament: ['deletedAt'],
-        dates: [
-          'publishedAt',
-          'concludesAt'
-        ]
+        dates: ['publishedAt', 'concludesAt']
       },
       true
     );
@@ -256,7 +269,7 @@ const updateTournamentDates = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { data, tournamentId } = input;
-    const checks = new TRPCChecks({ action: 'update this tournament\'s dates' });
+    const checks = new TRPCChecks({ action: "update this tournament's dates" });
     checks.partialHasValues(data);
 
     const txt: Record<keyof typeof newDates, string> = {
@@ -292,7 +305,6 @@ const updateTournamentDates = t.procedure
       other = sortByKey(other, 'fromDate', 'asc');
     }
 
-
     for (const [key_, newDate] of Object.entries(newDates)) {
       const key = key_ as keyof typeof newDates;
 
@@ -300,7 +312,7 @@ const updateTournamentDates = t.procedure
         if (newDate.getTime() <= now + 3_600_000) {
           return `The tournament's ${txt[key]} date can't be set to be less than 1 hour into the future`;
         }
-  
+
         if (newDate.getTime() >= now + 31_556_952_000) {
           return `The tournament's ${txt[key]} date can't be set to be greater than 1 year into the future`;
         }
@@ -327,17 +339,21 @@ const updateTournamentDates = t.procedure
       });
     }
 
-    const tournament = await getTournament(tournamentId, {
-      tournament: ['deletedAt'],
-      dates: [
-        'publishedAt',
-        'concludesAt',
-        'playerRegsOpenAt',
-        'playerRegsCloseAt',
-        'staffRegsOpenAt',
-        'staffRegsCloseAt'
-      ]
-    }, true);
+    const tournament = await getTournament(
+      tournamentId,
+      {
+        tournament: ['deletedAt'],
+        dates: [
+          'publishedAt',
+          'concludesAt',
+          'playerRegsOpenAt',
+          'playerRegsCloseAt',
+          'staffRegsOpenAt',
+          'staffRegsCloseAt'
+        ]
+      },
+      true
+    );
     checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
     for (const key_ of Object.keys(newDates)) {
@@ -352,21 +368,24 @@ const updateTournamentDates = t.procedure
       }
     }
 
-    const checksErr = tournamentDatesChecks({
-      publishedAt,
-      concludesAt,
-      playerRegsOpenAt,
-      playerRegsCloseAt,
-      staffRegsOpenAt,
-      staffRegsCloseAt
-    }, {
-      publishedAt: publishedAt || tournament.publishedAt,
-      concludesAt: concludesAt || tournament.concludesAt,
-      playerRegsOpenAt: playerRegsOpenAt || tournament.playerRegsOpenAt,
-      playerRegsCloseAt: playerRegsCloseAt || tournament.playerRegsCloseAt,
-      staffRegsOpenAt: staffRegsOpenAt || tournament.staffRegsOpenAt,
-      staffRegsCloseAt: staffRegsCloseAt || tournament.staffRegsCloseAt
-    });
+    const checksErr = tournamentDatesChecks(
+      {
+        publishedAt,
+        concludesAt,
+        playerRegsOpenAt,
+        playerRegsCloseAt,
+        staffRegsOpenAt,
+        staffRegsCloseAt
+      },
+      {
+        publishedAt: publishedAt || tournament.publishedAt,
+        concludesAt: concludesAt || tournament.concludesAt,
+        playerRegsOpenAt: playerRegsOpenAt || tournament.playerRegsOpenAt,
+        playerRegsCloseAt: playerRegsCloseAt || tournament.playerRegsCloseAt,
+        staffRegsOpenAt: staffRegsOpenAt || tournament.staffRegsOpenAt,
+        staffRegsCloseAt: staffRegsCloseAt || tournament.staffRegsCloseAt
+      }
+    );
 
     if (checksErr) {
       throw new TRPCError({
@@ -381,7 +400,7 @@ const updateTournamentDates = t.procedure
         .set(data)
         .where(eq(TournamentDates.tournamentId, tournamentId));
     } catch (err) {
-      throw trpcUnknownError(err, 'Updating the tournament\'s dates');
+      throw trpcUnknownError(err, "Updating the tournament's dates");
     }
   });
 

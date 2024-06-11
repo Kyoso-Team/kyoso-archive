@@ -22,19 +22,22 @@
     date: 'Date',
     datetime: 'Date and time'
   };
-  const mainForm = createForm({
-    label: f.string([f.minStrLength(2), f.maxStrLength(35)]),
-    type: f.union(keys(typeOptions)),
-    display: f.union(keys(displayOptions)),
-    fromDate: f.date([f.minDate(oldestDatePossible), f.maxDate(maxPossibleDate)]),
-    toDate: f.optional(f.date([f.minDate(oldestDatePossible), f.maxDate(maxPossibleDate)]))
-  }, updating && {
-    display: updating.onlyDate ? 'date' : 'datetime',
-    label: updating.label,
-    type: updating.toDate ? 'range' : 'single',
-    fromDate: new Date(updating.fromDate),
-    toDate: updating.toDate ? new Date(updating.toDate) : undefined
-  });
+  const mainForm = createForm(
+    {
+      label: f.string([f.minStrLength(2), f.maxStrLength(35)]),
+      type: f.union(keys(typeOptions)),
+      display: f.union(keys(displayOptions)),
+      fromDate: f.date([f.minDate(oldestDatePossible), f.maxDate(maxPossibleDate)]),
+      toDate: f.optional(f.date([f.minDate(oldestDatePossible), f.maxDate(maxPossibleDate)]))
+    },
+    updating && {
+      display: updating.onlyDate ? 'date' : 'datetime',
+      label: updating.label,
+      type: updating.toDate ? 'range' : 'single',
+      fromDate: new Date(updating.fromDate),
+      toDate: updating.toDate ? new Date(updating.toDate) : undefined
+    }
+  );
   const labels = mainForm.labels;
 
   async function submit() {
@@ -60,10 +63,10 @@
       otherDates.push(newDate);
     }
 
-    otherDates = [...sortByKey(otherDates, 'fromDate', 'asc')];    
+    otherDates = [...sortByKey(otherDates, 'fromDate', 'asc')];
     show = false;
     otherDatesHaveUpdated = true;
-    
+
     setTimeout(() => {
       editIndex = undefined;
     }, 150);
@@ -71,7 +74,7 @@
 
   function cancel() {
     show = false;
-    
+
     setTimeout(() => {
       editIndex = undefined;
     }, 150);
@@ -94,7 +97,13 @@
     What is this date/are these dates for?
   </Text>
   <Select form={mainForm} label={labels.type} legend="Type" options={typeOptions} />
-  <Select form={mainForm} label={labels.display} legend="Display" options={displayOptions} onChange={onDisplayChange} />
+  <Select
+    form={mainForm}
+    label={labels.display}
+    legend="Display"
+    options={displayOptions}
+    onChange={onDisplayChange}
+  />
   {#if onlyDate}
     <DateOnly form={mainForm} label={labels.fromDate} legend={range ? 'From date' : 'Date'} />
   {:else}
@@ -110,10 +119,11 @@
     </Section>
   {/if}
   <svelte:fragment slot="actions">
-    <button type="submit" class="btn variant-filled-primary" disabled={!(
-      $mainForm.canSubmit &&
-      (editIndex !== undefined ? $mainForm.hasUpdated : true)
-    )}>Submit</button
+    <button
+      type="submit"
+      class="btn variant-filled-primary"
+      disabled={!($mainForm.canSubmit && (editIndex !== undefined ? $mainForm.hasUpdated : true))}
+      >Submit</button
     >
     <button type="button" class="btn variant-filled" on:click={cancel}>Cancel</button>
   </svelte:fragment>

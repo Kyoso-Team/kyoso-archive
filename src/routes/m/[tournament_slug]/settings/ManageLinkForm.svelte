@@ -11,7 +11,7 @@
 
   export let show: boolean;
   export let linksHaveUpdated: boolean;
-  export let links: ((typeof Tournament.$inferSelect)['links'][number] & { id: string; })[];
+  export let links: ((typeof Tournament.$inferSelect)['links'][number] & { id: string })[];
   export let editIndex: number | undefined = undefined;
   const toast = getToastStore();
   const updating = editIndex !== undefined ? links[editIndex] : undefined;
@@ -29,11 +29,14 @@
     x: 'X (Twitter)',
     youtube: 'YouTube'
   };
-  const mainForm = createForm({
-    label: f.string([f.minStrLength(2), f.maxStrLength(30)]),
-    url: f.string([f.url()]),
-    icon: f.union(keys(iconOptions))
-  }, updating);
+  const mainForm = createForm(
+    {
+      label: f.string([f.minStrLength(2), f.maxStrLength(30)]),
+      url: f.string([f.url()]),
+      icon: f.union(keys(iconOptions))
+    },
+    updating
+  );
   const labels = mainForm.labels;
   const iconSize = 48;
 
@@ -59,7 +62,7 @@
     } else {
       links.push(newLink);
     }
-    
+
     links = [...links];
     show = false;
     linksHaveUpdated = true;
@@ -82,9 +85,7 @@
   <svelte:fragment slot="header">
     <span class="title">{editIndex !== undefined ? 'Edit' : 'Add'} Link</span>
   </svelte:fragment>
-  <Text form={mainForm} label={labels.label} legend="Link label">
-    What is this link for?
-  </Text>
+  <Text form={mainForm} label={labels.label} legend="Link label">What is this link for?</Text>
   <Text form={mainForm} label={labels.url} legend="URL" />
   <Select form={mainForm} label={labels.icon} legend="Icon" options={iconOptions}>
     <svelte:fragment slot="preview">
@@ -94,7 +95,10 @@
         {#if $mainForm.value.icon}
           <Link size={iconSize} class="dark:stroke-white stroke-black" />
         {:else}
-          <span class="text-surface-600-300-token flex items-center" style={`height: ${iconSize}px;`}>No icon selected</span>
+          <span
+            class="text-surface-600-300-token flex items-center"
+            style={`height: ${iconSize}px;`}>No icon selected</span
+          >
         {/if}
         <!-- {#if $mainForm.value.icon === 'challonge'}
         {:else if $mainForm.value.icon === 'discord'}
@@ -117,10 +121,11 @@
     </svelte:fragment>
   </Select>
   <svelte:fragment slot="actions">
-    <button type="submit" class="btn variant-filled-primary" disabled={!(
-      $mainForm.canSubmit &&
-      (editIndex !== undefined ? $mainForm.hasUpdated : true)
-    )}>Submit</button
+    <button
+      type="submit"
+      class="btn variant-filled-primary"
+      disabled={!($mainForm.canSubmit && (editIndex !== undefined ? $mainForm.hasUpdated : true))}
+      >Submit</button
     >
     <button type="button" class="btn variant-filled" on:click={cancel}>Cancel</button>
   </svelte:fragment>

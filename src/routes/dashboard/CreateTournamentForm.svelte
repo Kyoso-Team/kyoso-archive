@@ -6,7 +6,12 @@
   import { Form, Section, Text, Number, Select, Checkbox } from '$components/form';
   import { createForm, loading } from '$stores';
   import { displayError, toastError } from '$lib/utils';
-  import { tournamentTypeOptions, baseTournamentFormSchemas, baseTeamSettingsFormSchemas, rankRangeFormSchemas } from '$lib/constants';
+  import {
+    tournamentTypeOptions,
+    baseTournamentFormSchemas,
+    baseTeamSettingsFormSchemas,
+    rankRangeFormSchemas
+  } from '$lib/constants';
   import { tournamentChecks } from '$lib/helpers';
   import type { TRPCRouter } from '$types';
 
@@ -91,7 +96,12 @@
       {$page.url.origin}/t/{$mainForm.value.urlSlug ? $mainForm.value.urlSlug : '[slug]'}
     </svelte:fragment>
   </Text>
-  <Select form={mainForm} label={labels.type} legend="Tournament type" options={tournamentTypeOptions} />
+  <Select
+    form={mainForm}
+    label={labels.type}
+    legend="Tournament type"
+    options={tournamentTypeOptions}
+  />
   {#if isTeamBased}
     <Section>
       <Number form={teamForm} label={labels.minTeamSize} legend="Min. team size" />

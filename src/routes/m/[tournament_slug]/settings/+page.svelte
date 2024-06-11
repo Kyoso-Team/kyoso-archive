@@ -13,7 +13,16 @@
   import { Checkbox, Number, Select, Text, DateTime } from '$components/form';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { goto, invalidate } from '$app/navigation';
-  import { displayError, formatDate, formatTime, isDateFuture, isDatePast, keys, toastError, toastSuccess } from '$lib/utils';
+  import {
+    displayError,
+    formatDate,
+    formatTime,
+    isDateFuture,
+    isDatePast,
+    keys,
+    toastError,
+    toastSuccess
+  } from '$lib/utils';
   import { createForm, createFunctionQueue, loading } from '$stores';
   import { dragHandleZone } from 'svelte-dnd-action';
   import { trpc } from '$lib/trpc';
@@ -61,7 +70,7 @@
   };
   const banAndProtectBehaviorOptions: Record<'true' | 'false', string> = {
     true: 'A ban on a protected map cancels out protection',
-    false: 'A protected map can\'t be banned'
+    false: "A protected map can't be banned"
   };
   const winConditionOptions: Record<RefereeSettings['winCondition'], string> = {
     accuracy: 'Best accuracy',
@@ -82,10 +91,7 @@
     },
     teamSettingsInitialValues()
   );
-  const rankRangeForm = createForm(
-    rankRangeFormSchemas,
-    rankRangeInitialValues()
-  );
+  const rankRangeForm = createForm(rankRangeFormSchemas, rankRangeInitialValues());
   const bwsForm = createForm(
     {
       x: f.number([f.notValue(0), f.minValue(-10), f.maxValue(10)]),
@@ -94,30 +100,44 @@
     },
     bwsInitialValues()
   );
-  const refereeSettingsForm = createForm({
-    pickTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
-    banTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
-    protectTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
-    readyTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
-    startTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
-    allowDoubleBan: f.boolean(),
-    allowDoublePick: f.boolean(),
-    allowDoubleProtect: f.boolean(),
-    banOrder: f.union(keys(orderTypeOptions)),
-    pickOrder: f.union(keys(orderTypeOptions)),
-    protectOrder: f.union(keys(orderTypeOptions)),
-    alwaysForceNoFail: f.boolean(),
-    banAndProtectBehavior: f.union(keys(banAndProtectBehaviorOptions)),
-    winCondition: f.union(keys(winConditionOptions))
-  }, refereeSettingsInitialValues());
-  const datesForm = createForm({
-    publishedAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])),
-    concludesAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])),
-    playerRegsOpenAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])),
-    playerRegsCloseAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])),
-    staffRegsOpenAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])),
-    staffRegsCloseAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))]))
-  }, datesInitialValues());
+  const refereeSettingsForm = createForm(
+    {
+      pickTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
+      banTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
+      protectTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
+      readyTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
+      startTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
+      allowDoubleBan: f.boolean(),
+      allowDoublePick: f.boolean(),
+      allowDoubleProtect: f.boolean(),
+      banOrder: f.union(keys(orderTypeOptions)),
+      pickOrder: f.union(keys(orderTypeOptions)),
+      protectOrder: f.union(keys(orderTypeOptions)),
+      alwaysForceNoFail: f.boolean(),
+      banAndProtectBehavior: f.union(keys(banAndProtectBehaviorOptions)),
+      winCondition: f.union(keys(winConditionOptions))
+    },
+    refereeSettingsInitialValues()
+  );
+  const datesForm = createForm(
+    {
+      publishedAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])),
+      concludesAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])),
+      playerRegsOpenAt: f.optional(
+        f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])
+      ),
+      playerRegsCloseAt: f.optional(
+        f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])
+      ),
+      staffRegsOpenAt: f.optional(
+        f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])
+      ),
+      staffRegsCloseAt: f.optional(
+        f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])
+      )
+    },
+    datesInitialValues()
+  );
   const labels = {
     ...tournamentForm.labels,
     ...teamForm.labels,
@@ -130,7 +150,7 @@
     'grid md:w-[calc(100%-1rem)] 2lg:w-[calc(100%-2rem)] md:grid-cols-[50%_50%] 2lg:grid-cols-[33.33%_33.34%_33.33%] gap-4';
   const grid2Styles =
     'grid 2lg:w-[calc(100%-2rem)] md:grid-cols-[100%] 2lg:grid-cols-[33.33%_calc(66.67%+1rem)] gap-4';
-  const dateWarningMsg = 'You can\'t update this date after the currently set date ';
+  const dateWarningMsg = "You can't update this date after the currently set date ";
 
   function tournamentInitialValues() {
     return {
@@ -144,18 +164,22 @@
   }
 
   function teamSettingsInitialValues() {
-    return t.teamSettings && {
-      maxTeamSize: t.teamSettings.maxTeamSize,
-      minTeamSize: t.teamSettings.minTeamSize,
-      useTeamBanners: t.teamSettings.useTeamBanners
-    };
+    return (
+      t.teamSettings && {
+        maxTeamSize: t.teamSettings.maxTeamSize,
+        minTeamSize: t.teamSettings.minTeamSize,
+        useTeamBanners: t.teamSettings.useTeamBanners
+      }
+    );
   }
 
   function rankRangeInitialValues() {
-    return t.rankRange && {
-      lower: t.rankRange.lower,
-      upper: t.rankRange.upper
-    };
+    return (
+      t.rankRange && {
+        lower: t.rankRange.lower,
+        upper: t.rankRange.upper
+      }
+    );
   }
 
   function bwsInitialValues() {
@@ -186,7 +210,9 @@
       pickOrder: t.refereeSettings.order.pick,
       protectOrder: t.refereeSettings.order.protect,
       alwaysForceNoFail: t.refereeSettings.alwaysForceNoFail,
-      banAndProtectBehavior: t.refereeSettings.banAndProtectCancelOut ? 'true' as const : 'false' as const,
+      banAndProtectBehavior: t.refereeSettings.banAndProtectCancelOut
+        ? ('true' as const)
+        : ('false' as const),
       winCondition: t.refereeSettings.winCondition
     };
   }
@@ -211,8 +237,14 @@
     datesForm.overrideInitialValues(datesInitialValues());
   }
 
-  async function updateTournament<T extends 'updateTournament' | 'updateTournamentDates'>(procedure: T, input: TRPCRouter<true>['tournaments'][T]['data'], successMsg: string) {
-    let tournament!: TRPCRouter['tournaments']['updateTournament'] | TRPCRouter['tournaments']['updateTournamentDates'];
+  async function updateTournament<T extends 'updateTournament' | 'updateTournamentDates'>(
+    procedure: T,
+    input: TRPCRouter<true>['tournaments'][T]['data'],
+    successMsg: string
+  ) {
+    let tournament!:
+      | TRPCRouter['tournaments']['updateTournament']
+      | TRPCRouter['tournaments']['updateTournamentDates'];
     loading.set(true);
 
     try {
@@ -242,7 +274,7 @@
     } else {
       await invalidate('reload:manage_settings');
     }
-    
+
     t = data.tournament;
     overrideInitialValues();
     loading.set(false);
@@ -278,7 +310,9 @@
   }
 
   async function updateGeneralSettings() {
-    const { acronym, name, type, urlSlug } = tournamentForm.getFinalValue($tournamentForm, { updatedFieldsOnly: true });
+    const { acronym, name, type, urlSlug } = tournamentForm.getFinalValue($tournamentForm, {
+      updatedFieldsOnly: true
+    });
     const teamSettings = isTeamBased ? teamForm.getFinalValue($teamForm) : undefined;
     const rankRange = !isOpenRank ? rankRangeForm.getFinalValue($rankRangeForm) : undefined;
     const bwsValues = useBWS ? bwsForm.getFinalValue($bwsForm) : undefined;
@@ -307,18 +341,24 @@
         return 'next';
       },
       async () => {
-        await updateTournament('updateTournament', {
-          acronym,
-          name,
-          type,
-          urlSlug,
-          teamSettings: teamSettings ? teamSettings : null,
-          rankRange: rankRange ? {
-            lower: rankRange.lower,
-            upper: rankRange.upper || undefined
-          } : null,
-          bwsValues: bwsValues ? bwsValues : null
-        }, 'Updated general settings successfully');
+        await updateTournament(
+          'updateTournament',
+          {
+            acronym,
+            name,
+            type,
+            urlSlug,
+            teamSettings: teamSettings ? teamSettings : null,
+            rankRange: rankRange
+              ? {
+                  lower: rankRange.lower,
+                  upper: rankRange.upper || undefined
+                }
+              : null,
+            bwsValues: bwsValues ? bwsValues : null
+          },
+          'Updated general settings successfully'
+        );
 
         fnQueue.clearQueue();
       }
@@ -328,32 +368,51 @@
   }
 
   async function updateRefereeSettings() {
-    const { allowDoubleBan, allowDoublePick, allowDoubleProtect, banOrder, pickOrder, protectOrder, alwaysForceNoFail, banAndProtectBehavior, winCondition, startTimerLength, readyTimerLength, banTimerLength, protectTimerLength, pickTimerLength } = refereeSettingsForm.getFinalValue($refereeSettingsForm);
+    const {
+      allowDoubleBan,
+      allowDoublePick,
+      allowDoubleProtect,
+      banOrder,
+      pickOrder,
+      protectOrder,
+      alwaysForceNoFail,
+      banAndProtectBehavior,
+      winCondition,
+      startTimerLength,
+      readyTimerLength,
+      banTimerLength,
+      protectTimerLength,
+      pickTimerLength
+    } = refereeSettingsForm.getFinalValue($refereeSettingsForm);
 
-    await updateTournament('updateTournament', {
-      refereeSettings: {
-        alwaysForceNoFail,
-        winCondition,
-        banAndProtectCancelOut: banAndProtectBehavior === 'true',
-        allow: {
-          doubleBan: allowDoubleBan,
-          doublePick: allowDoublePick,
-          doubleProtect: allowDoubleProtect
-        },
-        order: {
-          ban: banOrder,
-          pick: pickOrder,
-          protect: protectOrder
-        },
-        timerLength: {
-          start: startTimerLength,
-          ready: readyTimerLength,
-          ban: banTimerLength,
-          protect: protectTimerLength,
-          pick: pickTimerLength
+    await updateTournament(
+      'updateTournament',
+      {
+        refereeSettings: {
+          alwaysForceNoFail,
+          winCondition,
+          banAndProtectCancelOut: banAndProtectBehavior === 'true',
+          allow: {
+            doubleBan: allowDoubleBan,
+            doublePick: allowDoublePick,
+            doubleProtect: allowDoubleProtect
+          },
+          order: {
+            ban: banOrder,
+            pick: pickOrder,
+            protect: protectOrder
+          },
+          timerLength: {
+            start: startTimerLength,
+            ready: readyTimerLength,
+            ban: banTimerLength,
+            protect: protectTimerLength,
+            pick: pickTimerLength
+          }
         }
-      }
-    }, 'Updated referee settings successfully');
+      },
+      'Updated referee settings successfully'
+    );
   }
 
   async function updateDates() {
@@ -365,10 +424,14 @@
       return;
     }
 
-    await updateTournament('updateTournamentDates', {
-      ...dates,
-      other: otherDates
-    }, 'Updated dates successfully');
+    await updateTournament(
+      'updateTournamentDates',
+      {
+        ...dates,
+        other: otherDates
+      },
+      'Updated dates successfully'
+    );
 
     otherDatesHaveUpdated = false;
     otherDates = t.other;
@@ -382,7 +445,11 @@
   }
 
   async function updateModMultipliers() {
-    await updateTournament('updateTournament', { modMultipliers }, 'Updated mod multipliers successfully');
+    await updateTournament(
+      'updateTournament',
+      { modMultipliers },
+      'Updated mod multipliers successfully'
+    );
 
     modMultipliersHaveUpdated = false;
     modMultipliers = t.modMultipliers;
@@ -436,7 +503,7 @@
 
   function sortLinks(e: CustomEvent, finalize?: boolean) {
     links = e.detail.items;
-    
+
     if (finalize && links.some(({ label }, i) => label !== t.links[i].label)) {
       linksHaveUpdated = true;
     }
@@ -484,7 +551,10 @@
   $: isOpenRank = $tournamentForm.value.openRank;
   $: useBWS = $tournamentForm.value.useBWS;
   $: notHostMsg = !data.isHost ? 'Only the host can update this setting' : undefined;
-  $: isGoingPublicWarningMsg = t.publishedAt && isDateFuture(t.publishedAt) ? `You can't update this setting after the tournament has been published (${formatDate(t.publishedAt, 'shortened')}, ${formatTime(t.publishedAt)})` : undefined;
+  $: isGoingPublicWarningMsg =
+    t.publishedAt && isDateFuture(t.publishedAt)
+      ? `You can't update this setting after the tournament has been published (${formatDate(t.publishedAt, 'shortened')}, ${formatTime(t.publishedAt)})`
+      : undefined;
 </script>
 
 <SEO
@@ -497,7 +567,12 @@
   <Backdrop>
     <Modal>
       <span class="title">Update URL Slug</span>
-      <p>Are you sure you want to update this tournament's URL slug? This will make links containing the current URL slug obsolete{isPublic ? ' and will likely hurt the tournament\'s discoverability' : ''}.</p>
+      <p>
+        Are you sure you want to update this tournament's URL slug? This will make links containing
+        the current URL slug obsolete{isPublic
+          ? " and will likely hurt the tournament's discoverability"
+          : ''}.
+      </p>
       <div class="actions">
         <button class="btn variant-filled-primary" on:click={onUpdateUrlSlug}>Update</button>
         <button class="btn variant-filled" on:click={clearFnQueue}>Cancel</button>
@@ -508,8 +583,19 @@
 {#if showUpdateNameAcronymPrompt}
   <Backdrop>
     <Modal>
-      <span class="title">Update {$tournamentForm.updated.name ? 'Name' : ''} {$tournamentForm.updated.name && $tournamentForm.updated.acronym ? ' & ' : ''} {$tournamentForm.updated.acronym ? 'Acronym' : ''}</span>
-      <p>Are you sure you want to update this tournament's {$tournamentForm.updated.name ? 'name' : ''} {$tournamentForm.updated.name && $tournamentForm.updated.acronym ? ' and ' : ''} {$tournamentForm.updated.acronym ? 'acronym' : ''}? This will likely hurt the tournament's discoverability.</p>
+      <span class="title"
+        >Update {$tournamentForm.updated.name ? 'Name' : ''}
+        {$tournamentForm.updated.name && $tournamentForm.updated.acronym ? ' & ' : ''}
+        {$tournamentForm.updated.acronym ? 'Acronym' : ''}</span
+      >
+      <p>
+        Are you sure you want to update this tournament's {$tournamentForm.updated.name
+          ? 'name'
+          : ''}
+        {$tournamentForm.updated.name && $tournamentForm.updated.acronym ? ' and ' : ''}
+        {$tournamentForm.updated.acronym ? 'acronym' : ''}? This will likely hurt the tournament's
+        discoverability.
+      </p>
       <div class="actions">
         <button class="btn variant-filled-primary" on:click={onUpdateNameAcronym}>Update</button>
         <button class="btn variant-filled" on:click={clearFnQueue}>Cancel</button>
@@ -519,17 +605,32 @@
 {/if}
 {#if showManageOtherDateForm}
   <Backdrop>
-    <ManageOtherDateForm bind:show={showManageOtherDateForm} bind:otherDates={otherDates} bind:otherDatesHaveUpdated={otherDatesHaveUpdated} bind:editIndex={updatingOtherDateIndex} />
+    <ManageOtherDateForm
+      bind:show={showManageOtherDateForm}
+      bind:otherDates
+      bind:otherDatesHaveUpdated
+      bind:editIndex={updatingOtherDateIndex}
+    />
   </Backdrop>
 {/if}
 {#if showManageLinkForm}
   <Backdrop>
-    <ManageLinkForm bind:show={showManageLinkForm} bind:links={links} bind:linksHaveUpdated={linksHaveUpdated} bind:editIndex={updatingLinkIndex} />
+    <ManageLinkForm
+      bind:show={showManageLinkForm}
+      bind:links
+      bind:linksHaveUpdated
+      bind:editIndex={updatingLinkIndex}
+    />
   </Backdrop>
 {/if}
 {#if showManageModMultiplierForm}
   <Backdrop>
-    <ManageModMultiplierForm bind:show={showManageModMultiplierForm} bind:modMultipliers={modMultipliers} bind:modMultipliersHaveUpdated={modMultipliersHaveUpdated} bind:editIndex={updatingModMultiplierIndex} />
+    <ManageModMultiplierForm
+      bind:show={showManageModMultiplierForm}
+      bind:modMultipliers
+      bind:modMultipliersHaveUpdated
+      bind:editIndex={updatingModMultiplierIndex}
+    />
   </Backdrop>
 {/if}
 <h1 class="m-title" use:portal={'#page-title'}>Settings</h1>
@@ -681,13 +782,18 @@
             </div>
             <span
               class="inline-block col-span-2 text-sm text-surface-600-300-token italic font-mono"
-              >BWS = rank ^ ({$bwsForm.value.x || 'null'} ^ (badges ^ {$bwsForm.value.y || 'null'}) / {$bwsForm
-                .value.z || 'null'})</span
+              >BWS = rank ^ ({$bwsForm.value.x || 'null'} ^ (badges ^ {$bwsForm.value.y || 'null'})
+              / {$bwsForm.value.z || 'null'})</span
             >
           </div>
         </div>
       </div>
-      <Actions hasUpdated={generalSettingsHasUpdated} disableUpdateBtn={!canUpdateGeneralSettings} onUpdate={updateGeneralSettings} onReset={resetGeneralSettings} />
+      <Actions
+        hasUpdated={generalSettingsHasUpdated}
+        disableUpdateBtn={!canUpdateGeneralSettings}
+        onUpdate={updateGeneralSettings}
+        onReset={resetGeneralSettings}
+      />
     </section>
     <div class="line-b my-8" />
     <section>
@@ -699,7 +805,9 @@
             label={labels.publishedAt}
             legend="Publish at"
             disabled={!data.isHost || (!!t.publishedAt && isDatePast(t.publishedAt))}
-            warningMsg={t.publishedAt ? `${dateWarningMsg} (${formatDate(t.publishedAt, 'shortened')}, ${formatTime(t.publishedAt)})` : undefined}
+            warningMsg={t.publishedAt
+              ? `${dateWarningMsg} (${formatDate(t.publishedAt, 'shortened')}, ${formatTime(t.publishedAt)})`
+              : undefined}
             notAllowedMsg={notHostMsg}
           />
           <DateTime
@@ -707,7 +815,9 @@
             label={labels.concludesAt}
             legend="Concludes at"
             disabled={!data.isHost || (!!t.concludesAt && isDatePast(t.concludesAt))}
-            warningMsg={t.concludesAt ? `${dateWarningMsg} (${formatDate(t.concludesAt, 'shortened')}, ${formatTime(t.concludesAt)})` : undefined}
+            warningMsg={t.concludesAt
+              ? `${dateWarningMsg} (${formatDate(t.concludesAt, 'shortened')}, ${formatTime(t.concludesAt)})`
+              : undefined}
             notAllowedMsg={notHostMsg}
           />
           <DateTime
@@ -715,7 +825,9 @@
             label={labels.playerRegsOpenAt}
             legend="Player regs. open at"
             disabled={!data.isHost || (!!t.playerRegsOpenAt && isDatePast(t.playerRegsOpenAt))}
-            warningMsg={t.playerRegsOpenAt ? `${dateWarningMsg} (${formatDate(t.playerRegsOpenAt, 'shortened')}, ${formatTime(t.playerRegsOpenAt)})` : undefined}
+            warningMsg={t.playerRegsOpenAt
+              ? `${dateWarningMsg} (${formatDate(t.playerRegsOpenAt, 'shortened')}, ${formatTime(t.playerRegsOpenAt)})`
+              : undefined}
             notAllowedMsg={notHostMsg}
           />
           <DateTime
@@ -723,7 +835,9 @@
             label={labels.playerRegsCloseAt}
             legend="Player regs. close at"
             disabled={!data.isHost || (!!t.playerRegsCloseAt && isDatePast(t.playerRegsCloseAt))}
-            warningMsg={t.playerRegsCloseAt ? `${dateWarningMsg} (${formatDate(t.playerRegsCloseAt, 'shortened')}, ${formatTime(t.playerRegsCloseAt)})` : undefined}
+            warningMsg={t.playerRegsCloseAt
+              ? `${dateWarningMsg} (${formatDate(t.playerRegsCloseAt, 'shortened')}, ${formatTime(t.playerRegsCloseAt)})`
+              : undefined}
             notAllowedMsg={notHostMsg}
           />
           <DateTime
@@ -731,7 +845,9 @@
             label={labels.staffRegsOpenAt}
             legend="Staff regs. open at"
             disabled={!data.isHost || (!!t.staffRegsOpenAt && isDatePast(t.staffRegsOpenAt))}
-            warningMsg={t.staffRegsOpenAt ? `${dateWarningMsg} (${formatDate(t.staffRegsOpenAt, 'shortened')}, ${formatTime(t.staffRegsOpenAt)})` : undefined}
+            warningMsg={t.staffRegsOpenAt
+              ? `${dateWarningMsg} (${formatDate(t.staffRegsOpenAt, 'shortened')}, ${formatTime(t.staffRegsOpenAt)})`
+              : undefined}
             notAllowedMsg={notHostMsg}
           />
           <DateTime
@@ -739,7 +855,9 @@
             label={labels.staffRegsCloseAt}
             legend="Staff regs. close at"
             disabled={!data.isHost || (!!t.staffRegsCloseAt && isDatePast(t.staffRegsCloseAt))}
-            warningMsg={t.staffRegsCloseAt ? `${dateWarningMsg} (${formatDate(t.staffRegsCloseAt, 'shortened')}, ${formatTime(t.staffRegsCloseAt)})` : undefined}
+            warningMsg={t.staffRegsCloseAt
+              ? `${dateWarningMsg} (${formatDate(t.staffRegsCloseAt, 'shortened')}, ${formatTime(t.staffRegsCloseAt)})`
+              : undefined}
             notAllowedMsg={notHostMsg}
           />
         </div>
@@ -748,30 +866,49 @@
           <div class="flex flex-col gap-4">
             {#each otherDates as date, i}
               <div transition:slide|global={{ duration: 150 }}>
-                <OtherDate {date} onUpdate={() => onUpdateOtherDate(i)} onDelete={() => onDeleteOtherDate(i)} />
+                <OtherDate
+                  {date}
+                  onUpdate={() => onUpdateOtherDate(i)}
+                  onDelete={() => onDeleteOtherDate(i)}
+                />
               </div>
             {/each}
           </div>
         {/if}
       </div>
-      <Actions hasUpdated={datesHaveUpdated} disableUpdateBtn={!canUpdateDates} onUpdate={updateDates} onReset={resetDates} disableAddBtn={otherDates.length >= 20} onAdd={onCreateOtherDate} />
+      <Actions
+        hasUpdated={datesHaveUpdated}
+        disableUpdateBtn={!canUpdateDates}
+        onUpdate={updateDates}
+        onReset={resetDates}
+        disableAddBtn={otherDates.length >= 20}
+        onAdd={onCreateOtherDate}
+      />
     </section>
     <div class="line-b my-8" />
     <section>
       <h2>Links</h2>
-      <span class="text-warning-500 mt-2 block"><strong>Note for testers:</strong> We're working on designing the icons so it matches the rest of the website's icons, so for now, all icons are displayed with the default "link" icon.</span>
+      <span class="text-warning-500 mt-2 block"
+        ><strong>Note for testers:</strong> We're working on designing the icons so it matches the rest
+        of the website's icons, so for now, all icons are displayed with the default "link" icon.</span
+      >
       <div class="mt-4 w-full card p-4 flex flex-col gap-4">
         {#if links.length === 0}
           <span class="text-surface-600-300-token">This tournament doesn't have any links.</span>
         {:else}
-          <div class="flex flex-col gap-4" use:dragHandleZone={{
-            items: links,
-            flipDurationMs: 150,
-            dropTargetClasses: ['card', 'variant-soft-surface'],
-            dropTargetStyle: {
-              border: 'none'
-            }
-          }} on:consider={sortLinks} on:finalize={(e) => sortLinks(e, true)}>
+          <div
+            class="flex flex-col gap-4"
+            use:dragHandleZone={{
+              items: links,
+              flipDurationMs: 150,
+              dropTargetClasses: ['card', 'variant-soft-surface'],
+              dropTargetStyle: {
+                border: 'none'
+              }
+            }}
+            on:consider={sortLinks}
+            on:finalize={(e) => sortLinks(e, true)}
+          >
             {#each links as link, i (link.id)}
               <div animate:flip={{ duration: 150 }}>
                 <Link {link} onUpdate={() => onUpdateLink(i)} onDelete={() => onDeleteLink(i)} />
@@ -780,7 +917,14 @@
           </div>
         {/if}
       </div>
-      <Actions hasUpdated={linksHaveUpdated} disableUpdateBtn={!linksHaveUpdated} onUpdate={updateLinks} onReset={resetLinks} disableAddBtn={links.length >= 20} onAdd={onCreateLink} />
+      <Actions
+        hasUpdated={linksHaveUpdated}
+        disableUpdateBtn={!linksHaveUpdated}
+        onUpdate={updateLinks}
+        onReset={resetLinks}
+        disableAddBtn={links.length >= 20}
+        onAdd={onCreateLink}
+      />
     </section>
     <div class="line-b my-8" />
     <section>
@@ -874,26 +1018,47 @@
           />
         </div>
       </div>
-      <Actions hasUpdated={$refereeSettingsForm.hasUpdated} disableUpdateBtn={!canUpdateRefereeSettings} onUpdate={updateRefereeSettings} onReset={resetRefereeSettings} />
+      <Actions
+        hasUpdated={$refereeSettingsForm.hasUpdated}
+        disableUpdateBtn={!canUpdateRefereeSettings}
+        onUpdate={updateRefereeSettings}
+        onReset={resetRefereeSettings}
+      />
     </section>
     <div class="line-b my-8" />
     <section>
       <h2>Mod Multipliers</h2>
-      <span class="text-warning-500 mt-2 block"><strong>Note for testers:</strong> We're likely changing how the mod multipliers are displayed by using icons instead of the mod acronyms.</span>
+      <span class="text-warning-500 mt-2 block"
+        ><strong>Note for testers:</strong> We're likely changing how the mod multipliers are displayed
+        by using icons instead of the mod acronyms.</span
+      >
       <div class="mt-4 w-full card p-4 flex flex-col gap-4">
         {#if modMultipliers.length === 0}
-          <span class="text-surface-600-300-token" transition:slide={{ duration: 150 }}>This tournament doesn't have any mod multipliers.</span>
+          <span class="text-surface-600-300-token" transition:slide={{ duration: 150 }}
+            >This tournament doesn't have any mod multipliers.</span
+          >
         {:else}
           <div class="flex flex-col gap-4">
             {#each modMultipliers as modMultiplier, i}
               <div transition:slide|global={{ duration: 150 }}>
-                <ModMultiplier {modMultiplier} onUpdate={() => onUpdateModMultiplier(i)} onDelete={() => onDeleteModMultiplier(i)} />
+                <ModMultiplier
+                  {modMultiplier}
+                  onUpdate={() => onUpdateModMultiplier(i)}
+                  onDelete={() => onDeleteModMultiplier(i)}
+                />
               </div>
             {/each}
           </div>
         {/if}
       </div>
-      <Actions hasUpdated={modMultipliersHaveUpdated} disableUpdateBtn={!modMultipliersHaveUpdated} onUpdate={updateModMultipliers} onReset={resetModMultipliers} disableAddBtn={modMultipliers.length >= 5} onAdd={onCreateModMultiplier} />
+      <Actions
+        hasUpdated={modMultipliersHaveUpdated}
+        disableUpdateBtn={!modMultipliersHaveUpdated}
+        onUpdate={updateModMultipliers}
+        onReset={resetModMultipliers}
+        disableAddBtn={modMultipliers.length >= 5}
+        onAdd={onCreateModMultiplier}
+      />
     </section>
   </div>
 </main>

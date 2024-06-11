@@ -238,7 +238,11 @@ export function hasPermissions(
   return staffMember ? staffMember.permissions.some((perm) => requiredPerms.includes(perm)) : false;
 }
 
-export function sortByKey<T extends Record<string, any>>(arr: T[], key: keyof T, direction: 'asc' | 'desc'): T[] {
+export function sortByKey<T extends Record<string, any>>(
+  arr: T[],
+  key: keyof T,
+  direction: 'asc' | 'desc'
+): T[] {
   return arr.sort((obj1, obj2) => {
     const a = obj1[key];
     const b = obj2[key];

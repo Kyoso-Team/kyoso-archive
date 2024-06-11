@@ -131,20 +131,29 @@ export function tournamentDatesChecks(
   }
 }
 
-export function tournamentOtherDatesChecks(dates: (typeof TournamentDates.$inferSelect)['other']): string | undefined {
+export function tournamentOtherDatesChecks(
+  dates: (typeof TournamentDates.$inferSelect)['other']
+): string | undefined {
   for (let i = 0; i < dates.length; i++) {
     const err = tournamentOtherDateChecks(dates, dates[i]);
     if (err) return `${err} (at index ${i})`;
   }
 }
 
-export function tournamentOtherDateChecks(allOtherDates: (typeof TournamentDates.$inferSelect)['other'], date: (typeof TournamentDates.$inferSelect)['other'][number]): string | undefined {
+export function tournamentOtherDateChecks(
+  allOtherDates: (typeof TournamentDates.$inferSelect)['other'],
+  date: (typeof TournamentDates.$inferSelect)['other'][number]
+): string | undefined {
   if (date.toDate && date.fromDate > date.toDate) {
     return 'The starting date must be less than or equal to the maximum';
   }
 
   const allOtherDatesLabels = allOtherDates.map(({ label }) => label);
-  if (allOtherDates.some(({ label }, i) => label === date.label && i !== allOtherDatesLabels.indexOf(date.label))) {
+  if (
+    allOtherDates.some(
+      ({ label }, i) => label === date.label && i !== allOtherDatesLabels.indexOf(date.label)
+    )
+  ) {
     return `Date labeled "${date.label}" already exists in this tournament`;
   }
 }
@@ -158,7 +167,9 @@ export function tournamentLinksChecks(links: TournamentLink[]) {
 
 export function tournamentLinkChecks(allLinks: TournamentLink[], link: TournamentLink) {
   const allLinksLabels = allLinks.map(({ label }) => label);
-  if (allLinks.some(({ label }, i) => label === link.label && i !== allLinksLabels.indexOf(label))) {
+  if (
+    allLinks.some(({ label }, i) => label === link.label && i !== allLinksLabels.indexOf(label))
+  ) {
     return `Link labeled "${link.label}" already exists in this tournament`;
   }
 }
@@ -170,13 +181,22 @@ export function tournamentModMultipliersChecks(modMultipliers: ModMultiplier[]) 
   }
 }
 
-export function modMultiplierchecks(allModMultipliers: ModMultiplier[], modMultiplier: ModMultiplier) {
+export function modMultiplierchecks(
+  allModMultipliers: ModMultiplier[],
+  modMultiplier: ModMultiplier
+) {
   const allModMultipliersMods = allModMultipliers.map(({ mods }) => mods.join(''));
-  if (allModMultipliers.some(({ mods }, i) => arraysHaveSameElements(mods, modMultiplier.mods) && i !== allModMultipliersMods.indexOf(modMultiplier.mods.join('')))) {
+  if (
+    allModMultipliers.some(
+      ({ mods }, i) =>
+        arraysHaveSameElements(mods, modMultiplier.mods) &&
+        i !== allModMultipliersMods.indexOf(modMultiplier.mods.join(''))
+    )
+  ) {
     return `Mod multiplier with the mod combination ${modMultiplier.mods.join('').toUpperCase()} already exists in this tournament`;
   }
 
-  const { mods } = modMultiplier as Extract<ModMultiplier, { multiplier: Record<string, any>; }>;
+  const { mods } = modMultiplier as Extract<ModMultiplier, { multiplier: Record<string, any> }>;
   if (
     (mods.includes('ez') && mods.includes('hr')) ||
     (mods.includes('sd') && mods.includes('pf')) ||
@@ -185,7 +205,10 @@ export function modMultiplierchecks(allModMultipliers: ModMultiplier[], modMulti
     return 'The mod combination is invalid';
   }
 
-  if (typeof modMultiplier.multiplier !== 'number' && modMultiplier.multiplier.ifFailed >= modMultiplier.multiplier.ifSuccessful) {
+  if (
+    typeof modMultiplier.multiplier !== 'number' &&
+    modMultiplier.multiplier.ifFailed >= modMultiplier.multiplier.ifSuccessful
+  ) {
     return 'The multiplier in case of failure must be less than the multiplier in case of success';
   }
 }

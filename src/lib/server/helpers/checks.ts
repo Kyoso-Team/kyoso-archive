@@ -64,7 +64,7 @@ abstract class Checks<ErrCodeT = number | TRPC_ERROR_CODE_KEY> {
   /**
    * Error if the tournament is deleted
    */
-  public tournamentNotDeleted(tournament: { deletedAt: Date | null; }) {
+  public tournamentNotDeleted(tournament: { deletedAt: Date | null }) {
     if (!tournament.deletedAt || isDateFuture(tournament.deletedAt)) return this;
     throw this.error(this.codes.forbidden, `This tournament is deleted. You can't ${this.action}`);
   }

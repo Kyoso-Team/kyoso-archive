@@ -77,7 +77,8 @@
     <button
       type="submit"
       class="btn variant-filled-primary"
-      disabled={!($mainForm.canSubmit && (!isPermanent ? $timeForm.canSubmit : true))}>Submit</button
+      disabled={!($mainForm.canSubmit && (!isPermanent ? $timeForm.canSubmit : true))}
+      >Submit</button
     >
     <button type="button" class="btn variant-filled" on:click={cancel}>Cancel</button>
   </svelte:fragment>

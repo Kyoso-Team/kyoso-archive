@@ -68,7 +68,7 @@
     } catch (err) {
       displayError(toast, err);
     }
-    
+
     data.activeSessions = data.activeSessions.filter((session) => session.id !== sessionId);
     data = Object.assign({}, data);
 

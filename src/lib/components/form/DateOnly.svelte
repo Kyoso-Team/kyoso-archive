@@ -13,7 +13,9 @@
   export let notAllowedMsg: string | undefined = undefined;
   let hasSelected = false;
   let optional = false;
-  let value: string | undefined = $form.value[label] ? dateToHtmlInput($form.value[label], true) : undefined;
+  let value: string | undefined = $form.value[label]
+    ? dateToHtmlInput($form.value[label], true)
+    : undefined;
   let error = $form.errors?.[label];
 
   function onInput() {
@@ -29,7 +31,7 @@
       form.setValue(label, null);
     } else {
       const date = new Date(value);
-      const localDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60 * 1000));
+      const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60 * 1000);
       form.setValue(label, !value ? null : localDate);
     }
   }

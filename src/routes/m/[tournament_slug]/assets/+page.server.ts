@@ -11,9 +11,14 @@ export const load = (async ({ parent, route, depends }) => {
     error(401, "You don't have the necessary permissions to access this page");
   }
 
-  const assets = await getTournament(tournament.id, {
-    tournament: ['logoMetadata', 'bannerMetadata']
-  }, route, true);
+  const assets = await getTournament(
+    tournament.id,
+    {
+      tournament: ['logoMetadata', 'bannerMetadata']
+    },
+    route,
+    true
+  );
 
   return {
     tournament: {

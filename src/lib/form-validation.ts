@@ -7,22 +7,19 @@ export const boolean = v.boolean;
 export const literal = v.literal;
 export const optional = v.nullable;
 
-export function array<TItem extends v.BaseSchema>(item: TItem, pipe?: Parameters<typeof v.array>[2]) {
+export function array<TItem extends v.BaseSchema>(
+  item: TItem,
+  pipe?: Parameters<typeof v.array>[2]
+) {
   return v.array(item, required, pipe);
 }
 
 export function minArrayLength<T extends any[], R extends number>(requirement: R) {
-  return v.minLength<T, R>(
-    requirement,
-    `Select ${requirement.toString()} or more options`
-  );
+  return v.minLength<T, R>(requirement, `Select ${requirement.toString()} or more options`);
 }
 
 export function maxArrayLength<T extends any[], R extends number>(requirement: R) {
-  return v.maxLength<T, R>(
-    requirement,
-    `Select ${requirement.toString()} or less options`
-  );
+  return v.maxLength<T, R>(requirement, `Select ${requirement.toString()} or less options`);
 }
 
 export function string(pipe: Parameters<typeof v.string>[1]) {
@@ -58,7 +55,9 @@ export function number(pipe: Parameters<typeof v.number>[1]) {
   return v.number(required, pipe);
 }
 
-export function notValue<T extends string | number | bigint | boolean | Date, R extends T>(requirement: R) {
+export function notValue<T extends string | number | bigint | boolean | Date, R extends T>(
+  requirement: R
+) {
   return v.notValue<T, R>(requirement, `Input must not be equal to ${requirement.toString()}`);
 }
 
@@ -108,9 +107,15 @@ export function date(pipe?: Parameters<typeof v.date>[1]) {
 }
 
 export function minDate(date: Date) {
-  return v.minValue<Date, Date>(date, `Inputted date must be after ${formatDate(date)} - ${formatTime(date)}`);
+  return v.minValue<Date, Date>(
+    date,
+    `Inputted date must be after ${formatDate(date)} - ${formatTime(date)}`
+  );
 }
 
 export function maxDate(date: Date) {
-  return v.maxValue<Date, Date>(date, `Inputtted date must be before ${formatDate(date)} - ${formatTime(date)}`);
+  return v.maxValue<Date, Date>(
+    date,
+    `Inputtted date must be before ${formatDate(date)} - ${formatTime(date)}`
+  );
 }

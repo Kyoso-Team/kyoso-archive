@@ -84,8 +84,16 @@
   <div class="flex flex-col gap-2">
     {#each Object.entries(options) as [value, option]}
       <label class="flex items-center gap-2">
-        <input type="checkbox" class="checkbox disabled:opacity-50 disabled:cursor-not-allowed duration-150" disabled={disabledOptions[value] || disabled} bind:checked={selectedOptions[value]} on:change={change} />
-        <legend class={`duration-150 ${disabledOptions[value] || disabled ? 'opacity-50' : ''}`}>{option}</legend>
+        <input
+          type="checkbox"
+          class="checkbox disabled:opacity-50 disabled:cursor-not-allowed duration-150"
+          disabled={disabledOptions[value] || disabled}
+          bind:checked={selectedOptions[value]}
+          on:change={change}
+        />
+        <legend class={`duration-150 ${disabledOptions[value] || disabled ? 'opacity-50' : ''}`}
+          >{option}</legend
+        >
       </label>
     {/each}
   </div>

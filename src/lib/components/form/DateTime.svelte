@@ -13,7 +13,9 @@
   export let notAllowedMsg: string | undefined = undefined;
   let hasSelected = false;
   let optional = false;
-  let value: string | undefined = $form.value[label] ? dateToHtmlInput($form.value[label]) : undefined;
+  let value: string | undefined = $form.value[label]
+    ? dateToHtmlInput($form.value[label])
+    : undefined;
   let error = $form.errors?.[label];
 
   function onInput() {

@@ -112,7 +112,9 @@ export async function baseGetTournament<
   try {
     tournament = await q
       .where(
-        typeof tournamentId === 'number' ? eq(Tournament.id, tournamentId) : eq(Tournament.urlSlug, tournamentId)
+        typeof tournamentId === 'number'
+          ? eq(Tournament.id, tournamentId)
+          : eq(Tournament.urlSlug, tournamentId)
       )
       .limit(1)
       .then((rows: any[]) => rows[0]);

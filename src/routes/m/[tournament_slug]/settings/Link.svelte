@@ -9,7 +9,11 @@
 </script>
 
 <div class="w-full flex card bg-surface-200-700-token">
-  <div class="rounded-md p-2 btn hover:variant-soft-surface handle" use:dragHandle aria-label={`drag-handle for ${link.label}`}>
+  <div
+    class="rounded-md p-2 btn hover:variant-soft-surface handle"
+    use:dragHandle
+    aria-label={`drag-handle for ${link.label}`}
+  >
     <GripVertical size={24} class="dark:stroke-white stroke-black" />
   </div>
   <div class="grid grid-cols-[auto_1fr] w-full gap-4 p-4 items-center">
@@ -21,14 +25,19 @@
       </div>
       <div>
         <div class="font-medium flex items-center h-full 2md:h-max">
-          <a href={link.url} class="inline 2md:hidden max-2md:underline max-2md:hover:text-primary-500 duration-150">{link.label}</a>
+          <a
+            href={link.url}
+            class="inline 2md:hidden max-2md:underline max-2md:hover:text-primary-500 duration-150"
+            >{link.label}</a
+          >
           <span class="hidden 2md:inline">{link.label}</span>
         </div>
         <div class="hidden 2md:inline-block 2md:w-[28rem] lg:w-[36rem] 2lg:w-[40rem] truncate">
           <a
             href={link.url}
             class="text-surface-600-300-token hover:text-primary-600-300-token duration-150 text-sm underline w-full"
-          >{link.url}</a>
+            >{link.url}</a
+          >
         </div>
       </div>
     </div>

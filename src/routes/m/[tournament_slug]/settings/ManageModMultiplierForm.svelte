@@ -24,18 +24,29 @@
     pf: 'Perfect (PF)',
     sd: 'Sudden Death (SD)'
   };
-  const mainForm = createForm({
-    mods: f.array(f.union(keys(modsOptions)), [f.minArrayLength(1), f.maxArrayLength(5)]),
-    multiplier: f.number([f.minValue(-5), f.maxValue(5)])
-  }, updating && {
-    mods: updating.mods,
-    multiplier: typeof updating.multiplier === 'number' ? updating.multiplier : updating.multiplier.ifSuccessful
-  });
-  const failModForm = createForm({
-    ifFailed: f.number([f.minValue(-5), f.maxValue(5)])
-  }, updating && typeof updating.multiplier !== 'number' ? {
-    ifFailed: updating.multiplier.ifFailed
-  } : undefined);
+  const mainForm = createForm(
+    {
+      mods: f.array(f.union(keys(modsOptions)), [f.minArrayLength(1), f.maxArrayLength(5)]),
+      multiplier: f.number([f.minValue(-5), f.maxValue(5)])
+    },
+    updating && {
+      mods: updating.mods,
+      multiplier:
+        typeof updating.multiplier === 'number'
+          ? updating.multiplier
+          : updating.multiplier.ifSuccessful
+    }
+  );
+  const failModForm = createForm(
+    {
+      ifFailed: f.number([f.minValue(-5), f.maxValue(5)])
+    },
+    updating && typeof updating.multiplier !== 'number'
+      ? {
+          ifFailed: updating.multiplier.ifFailed
+        }
+      : undefined
+  );
   const labels = {
     ...mainForm.labels,
     ...failModForm.labels
@@ -48,7 +59,7 @@
     let newModMultiplier!: ModMultiplier;
 
     if (failModConfig) {
-      const modMultiplier: Extract<ModMultiplier, { multiplier: Record<string, any>; }> = {
+      const modMultiplier: Extract<ModMultiplier, { multiplier: Record<string, any> }> = {
         mods,
         multiplier: {
           ifSuccessful: multiplier,
@@ -57,7 +68,7 @@
       };
       newModMultiplier = modMultiplier as any;
     } else {
-      const modMultiplier: Extract<ModMultiplier, { multiplier: number; }> = {
+      const modMultiplier: Extract<ModMultiplier, { multiplier: number }> = {
         mods: mods as any,
         multiplier
       };
@@ -78,7 +89,7 @@
       modMultipliers.push(newModMultiplier);
     }
 
-    modMultipliers = [...modMultipliers];    
+    modMultipliers = [...modMultipliers];
     show = false;
     modMultipliersHaveUpdated = true;
 
@@ -116,11 +127,24 @@
   <svelte:fragment slot="header">
     <span class="title">{editIndex !== undefined ? 'Edit' : 'Add'} Mod Multiplier</span>
   </svelte:fragment>
-  <SelectMultiple form={mainForm} label={labels.mods} legend="Mods" options={modsOptions} disabledOptions={disabledMods} disabled={editIndex !== undefined}>
+  <SelectMultiple
+    form={mainForm}
+    label={labels.mods}
+    legend="Mods"
+    options={modsOptions}
+    disabledOptions={disabledMods}
+    disabled={editIndex !== undefined}
+  >
     Which mods should be applied to this multiplier?
   </SelectMultiple>
-  <Number form={mainForm} label={labels.multiplier} legend={usingFailMod ? 'Multiplier if successful' : 'Multiplier'}>
-    {usingFailMod ? 'Multiplier applied when a player passes with SD or PF' : 'Multiplier applied for the selected mods'}.
+  <Number
+    form={mainForm}
+    label={labels.multiplier}
+    legend={usingFailMod ? 'Multiplier if successful' : 'Multiplier'}
+  >
+    {usingFailMod
+      ? 'Multiplier applied when a player passes with SD or PF'
+      : 'Multiplier applied for the selected mods'}.
   </Number>
   {#if usingFailMod}
     <Section>
@@ -130,11 +154,14 @@
     </Section>
   {/if}
   <svelte:fragment slot="actions">
-    <button type="submit" class="btn variant-filled-primary" disabled={!(
-      $mainForm.canSubmit &&
-      (usingFailMod ? $failModForm.canSubmit : true) &&
-      (editIndex !== undefined ? $mainForm.hasUpdated : true)
-    )}>Submit</button
+    <button
+      type="submit"
+      class="btn variant-filled-primary"
+      disabled={!(
+        $mainForm.canSubmit &&
+        (usingFailMod ? $failModForm.canSubmit : true) &&
+        (editIndex !== undefined ? $mainForm.hasUpdated : true)
+      )}>Submit</button
     >
     <button type="button" class="btn variant-filled" on:click={cancel}>Cancel</button>
   </svelte:fragment>

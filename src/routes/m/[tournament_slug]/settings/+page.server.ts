@@ -8,13 +8,35 @@ export const load = (async ({ parent, route, depends }) => {
   const { staffMember, tournament } = await parent();
 
   if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament'])) {
-    error(401, 'You don\'t have the necessary permissions to access this page.');
+    error(401, "You don't have the necessary permissions to access this page.");
   }
 
-  const settings = await getTournament(tournament.id, {
-    tournament: ['name', 'type', 'rankRange', 'teamSettings', 'bwsValues', 'links', 'refereeSettings', 'modMultipliers'],
-    dates: ['publishedAt', 'concludesAt', 'playerRegsOpenAt', 'playerRegsCloseAt', 'staffRegsOpenAt', 'staffRegsCloseAt', 'other']
-  }, route, true);
+  const settings = await getTournament(
+    tournament.id,
+    {
+      tournament: [
+        'name',
+        'type',
+        'rankRange',
+        'teamSettings',
+        'bwsValues',
+        'links',
+        'refereeSettings',
+        'modMultipliers'
+      ],
+      dates: [
+        'publishedAt',
+        'concludesAt',
+        'playerRegsOpenAt',
+        'playerRegsCloseAt',
+        'staffRegsOpenAt',
+        'staffRegsCloseAt',
+        'other'
+      ]
+    },
+    route,
+    true
+  );
 
   return {
     tournament: {

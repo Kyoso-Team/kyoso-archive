@@ -38,7 +38,12 @@
     </p>
   {/if}
   <div class="flex items-center gap-2 !mt-0">
-    <input type="checkbox" class="checkbox disabled:opacity-50 disabled:cursor-not-allowed duration-150" {disabled} bind:checked={value} />
+    <input
+      type="checkbox"
+      class="checkbox disabled:opacity-50 disabled:cursor-not-allowed duration-150"
+      {disabled}
+      bind:checked={value}
+    />
     <legend>{legend}</legend>
   </div>
   {#if $$slots.preview}

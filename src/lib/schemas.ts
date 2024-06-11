@@ -99,8 +99,13 @@ export const teamSettingsSchema = v.object({
 export const tournamentOtherDatesSchema = v.object({
   label: v.string([v.minLength(2), v.maxLength(35)]),
   onlyDate: v.boolean(),
-  fromDate: v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())]),
-  toDate: v.nullable(v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())]))
+  fromDate: v.number([
+    v.minValue(oldestDatePossible.getTime()),
+    v.maxValue(maxPossibleDate.getTime())
+  ]),
+  toDate: v.nullable(
+    v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())])
+  )
 });
 
 export const rankRangeSchema = v.object({
