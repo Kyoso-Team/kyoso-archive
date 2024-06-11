@@ -10,7 +10,7 @@ import {
   varchar
 } from 'drizzle-orm/pg-core';
 import { timestampConfig } from './schema-utils';
-import { User, Tournament, TournamentFormType, TournamentFormTarget } from './schema';
+import { Tournament, TournamentFormTarget, TournamentFormType, User } from './schema';
 import { sql } from 'drizzle-orm';
 import type { UserFormField, UserFormFieldResponse } from '$types';
 
@@ -42,9 +42,7 @@ export const Form = pgTable(
       table.public,
       table.createdAt
     ),
-    indexTitle: index('idx_trgm_form_title')
-      .on(table.title)
-      .using(sql`gist (lower(${table.title}) gist_trgm_ops)`)
+    indexTitle: index('idx_trgm_form_title').using('gist', sql`lower(${table.title}) gist_trgm_ops`)
   })
 );
 

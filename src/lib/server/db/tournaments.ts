@@ -1,30 +1,30 @@
 import {
-  pgTable,
-  serial,
-  varchar,
-  integer,
-  text,
-  jsonb,
-  smallint,
   boolean,
-  unique,
+  index,
+  integer,
+  jsonb,
+  pgTable,
   real,
+  serial,
+  smallint,
+  text,
   timestamp,
+  unique,
   uniqueIndex,
-  index
+  varchar
 } from 'drizzle-orm/pg-core';
 import { RoundType, TournamentType } from './schema';
 import { timestampConfig, uniqueConstraints } from './schema-utils';
 import { sql } from 'drizzle-orm';
 import type {
   BWSValues,
+  ModMultiplier,
   RankRange,
   RefereeSettings,
   RoundConfig,
   TeamSettings,
-  TournamentOtherDates,
   TournamentLink,
-  ModMultiplier
+  TournamentOtherDates
 } from '$types';
 
 export const Tournament = pgTable(
@@ -88,11 +88,10 @@ export const Tournament = pgTable(
   },
   (table) => ({
     indexDeletedAt: index('idx_tournament_deleted_at').on(table.deletedAt),
-    indexNameAcronymUrlSlug: index('idx_trgm_tournament_name_acronym')
-      .on(table.name, table.acronym)
-      .using(
-        sql`gist ((lower(${table.name}) || ' ' || lower(${table.acronym})) gist_trgm_ops)`
-      ),
+    indexNameAcronymUrlSlug: index('idx_trgm_tournament_name_acronym').using(
+      'gist',
+      sql`lower(${table.name}) || ' ' || lower(${table.acronym}) gist_trgm_ops`
+    ),
     uniqueIndexUrlSlug: uniqueIndex(uniqueConstraints.tournament.urlSlug).on(table.urlSlug)
   })
 );
@@ -115,7 +114,7 @@ export const TournamentDates = pgTable(
     other: jsonb('other').notNull().$type<TournamentOtherDates[]>().default([])
   },
   (table) => ({
-    indexPublishedAt: index('idx_tournament_dates_published_at').on(table.publishedAt).desc(),
+    indexPublishedAt: index('idx_tournament_dates_published_at').on(table.publishedAt.desc()),
     indexConcludesAt: index('idx_tournament_dates_concludes_at').on(table.concludesAt),
     indexPlayerRegsOpenAtPlayerRegsCloseAt: index(
       'idx_tournament_dates_player_regs_open_at_player_regs_close_at'
