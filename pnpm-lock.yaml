@@ -30,8 +30,8 @@ importers:
         specifier: ^2.12.1
         version: 2.12.1
       drizzle-orm:
-        specifier: ^0.31.1
-        version: 0.31.1(pg@8.11.3)(postgres@3.4.3)
+        specifier: ^0.31.2
+        version: 0.31.2(pg@8.11.3)(postgres@3.4.3)
       isomorphic-dompurify:
         specifier: ^2.4.0
         version: 2.4.0
@@ -127,8 +127,8 @@ importers:
         specifier: ^0.6.1
         version: 0.6.1(pg@8.11.3)(postgres@3.4.3)
       drizzle-kit:
-        specifier: ^0.22.0
-        version: 0.22.0
+        specifier: ^0.22.7
+        version: 0.22.7
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -1322,8 +1322,8 @@ packages:
   drizzle-dbml-generator@0.6.1:
     resolution: {integrity: sha512-Ax5lknrB2lMsrpsx1jSiMHCyKnROSKqhJNi4o7l/NDfKzq1NeGJ0Vts3Y8v+6sdrENvTnTzrV8Nd6xIW8cTv0w==}
 
-  drizzle-kit@0.22.0:
-    resolution: {integrity: sha512-vmkZZ1SOItQJayFHqEYxjxTCfJdKgAa5eQFj7tkIP+j9VtGnPZ1lhucS0tdjmYfJa30n0LlJ3gXXph+hxrGQPA==}
+  drizzle-kit@0.22.7:
+    resolution: {integrity: sha512-9THPCb2l1GPt7wxhws9LvTR0YG565ZlVgTuqGMwjs590Kch1pXu4GyjEArVijSF5m0OBj3qgdeKmuJXhKXgWFw==}
     hasBin: true
 
   drizzle-orm@0.29.5:
@@ -1397,8 +1397,8 @@ packages:
       sqlite3:
         optional: true
 
-  drizzle-orm@0.31.1:
-    resolution: {integrity: sha512-hTbYne2XX3y6sV7WSxcPH6/vNSiQSUG9VZsFI27jBMCN0OT3Ok7ao3pIT5OMAqWkzJCRFgGjAaUeTAZWPgOKag==}
+  drizzle-orm@0.31.2:
+    resolution: {integrity: sha512-QnenevbnnAzmbNzQwbhklvIYrDE8YER8K7kSrAWQSV1YvFCdSQPzj+jzqRdTSsV2cDqSpQ0NXGyL1G9I43LDLg==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=3'
@@ -1408,6 +1408,7 @@ packages:
       '@op-engineering/op-sqlite': '>=2'
       '@opentelemetry/api': ^1.4.1
       '@planetscale/database': '>=1'
+      '@tidbcloud/serverless': '*'
       '@types/better-sqlite3': '*'
       '@types/pg': '*'
       '@types/react': '>=18'
@@ -1441,6 +1442,8 @@ packages:
       '@opentelemetry/api':
         optional: true
       '@planetscale/database':
+        optional: true
+      '@tidbcloud/serverless':
         optional: true
       '@types/better-sqlite3':
         optional: true
@@ -3852,7 +3855,7 @@ snapshots:
       - sql.js
       - sqlite3
 
-  drizzle-kit@0.22.0:
+  drizzle-kit@0.22.7:
     dependencies:
       '@esbuild-kit/esm-loader': 2.6.5
       esbuild: 0.19.12
@@ -3865,7 +3868,7 @@ snapshots:
       pg: 8.11.3
       postgres: 3.4.3
 
-  drizzle-orm@0.31.1(pg@8.11.3)(postgres@3.4.3):
+  drizzle-orm@0.31.2(pg@8.11.3)(postgres@3.4.3):
     optionalDependencies:
       pg: 8.11.3
       postgres: 3.4.3
