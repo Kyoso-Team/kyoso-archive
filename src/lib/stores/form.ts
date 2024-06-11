@@ -1,5 +1,79 @@
 import * as v from 'valibot';
 import { writable } from 'svelte/store';
+import { arraysHaveSameElements } from '$lib/utils';
+import type { AnyForm } from '$types';
+
+function setTrueOrDeleteKey(obj: Record<string, any>, key: string, condition: boolean) {
+  if (condition) {
+    obj[key] = true;
+  } else {
+    delete obj[key];
+  }
+  return obj;
+}
+
+function setKey(obj: Record<string, any>, key: string, value: any) {
+  obj[key] = value;
+  return obj;
+}
+
+function isEqual(a: any, b: any) {
+  return (
+    a === b ||
+    ((a === null || a === undefined) && (b === null || b === undefined)) ||
+    (a instanceof Date && b instanceof Date && a.getTime() === b.getTime()) ||
+    (Array.isArray(a) && Array.isArray(b) && arraysHaveSameElements(a, b))
+  );
+}
+
+function isSchemaType(schema: v.BaseSchema, type: string) {
+  return schema.type === type || (schema as v.OptionalSchema<any>)?.wrapped?.type === type;
+}
+
+function formInit(
+  formSchema: Record<string, v.BaseSchema>,
+  defaultValue: Record<string, any> | undefined | null
+) {
+  const labels: Record<string, string> = {};
+  const value: Record<string, any> = {};
+  const defaults: Record<string, any> = defaultValue || {};
+  let updated: Partial<Record<string, true>> = {};
+
+  for (const key in formSchema) {
+    defaults[key] = defaults[key] === undefined ? null : defaults[key];
+
+    // Make boolean fields default to false instead of null and array fields default to []
+    if (defaults[key] === null) {
+      if (isSchemaType(formSchema[key], 'boolean')) {
+        defaults[key] = false;
+      }
+
+      if (isSchemaType(formSchema[key], 'array')) {
+        defaults[key] = [];
+      }
+    }
+
+    value[key] = defaults[key];
+    labels[key] = key;
+    updated = setTrueOrDeleteKey(updated, key, !isEqual(defaults[key], value[key]));
+  }
+
+  return { labels, value, updated };
+}
+
+function canSubmit(
+  formSchema: Record<string, v.BaseSchema>,
+  form: Pick<AnyForm, 'value' | 'errors'>
+) {
+  const { value, errors } = form;
+  const parsed = v.safeParse(v.object(formSchema), value);
+  const hasErrors = Object.values(errors).filter((err) => typeof err === 'string').length > 0;
+  return parsed.success && !hasErrors;
+}
+
+function hasUpdated(form: Pick<AnyForm, 'updated'>) {
+  return Object.values(form.updated).length > 0;
+}
 
 export function createForm<
   TSchema extends Record<string, v.BaseSchema>,
@@ -10,37 +84,15 @@ export function createForm<
       : TFinalValue[K] | null;
   }
 >(formSchema: TSchema, defaults?: { [K in keyof TSchema]?: v.Output<TSchema[K]> | null } | null) {
-  const labels: Record<string, string> = {};
-  const value: Record<string, any> = {};
-  const defaulValue: Record<string, any> = defaults || {};
-
-  for (const key in formSchema) {
-    const schema = formSchema[key];
-    defaulValue[key] = defaulValue[key] === undefined ? null : defaulValue[key];
-
-    // Make boolean fields default to false instead of null and array fields default to []
-    if (defaulValue[key] === null) {
-      if ((schema as any)?.type === 'boolean' || (schema as any)?.wrapped?.type === 'boolean') {
-        defaulValue[key] = false;
-      }
-
-      if ((schema as any)?.type === 'array' || (schema as any)?.wrapped?.type === 'array') {
-        defaulValue[key] = [];
-      }
-    }
-
-    value[key] = defaulValue[key];
-    labels[key] = key;
-  }
-
+  const { labels, value } = formInit(formSchema, defaults);
   const form = writable<{
+    value: TLiveValue;
     errors: { [K in keyof TFinalValue]?: string };
     updated: { [K in keyof TFinalValue]?: true };
     overwritten: { [K in keyof TFinalValue]?: true };
+    defaults: { [K in keyof TFinalValue]?: TFinalValue[K] | null };
     canSubmit: boolean;
     hasUpdated: boolean;
-    defaults: { [K in keyof TFinalValue]?: TFinalValue[K] | null };
-    value: TLiveValue;
   }>({
     errors: {},
     updated: {},
@@ -52,181 +104,101 @@ export function createForm<
   });
 
   function reset() {
-    form.update((form) => {
+    form.update(({ defaults }) => {
       const newForm = {
+        value,
+        defaults,
         errors: {},
         updated: {},
-        overwritten: Object.keys(formSchema).reduce((obj, key) => ({ ...obj, [key]: true }), {}),
-        defaults: form.defaults,
-        value: value as any
-      } as any;
+        overwritten: Object.keys(formSchema).reduce((obj, key) => ({ ...obj, [key]: true }), {})
+      } as Omit<AnyForm, 'canSubmit' | 'hasUpdated'>;
 
       return {
         ...newForm,
-        canSubmit: canSubmit(newForm),
+        canSubmit: canSubmit(formSchema, newForm),
         hasUpdated: hasUpdated(newForm)
-      };
+      } as any;
     });
   }
 
   function setOverwrittenState(key: string, state: boolean) {
-    form.update((form) => {
-      const overwritten = form.overwritten as Record<string, true | undefined>;
-      
-      if (state) {
-        overwritten[key] = true;
-      } else {
-        delete overwritten[key];
-      }
-
-      return {
-        ...form,
-        overwritten
-      };
-    });
-  }
-
-  function canSubmit(form: { value: TLiveValue; errors: { [K in keyof TFinalValue]?: string }; }) {
-    const { value, errors } = form;
-    const parsed = v.safeParse(v.object(formSchema), value);
-    const hasErrors = Object.values(errors).filter((err) => typeof err === 'string').length > 0;
-    return parsed.success && !hasErrors;
-  }
-
-  function hasUpdated(form: { updated: { [K in keyof TFinalValue]?: true }; }) {
-    return Object.values(form.updated).length > 0;
+    form.update((form) => ({
+      ...form,
+      overwritten: setTrueOrDeleteKey(form.overwritten, key, state)
+    }));
   }
 
   function setValue(key: string, input: any) {
-    form.update((form) => {
-      const value = form.value as Record<string, any>;
-      const defaults = form.defaults as Record<string, any>;
-      const errors = form.errors as Record<string, string | undefined>;
-      const updated = form.updated as Record<string, true | undefined>;
+    form.update(({ defaults, errors, overwritten, updated, value }) => {
       const parsed = v.safeParse(formSchema[key], input);
-
-      if (parsed.success) {
-        errors[key] = undefined;
-      } else {
-        errors[key] = v.flatten(parsed.issues).root?.[0];
-      }
-
-      if (
-        input === defaults[key] ||
-        ((input === null || input === undefined) && (defaults[key] === null || defaults[key] === undefined)) ||
-        (input instanceof Date && defaults[key] instanceof Date && input.getTime() === defaults[key].getTime())
-      ) {
-        delete updated[key];
-      } else {
-        updated[key] = true;
-      }
-
-      value[key] = input;
-
       const newForm = {
-        value,
-        errors,
-        updated,
         defaults,
-        overwritten: form.overwritten
-      } as any;
+        overwritten,
+        errors: setKey(
+          errors,
+          key,
+          parsed.success ? undefined : v.flatten(parsed.issues).root?.[0]
+        ),
+        updated: setTrueOrDeleteKey(updated, key, !isEqual(input, (defaults as any)[key])),
+        value: setKey(value as any, key, input)
+      } as Omit<AnyForm, 'canSubmit' | 'hasUpdated'>;
 
       return {
         ...newForm,
-        canSubmit: canSubmit(newForm),
-        hasUpdated: hasUpdated(newForm)
-      };
-    });
-  }
-
-  function setGlobalError(err: string) {
-    form.update((form) => {
-      const errors = form.errors as Record<string, string | undefined>;
-      errors['global'] = err;
-
-      const newForm = {
-        errors,
-        value: form.value,
-        updated: form.updated,
-        defaults: form.defaults,
-        overwritten: form.overwritten
-      } as any;
-
-      return {
-        ...newForm,
-        canSubmit: canSubmit(newForm)
-      };
-    });
-  }
-
-  function overrideInitialValues(newDefaults: { [K in keyof TFinalValue]?: TFinalValue[K] | null }) {
-    form.update((form) => {
-      const defaults: Record<string, any> = {};
-      const value = form.value as Record<string, any>;
-      const updated = form.updated as Record<string, true | undefined>;
-
-      for (const key in formSchema) {
-        const schema = formSchema[key];
-    
-        // Make boolean fields default to false instead of null
-        if (((schema as any)?.type === 'boolean' || (schema as any)?.wrapped?.type === 'boolean') && ((newDefaults as any)[key] === undefined || (newDefaults as any)[key] === null)) {
-          defaults[key] = false;
-        } else {
-          defaults[key] = (newDefaults as any)?.[key] === undefined ? null: (newDefaults as any)?.[key];
-        }
-
-        if (
-          value[key] === defaults[key] ||
-          ((value[key] === null || value[key] === undefined) && (defaults[key] === null || defaults[key] === undefined)) ||
-          (value[key] instanceof Date && defaults[key] instanceof Date && value[key].getTime() === defaults[key].getTime())
-        ) {
-          delete updated[key];
-        } else {
-          updated[key] = true;
-        }
-      }
-
-
-      const newForm = {
-        ...form,
-        updated,
-        defaults,
-        overwritten: form.overwritten
-      } as any;
-
-      return {
-        ...newForm,
-        canSubmit: canSubmit(newForm),
+        canSubmit: canSubmit(formSchema, newForm),
         hasUpdated: hasUpdated(newForm)
       } as any;
     });
   }
 
-  function getFinalValue<UpdatedOnly extends boolean = false>(form: {
-    value: TLiveValue;
-    updated: { [K in keyof TFinalValue]?: true };
-    errors: { [K in keyof TFinalValue]?: string };
-  }, options?: { updatedFieldsOnly?: UpdatedOnly }): UpdatedOnly extends true ? Partial<TFinalValue> : TFinalValue {
+  function overrideInitialValues(newDefaults: {
+    [K in keyof TFinalValue]?: TFinalValue[K] | null;
+  }) {
+    form.update(({ errors, overwritten }) => {
+      const { value, updated } = formInit(formSchema, newDefaults);
+      const newForm = {
+        updated,
+        defaults,
+        overwritten,
+        errors,
+        value
+      } as AnyForm;
+
+      return {
+        ...newForm,
+        canSubmit: canSubmit(formSchema, newForm),
+        hasUpdated: hasUpdated(newForm)
+      } as any;
+    });
+  }
+
+  function getFinalValue<UpdatedOnly extends boolean = false>(
+    form: {
+      value: TLiveValue;
+      updated: { [K in keyof TFinalValue]?: true };
+      errors: { [K in keyof TFinalValue]?: string };
+    },
+    options?: { updatedFieldsOnly?: UpdatedOnly }
+  ): UpdatedOnly extends true ? Partial<TFinalValue> : TFinalValue {
     const { value, errors, updated } = form;
-    const parsed = v.safeParse(v.object(formSchema), value);
 
+    const parsed = v.safeParse(v.object(formSchema), value);
     if (!parsed.success) {
       throw Error("Can't retrieve value for submission because the value is invalid");
     }
 
     const hasErrors = Object.values(errors).filter((err) => typeof err === 'string').length > 0;
-
     if (hasErrors) {
       throw Error(
         "Can't retrieve value for submission because the form has errors that need to be resolved"
       );
     }
 
-    if (options?.updatedFieldsOnly) {
-      return Object.fromEntries(Object.entries(parsed.output).filter((entry) => (updated as any)[entry[0]])) as any;
-    }
-
-    return value as any;
+    return options?.updatedFieldsOnly
+      ? (Object.fromEntries(
+          Object.entries(parsed.output).filter((entry) => (updated as any)[entry[0]])
+        ) as any)
+      : (value as any);
   }
 
   return {
@@ -234,7 +206,6 @@ export function createForm<
     reset,
     setValue,
     getFinalValue,
-    setGlobalError,
     overrideInitialValues,
     setOverwrittenState,
     labels: labels as { [K in keyof TFinalValue]: K },
