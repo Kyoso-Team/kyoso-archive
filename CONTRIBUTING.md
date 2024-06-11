@@ -155,10 +155,6 @@ Log into your Upstash account and [create a Redis database](https://console.upst
 
 ## Code Quality
 
-### Linting & Formatting
-
-Recommended to run `pnpm review` to first format, then lint the project before making a commit. Not the end of the world if you don't do so but it is recommended, especially if your code editor or IDE has very different formatting settings than the ones defined in this project.
-
 ### Component Structure
 
 Structure to follow when writing Svelte components.
@@ -232,6 +228,13 @@ Structure to follow when writing Svelte components.
 ### Database Queries
 
 Drizzle ORM has two APIs for querying data: core and RQB. When developing for this project, we only use the core API to avoid having confusion as to when to use which. The RQB is also a high-level abstraction, so it can have its limitations, bugs and performance issues compared to core.
+
+## Pull Request Requirements
+
+Make sure you do follow these guidelines when submitting a pull request:
+
+- Run `pnpm review` to first format, then lint the project.
+- Any pull request must point to the `dev` branch.
 
 ## Development Shortcuts
 
