@@ -1,17 +1,18 @@
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import {
+  bigint,
+  bigserial,
+  index,
   integer,
+  jsonb,
   pgTable,
   primaryKey,
   serial,
   smallint,
   timestamp,
-  index,
-  jsonb,
+  unique,
   uniqueIndex,
-  bigserial,
-  bigint,
-  varchar,
-  unique
+  varchar
 } from 'drizzle-orm/pg-core';
 import {
   InviteReason,
@@ -23,7 +24,6 @@ import {
 } from './schema';
 import { timestampConfig, uniqueConstraints } from './schema-utils';
 import { sql } from 'drizzle-orm';
-import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 export const StaffRole = pgTable(
   'staff_role',
@@ -125,9 +125,12 @@ export const Team = pgTable(
       table.captainPlayerId,
       table.tournamentId
     ),
-    indexName: index('idx_trgm_team_name')
-      .on(table.name)
-      .using(sql`gist (lower(${table.name}) gist_trgm_ops)`),
+    indexName: index('idx_trgm_team_name').using(
+      'gist',
+      sql`lower
+          (${table.name})
+          gist_trgm_ops`
+    ),
     indexDeletedRegisteredAt: index('idx_team_deleted_at_registered_at').on(
       table.deletedAt,
       table.registeredAt

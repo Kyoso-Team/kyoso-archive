@@ -1,19 +1,19 @@
 import {
-  pgTable,
-  serial,
-  varchar,
-  timestamp,
-  boolean,
-  integer,
-  text,
-  char,
-  primaryKey,
-  inet,
-  jsonb,
-  bigserial,
-  index,
   bigint,
-  uniqueIndex
+  bigserial,
+  boolean,
+  char,
+  index,
+  inet,
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  serial,
+  text,
+  timestamp,
+  uniqueIndex,
+  varchar
 } from 'drizzle-orm/pg-core';
 import { timestampConfig } from './schema-utils';
 import { sql } from 'drizzle-orm';
@@ -67,9 +67,10 @@ export const OsuUser = pgTable(
       .references(() => Country.code)
   },
   (table) => ({
-    indexUsername: index('idx_trgm_osu_user_username')
-      .on(table.username)
-      .using(sql`gist (lower(${table.username}) gist_trgm_ops)`)
+    indexUsername: index('idx_trgm_osu_user_username').using(
+      'gist',
+      sql`lower(${table.username}) gist_trgm_ops`
+    )
   })
 );
 
