@@ -544,22 +544,7 @@
       <h2>General Settings</h2>
       <div class="mt-4 w-full card p-4 flex flex-col gap-4">
         <div class={grid1Styles}>
-          <Text form={tournamentForm} label={labels.name} legend="Name" disabled={!data.isHost}>
-            <svelte:fragment slot="corner">
-              {#if !data.isHost}
-                <div
-                  class="absolute top-0 right-0 !mt-0 bg-error-500 rounded-md w-6 h-6 flex justify-center items-center [&>*]:pointer-events-none"
-                  use:popup={tooltip(`not-host-${labels.name}`)}
-                >
-                  <User size={20} class="stroke-black" />
-                </div>
-                <Tooltip
-                  target={`not-host-${labels.name}`}
-                  label="Only the host can update this setting"
-                />
-              {/if}
-            </svelte:fragment>
-          </Text>
+          <Text form={tournamentForm} label={labels.name} legend="Name" disabled={!data.isHost} notAllowedMsg={!data.isHost ? 'Only the host can update this setting' : ''} />
           <Text
             form={tournamentForm}
             label={labels.acronym}

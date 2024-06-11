@@ -189,11 +189,16 @@ export type AnyForm = {
 export type FormStore = Writable<AnyForm> & {
   reset: () => void;
   setValue: (key: string, input: any) => void;
-  getFinalValue: <UpdatedOnly extends boolean = false>(form: Pick<Record<string, any>, 'value' | 'updated' | 'errors'>, options?: {
-    updatedFieldsOnly?: UpdatedOnly | undefined;
-  } | undefined) => UpdatedOnly extends true ? Partial<Record<string, any>> : Record<string, any>;
-  overrideInitialValues: (newDefaults: Record<string, any>) => void
-  setOverwrittenState: (key: string, state: boolean) => void
+  getFinalValue: <UpdatedOnly extends boolean = false>(
+    form: Pick<Record<string, any>, 'value' | 'updated' | 'errors'>,
+    options?:
+      | {
+          updatedFieldsOnly?: UpdatedOnly | undefined;
+        }
+      | undefined
+  ) => UpdatedOnly extends true ? Partial<Record<string, any>> : Record<string, any>;
+  overrideInitialValues: (newDefaults: Record<string, any>) => void;
+  setOverwrittenState: (key: string, state: boolean) => void;
   schemas: Record<string, BaseSchema>;
   labels: Record<string, string>;
 };
@@ -249,4 +254,44 @@ export interface Assets {
       tournamentId: number;
     }
   >;
+}
+
+// Source: https://github.com/skeletonlabs/skeleton/blob/master/packages/skeleton/src/lib/utilities/Popup/types.ts
+type Direction = 'top' | 'bottom' | 'left' | 'right';
+type Placement = Direction | `${Direction}-start` | `${Direction}-end`;
+
+export interface Middleware {
+  // Required ---
+  /** Offset middleware settings: https://floating-ui.com/docs/offset */
+  offset?: number | Record<string, any>;
+  /** Shift middleware settings: https://floating-ui.com/docs/shift */
+  shift?: Record<string, any>;
+  /** Flip middleware settings: https://floating-ui.com/docs/flip */
+  flip?: Record<string, any>;
+  /** Arrow middleware settings: https://floating-ui.com/docs/arrow */
+  arrow?: { element: string } & Record<string, any>;
+  // Optional ---
+  /** Size middleware settings: https://floating-ui.com/docs/size */
+  size?: Record<string, any>;
+  /** Auto Placement middleware settings: https://floating-ui.com/docs/autoPlacement */
+  autoPlacement?: Record<string, any>;
+  /** Hide middleware settings: https://floating-ui.com/docs/hide */
+  hide?: Record<string, any>;
+  /** Inline middleware settings: https://floating-ui.com/docs/inline */
+  inline?: Record<string, any>;
+}
+
+export interface PopupSettings {
+  /** Provide the event type. */
+  event: 'click' | 'hover' | 'focus-blur' | 'focus-click' | 'focus-hover';
+  /** Match the popup data value `data-popup="targetNameHere"` */
+  target: string;
+  /** Set the placement position. Defaults 'bottom'. */
+  placement?: Placement;
+  /** Query elements that close the popup when clicked. Defaults `'a[href], button'`. */
+  closeQuery?: string;
+  /** Optional callback function that reports state change. */
+  state?: (event: { state: boolean }) => void;
+  /** Provide Floating UI middleware settings. */
+  middleware?: Middleware;
 }

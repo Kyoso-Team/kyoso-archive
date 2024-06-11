@@ -7,7 +7,7 @@
   import { Backdrop } from '$components/layout';
   import { portal } from 'svelte-portal';
   import { tooltip } from '$lib/utils';
-  import { popup } from '@skeletonlabs/skeleton';
+  import { popup } from '$lib/popup';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;

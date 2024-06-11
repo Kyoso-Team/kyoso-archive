@@ -1,8 +1,8 @@
 import colors from 'tailwindcss/colors';
 import { TRPCClientError } from '@trpc/client';
 import { loading } from '$stores';
-import type { PopupSettings, ToastStore } from '@skeletonlabs/skeleton';
-import type { InferEnum } from '$types';
+import type { ToastStore } from '@skeletonlabs/skeleton';
+import type { InferEnum, PopupSettings } from '$types';
 import type { StaffPermission } from '$db';
 
 /**
@@ -182,7 +182,7 @@ export function tooltip(
   return {
     target,
     placement,
-    event: 'hover'
+    event: 'focus-hover'
   };
 }
 

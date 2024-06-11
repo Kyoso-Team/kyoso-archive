@@ -17,8 +17,9 @@
     Menu
   } from 'lucide-svelte';
   import { hasPermissions, tooltip } from '$lib/utils';
-  import { popup, Avatar } from '@skeletonlabs/skeleton';
+  import { Avatar } from '@skeletonlabs/skeleton';
   import { onDestroy, onMount } from 'svelte';
+  import { popup } from '$lib/popup';
   import { showNavBar } from '$stores';
   import { buildUrl } from 'osu-web.js';
   import { fade, fly } from 'svelte/transition';
