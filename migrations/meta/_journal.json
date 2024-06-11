@@ -134,6 +134,13 @@
       "when": 1716916232592,
       "tag": "0018_kind_bill_hollister",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1718146231715,
+      "tag": "0019_square_wendigo",
+      "breakpoints": true
     }
   ]
 }

@@ -1,9 +1,7 @@
 <script lang="ts">
   import { fly } from 'svelte/transition';
   import { NoFile } from '$components/general';
-  import { Tooltip } from '$components/general';
-  import { tooltip } from '$lib/utils';
-  import { FileButton, popup } from '@skeletonlabs/skeleton';
+  import { FileButton } from '@skeletonlabs/skeleton';
   import type { MaybePromise } from '@sveltejs/kit';
 
   export let onUpload: (file: File) => MaybePromise<void>;
@@ -13,9 +11,6 @@
   let showNewImg = true;
   let files: FileList;
   let fileInput: HTMLInputElement | undefined;
-  const tooltips = {
-    fileName: 'tooltip-file-name'
-  };
 
   async function onUploadBtnclick() {
     if (!file) return;
@@ -40,13 +35,9 @@
     <button class="btn btn-sm variant-filled-primary" on:click={onSelectFileBtnclick}>
       Select File
     </button>
-    <span
-      class="inline-block truncate max-w-64 [&>*]:pointer-events-none"
-      use:popup={tooltip(tooltips.fileName)}
-    >
+    <span class="inline-block truncate max-w-64 [&>*]:pointer-events-none">
       {file?.name || 'No file selected'}
     </span>
-    <Tooltip label={file?.name || ''} target={tooltips.fileName} show={!!file} />
   </div>
   <FileButton name="upload-files" accept="image/*" class="hidden" bind:files bind:fileInput />
   <div class="w-full flex justify-center gap-2 mt-4">

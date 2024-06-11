@@ -1,0 +1,1 @@
+ALTER TABLE "tournament" ALTER COLUMN "mod_multipliers" SET NOT NULL;

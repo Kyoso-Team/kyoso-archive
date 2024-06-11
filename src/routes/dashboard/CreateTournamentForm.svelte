@@ -1,62 +1,36 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
   import { trpc } from '$lib/trpc';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { Form, Section, Text, Number, Select, Checkbox } from '$components/form';
   import { createForm, loading } from '$stores';
-  import { keys, displayError, toastError } from '$lib/utils';
-  import type { TournamentType } from '$db';
-  import type { InferEnum, TRPCRouter } from '$types';
+  import { displayError, toastError } from '$lib/utils';
+  import { tournamentTypeOptions, baseTournamentFormSchemas, baseTeamSettingsFormSchemas, rankRangeFormSchemas } from '$lib/constants';
+  import { tournamentChecks } from '$lib/helpers';
+  import type { TRPCRouter } from '$types';
 
   export let show: boolean;
-
   const toast = getToastStore();
-
-  const typeOptions: Record<InferEnum<typeof TournamentType>, string> = {
-    draft: 'Draft',
-    solo: 'Solo',
-    teams: 'Teams'
-  };
-
-  const main = createForm({
-    name: f.string([f.minStrLength(2), f.maxStrLength(50)]),
-    acronym: f.string([f.minStrLength(2), f.maxStrLength(8)]),
-    urlSlug: f.string([f.minStrLength(2), f.maxStrLength(16), f.slug()]),
-    type: f.union(keys(typeOptions)),
-    openRank: f.boolean()
-  });
-
-  const team = createForm({
-    minTeamSize: f.number([f.integer(), f.minValue(1), f.maxValue(16)]),
-    maxTeamSize: f.number([f.integer(), f.minValue(1), f.maxValue(16)])
-  });
-
-  const rankRange = createForm({
-    lower: f.number([f.integer(), f.minValue(1), f.maxSafeInt()]),
-    upper: f.optional(f.number([f.integer(), f.minValue(1), f.maxSafeInt()]))
-  });
-
+  const mainForm = createForm(baseTournamentFormSchemas);
+  const teamForm = createForm(baseTeamSettingsFormSchemas);
+  const rankRangeForm = createForm(rankRangeFormSchemas);
   const labels = {
-    ...main.labels,
-    ...team.labels,
-    ...rankRange.labels
+    ...mainForm.labels,
+    ...teamForm.labels,
+    ...rankRangeForm.labels
   };
 
   async function submit() {
-    const { acronym, name, type, urlSlug } = main.getFinalValue($main);
-    const teamValue = teamCondition ? team.getFinalValue($team) : undefined;
-    const rankRangeValue = rankRangeCondition ? rankRange.getFinalValue($rankRange) : undefined;
+    const { acronym, name, type, urlSlug } = mainForm.getFinalValue($mainForm);
+    const teamSettings = isTeamBased ? teamForm.getFinalValue($teamForm) : undefined;
+    const rankRange = !isOpenRank ? rankRangeForm.getFinalValue($rankRangeForm) : undefined;
     let tournament!: TRPCRouter['tournaments']['createTournament'];
 
-    if (teamValue && teamValue.minTeamSize > teamValue.maxTeamSize) {
-      toastError(toast, 'The minimum team size must be less than or equal to the maximum');
-      return;
-    }
+    const err = tournamentChecks({ teamSettings, rankRange });
 
-    if (rankRangeValue && rankRangeValue.upper && rankRangeValue.lower > rankRangeValue.upper) {
-      toastError(toast, 'The lower rank range limit must be less than or equal to the maximum');
+    if (err) {
+      toastError(toast, err);
       return;
     }
 
@@ -68,16 +42,16 @@
         name,
         type,
         urlSlug,
-        teamSettings: teamValue
+        teamSettings: teamSettings
           ? {
-              maxTeamSize: teamValue.maxTeamSize,
-              minTeamSize: teamValue.minTeamSize
+              maxTeamSize: teamSettings.maxTeamSize,
+              minTeamSize: teamSettings.minTeamSize
             }
           : undefined,
-        rankRange: rankRangeValue
+        rankRange: rankRange
           ? {
-              lower: rankRangeValue.lower,
-              upper: rankRangeValue.upper
+              lower: rankRange.lower,
+              upper: rankRange.upper ? rankRange.upper : undefined
             }
           : undefined
       });
@@ -85,50 +59,50 @@
       displayError(toast, err);
     }
 
-    loading.set(false);
-
     if (typeof tournament === 'string') {
+      loading.set(false);
       toastError(toast, tournament);
       return;
     }
 
+    await goto(`/m/${tournament.urlSlug}`);
     show = false;
-    goto(`/m/${tournament.urlSlug}`);
+    loading.set(false);
   }
 
   function cancel() {
     show = false;
   }
 
-  $: teamCondition = ['teams', 'draft'].includes($main.value.type as any);
-  $: rankRangeCondition = !$main.value.openRank;
+  $: isTeamBased = ['teams', 'draft'].includes($mainForm.value.type as any);
+  $: isOpenRank = $mainForm.value.openRank;
 </script>
 
 <Form {submit}>
   <svelte:fragment slot="header">
     <span class="title">Create Tournament</span>
   </svelte:fragment>
-  <Text form={main} label={labels.name} legend="Tournament name" />
-  <Text form={main} label={labels.acronym} legend="Tournament acronym" />
-  <Text form={main} label={labels.urlSlug} legend="URL slug">
+  <Text form={mainForm} label={labels.name} legend="Tournament name" />
+  <Text form={mainForm} label={labels.acronym} legend="Tournament acronym" />
+  <Text form={mainForm} label={labels.urlSlug} legend="URL slug">
     The string that will be used to navigate towards any pages related to the tournament.
     <svelte:fragment slot="preview">
       <strong>Example URL:</strong>
-      {$page.url.origin}/t/{$main.value.urlSlug ? $main.value.urlSlug : '[slug]'}
+      {$page.url.origin}/t/{$mainForm.value.urlSlug ? $mainForm.value.urlSlug : '[slug]'}
     </svelte:fragment>
   </Text>
-  <Select form={main} label={labels.type} legend="Tournament type" options={typeOptions} />
-  {#if teamCondition}
+  <Select form={mainForm} label={labels.type} legend="Tournament type" options={tournamentTypeOptions} />
+  {#if isTeamBased}
     <Section>
-      <Number form={team} label={labels.minTeamSize} legend="Min. team size" />
-      <Number form={team} label={labels.maxTeamSize} legend="Max. team size" />
+      <Number form={teamForm} label={labels.minTeamSize} legend="Min. team size" />
+      <Number form={teamForm} label={labels.maxTeamSize} legend="Max. team size" />
     </Section>
   {/if}
-  <Checkbox form={main} label={labels.openRank} legend="Is it open rank?" />
-  {#if rankRangeCondition}
+  <Checkbox form={mainForm} label={labels.openRank} legend="Is it open rank?" />
+  {#if !isOpenRank}
     <Section>
-      <Number form={rankRange} label={labels.lower} legend="Lower rank range" />
-      <Number form={rankRange} label={labels.upper} legend="Upper rank range">
+      <Number form={rankRangeForm} label={labels.lower} legend="Lower rank range" />
+      <Number form={rankRangeForm} label={labels.upper} legend="Upper rank range">
         If not set, it'll default to infinity.
       </Number>
     </Section>
@@ -138,9 +112,9 @@
       type="submit"
       class="btn variant-filled-primary"
       disabled={!(
-        $main.canSubmit &&
-        (teamCondition ? $team.canSubmit : true) &&
-        (rankRangeCondition ? $rankRange.canSubmit : true)
+        $mainForm.canSubmit &&
+        (isTeamBased ? $teamForm.canSubmit : true) &&
+        (!isOpenRank ? $rankRangeForm.canSubmit : true)
       )}>Submit</button
     >
     <button type="button" class="btn variant-filled" on:click={cancel}>Cancel</button>

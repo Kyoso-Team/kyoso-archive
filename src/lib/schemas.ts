@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { oldestDatePossible } from './constants';
+import { maxPossibleDate, oldestDatePossible } from './constants';
 
 // When writing the error messages for scehmas, keep in mind that the message will be formated like:
 // "Invalid input: {object_name}.{property} should {message}"
@@ -41,29 +41,27 @@ export const tournamentLinkIconSchema = v.union(
     v.literal('discord'),
     v.literal('google_sheets'),
     v.literal('google_forms'),
+    v.literal('google_docs'),
     v.literal('twitch'),
     v.literal('youtube'),
     v.literal('x'),
     v.literal('challonge'),
-    v.literal('donate'),
+    v.literal('liquipedia'),
+    v.literal('donation'),
     v.literal('website')
   ],
-  'be "osu", "discord", "google_sheets", "google_forms", "twitch", "youtube", "x", "challonge", "donate" or "website"'
+  'be "osu", "discord", "google_sheets", "google_forms", "google_docs", "twitch", "youtube", "x", "challonge", "liquipedia", "donation" or "website"'
 );
-
-export const oldestPossibleDateMsSchema = v.number('be a number', [
-  v.minValue(oldestDatePossible.getTime(), `be greater or equal to ${oldestDatePossible.getTime()}`)
-]);
 
 // Schemas below this do not require error messages to be set
 
 export const refereeSettingsSchema = v.object({
   timerLength: v.object({
-    pick: positiveIntSchema,
-    ban: positiveIntSchema,
-    protect: positiveIntSchema,
-    ready: positiveIntSchema,
-    start: positiveIntSchema
+    pick: v.number([v.integer(), v.minValue(1), v.maxValue(600)]),
+    ban: v.number([v.integer(), v.minValue(1), v.maxValue(600)]),
+    protect: v.number([v.integer(), v.minValue(1), v.maxValue(600)]),
+    ready: v.number([v.integer(), v.minValue(1), v.maxValue(600)]),
+    start: v.number([v.integer(), v.minValue(1), v.maxValue(600)])
   }),
   allow: v.object({
     doublePick: v.boolean(),
@@ -81,15 +79,15 @@ export const refereeSettingsSchema = v.object({
 });
 
 export const tournamentLinkSchema = v.object({
-  label: v.string([v.minLength(1), v.maxLength(20)]),
+  label: v.string([v.minLength(2), v.maxLength(30)]),
   url: v.string([v.url()]),
   icon: tournamentLinkIconSchema
 });
 
 export const bwsValuesSchema = v.object({
-  x: v.number(),
-  y: v.number(),
-  z: v.number()
+  x: v.number([v.notValue(0), v.minValue(-10), v.maxValue(10)]),
+  y: v.number([v.notValue(0), v.minValue(-10), v.maxValue(10)]),
+  z: v.number([v.notValue(0), v.minValue(-10), v.maxValue(10)])
 });
 
 export const teamSettingsSchema = v.object({
@@ -99,9 +97,10 @@ export const teamSettingsSchema = v.object({
 });
 
 export const tournamentOtherDatesSchema = v.object({
-  label: v.string(),
-  fromDate: v.number(),
-  toDate: v.nullable(v.number())
+  label: v.string([v.minLength(2), v.maxLength(35)]),
+  onlyDate: v.boolean(),
+  fromDate: v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())]),
+  toDate: v.nullable(v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())]))
 });
 
 export const rankRangeSchema = v.object({
@@ -109,59 +108,40 @@ export const rankRangeSchema = v.object({
   upper: v.optional(v.number([v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER)]))
 });
 
-// export const whereIdSchema = z.object({
-//   id: z.number().int()
-// });
-
-// export const sortSchema = z.union([z.literal('asc'), z.literal('desc')]);
-
-// export const withTournamentSchema = z.object({
-//   tournamentId: z.number().int()
-// });
-
-// export const withRoundSchema = withTournamentSchema.extend({
-//   roundId: z.number().int()
-// });
-
-// export const mToN = z.object({
-//   addIds: z.array(z.number().int()).optional().default([]),
-//   removeIds: z.array(z.number().int()).optional().default([])
-// });
-
-// export const modSchema = z.union([
-//   z.literal('ez'),
-//   z.literal('hd'),
-//   z.literal('hr'),
-//   z.literal('sd'),
-//   z.literal('dt'),
-//   z.literal('rx'),
-//   z.literal('ht'),
-//   z.literal('fl'),
-//   z.literal('pf')
-// ]);
-
-// export const skillsetSchema = z.union([
-//   z.literal('consistency'),
-//   z.literal('streams'),
-//   z.literal('tech'),
-//   z.literal('alt'),
-//   z.literal('speed'),
-//   z.literal('gimmick'),
-//   z.literal('rhythm'),
-//   z.literal('aim'),
-//   z.literal('awkward_aim'),
-//   z.literal('flow_aim'),
-//   z.literal('reading'),
-//   z.literal('precision'),
-//   z.literal('stamina'),
-//   z.literal('finger_control'),
-//   z.literal('jack_of_all_trades')
-// ]);
-
-// export const availabilitySchema = z
-//   .string()
-//   .length(99)
-//   .refine((str) => {
-//     const regex = /(1|0){24}\.(1|0){24}\.(1|0){24}\.(1|0){24}/g;
-//     return regex.test(str);
-//   }, "Input doesn't match availability string format");
+export const modMultiplierSchema = v.union([
+  v.object({
+    /** Easy, Hidden, Hard Rock, Flashlight, Blinds */
+    mods: v.array(
+      v.union([
+        v.literal('ez'),
+        v.literal('hd'),
+        v.literal('hr'),
+        v.literal('fl'),
+        v.literal('bl')
+      ]),
+      [v.minLength(1), v.maxLength(5)]
+    ),
+    multiplier: v.number([v.minValue(-5), v.maxValue(5)])
+  }),
+  v.object({
+    /** Sudden Death, Perfect */
+    mods: v.array(
+      v.union([
+        // Same as above
+        v.literal('ez'),
+        v.literal('hd'),
+        v.literal('hr'),
+        v.literal('fl'),
+        v.literal('bl'),
+        // -------------
+        v.literal('sd'),
+        v.literal('pf')
+      ]),
+      [v.minLength(1), v.maxLength(5)]
+    ),
+    multiplier: v.object({
+      ifSuccessful: v.number([v.minValue(-5), v.maxValue(5)]),
+      ifFailed: v.number([v.minValue(-5), v.maxValue(5)])
+    })
+  })
+]);

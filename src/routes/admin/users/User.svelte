@@ -79,7 +79,7 @@
           transition:scale={{ duration: 150, start: 0.5, opacity: 0 }}
           on:click={onLookupUser}
         >
-          <Search size={24} />
+          <Search size={20} />
         </button>
       {:else if showRemoveBtn}
         <button
@@ -87,7 +87,7 @@
           transition:scale={{ duration: 150, start: 0.5, opacity: 0 }}
           on:click={onAction}
         >
-          <X size={24} />
+          <X size={20} />
         </button>
       {/if}
     </div>

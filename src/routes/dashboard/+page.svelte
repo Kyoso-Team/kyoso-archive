@@ -7,7 +7,7 @@
   import { Backdrop } from '$components/layout';
   import { portal } from 'svelte-portal';
   import { tooltip } from '$lib/utils';
-  import { popup } from '@skeletonlabs/skeleton';
+  import { popup } from '$lib/popup';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
@@ -32,7 +32,7 @@
     <div>
       <span class="font-bold text-primary-500">STAFFING</span>
       {#if data.tournamentsStaffing.length === 0}
-        <span class="inline-block text-sm text-surface-700/75 dark:text-surface-300/75 mt-2"
+        <span class="inline-block text-sm text-surface-600-300-token mt-2"
           >You're currently not staffing in any tournaments</span
         >
       {:else}
@@ -46,7 +46,7 @@
     <div>
       <span class="font-bold text-primary-500">PLAYING</span>
       {#if data.tournamentsPlaying.length === 0}
-        <span class="inline-block text-sm text-surface-700/75 dark:text-surface-300/75 mt-2"
+        <span class="inline-block text-sm text-surface-600-300-token mt-2"
           >You're currently not playing in any tournaments</span
         >
       {:else}

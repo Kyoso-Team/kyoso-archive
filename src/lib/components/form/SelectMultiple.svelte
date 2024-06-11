@@ -7,17 +7,27 @@
   export let form: FormStore;
   export let label: string;
   export let legend: string;
-  export let long = false;
+  export let options: Record<string, string>;
+  export let disabledOptions: Partial<Record<string, boolean>> = {};
   export let disabled = false;
+  export let onChange: (() => void) | undefined = undefined;
   export let warningMsg: string | undefined = undefined;
   export let notAllowedMsg: string | undefined = undefined;
-  let hasWritten = false;
+  let hasSelected = false;
   let optional = false;
-  let value: string | undefined = $form.value[label];
+  let value: string[] = !$form.value[label] ? [] : $form.value[label];
+  let selectedOptions: Record<string, boolean> = Object.keys(options).reduce(
+    (obj, key) => ({ ...obj, [key]: value.includes(key) }),
+    {}
+  );
   let error = $form.errors?.[label];
 
-  function onInput() {
-    hasWritten = true;
+  function change() {
+    hasSelected = true;
+
+    if (onChange) {
+      onChange();
+    }
   }
 
   $: {
@@ -25,7 +35,7 @@
   }
 
   $: {
-    form.setValue(label, value === undefined ? null : value);
+    form.setValue(label, value);
   }
 
   $: {
@@ -33,15 +43,28 @@
   }
 
   $: {
+    value = Object.entries(selectedOptions).reduce((arr: string[], [value, selected]) => {
+      if (selected) {
+        arr.push(value);
+      }
+      return arr;
+    }, []);
+  }
+
+  $: {
     if ($form.overwritten?.[label]) {
-      hasWritten = false;
+      hasSelected = false;
       value = $form.defaults[label];
+      selectedOptions = Object.keys(options).reduce(
+        (obj, key) => ({ ...obj, [key]: value.includes(key) }),
+        {}
+      );
       form.setOverwrittenState(label, false);
     }
   }
 </script>
 
-<label class="label relative">
+<div class="label relative">
   <div class="flex gap-1 absolute top-0 right-0 !mt-0">
     {#if warningMsg}
       <Warning inputLabel={label} tooltipLabel={warningMsg} />
@@ -58,28 +81,20 @@
       <slot />
     </p>
   {/if}
-  {#if long}
-    <textarea
-      class={`textarea resize-none h-32 ${error && hasWritten ? 'input-error' : ''}`}
-      {disabled}
-      on:input={onInput}
-      bind:value
-    />
-  {:else}
-    <input
-      type="text"
-      class={`input ${error && hasWritten ? 'input-error' : ''}`}
-      {disabled}
-      on:input={onInput}
-      bind:value
-    />
-  {/if}
+  <div class="flex flex-col gap-2">
+    {#each Object.entries(options) as [value, option]}
+      <label class="flex items-center gap-2">
+        <input type="checkbox" class="checkbox disabled:opacity-50 disabled:cursor-not-allowed duration-150" disabled={disabledOptions[value] || disabled} bind:checked={selectedOptions[value]} on:change={change} />
+        <legend class={`duration-150 ${disabledOptions[value] || disabled ? 'opacity-50' : ''}`}>{option}</legend>
+      </label>
+    {/each}
+  </div>
   {#if $$slots.preview}
     <span class="block text-xs text-primary-500">
       <slot name="preview" />
     </span>
   {/if}
-  {#if error && hasWritten}
+  {#if error && hasSelected}
     <span class="block text-sm text-error-600" transition:slide={{ duration: 150 }}>{error}.</span>
   {/if}
-</label>
+</div>

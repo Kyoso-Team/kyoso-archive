@@ -277,8 +277,7 @@
       There {data.counts.total === 1 ? 'is 1 user' : `are ${formatNumber(data.counts.total)} users`}
       registered to Kyoso. Use the search bar below if you wish to look one up using either their osu!
       username, osu! user ID, Discord user ID or Kyoso user ID. Hold the
-      <span class="badge variant-filled-secondary">Ctrl</span>
-      or <span class="badge variant-filled-secondary">⌘</span> key when hovering over users to search
+      <span class="badge variant-filled-secondary">Ctrl</span> key when hovering over users to search
       them up.
     </p>
     <div
@@ -286,7 +285,7 @@
     >
       <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
         <div class="input-group-shim h-[42px]">
-          <Search size={24} />
+          <Search size={20} />
         </div>
         <input
           type="search"

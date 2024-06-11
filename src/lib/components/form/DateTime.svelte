@@ -2,22 +2,22 @@
   import Warning from './Warning.svelte';
   import NotAllowed from './NotAllowed.svelte';
   import { slide } from 'svelte/transition';
+  import { dateToHtmlInput } from '$lib/utils';
   import type { FormStore } from '$types';
 
   export let form: FormStore;
   export let label: string;
   export let legend: string;
-  export let long = false;
   export let disabled = false;
   export let warningMsg: string | undefined = undefined;
   export let notAllowedMsg: string | undefined = undefined;
-  let hasWritten = false;
+  let hasSelected = false;
   let optional = false;
-  let value: string | undefined = $form.value[label];
+  let value: string | undefined = $form.value[label] ? dateToHtmlInput($form.value[label]) : undefined;
   let error = $form.errors?.[label];
 
   function onInput() {
-    hasWritten = true;
+    hasSelected = true;
   }
 
   $: {
@@ -25,7 +25,7 @@
   }
 
   $: {
-    form.setValue(label, value === undefined ? null : value);
+    form.setValue(label, !value ? null : new Date(value));
   }
 
   $: {
@@ -34,8 +34,8 @@
 
   $: {
     if ($form.overwritten?.[label]) {
-      hasWritten = false;
-      value = $form.defaults[label];
+      hasSelected = false;
+      value = $form.value[label] ? dateToHtmlInput($form.value[label]) : undefined;
       form.setOverwrittenState(label, false);
     }
   }
@@ -58,28 +58,19 @@
       <slot />
     </p>
   {/if}
-  {#if long}
-    <textarea
-      class={`textarea resize-none h-32 ${error && hasWritten ? 'input-error' : ''}`}
-      {disabled}
-      on:input={onInput}
-      bind:value
-    />
-  {:else}
-    <input
-      type="text"
-      class={`input ${error && hasWritten ? 'input-error' : ''}`}
-      {disabled}
-      on:input={onInput}
-      bind:value
-    />
-  {/if}
+  <input
+    type="datetime-local"
+    class={`input dark:[color-scheme:dark] ${error && hasSelected ? 'input-error' : ''}`}
+    {disabled}
+    on:input={onInput}
+    bind:value
+  />
   {#if $$slots.preview}
     <span class="block text-xs text-primary-500">
       <slot name="preview" />
     </span>
   {/if}
-  {#if error && hasWritten}
+  {#if error && hasSelected}
     <span class="block text-sm text-error-600" transition:slide={{ duration: 150 }}>{error}.</span>
   {/if}
 </label>

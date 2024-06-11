@@ -9,6 +9,7 @@
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { Copy, Eye, EyeOff, RotateCcw, Pencil } from 'lucide-svelte';
   import { displayError, toastSuccess } from '$lib/utils';
+  import { slide } from 'svelte/transition';
   import type { PageServerData } from './$types';
   import type { TRPCRouter } from '$types';
 
@@ -46,16 +47,15 @@
       displayError(toast, err);
     }
 
-    loading.set(false);
-
     data.user = {
       ...data.user,
       apiKey: user.apiKey
     };
     data = Object.assign({}, data);
 
-    toastSuccess(toast, 'New API key generated successfully');
     showGenerateApiKeyPrompt = false;
+    loading.set(false);
+    toastSuccess(toast, 'New API key generated successfully');
   }
 
   async function deleteSession(sessionId: number) {
@@ -68,12 +68,11 @@
     } catch (err) {
       displayError(toast, err);
     }
-
-    loading.set(false);
-
+    
     data.activeSessions = data.activeSessions.filter((session) => session.id !== sessionId);
     data = Object.assign({}, data);
 
+    loading.set(false);
     toastSuccess(toast, 'Session deleted successfully');
   }
 </script>
@@ -142,8 +141,8 @@
           >
         </div>
         <div class="absolute top-0 right-4 h-full flex items-center">
-          <button class="btn-icon variant-filled-primary" on:click={toggleChangeDiscordPrompt}>
-            <Pencil size={24} />
+          <button class="btn-icon variant-filled" on:click={toggleChangeDiscordPrompt}>
+            <Pencil size={20} />
           </button>
         </div>
       </div>
@@ -174,16 +173,16 @@
         <div class="flex gap-2 md:absolute md:top-0 md:right-4 h-full items-center">
           <button class="btn-icon variant-filled" on:click={toggleApiKeyVisibility}>
             {#if viewApiKey}
-              <EyeOff size={24} />
+              <EyeOff size={20} />
             {:else}
-              <Eye size={24} />
+              <Eye size={20} />
             {/if}
           </button>
           <button class="btn-icon variant-filled" on:click={copyApiKey}>
-            <Copy size={24} />
+            <Copy size={20} />
           </button>
           <button class="btn-icon variant-filled-primary" on:click={toggleGenerateApiKeyPrompt}>
-            <RotateCcw size={24} />
+            <RotateCcw size={20} />
           </button>
         </div>
       </div>
@@ -194,10 +193,12 @@
     {/if}
     <div class="line-b my-8" />
     <h2>Sessions</h2>
-    <p class="dark:text-zinc-300/75 text-zinc-700/75 text-sm">Some details may be inaccurate.</p>
+    <p class="text-surface-600-300-token text-sm">Some details may be inaccurate.</p>
     <div class="mt-4 flex flex-col gap-2">
       {#each data.activeSessions as session}
-        <Session {session} {deleteSession} current={data.session.sessionId === session.id} />
+        <div transition:slide|global={{ duration: 150 }}>
+          <Session {session} {deleteSession} current={data.session.sessionId === session.id} />
+        </div>
       {/each}
     </div>
   </div>

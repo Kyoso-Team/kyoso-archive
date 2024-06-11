@@ -35,11 +35,11 @@
     <span class="font-medium text-xl flex items-center">{label}</span>
     <div class="flex gap-2 justify-end">
       <button class="btn-icon btn-icon-sm variant-filled-primary" on:click={onUpload}>
-        <Upload size={16} />
+        <Upload size={20} />
       </button>
       {#if src}
         <button class="btn-icon btn-icon-sm variant-filled-error" on:click={onDelete}>
-          <Trash size={16} />
+          <Trash size={20} />
         </button>
       {/if}
     </div>

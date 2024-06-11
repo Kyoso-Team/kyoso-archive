@@ -98,17 +98,17 @@
       {/if}
       {session.ipAddress}
     </span>
-    <span class="dark:text-zinc-300 text-zinc-700 text-xs">
+    <span class="text-surface-600-300-token text-xs">
       {session.ipMetadata.city}, {session.ipMetadata.region}, {session.ipMetadata.country}
     </span>
   </div>
   <div class="flex gap-2 xs:justify-end mt-4 xs:mt-0 w-full">
     <button class="btn-icon variant-filled" on:click={toggleShowMore}>
-      <Info size={24} />
+      <Info size={20} />
     </button>
     {#if !current}
       <button class="btn-icon variant-filled-error" on:click={toggleEndSessionPrompt}>
-        <X size={24} />
+        <X size={20} />
       </button>
     {/if}
   </div>

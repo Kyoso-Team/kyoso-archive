@@ -1,8 +1,8 @@
 import colors from 'tailwindcss/colors';
 import { TRPCClientError } from '@trpc/client';
 import { loading } from '$stores';
-import type { PopupSettings, ToastStore } from '@skeletonlabs/skeleton';
-import type { InferEnum } from '$types';
+import type { ToastStore } from '@skeletonlabs/skeleton';
+import type { InferEnum, PopupSettings } from '$types';
 import type { StaffPermission } from '$db';
 
 /**
@@ -182,7 +182,7 @@ export function tooltip(
   return {
     target,
     placement,
-    event: 'hover'
+    event: 'focus-hover'
   };
 }
 
@@ -211,10 +211,14 @@ function fillDateDigits(n: number) {
 /**
  * Parses a Date type value and transforms it into a valid string for an HTML input of type datetime-local
  */
-export function dateToHtmlInput(date: Date) {
+export function dateToHtmlInput(date: Date, onlyDate?: boolean) {
   const year = date.getFullYear();
   const month = fillDateDigits(date.getMonth() + 1);
   const day = fillDateDigits(date.getDate());
+
+  if (onlyDate) {
+    return `${year}-${month}-${day}`;
+  }
 
   const hour = fillDateDigits(date.getHours());
   const minute = fillDateDigits(date.getMinutes());
@@ -232,6 +236,27 @@ export function hasPermissions(
   requiredPerms: InferEnum<typeof StaffPermission>[]
 ) {
   return staffMember ? staffMember.permissions.some((perm) => requiredPerms.includes(perm)) : false;
+}
+
+export function sortByKey<T extends Record<string, any>>(arr: T[], key: keyof T, direction: 'asc' | 'desc'): T[] {
+  return arr.sort((obj1, obj2) => {
+    const a = obj1[key];
+    const b = obj2[key];
+
+    if (a === b) {
+      return 0;
+    }
+
+    if (direction === 'asc') {
+      return a < b ? -1 : 1;
+    } else {
+      return a > b ? -1 : 1;
+    }
+  });
+}
+
+export function arraysHaveSameElements<T>(arr1: T[], arr2: T[]) {
+  return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
 }
 
 /**
@@ -323,4 +348,14 @@ export function displayError(toast: ToastStore, err: unknown) {
   }
 
   throw err;
+}
+
+export function isDatePast(date: Date | number | null) {
+  if (!date) return false;
+  return new Date(date).getTime() <= new Date().getTime();
+}
+
+export function isDateFuture(date: Date | number | null) {
+  if (!date) return false;
+  return new Date(date).getTime() > new Date().getTime();
 }
