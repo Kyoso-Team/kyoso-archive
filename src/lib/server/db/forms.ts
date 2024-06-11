@@ -42,12 +42,7 @@ export const Form = pgTable(
       table.public,
       table.createdAt
     ),
-    indexTitle: index('idx_trgm_form_title').using(
-      'gist',
-      sql`lower
-          (${table.title})
-          gist_trgm_ops`
-    )
+    indexTitle: index('idx_trgm_form_title').using('gist', sql`lower(${table.title}) gist_trgm_ops`)
   })
 );
 
