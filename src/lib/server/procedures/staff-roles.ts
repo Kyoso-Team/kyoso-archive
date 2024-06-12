@@ -52,7 +52,7 @@ const createStaffRole = t.procedure
     let staffRolesCount!: number;
 
     try {
-      staffRolesCount = await getCount(StaffRole, eq(StaffRole.tournamentId, tournamentId));
+      staffRolesCount = (await getCount(StaffRole, eq(StaffRole.tournamentId, tournamentId))) - DEFAULT_ROLES.length;
     } catch (err) {
       throw trpcUnknownError(err, 'Getting amount of staff roles');
     }
@@ -70,7 +70,7 @@ const createStaffRole = t.procedure
         .values({
           name,
           tournamentId,
-          order: staffRolesCount + 1
+          order: staffRolesCount + 6
         })
         .then((rows) => rows[0]);
     } catch (err) {
@@ -176,11 +176,11 @@ const swapStaffRoleOrder = t.procedure
     );
     checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
-    let staffRoles: (typeof StaffRole.$inferSelect)[];
+    let staffRoles: Pick<typeof StaffRole.$inferSelect, 'id' | 'name' | 'order'>[];
 
     try {
       staffRoles = await db
-        .select()
+        .select(pick(StaffRole, ['id', 'name', 'order']))
         .from(StaffRole)
         .where(inArray(StaffRole.id, [source, target]))
         .limit(2)
