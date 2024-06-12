@@ -73,8 +73,7 @@ const createStaffRole = t.procedure
           name,
           tournamentId,
           order: staffRolesCount + 6
-        })
-        .then((rows) => rows[0]);
+        });
     } catch (err) {
       const uqErr = catchUniqueConstraintError(err);
       if (uqErr) return uqErr;
