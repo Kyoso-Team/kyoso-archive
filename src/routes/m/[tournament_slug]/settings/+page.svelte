@@ -352,7 +352,7 @@
             rankRange: rankRange
               ? {
                   lower: rankRange.lower,
-                  upper: rankRange.upper || undefined
+                  upper: rankRange.upper
                 }
               : null,
             bwsValues: bwsValues ? bwsValues : null

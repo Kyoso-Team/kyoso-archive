@@ -56,7 +56,7 @@
         rankRange: rankRange
           ? {
               lower: rankRange.lower,
-              upper: rankRange.upper ? rankRange.upper : undefined
+              upper: rankRange.upper
             }
           : undefined
       });
