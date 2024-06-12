@@ -1,5 +1,5 @@
 import type { TournamentDates } from '$db';
-import type { ModMultiplier, TournamentLink } from '$types';
+import type { ModMultiplier, TournamentLink, UserFormField } from '$types';
 import { arraysHaveSameElements } from './utils';
 
 export function tournamentChecks({
@@ -213,4 +213,26 @@ export function modMultiplierChecks(
   }
 }
 
-export 
+export function userFormFieldsChecks(fields: UserFormField[]) {
+  for (let i = 0; i < fields.length; i++) {
+    const err = userFormFieldChecks(fields[i]);
+    if (err) return `${err} (at index ${i})`;
+  }
+}
+
+export function userFormFieldChecks(field: UserFormField) {
+  const { type } = field;
+
+  if (
+    type === 'short-text' ||
+    type === 'long-text' ||
+    (
+      (type === 'number' || type === 'select-multiple' || type === 'datetime') &&
+      (field.validation === 'between' || field.validation === 'not-between')
+    )
+  ) {
+    if (field.min && field.max && field.min > field.max) {
+      return 'The minimum must be less than or equal to the maximum';
+    }
+  }
+}
