@@ -76,7 +76,6 @@ export const FormResponse = pgTable(
   {
     id: serial('id').primaryKey(),
     submittedAt: timestamp('submitted_at', timestampConfig).notNull().defaultNow(),
-    /** Limit of 20 field responses */
     fieldResponses: jsonb('field_responses').notNull().$type<UserFormFieldResponse[]>().default([]),
     formId: integer('form_id')
       .notNull()
