@@ -212,5 +212,3 @@ export function modMultiplierChecks(
     return 'The multiplier in case of failure must be less than the multiplier in case of success';
   }
 }
-
-export 
