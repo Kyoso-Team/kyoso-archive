@@ -3,7 +3,7 @@
   import { Form, Number, SelectMultiple, Section } from '$components/form';
   import { createForm } from '$stores';
   import { keys, toastError } from '$lib/utils';
-  import { modMultiplierchecks } from '$lib/helpers';
+  import { modMultiplierChecks } from '$lib/helpers';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import type { ModMultiplier } from '$types';
   import type { Tournament } from '$db';
@@ -76,7 +76,7 @@
     }
 
     newModMultiplier.mods = newModMultiplier.mods.sort((a, b) => a.localeCompare(b));
-    const err = modMultiplierchecks(modMultipliers, newModMultiplier);
+    const err = modMultiplierChecks(modMultipliers, newModMultiplier);
 
     if (err) {
       toastError(toast, err);

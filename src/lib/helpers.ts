@@ -176,12 +176,12 @@ export function tournamentLinkChecks(allLinks: TournamentLink[], link: Tournamen
 
 export function tournamentModMultipliersChecks(modMultipliers: ModMultiplier[]) {
   for (let i = 0; i < modMultipliers.length; i++) {
-    const err = modMultiplierchecks(modMultipliers, modMultipliers[i]);
+    const err = modMultiplierChecks(modMultipliers, modMultipliers[i]);
     if (err) return `${err} (at index ${i})`;
   }
 }
 
-export function modMultiplierchecks(
+export function modMultiplierChecks(
   allModMultipliers: ModMultiplier[],
   modMultiplier: ModMultiplier
 ) {
@@ -212,3 +212,5 @@ export function modMultiplierchecks(
     return 'The multiplier in case of failure must be less than the multiplier in case of success';
   }
 }
+
+export 
