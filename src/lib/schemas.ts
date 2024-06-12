@@ -1,5 +1,10 @@
 import * as v from 'valibot';
-import { lower32BitIntLimit, maxPossibleDate, oldestDatePossible, upper32BitIntLimit } from './constants';
+import {
+  lower32BitIntLimit,
+  maxPossibleDate,
+  oldestDatePossible,
+  upper32BitIntLimit
+} from './constants';
 
 // When writing the error messages for scehmas, keep in mind that the message will be formated like:
 // "Invalid input: {object_name}.{property} should {message}"
@@ -210,7 +215,13 @@ const userFormNumberFieldSchema = v.union([
   v.object(baseUserFormNumberFieldSchema),
   v.object({
     ...baseUserFormNumberFieldSchema,
-    validation: v.union([v.literal('gt'), v.literal('gte'), v.literal('lt'), v.literal('lte'), v.literal('not-eq')]),
+    validation: v.union([
+      v.literal('gt'),
+      v.literal('gte'),
+      v.literal('lt'),
+      v.literal('lte'),
+      v.literal('not-eq')
+    ]),
     value: v.number([v.minValue(lower32BitIntLimit), v.maxValue(upper32BitIntLimit)])
   }),
   v.object({
@@ -244,7 +255,14 @@ const userFormSelectMultipleFieldSchema = v.union([
   v.object(baseUserFormSelectMultipleFieldSchema),
   v.object({
     ...baseUserFormSelectMultipleFieldSchema,
-    validation: v.union([v.literal('gt'), v.literal('gte'), v.literal('lt'), v.literal('lte'), v.literal('eq'), v.literal('not-eq')]),
+    validation: v.union([
+      v.literal('gt'),
+      v.literal('gte'),
+      v.literal('lt'),
+      v.literal('lte'),
+      v.literal('eq'),
+      v.literal('not-eq')
+    ]),
     value: v.number([v.integer(), v.minValue(0), v.maxValue(100)])
   }),
   v.object({
@@ -275,13 +293,25 @@ const userFormDateTimeFieldSchema = v.union([
   v.object(baseUserFormDateTimeFieldSchemas),
   v.object({
     ...baseUserFormDateTimeFieldSchemas,
-    validation: v.union([v.literal('gt'), v.literal('gte'), v.literal('lt'), v.literal('lte'), v.literal('not-eq')]),
-    value: v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())])
+    validation: v.union([
+      v.literal('gt'),
+      v.literal('gte'),
+      v.literal('lt'),
+      v.literal('lte'),
+      v.literal('not-eq')
+    ]),
+    value: v.number([
+      v.minValue(oldestDatePossible.getTime()),
+      v.maxValue(maxPossibleDate.getTime())
+    ])
   }),
   v.object({
     ...baseUserFormDateTimeFieldSchemas,
     validation: v.union([v.literal('between'), v.literal('not-between')]),
-    min: v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())]),
+    min: v.number([
+      v.minValue(oldestDatePossible.getTime()),
+      v.maxValue(maxPossibleDate.getTime())
+    ]),
     max: v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())])
   })
 ]);

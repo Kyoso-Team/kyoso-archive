@@ -226,10 +226,8 @@ export function userFormFieldChecks(field: UserFormField) {
   if (
     type === 'short-text' ||
     type === 'long-text' ||
-    (
-      (type === 'number' || type === 'select-multiple' || type === 'datetime') &&
-      (field.validation === 'between' || field.validation === 'not-between')
-    )
+    ((type === 'number' || type === 'select-multiple' || type === 'datetime') &&
+      (field.validation === 'between' || field.validation === 'not-between'))
   ) {
     if (field.min && field.max && field.min > field.max) {
       return 'The minimum must be less than or equal to the maximum';

@@ -52,7 +52,9 @@ const createStaffRole = t.procedure
     let staffRolesCount!: number;
 
     try {
-      staffRolesCount = (await getCount(StaffRole, eq(StaffRole.tournamentId, tournamentId))) - DEFAULT_ROLES.length;
+      staffRolesCount =
+        (await getCount(StaffRole, eq(StaffRole.tournamentId, tournamentId))) -
+        DEFAULT_ROLES.length;
     } catch (err) {
       throw trpcUnknownError(err, 'Getting amount of staff roles');
     }
