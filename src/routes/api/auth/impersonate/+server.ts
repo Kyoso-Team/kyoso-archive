@@ -11,7 +11,7 @@ import type { RequestHandler } from './$types';
 import type { AuthSession } from '$types';
 
 export const PUT = (async ({ cookies, route, getClientAddress, request }) => {
-  if (env.ENV !== 'development') {
+  if (env.NODE_ENV !== 'development') {
     throw error(403, 'This endpoint is only for use within a development environment');
   }
 

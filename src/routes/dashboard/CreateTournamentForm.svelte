@@ -5,7 +5,7 @@
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { Form, Section, Text, Number, Select, Checkbox } from '$components/form';
   import { createForm, loading } from '$stores';
-  import { displayError, toastError } from '$lib/utils';
+  import { displayError, toastError, toastSuccess } from '$lib/utils';
   import {
     tournamentTypeOptions,
     baseTournamentFormSchemas,
@@ -73,6 +73,7 @@
     await goto(`/m/${tournament.urlSlug}`);
     show = false;
     loading.set(false);
+    toastSuccess(toast, 'Successfully created tournament');
   }
 
   function cancel() {

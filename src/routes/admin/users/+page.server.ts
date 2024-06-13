@@ -7,7 +7,7 @@ import type { PageServerLoad } from './$types';
 
 export const load = (async ({ parent, route, depends, url }) => {
   depends(url.pathname);
-  const { session } = await parent();
+  const { isUserOwner } = await parent();
 
   const userCountQuery = db
     .select({
@@ -134,7 +134,7 @@ export const load = (async ({ parent, route, depends, url }) => {
   return {
     counts,
     users,
-    isCurrentUserTheOwner: session.osu.id === env.OWNER,
+    isCurrentUserTheOwner: isUserOwner,
     ownerId: env.OWNER
   };
 }) satisfies PageServerLoad;
