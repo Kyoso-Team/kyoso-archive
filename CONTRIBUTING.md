@@ -146,7 +146,7 @@ Log into your IPInfo account and go to your [dashboard](https://ipinfo.io/accoun
 
 **Upstash**
 
-Log into your Upstash account and [create a Redis database](https://console.upstash.com). In the dashboard for the Redis DB, The rest URL is what's under "Endpoint" and the rest token is what's under "Password".
+Log into your Upstash account and [create a Redis database](https://console.upstash.com). In the dashboard for the Redis DB, go to the "REST API" section and copy variables.
 
 | Name                     | Type   | optional |
 | ------------------------ | ------ | -------- |
