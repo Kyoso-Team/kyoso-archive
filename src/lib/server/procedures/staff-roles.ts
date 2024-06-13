@@ -11,7 +11,6 @@ import { TRPCChecks } from '../helpers/checks';
 import { rateLimitMiddleware } from '$trpc/middleware';
 import { getCount } from '../helpers/queries';
 import { arraysHaveSameElements } from '$lib/utils';
-import _ from 'lodash';
 
 const DEFAULT_ROLES = ['Host', 'Debugger'];
 
@@ -69,13 +68,11 @@ const createStaffRole = t.procedure
     }
 
     try {
-      await db
-        .insert(StaffRole)
-        .values({
-          name,
-          tournamentId,
-          order: staffRolesCount + 6
-        });
+      await db.insert(StaffRole).values({
+        name,
+        tournamentId,
+        order: staffRolesCount + 6
+      });
     } catch (err) {
       const uqErr = catchUniqueConstraintError(err);
       if (uqErr) return uqErr;
@@ -198,7 +195,7 @@ const swapStaffRoleOrder = t.procedure
     );
 
     const staffRoleIds = Array.from(
-      new Set<number>(_.flattenDeep(filteredSwaps.map((swap) => Object.values(swap))))
+      new Set<number>(filteredSwaps.map((swap) => Object.values(swap)).flat(99))
     );
 
     let staffRoles: Pick<typeof StaffRole.$inferSelect, 'id' | 'name' | 'order'>[];
