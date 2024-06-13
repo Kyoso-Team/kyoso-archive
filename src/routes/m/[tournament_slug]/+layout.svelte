@@ -16,7 +16,7 @@
     Layout,
     Menu
   } from 'lucide-svelte';
-  import { hasPermissions, tooltip } from '$lib/utils';
+  import { hasPermissions, isDatePast, tooltip } from '$lib/utils';
   import { Avatar } from '@skeletonlabs/skeleton';
   import { onDestroy, onMount } from 'svelte';
   import { popup } from '$lib/popup';
@@ -24,6 +24,7 @@
   import { buildUrl } from 'osu-web.js';
   import { fade, fly } from 'svelte/transition';
   import { browser } from '$app/environment';
+  import { disableTabbing } from '$lib/actions';
   import type { LayoutServerData } from './$types';
   import type { AnyComponent } from '$types';
 
@@ -182,12 +183,15 @@
 
     links = shownLinks;
   }
+
+  $: concluded = !!data.tournament.concludesAt && isDatePast(data.tournament.concludesAt);
 </script>
 
 {#if smScreen && showResponsiveMenu}
   <button
     class="bg-surface-backdrop-token fixed top-[41px] left-0 h-screen w-screen overflow-hidden z-[39] cursor-default"
     transition:fade={{ duration: 150 }}
+    use:portal={'#sidebar'}
     on:click={toggleResponsiveMenu}
   />
 {/if}
@@ -265,4 +269,13 @@
   <div id="page-title" class="line-r w-52 flex items-center px-4 font-bold text-lg" />
   <div id="breadcrumbs" class="py-2 px-4 overflow-x-auto overflow-y-hidden" />
 </div>
-<slot />
+<div class="relative z-[9]" use:disableTabbing={() => concluded}>
+  {#if concluded}
+    <div class="absolute top-0 left-0 w-full h-full bg-surface-backdrop-token z-10">
+    </div>
+    <div class="relative z-[11] w-full p-4 text-center bg-primary-backdrop-token line-b mb-4">
+      The tournament has concluded, you can no longer make any changes.
+    </div>
+  {/if}
+  <slot />
+</div>
