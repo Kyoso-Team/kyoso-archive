@@ -62,7 +62,7 @@
         </div>
       {/if}
       {#if newSrc && currentSrc}
-        <button class="w-full btn btn-sm variant-filled-secondary mt-2" on:click={toggleImg}>
+        <button class="w-full btn btn-sm variant-filled mt-2" on:click={toggleImg}>
           View {showNewImg ? 'Original' : 'Uploaded'}
         </button>
       {/if}
