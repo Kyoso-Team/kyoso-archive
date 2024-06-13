@@ -10,6 +10,7 @@ import { getSession, getStaffMember, getTournament } from '$lib/server/helpers/t
 import { TRPCChecks } from '../helpers/checks';
 import { rateLimitMiddleware } from '$trpc/middleware';
 import { getCount } from '../helpers/queries';
+import { arraysHaveSameElements } from '$lib/utils';
 
 const DEFAULT_ROLES = ['Host', 'Debugger'];
 
@@ -67,13 +68,11 @@ const createStaffRole = t.procedure
     }
 
     try {
-      await db
-        .insert(StaffRole)
-        .values({
-          name,
-          tournamentId,
-          order: staffRolesCount + 6
-        });
+      await db.insert(StaffRole).values({
+        name,
+        tournamentId,
+        order: staffRolesCount + 6
+      });
     } catch (err) {
       const uqErr = catchUniqueConstraintError(err);
       if (uqErr) return uqErr;
@@ -155,13 +154,18 @@ const swapStaffRoleOrder = t.procedure
     wrap(
       v.object({
         tournamentId: positiveIntSchema,
-        source: positiveIntSchema,
-        target: positiveIntSchema
+        swaps: v.array(
+          v.object({
+            source: positiveIntSchema,
+            target: positiveIntSchema
+          }),
+          [v.maxLength(25)]
+        )
       })
     )
   )
   .mutation(async ({ ctx, input }) => {
-    const { tournamentId, source, target } = input;
+    const { tournamentId, swaps } = input;
     const checks = new TRPCChecks({ action: 'swap the order of these staff roles' });
     const session = getSession(ctx.cookies, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
@@ -177,20 +181,37 @@ const swapStaffRoleOrder = t.procedure
     );
     checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
+    const filteredSwaps = swaps.reduce(
+      (acc, curr) => {
+        if (acc.some((val) => arraysHaveSameElements(Object.values(val), Object.values(curr)))) {
+          return acc;
+        }
+
+        acc.push(curr);
+
+        return acc;
+      },
+      [] as typeof swaps
+    );
+
+    const staffRoleIds = Array.from(
+      new Set<number>(filteredSwaps.map((swap) => Object.values(swap)).flat(99))
+    );
+
     let staffRoles: Pick<typeof StaffRole.$inferSelect, 'id' | 'name' | 'order'>[];
 
     try {
       staffRoles = await db
         .select(pick(StaffRole, ['id', 'name', 'order']))
         .from(StaffRole)
-        .where(inArray(StaffRole.id, [source, target]))
-        .limit(2)
+        .where(inArray(StaffRole.id, staffRoleIds))
+        .limit(staffRoleIds.length)
         .then((res) => res);
     } catch (err) {
       throw trpcUnknownError(err, 'Getting staff roles');
     }
 
-    if (staffRoles.length !== 2) {
+    if (staffRoles.length !== staffRoleIds.length) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Source/target staff roles were not found'
@@ -204,22 +225,27 @@ const swapStaffRoleOrder = t.procedure
       });
     }
 
-    const [sourceStaffRole, targetStaffRole] = staffRoles;
-
     await db.transaction(async (tx) => {
-      await tx
-        .update(StaffRole)
-        .set({
-          order: targetStaffRole.order
-        })
-        .where(eq(StaffRole.id, sourceStaffRole.id));
+      for (const { source, target } of filteredSwaps) {
+        const [sourceStaffRole, targetStaffRole] = [
+          staffRoles.find((staffRole) => staffRole.id === source)!,
+          staffRoles.find((staffRole) => staffRole.id === target)!
+        ];
 
-      await tx
-        .update(StaffRole)
-        .set({
-          order: sourceStaffRole.order
-        })
-        .where(eq(StaffRole.id, targetStaffRole.id));
+        await tx
+          .update(StaffRole)
+          .set({
+            order: targetStaffRole.order
+          })
+          .where(eq(StaffRole.id, sourceStaffRole.id));
+
+        await tx
+          .update(StaffRole)
+          .set({
+            order: sourceStaffRole.order
+          })
+          .where(eq(StaffRole.id, targetStaffRole.id));
+      }
     });
   });
 
