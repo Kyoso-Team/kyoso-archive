@@ -11,7 +11,8 @@ import type {
   tournamentOtherDatesSchema,
   tournamentLinkSchema,
   modMultiplierSchema,
-  userFormFieldSchema
+  userFormFieldSchema,
+  userFormFieldResponseSchema
 } from './schemas';
 import type { Tournament, TournamentDates } from '$db';
 
@@ -40,6 +41,7 @@ export type TournamentOtherDates = Output<typeof tournamentOtherDatesSchema>;
 export type RankRange = Output<typeof rankRangeSchema>;
 export type ModMultiplier = Output<typeof modMultiplierSchema>;
 export type UserFormField = Output<typeof userFormFieldSchema>;
+export type UserFormFieldResponse = Output<typeof userFormFieldResponseSchema>;
 
 export type RoundConfig = StandardRoundConfig | QualifierRoundConfig | BattleRoyaleRoundConfig;
 
@@ -67,12 +69,6 @@ export interface QualifierRoundConfig {
 
 export interface BattleRoyaleRoundConfig {
   playersEliminatedPerMap: number;
-}
-
-export interface UserFormFieldResponse {
-  /** ID of the field within the form */
-  id: string;
-  response: string;
 }
 
 export type InferEnum<

@@ -35,6 +35,7 @@ import {
   tournamentModMultipliersChecks,
   tournamentOtherDatesChecks
 } from '$lib/helpers';
+import { maxPossibleDate, oldestDatePossible } from '$lib/constants';
 
 const catchUniqueConstraintError = catchUniqueConstraintError$([
   {
@@ -255,12 +256,12 @@ const updateTournamentDates = t.procedure
         tournamentId: positiveIntSchema,
         data: v.partial(
           v.object({
-            publishedAt: v.nullable(v.date()),
-            concludesAt: v.nullable(v.date()),
-            playerRegsOpenAt: v.nullable(v.date()),
-            playerRegsCloseAt: v.nullable(v.date()),
-            staffRegsOpenAt: v.nullable(v.date()),
-            staffRegsCloseAt: v.nullable(v.date()),
+            publishedAt: v.nullable(v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])),
+            concludesAt: v.nullable(v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])),
+            playerRegsOpenAt: v.nullable(v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])),
+            playerRegsCloseAt: v.nullable(v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])),
+            staffRegsOpenAt: v.nullable(v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])),
+            staffRegsCloseAt: v.nullable(v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])),
             other: v.array(tournamentOtherDatesSchema, [v.maxLength(20)])
           })
         )
