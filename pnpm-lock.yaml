@@ -38,9 +38,6 @@ importers:
       jsonwebtoken:
         specifier: ^9.0.0
         version: 9.0.2
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
       lodash.isequal:
         specifier: ^4.5.0
         version: 4.5.0
@@ -102,9 +99,6 @@ importers:
       '@types/jsonwebtoken':
         specifier: ^9.0.6
         version: 9.0.6
-      '@types/lodash':
-        specifier: ^4.17.5
-        version: 4.17.5
       '@types/lodash.isequal':
         specifier: ^4.5.8
         version: 4.5.8
@@ -1929,9 +1923,6 @@ packages:
 
   lodash.once@4.1.1:
     resolution: {integrity: sha512-Sb487aTOCr9drQVL8pIxOzVhafOjZN9UU54hiN8PU3uAiSV7lx1yYNpbNmex2PK6dSJoNTSJUUswT651yww3Mg==}
-
-  lodash@4.17.21:
-    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
 
   lru-cache@6.0.0:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
@@ -4428,8 +4419,6 @@ snapshots:
   lodash.merge@4.6.2: {}
 
   lodash.once@4.1.1: {}
-
-  lodash@4.17.21: {}
 
   lru-cache@6.0.0:
     dependencies:
