@@ -32,7 +32,7 @@
     loading.set(true);
 
     try {
-      resp = await fetch('/api/auth/change_permissions', {
+      resp = await fetch('/api/dev/change_permissions', {
         method: 'PATCH',
         body: JSON.stringify(value)
       });
