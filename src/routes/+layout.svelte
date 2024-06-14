@@ -54,7 +54,7 @@
   </Backdrop>
 {/if}
 <Toast position="bl" />
-<AppShell slotPageHeader="sticky top-0 z-10" slotSidebarLeft="z-10">
+<AppShell slotPageHeader="sticky top-0 z-[11]" slotSidebarLeft="z-[9]">
   <svelte:fragment slot="header">
     {#if $showNavBar}
       <NavBar session={data.session} />
