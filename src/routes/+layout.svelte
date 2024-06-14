@@ -1,7 +1,7 @@
 <script lang="ts">
   import '../app.postcss';
   import { NavBar, Backdrop } from '$components/layout';
-  import { showNavBar, loading } from '$stores';
+  import { showNavBar, loading, devMenuCtx } from '$stores';
   import {
     initializeStores,
     setInitialClassState,
@@ -24,12 +24,17 @@
 
   onMount(async () => {
     if (!data.isDevEnv) return;
+
     devMenuComponent = (await import('$components/layout/DevMenu.svelte')).default;
+    devMenuCtx.set({
+      session: data.session,
+      isUserOwner: data.isUserOwner
+    });
   });
 </script>
 
 {#if data.isDevEnv && devMenuComponent !== undefined}
-  <svelte:component this={devMenuComponent} session={data.session} isUserOwner={data.isUserOwner} />
+  <svelte:component this={devMenuComponent} />
 {/if}
 <svelte:head>
   {@html `<\u{73}cript nonce="%sveltekit.nonce%">(${setInitialClassState.toString()})();</script>`}
