@@ -68,7 +68,9 @@ export async function baseGetStaffMember<T extends boolean>(
   }
 
   if (env.NODE_ENV === 'development' && staffMember) {
-    const permissions = await redis.get<InferEnum<typeof StaffPermission>[]>(`staff_permissions:${staffMember.id}`);
+    const permissions = await redis.get<InferEnum<typeof StaffPermission>[]>(
+      `staff_permissions:${staffMember.id}`
+    );
     staffMember.permissions = permissions !== null ? permissions : staffMember.permissions;
   }
 

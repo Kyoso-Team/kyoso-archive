@@ -10,14 +10,20 @@
   import type { StaffPermission } from '$db';
 
   export let show: boolean;
-  export let tournament: { id: number; };
-  export let staffMember: { permissions: InferEnum<typeof StaffPermission>[]; };
+  export let tournament: { id: number };
+  export let staffMember: { permissions: InferEnum<typeof StaffPermission>[] };
   export let toast: ToastStore;
-  const mainForm = createForm({
-    permissions: f.array(f.union(keys(staffPermissionsOptions)), [f.minArrayLength(0), f.maxArrayLength(Object.keys(staffPermissionsOptions).length)])
-  }, {
-    permissions: staffMember.permissions
-  });
+  const mainForm = createForm(
+    {
+      permissions: f.array(f.union(keys(staffPermissionsOptions)), [
+        f.minArrayLength(0),
+        f.maxArrayLength(Object.keys(staffPermissionsOptions).length)
+      ])
+    },
+    {
+      permissions: staffMember.permissions
+    }
+  );
   const labels = mainForm.labels;
 
   async function submit() {
@@ -58,7 +64,12 @@
     <span class="title">Change Permissions</span>
     <p class="mt-4">Set/Overwrite the permissions for the current staff member.</p>
   </svelte:fragment>
-  <SelectMultiple form={mainForm} label={labels.permissions} legend="Staff permissions" options={staffPermissionsOptions} />
+  <SelectMultiple
+    form={mainForm}
+    label={labels.permissions}
+    legend="Staff permissions"
+    options={staffPermissionsOptions}
+  />
   <svelte:fragment slot="actions">
     <button
       type="submit"

@@ -98,7 +98,7 @@
       {/if}
       {session.os.name && session.os.version
         ? `${session.os.name} ${session.os.version}`
-        : 'Unknown OS'} 
+        : 'Unknown OS'}
       ({session.browser.name && session.browser.version
         ? `${session.browser.name} ${session.browser.version}`
         : 'Unknown browser'})

@@ -30,7 +30,7 @@
     if (!dev) return;
 
     devMenuComponent = (await import('$components/layout/DevMenu.svelte')).default;
-    
+
     if (!$page.url.pathname.includes('/m/')) {
       devMenuCtx.set({
         session: data.session,

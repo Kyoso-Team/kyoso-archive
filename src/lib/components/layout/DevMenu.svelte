@@ -1,5 +1,9 @@
 <script lang="ts">
-  import { ImpersonateUserForm, ChangePermisisonsForm, ChangeStaffPermissionsForm } from '$components/dev-menu';
+  import {
+    ImpersonateUserForm,
+    ChangePermisisonsForm,
+    ChangeStaffPermissionsForm
+  } from '$components/dev-menu';
   import { browser } from '$app/environment';
   import { loading } from '$stores';
   import { fade } from 'svelte/transition';
@@ -93,7 +97,10 @@
     if ($loading || showImpersonateUserForm || showChangePermissionsForm) return;
 
     if (!$devMenuCtx?.staffMember) {
-      toastError(toast, 'Execute this command in /m/ pages while being a staff member for that tournament');
+      toastError(
+        toast,
+        'Execute this command in /m/ pages while being a staff member for that tournament'
+      );
       return;
     }
 
@@ -138,7 +145,10 @@
     </Backdrop>
   {/if}
   {#if show}
-    <div class="fixed right-4 bottom-4 card z-[99] p-4 w-[320px]" transition:fade={{ duration: 150 }}>
+    <div
+      class="fixed right-4 bottom-4 card z-[99] p-4 w-[320px]"
+      transition:fade={{ duration: 150 }}
+    >
       <span class="font-medium block text-lg">Dev Menu</span>
       <span class="text-sm font-medium mt-4 mb-2 block">Commands</span>
       <span class="text-sm text-surface-600-300-token">
@@ -170,12 +180,12 @@
       </div>
       <div class="mt-2 flex gap-1 flex-wrap">
         {#if !$devMenuCtx.staffMember || $devMenuCtx.staffMember.permissions.length === 0}
-          <span class="text-sm text-surface-600-300-token">
-            No staff permissions set
-          </span>
+          <span class="text-sm text-surface-600-300-token"> No staff permissions set </span>
         {:else}
           {#each $devMenuCtx.staffMember.permissions as permission}
-            <span class="block badge variant-filled-primary">{staffPermissionsOptions[permission]}</span>
+            <span class="block badge variant-filled-primary"
+              >{staffPermissionsOptions[permission]}</span
+            >
           {/each}
         {/if}
       </div>
