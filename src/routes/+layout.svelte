@@ -13,27 +13,34 @@
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
   import { fly } from 'svelte/transition';
   import { onMount } from 'svelte';
+  import { page } from '$app/stores';
+  import { inject } from '@vercel/analytics';
+  import { dev } from '$app/environment';
   import type { LayoutServerData } from './$types';
   import type { AnyComponent } from '$types';
 
   storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
   initializeStores();
+  inject({ mode: dev ? 'development' : 'production' });
 
   export let data: LayoutServerData;
   let devMenuComponent: AnyComponent;
 
   onMount(async () => {
-    if (!data.isDevEnv) return;
+    if (!dev) return;
 
     devMenuComponent = (await import('$components/layout/DevMenu.svelte')).default;
-    devMenuCtx.set({
-      session: data.session,
-      isUserOwner: data.isUserOwner
-    });
+
+    if (!$page.url.pathname.includes('/m/')) {
+      devMenuCtx.set({
+        session: data.session,
+        isUserOwner: data.isUserOwner
+      });
+    }
   });
 </script>
 
-{#if data.isDevEnv && devMenuComponent !== undefined}
+{#if dev && devMenuComponent !== undefined}
   <svelte:component this={devMenuComponent} />
 {/if}
 <svelte:head>
@@ -47,7 +54,7 @@
   </Backdrop>
 {/if}
 <Toast position="bl" />
-<AppShell slotPageHeader="sticky top-0 z-10" slotSidebarLeft="z-10">
+<AppShell slotPageHeader="sticky top-0 z-[11]" slotSidebarLeft="z-[9]">
   <svelte:fragment slot="header">
     {#if $showNavBar}
       <NavBar session={data.session} />

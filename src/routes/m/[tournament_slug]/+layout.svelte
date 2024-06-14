@@ -20,10 +20,10 @@
   import { Avatar } from '@skeletonlabs/skeleton';
   import { onDestroy, onMount } from 'svelte';
   import { popup } from '$lib/popup';
-  import { showNavBar } from '$stores';
+  import { devMenuCtx, showNavBar } from '$stores';
   import { buildUrl } from 'osu-web.js';
   import { fade, fly } from 'svelte/transition';
-  import { browser } from '$app/environment';
+  import { browser, dev } from '$app/environment';
   import { disableTabbing } from '$lib/actions';
   import type { LayoutServerData } from './$types';
   import type { AnyComponent } from '$types';
@@ -45,6 +45,7 @@
 
   onMount(() => {
     showNavBar.set(false);
+    setDevMenuCtx(data);
 
     if (!browser) return;
     window.addEventListener('resize', isSmScreen);
@@ -53,9 +54,27 @@
   onDestroy(() => {
     showNavBar.set(true);
 
+    if (dev) {
+      devMenuCtx.set({
+        session: data.session,
+        isUserOwner: data.isUserOwner
+      });
+    }
+
     if (!browser) return;
     window.removeEventListener('resize', isSmScreen);
   });
+
+  function setDevMenuCtx(data: LayoutServerData) {
+    if (dev) {
+      devMenuCtx.set({
+        session: data.session,
+        isUserOwner: data.isUserOwner,
+        staffMember: data.staffMember,
+        tournament: data.tournament
+      });
+    }
+  }
 
   function isSmScreen() {
     smScreen = window.innerWidth <= 640;
@@ -182,6 +201,10 @@
     }
 
     links = shownLinks;
+  }
+
+  $: {
+    setDevMenuCtx(data);
   }
 
   $: concluded = !!data.tournament.concludesAt && isDatePast(data.tournament.concludesAt);

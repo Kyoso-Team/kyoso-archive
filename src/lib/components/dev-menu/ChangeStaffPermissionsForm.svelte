@@ -1,40 +1,44 @@
 <script lang="ts">
   import * as f from '$lib/form-validation';
-  import { Checkbox, Form } from '$components/form';
+  import { SelectMultiple, Form } from '$components/form';
   import { createForm, loading } from '$stores';
-  import { displayError, toastSuccess } from '$lib/utils';
+  import { displayError, keys, toastSuccess } from '$lib/utils';
   import { invalidateAll } from '$app/navigation';
+  import { staffPermissionsOptions } from '$lib/constants';
   import type { ToastStore } from '@skeletonlabs/skeleton';
-  import type { AuthSession } from '$types';
+  import type { InferEnum } from '$types';
+  import type { StaffPermission } from '$db';
 
   export let show: boolean;
-  export let session: AuthSession;
-  export let isUserOwner: boolean;
+  export let tournament: { id: number };
+  export let staffMember: { permissions: InferEnum<typeof StaffPermission>[] };
   export let toast: ToastStore;
   const mainForm = createForm(
     {
-      owner: f.boolean(),
-      admin: f.boolean(),
-      approvedHost: f.boolean()
+      permissions: f.array(f.union(keys(staffPermissionsOptions)), [
+        f.minArrayLength(0),
+        f.maxArrayLength(Object.keys(staffPermissionsOptions).length)
+      ])
     },
     {
-      owner: isUserOwner,
-      admin: session.admin,
-      approvedHost: session.approvedHost
+      permissions: staffMember.permissions
     }
   );
   const labels = mainForm.labels;
 
   async function submit() {
-    const value = mainForm.getFinalValue($mainForm);
+    const { permissions } = mainForm.getFinalValue($mainForm);
 
     let resp!: Response;
     loading.set(true);
 
     try {
-      resp = await fetch('/api/dev/change_permissions', {
+      resp = await fetch('/api/dev/change_staff_permissions', {
         method: 'PATCH',
-        body: JSON.stringify(value)
+        body: JSON.stringify({
+          permissions,
+          tournamentId: tournament.id
+        })
       });
     } catch (err) {
       displayError(toast, err);
@@ -47,7 +51,7 @@
     await invalidateAll();
     show = false;
     loading.set(false);
-    toastSuccess(toast, 'Changed user permissions succcessfully');
+    toastSuccess(toast, 'Changed staff permissions succcessfully');
   }
 
   function cancel() {
@@ -58,11 +62,14 @@
 <Form {submit}>
   <svelte:fragment slot="header">
     <span class="title">Change Permissions</span>
-    <p class="mt-4">Set/Overwrite the permissions for the current user.</p>
+    <p class="mt-4">Set/Overwrite the permissions for the current staff member.</p>
   </svelte:fragment>
-  <Checkbox form={mainForm} label={labels.owner} legend="Make user the website owner?" />
-  <Checkbox form={mainForm} label={labels.admin} legend="Make user a website admin?" />
-  <Checkbox form={mainForm} label={labels.approvedHost} legend="Make user an approved host?" />
+  <SelectMultiple
+    form={mainForm}
+    label={labels.permissions}
+    legend="Staff permissions"
+    options={staffPermissionsOptions}
+  />
   <svelte:fragment slot="actions">
     <button
       type="submit"

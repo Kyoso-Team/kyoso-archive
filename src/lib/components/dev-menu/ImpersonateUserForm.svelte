@@ -23,7 +23,7 @@
     loading.set(true);
 
     try {
-      resp = await fetch('/api/auth/impersonate', {
+      resp = await fetch('/api/dev/impersonate', {
         method: 'PUT',
         body: JSON.stringify(value)
       });
