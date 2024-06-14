@@ -15,7 +15,7 @@
   import { toastError } from '$lib/utils';
   import { devMenuCtx } from '$stores';
 
-  let show = true;
+  let show = localStorage.getItem('show_dev_menu') === 'false' ? false : true;
   let showImpersonateUserForm = false;
   let showChangePermissionsForm = false;
   let showChangeStaffPermissionsForm = false;
@@ -64,6 +64,7 @@
 
   function toggleShow() {
     show = !show;
+    localStorage.setItem('show_dev_menu', show ? 'true' : 'false');
   }
 
   function toggleShowImpersonateUserForm() {
@@ -104,8 +105,6 @@
     setModeUserPrefers($modeCurrent);
     setModeCurrent($modeCurrent);
   }
-
-  $: console.log($devMenuCtx);
 </script>
 
 {#if $devMenuCtx}
