@@ -55,12 +55,12 @@
       </p>
     {/if}
   </svelte:fragment>
-  <Number form={mainForm} label={labels.userId} legend="User ID">The Kyoso user ID of the user you want to impersonate. Can be any user registered in the databse (except banned users).</Number>
+  <Number form={mainForm} label={labels.userId} legend="User ID"
+    >The Kyoso user ID of the user you want to impersonate. Can be any user registered in the
+    databse (except banned users).</Number
+  >
   <svelte:fragment slot="actions">
-    <button
-      type="submit"
-      class="btn variant-filled-primary"
-      disabled={!$mainForm.canSubmit}
+    <button type="submit" class="btn variant-filled-primary" disabled={!$mainForm.canSubmit}
       >Submit</button
     >
     {#if session.realUser}

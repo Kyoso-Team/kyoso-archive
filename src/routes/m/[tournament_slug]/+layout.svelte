@@ -271,8 +271,7 @@
 </div>
 <div class="relative z-[9]" use:disableTabbing={() => concluded}>
   {#if concluded}
-    <div class="absolute top-0 left-0 w-full h-full bg-surface-backdrop-token z-10">
-    </div>
+    <div class="absolute top-0 left-0 w-full h-full bg-surface-backdrop-token z-10"></div>
     <div class="relative z-[11] w-full p-4 text-center bg-primary-backdrop-token line-b mb-4">
       The tournament has concluded, you can no longer make any changes.
     </div>
