@@ -23,7 +23,7 @@
   import { devMenuCtx, showNavBar } from '$stores';
   import { buildUrl } from 'osu-web.js';
   import { fade, fly } from 'svelte/transition';
-  import { browser } from '$app/environment';
+  import { browser, dev } from '$app/environment';
   import { disableTabbing } from '$lib/actions';
   import type { LayoutServerData } from './$types';
   import type { AnyComponent } from '$types';
@@ -54,7 +54,7 @@
   onDestroy(() => {
     showNavBar.set(true);
 
-    if (data.isDevEnv) {
+    if (dev) {
       devMenuCtx.set({
         session: data.session,
         isUserOwner: data.isUserOwner
@@ -66,7 +66,7 @@
   });
 
   function setDevMenuCtx(data: LayoutServerData) {
-    if (data.isDevEnv) {
+    if (dev) {
       devMenuCtx.set({
         session: data.session,
         isUserOwner: data.isUserOwner,

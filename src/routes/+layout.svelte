@@ -27,7 +27,7 @@
   let devMenuComponent: AnyComponent;
 
   onMount(async () => {
-    if (!data.isDevEnv) return;
+    if (!dev) return;
 
     devMenuComponent = (await import('$components/layout/DevMenu.svelte')).default;
     
@@ -40,7 +40,7 @@
   });
 </script>
 
-{#if data.isDevEnv && devMenuComponent !== undefined}
+{#if dev && devMenuComponent !== undefined}
   <svelte:component this={devMenuComponent} />
 {/if}
 <svelte:head>

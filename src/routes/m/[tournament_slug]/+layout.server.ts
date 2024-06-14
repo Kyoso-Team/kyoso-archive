@@ -4,7 +4,7 @@ import { isDatePast } from '$lib/server/utils';
 import type { LayoutServerLoad } from './$types';
 
 export const load = (async ({ route, params, parent }) => {
-  const { session, isDevEnv, isUserOwner } = await parent();
+  const { session, isUserOwner } = await parent();
 
   if (!session) {
     throw error(401, 'You must be logged in');
@@ -28,7 +28,6 @@ export const load = (async ({ route, params, parent }) => {
 
   return {
     session,
-    isDevEnv,
     isUserOwner,
     staffMember,
     tournament: {
