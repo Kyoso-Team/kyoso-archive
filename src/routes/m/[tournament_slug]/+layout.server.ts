@@ -1,10 +1,14 @@
 import { error } from '@sveltejs/kit';
-import { getSession, getStaffMember, getTournament } from '$lib/server/helpers/api';
+import { getStaffMember, getTournament } from '$lib/server/helpers/api';
 import { isDatePast } from '$lib/server/utils';
 import type { LayoutServerLoad } from './$types';
 
-export const load = (async ({ cookies, route, params }) => {
-  const session = getSession(cookies, true);
+export const load = (async ({ route, params, parent }) => {
+  const { session, isDevEnv, isUserOwner } = await parent();
+
+  if (!session) {
+    throw error(401, 'You must be logged in');
+  }
 
   const tournament = await getTournament(
     params.tournament_slug,
@@ -24,6 +28,8 @@ export const load = (async ({ cookies, route, params }) => {
 
   return {
     session,
+    isDevEnv,
+    isUserOwner,
     staffMember,
     tournament: {
       id: tournament.id,

@@ -1,6 +1,6 @@
 import * as f from '$lib/form-validation';
 import { keys } from './utils';
-import type { TournamentType } from '$db';
+import type { StaffPermission, TournamentType } from '$db';
 import type { InferEnum } from '$types';
 
 export const lower32BitIntLimit = -2147483648;
@@ -33,4 +33,29 @@ export const baseTeamSettingsFormSchemas = {
 export const rankRangeFormSchemas = {
   lower: f.number([f.integer(), f.minValue(1), f.maxIntLimit()]),
   upper: f.optional(f.number([f.integer(), f.minValue(1), f.maxIntLimit()]))
+};
+
+export const staffPermissionsOptions: Record<InferEnum<typeof StaffPermission>, string> = {
+  host: 'Host',
+  debug: 'Debug',
+  manage_tournament: 'Manage tournament',
+  manage_assets: 'Manage assets',
+  manage_theme: 'Manage theme',
+  manage_regs: 'Manage regs.',
+  manage_pool_structure: 'Manage pool structure',
+  view_pool_suggestions: 'View pool suggestions',
+  create_pool_suggestions: 'Create pool suggestions',
+  delete_pool_suggestions: 'Delete pool suggestions',
+  view_pooled_maps: 'View pooled maps',
+  manage_pooled_maps: 'Manage pooled maps',
+  view_feedback: 'View feedback',
+  can_playtest: 'Can playtest',
+  can_submit_replays: 'Can submit replays',
+  view_matches: 'View matches',
+  manage_matches: 'Manage matches',
+  ref_matches: 'Ref matches',
+  commentate_matches: 'Commentate matches',
+  stream_matches: 'Stream matches',
+  manage_stats: 'Manage stats',
+  can_play: 'Can play'
 };

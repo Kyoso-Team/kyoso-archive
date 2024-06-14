@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ImpersonateUserForm, ChangePermisisonsForm } from '$components/dev-menu';
+  import { ImpersonateUserForm, ChangePermisisonsForm, ChangeStaffPermissionsForm } from '$components/dev-menu';
   import { browser } from '$app/environment';
   import { loading } from '$stores';
   import { fade } from 'svelte/transition';
@@ -11,19 +11,20 @@
     setModeCurrent,
     setModeUserPrefers
   } from '@skeletonlabs/skeleton';
+  import { staffPermissionsOptions } from '$lib/constants';
   import { toastError } from '$lib/utils';
   import { devMenuCtx } from '$stores';
 
   let show = true;
   let showImpersonateUserForm = false;
   let showChangePermissionsForm = false;
+  let showChangeStaffPermissionsForm = false;
   const toast = getToastStore();
   const generalCommands: Record<string, string> = {
     '1': 'Toggle this menu',
     '2': 'Toggle between dark and light theme',
     '3': 'Impersonate user',
-    '4': 'Update user permissions',
-    '5': 'Set tournament dates',
+    '4': 'Set user permissions',
     '6': 'Set staff permissions'
   };
 
@@ -48,10 +49,13 @@
         toggletheme();
         break;
       case '#':
-        toggleShowImpersonateUserModal();
+        toggleShowImpersonateUserForm();
         break;
       case '$':
-        toggleShowChangePermissionsModal();
+        toggleShowChangePermissionsForm();
+        break;
+      case '^':
+        toggleShowChangeStaffPermissionsForm();
         break;
       default:
         break;
@@ -62,8 +66,8 @@
     show = !show;
   }
 
-  function toggleShowImpersonateUserModal() {
-    if ($loading || showChangePermissionsForm) return;
+  function toggleShowImpersonateUserForm() {
+    if ($loading || showChangePermissionsForm || showChangeStaffPermissionsForm) return;
 
     if (!$devMenuCtx?.session) {
       toastError(toast, 'Log in to execute this command');
@@ -73,8 +77,8 @@
     showImpersonateUserForm = !showImpersonateUserForm;
   }
 
-  function toggleShowChangePermissionsModal() {
-    if ($loading || showImpersonateUserForm) return;
+  function toggleShowChangePermissionsForm() {
+    if ($loading || showImpersonateUserForm || showChangeStaffPermissionsForm) return;
 
     if (!$devMenuCtx?.session) {
       toastError(toast, 'Log in to execute this command');
@@ -84,11 +88,24 @@
     showChangePermissionsForm = !showChangePermissionsForm;
   }
 
+  function toggleShowChangeStaffPermissionsForm() {
+    if ($loading || showImpersonateUserForm || showChangePermissionsForm) return;
+
+    if (!$devMenuCtx?.staffMember) {
+      toastError(toast, 'Execute this command in /m/ pages while being a staff member for that tournament');
+      return;
+    }
+
+    showChangeStaffPermissionsForm = !showChangeStaffPermissionsForm;
+  }
+
   function toggletheme() {
     $modeCurrent = !$modeCurrent;
     setModeUserPrefers($modeCurrent);
     setModeCurrent($modeCurrent);
   }
+
+  $: console.log($devMenuCtx);
 </script>
 
 {#if $devMenuCtx}
@@ -111,8 +128,18 @@
       />
     </Backdrop>
   {/if}
+  {#if showChangeStaffPermissionsForm && $devMenuCtx.tournament && $devMenuCtx.staffMember}
+    <Backdrop zIndex="z-[98]">
+      <ChangeStaffPermissionsForm
+        {toast}
+        tournament={$devMenuCtx.tournament}
+        staffMember={$devMenuCtx.staffMember}
+        bind:show={showChangeStaffPermissionsForm}
+      />
+    </Backdrop>
+  {/if}
   {#if show}
-    <div class="fixed right-4 bottom-4 card z-[99] p-4" transition:fade={{ duration: 150 }}>
+    <div class="fixed right-4 bottom-4 card z-[99] p-4 w-[320px]" transition:fade={{ duration: 150 }}>
       <span class="font-medium block text-lg">Dev Menu</span>
       <span class="text-sm font-medium mt-4 mb-2 block">Commands</span>
       <span class="text-sm text-surface-600-300-token">
@@ -128,19 +155,30 @@
         {/each}
       </div>
       <span class="text-sm font-medium block mt-4 mb-2">Permissions</span>
-      <div class="mt-2">
+      <div class="mt-2 flex gap-1 flex-wrap">
         <span
-          class={`badge text-black ${$devMenuCtx.isUserOwner ? 'bg-success-500' : 'bg-error-500'}`}
+          class={`block badge text-black ${$devMenuCtx.isUserOwner ? 'bg-success-500' : 'bg-error-500'}`}
           >Owner</span
         >
         <span
-          class={`badge text-black ${$devMenuCtx.session?.admin ? 'bg-success-500' : 'bg-error-500'}`}
+          class={`block badge text-black ${$devMenuCtx.session?.admin ? 'bg-success-500' : 'bg-error-500'}`}
           >Admin</span
         >
         <span
-          class={`badge text-black ${$devMenuCtx.session?.approvedHost ? 'bg-success-500' : 'bg-error-500'}`}
+          class={`block badge text-black ${$devMenuCtx.session?.approvedHost ? 'bg-success-500' : 'bg-error-500'}`}
           >Approved Host</span
         >
+      </div>
+      <div class="mt-2 flex gap-1 flex-wrap">
+        {#if !$devMenuCtx.staffMember || $devMenuCtx.staffMember.permissions.length === 0}
+          <span class="text-sm text-surface-600-300-token">
+            No staff permissions set
+          </span>
+        {:else}
+          {#each $devMenuCtx.staffMember.permissions as permission}
+            <span class="block badge variant-filled-primary">{staffPermissionsOptions[permission]}</span>
+          {/each}
+        {/if}
       </div>
     </div>
   {/if}

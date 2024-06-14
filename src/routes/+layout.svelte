@@ -15,6 +15,7 @@
   import { onMount } from 'svelte';
   import type { LayoutServerData } from './$types';
   import type { AnyComponent } from '$types';
+    import { page } from '$app/stores';
 
   storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
   initializeStores();
@@ -26,10 +27,13 @@
     if (!data.isDevEnv) return;
 
     devMenuComponent = (await import('$components/layout/DevMenu.svelte')).default;
-    devMenuCtx.set({
-      session: data.session,
-      isUserOwner: data.isUserOwner
-    });
+    
+    if (!$page.url.pathname.includes('/m/')) {
+      devMenuCtx.set({
+        session: data.session,
+        isUserOwner: data.isUserOwner
+      });
+    }
   });
 </script>
 

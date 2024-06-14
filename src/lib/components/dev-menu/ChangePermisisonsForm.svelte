@@ -58,7 +58,7 @@
 <Form {submit}>
   <svelte:fragment slot="header">
     <span class="title">Change Permissions</span>
-    <p class="mt-4">Set/Overwrite the permisisons for the current user.</p>
+    <p class="mt-4">Set/Overwrite the permissions for the current user.</p>
   </svelte:fragment>
   <Checkbox form={mainForm} label={labels.owner} legend="Make user the website owner?" />
   <Checkbox form={mainForm} label={labels.admin} legend="Make user a website admin?" />
