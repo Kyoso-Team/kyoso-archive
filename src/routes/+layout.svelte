@@ -13,12 +13,15 @@
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
   import { fly } from 'svelte/transition';
   import { onMount } from 'svelte';
+  import { page } from '$app/stores';
+  import { inject } from '@vercel/analytics';
+  import { dev } from '$app/environment';
   import type { LayoutServerData } from './$types';
   import type { AnyComponent } from '$types';
-    import { page } from '$app/stores';
 
   storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
   initializeStores();
+  inject({ mode: dev ? 'development' : 'production' });
 
   export let data: LayoutServerData;
   let devMenuComponent: AnyComponent;
