@@ -94,7 +94,7 @@
   <div class="flex flex-col">
     <span class="font-medium text-lg inline-block relative max-w-max">
       {#if current}
-        <span class="badge variant-soft-secondary top-[2px] absolute -right-16">Current</span>
+        <span class="badge variant-soft-primary top-[2px] absolute -right-16">Current</span>
       {/if}
       {session.ipAddress}
     </span>

@@ -158,10 +158,10 @@ export function createForm<
       const { value, updated } = formInit(formSchema, newDefaults);
       const newForm = {
         updated,
-        defaults,
         overwritten,
         errors,
-        value
+        value,
+        defaults: newDefaults
       } as AnyForm;
 
       return {

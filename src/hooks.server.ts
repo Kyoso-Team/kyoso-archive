@@ -144,6 +144,7 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: { id: s
   });
 
   let user!: {
+    admin: boolean;
     approvedHost: boolean;
     updatedApiDataAt: Date;
   };
@@ -155,7 +156,7 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: { id: s
         updatedApiDataAt: sql`now()`
       })
       .where(eq(User.id, session.userId))
-      .returning(pick(User, ['updatedApiDataAt', 'approvedHost']))
+      .returning(pick(User, ['updatedApiDataAt', 'approvedHost', 'admin']))
       .then((user) => user[0]);
   } catch (err) {
     throw await apiError(err, 'Updating the user', route);
@@ -164,7 +165,7 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: { id: s
   const kyosoProfile: AuthSession = {
     sessionId: session.sessionId,
     userId: session.userId,
-    admin: session.admin,
+    admin: user.admin,
     approvedHost: user.approvedHost,
     updatedApiDataAt: user.updatedApiDataAt.getTime(),
     discord: {
