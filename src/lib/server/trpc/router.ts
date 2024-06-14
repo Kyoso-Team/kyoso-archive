@@ -7,10 +7,11 @@ import { and, asc, eq, isNull, notExists, or, sql } from 'drizzle-orm';
 import { future, pick, trgmSearch, trpcUnknownError } from '$lib/server/utils';
 import { setSimilarityThreshold } from '../helpers/queries';
 import {
+  formsRouter,
   notificationsRouter,
+  staffRolesRouter,
   tournamentsRouter,
-  usersRouter,
-  staffRolesRouter
+  usersRouter
 } from '../procedures';
 import type { SQL } from 'drizzle-orm';
 
@@ -114,7 +115,8 @@ export const router = t.router({
   users: usersRouter,
   tournaments: tournamentsRouter,
   notifications: notificationsRouter,
-  staffRoles: staffRolesRouter
+  staffRoles: staffRolesRouter,
+  forms: formsRouter
 });
 
 export type Router = typeof router;

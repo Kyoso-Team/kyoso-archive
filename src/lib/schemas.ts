@@ -327,6 +327,7 @@ export const userFormFieldSchema = v.union([
   userFormDateTimeFieldSchema
 ]);
 
-v.record(v.string([v.length(8)]), v.string([v.minLength(0), v.maxLength(10000)]));
-
-export const userFormFieldResponseSchema = v.record(v.string([v.length(8)]), v.string([v.minLength(0), v.maxLength(10000)]));
+export const userFormFieldResponseSchema = v.record(
+  v.string([v.length(8)]),
+  v.string([v.minLength(0), v.maxLength(10000)])
+);
