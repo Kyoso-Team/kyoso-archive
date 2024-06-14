@@ -73,7 +73,7 @@
     await goto(`/m/${tournament.urlSlug}`);
     show = false;
     loading.set(false);
-    toastSuccess(toast, 'Successfully created tournament');
+    toastSuccess(toast, 'Created tournament succcessfully');
   }
 
   function cancel() {

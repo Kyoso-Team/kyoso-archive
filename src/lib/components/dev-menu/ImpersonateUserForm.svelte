@@ -38,7 +38,7 @@
     await invalidateAll();
     show = false;
     loading.set(false);
-    toastSuccess(toast, 'Successfully impersonated user');
+    toastSuccess(toast, 'Impersonated user successfully');
   }
 
   function cancel() {

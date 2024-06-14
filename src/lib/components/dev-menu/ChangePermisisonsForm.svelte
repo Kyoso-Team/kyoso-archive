@@ -47,7 +47,7 @@
     await invalidateAll();
     show = false;
     loading.set(false);
-    toastSuccess(toast, 'Successfully changed user permissions');
+    toastSuccess(toast, 'Changed user permissions succcessfully');
   }
 
   function cancel() {
