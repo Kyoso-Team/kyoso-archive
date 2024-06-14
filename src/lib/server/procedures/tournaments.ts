@@ -62,23 +62,6 @@ const mutationSchemas = {
   )
 };
 
-const baseDatesSchemas = {
-  publishedAt: v.nullable(v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])),
-  concludesAt: v.nullable(v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])),
-  playerRegsOpenAt: v.nullable(
-    v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
-  ),
-  playerRegsCloseAt: v.nullable(
-    v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
-  ),
-  staffRegsOpenAt: v.nullable(
-    v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
-  ),
-  staffRegsCloseAt: v.nullable(
-    v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
-  )
-};
-
 const createTournament = t.procedure
   .use(rateLimitMiddleware)
   .input(wrap(v.object(mutationSchemas)))
@@ -273,7 +256,24 @@ const updateTournamentDates = t.procedure
         tournamentId: positiveIntSchema,
         data: v.partial(
           v.object({
-            ...baseDatesSchemas,
+            publishedAt: v.nullable(
+              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+            ),
+            concludesAt: v.nullable(
+              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+            ),
+            playerRegsOpenAt: v.nullable(
+              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+            ),
+            playerRegsCloseAt: v.nullable(
+              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+            ),
+            staffRegsOpenAt: v.nullable(
+              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+            ),
+            staffRegsCloseAt: v.nullable(
+              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+            ),
             other: v.array(tournamentOtherDatesSchema, [v.maxLength(20)])
           })
         )
