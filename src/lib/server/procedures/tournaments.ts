@@ -159,6 +159,7 @@ const updateTournament = t.procedure
         data: v.partial(
           v.object({
             ...mutationSchemas,
+            description: v.nullable(v.string([v.minLength(0), v.maxLength(150)])),
             rankRange: v.nullable(rankRangeSchema),
             teamSettings: v.nullable(teamSettingsSchema),
             bwsValues: v.nullable(bwsValuesSchema),
@@ -177,6 +178,7 @@ const updateTournament = t.procedure
       name,
       acronym,
       urlSlug,
+      description,
       teamSettings,
       type,
       rankRange,
@@ -211,12 +213,12 @@ const updateTournament = t.procedure
     // Only the host can update these properties
     if (
       !hasPermissions(staffMember, ['host']) &&
-      (name || acronym || urlSlug || teamSettings || type || rankRange || bwsValues)
+      (name || acronym || urlSlug || description || teamSettings || type || rankRange || bwsValues)
     ) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message:
-          "You do not have the required permissions to update this tournament's name, acronym, URL slug, team settings (if applicable), type, rank range or BWS formula"
+          "You do not have the required permissions to update this tournament's name, acronym, URL slug, description, team settings (if applicable), type, rank range or BWS formula"
       });
     }
 

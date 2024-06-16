@@ -2,6 +2,7 @@ import type { MaybePromise, Page } from '@sveltejs/kit';
 import type { Router } from '$trpc/router';
 import type { Writable } from 'svelte/store';
 import type { BaseSchema, Output } from 'valibot';
+import type { Tournament, TournamentDates } from '$db';
 import type {
   bwsValuesSchema,
   draftTypeSchema,
@@ -12,9 +13,9 @@ import type {
   tournamentLinkSchema,
   modMultiplierSchema,
   userFormFieldSchema,
-  userFormFieldResponseSchema
+  userFormFieldResponseSchema,
+  tournamentThemeSchema
 } from './schemas';
-import type { Tournament, TournamentDates } from '$db';
 
 export type AnyComponent = any;
 
@@ -42,6 +43,7 @@ export type RankRange = Output<typeof rankRangeSchema>;
 export type ModMultiplier = Output<typeof modMultiplierSchema>;
 export type UserFormField = Output<typeof userFormFieldSchema>;
 export type UserFormFieldResponse = Output<typeof userFormFieldResponseSchema>;
+export type TournamentTheme = Output<typeof tournamentThemeSchema>;
 
 export type RoundConfig = StandardRoundConfig | QualifierRoundConfig | BattleRoyaleRoundConfig;
 
