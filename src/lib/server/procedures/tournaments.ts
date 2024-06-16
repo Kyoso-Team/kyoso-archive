@@ -14,7 +14,7 @@ import { wrap } from '@typeschema/valibot';
 import { getSession, getStaffMember, getTournament } from '../helpers/trpc';
 import { TRPCError } from '@trpc/server';
 import { hasPermissions, isDatePast, sortByKey } from '$lib/utils';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import {
   bwsValuesSchema,
   modMultiplierSchema,
@@ -436,21 +436,68 @@ const deleteTournament = t.procedure
     const tournament = await getTournament(
       tournamentId,
       {
+        tournament: ['deletedAt'],
         dates: ['concludesAt']
       },
       true
     );
     checks.tournamentNotConcluded(tournament);
 
+    if (tournament.deletedAt) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'This tournament is already scheduled to be deleted or it has already been deleted'
+      });
+    }
+
     try {
       await db
         .update(Tournament)
         .set({
-          deletedAt: sql`now()`
+          // Schedule to delete in the next 24 hours
+          deletedAt: new Date(new Date().getTime() + 86_400_000)
         })
         .where(eq(Tournament.id, tournamentId));
     } catch (err) {
-      throw trpcUnknownError(err, 'Deleting the tournament');
+      throw trpcUnknownError(err, "Scheduling the tournament's deletion");
+    }
+  });
+
+const cancelTournamentDeletion = t.procedure
+  .use(rateLimitMiddleware)
+  .input(
+    wrap(
+      v.object({
+        tournamentId: positiveIntSchema
+      })
+    )
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { tournamentId } = input;
+    const checks = new TRPCChecks({ action: 'cancel the deletion of this tournament' });
+    const session = getSession(ctx.cookies, true);
+    const staffMember = await getStaffMember(session, tournamentId, true);
+    checks.staffHasPermissions(staffMember, ['host']);
+
+    const tournament = await getTournament(
+      tournamentId,
+      {
+        tournament: ['deletedAt'],
+        dates: ['concludesAt']
+      },
+      true
+    );
+    checks.tournamentNotConcluded(tournament).tournamentNotDeleted(tournament);
+
+    try {
+      await db
+        .update(Tournament)
+        .set({
+          deletedAt: null
+        })
+        .where(eq(Tournament.id, tournamentId));
+    } catch (err) {
+      throw trpcUnknownError(err, "Updating the tournament's deletion date");
     }
   });
 
@@ -458,5 +505,6 @@ export const tournamentsRouter = t.router({
   createTournament,
   updateTournament,
   updateTournamentDates,
-  deleteTournament
+  deleteTournament,
+  cancelTournamentDeletion
 });
