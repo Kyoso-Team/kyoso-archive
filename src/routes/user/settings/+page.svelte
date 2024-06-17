@@ -119,87 +119,93 @@
   <div class="w-full max-w-5xl">
     <h1>User Settings</h1>
     <div class="line-b mt-4 mb-8" />
-    <h2>Linked Accounts</h2>
-    <p class="mt-2">The accounts linked to your Kyoso profile.</p>
-    <div class="gap-4 mt-4 grid 2md:w-[calc(100%-1rem)] 2md:grid-cols-[50%_50%]">
-      <div class="card p-4 w-full flex items-center relative">
-        <div class="mr-4">
-          <Osu w={48} h={48} class="fill-black dark:fill-white" />
+    <section>
+      <h2>Linked Accounts</h2>
+      <p class="mt-2">The accounts linked to your Kyoso profile.</p>
+      <div class="gap-4 mt-4 grid 2md:w-[calc(100%-1rem)] 2md:grid-cols-[50%_50%]">
+        <div class="card p-4 w-full flex items-center relative">
+          <div class="mr-4">
+            <Osu w={48} h={48} class="fill-black dark:fill-white" />
+          </div>
+          <div class="flex flex-col">
+            <strong class="text-lg">{data.session.osu.username}</strong>
+            <span class="text-xs xs:text-sm"><strong>User ID:</strong> {data.session.osu.id}</span>
+          </div>
         </div>
-        <div class="flex flex-col">
-          <strong class="text-lg">{data.session.osu.username}</strong>
-          <span class="text-xs xs:text-sm"><strong>User ID:</strong> {data.session.osu.id}</span>
+        <div class="card p-4 w-full flex items-center relative">
+          <div class="mr-4">
+            <Discord w={48} h={48} class="fill-black dark:fill-white" />
+          </div>
+          <div class="flex flex-col">
+            <strong class="text-lg">{data.session.discord.username}</strong>
+            <span class="text-xs xs:text-sm"><strong>User ID:</strong> {data.session.discord.id}</span
+            >
+          </div>
+          <div class="absolute top-0 right-4 h-full flex items-center">
+            <button class="btn-icon variant-filled" on:click={toggleChangeDiscordPrompt}>
+              <Pencil size={20} />
+            </button>
+          </div>
         </div>
       </div>
-      <div class="card p-4 w-full flex items-center relative">
-        <div class="mr-4">
-          <Discord w={48} h={48} class="fill-black dark:fill-white" />
-        </div>
-        <div class="flex flex-col">
-          <strong class="text-lg">{data.session.discord.username}</strong>
-          <span class="text-xs xs:text-sm"><strong>User ID:</strong> {data.session.discord.id}</span
-          >
-        </div>
-        <div class="absolute top-0 right-4 h-full flex items-center">
-          <button class="btn-icon variant-filled" on:click={toggleChangeDiscordPrompt}>
-            <Pencil size={20} />
-          </button>
-        </div>
-      </div>
-    </div>
+    </section>
     <div class="line-b my-8" />
-    <h2>API Key</h2>
-    <p class="mt-2 mb-4">
-      <!-- TODO: Link anchor to docs-->
-      This key allows you to make requests to the <a href="/" class="link">Kyoso API</a>.
-      {#if data.user.apiKey}
-        <span class="text-error-500">DO NOT SHARE THIS KEY WITH ANYONE.</span>
-      {:else}
-        <span>Start by creating your first key.</span>
-      {/if}
-    </p>
-    {#if data.user.apiKey}
-      <div class="p-4 card flex max-2sm:flex-col gap-4 relative">
-        {#if viewApiKey}
-          <input type="text" class="input w-full md:w-80" readonly bind:value={data.user.apiKey} />
+    <section>
+      <h2>API Key</h2>
+      <p class="mt-2 mb-4">
+        <!-- TODO: Link anchor to docs-->
+        This key allows you to make requests to the <a href="/" class="link">Kyoso API</a>.
+        {#if data.user.apiKey}
+          <span class="text-error-500">DO NOT SHARE THIS KEY WITH ANYONE.</span>
         {:else}
-          <input
-            type="password"
-            class="input w-full md:w-80"
-            readonly
-            bind:value={data.user.apiKey}
-          />
+          <span>Start by creating your first key.</span>
         {/if}
-        <div class="flex gap-2 md:absolute md:top-0 md:right-4 h-full items-center">
-          <button class="btn-icon variant-filled" on:click={toggleApiKeyVisibility}>
-            {#if viewApiKey}
-              <EyeOff size={20} />
-            {:else}
-              <Eye size={20} />
-            {/if}
-          </button>
-          <button class="btn-icon variant-filled" on:click={copyApiKey}>
-            <Copy size={20} />
-          </button>
-          <button class="btn-icon variant-filled-primary" on:click={toggleGenerateApiKeyPrompt}>
-            <RotateCcw size={20} />
-          </button>
+      </p>
+      {#if data.user.apiKey}
+        <div class="p-4 card flex max-2sm:flex-col gap-4 relative">
+          {#if viewApiKey}
+            <input type="text" class="input w-full md:w-80" readonly bind:value={data.user.apiKey} />
+          {:else}
+            <input
+              type="password"
+              class="input w-full md:w-80"
+              readonly
+              bind:value={data.user.apiKey}
+            />
+          {/if}
+          <div class="flex gap-2 md:absolute md:top-0 md:right-4 h-full items-center">
+            <button class="btn-icon variant-filled" on:click={toggleApiKeyVisibility}>
+              {#if viewApiKey}
+                <EyeOff size={20} />
+              {:else}
+                <Eye size={20} />
+              {/if}
+            </button>
+            <button class="btn-icon variant-filled" on:click={copyApiKey}>
+              <Copy size={20} />
+            </button>
+            <button class="btn-icon variant-filled-primary" on:click={toggleGenerateApiKeyPrompt}>
+              <RotateCcw size={20} />
+            </button>
+          </div>
         </div>
-      </div>
-    {:else}
-      <button class="btn variant-filled-primary" on:click={toggleGenerateApiKeyPrompt}>
-        Generate Key
-      </button>
-    {/if}
+      {:else}
+        <button class="btn variant-filled-primary" on:click={toggleGenerateApiKeyPrompt}>
+          Generate Key
+        </button>
+      {/if}
+    </section>
     <div class="line-b my-8" />
-    <h2>Sessions</h2>
-    <p class="text-surface-600-300-token text-sm mt-2">Some details may be inaccurate.</p>
-    <div class="mt-4 flex flex-col gap-2">
-      {#each data.activeSessions as session}
-        <div transition:slide|global={{ duration: 150 }}>
-          <Session {session} {deleteSession} current={data.session.sessionId === session.id} />
-        </div>
-      {/each}
-    </div>
+    <section>
+      <h2>Sessions</h2>
+      <p class="text-surface-600-300-token text-sm mt-2">Some details may be inaccurate.</p>
+      <div class="mt-4 flex flex-col gap-2">
+        {#each data.activeSessions as session}
+          <div transition:slide|global={{ duration: 150 }}>
+            <Session {session} {deleteSession} current={data.session.sessionId === session.id} />
+          </div>
+        {/each}
+      </div>
+    </section>
   </div>
 </main>
