@@ -54,19 +54,31 @@
   }, {
     label: 'osu! taiko global rank',
     tooltipName: 'tooltip-taiko-rank',
-    rank: null,
+    rank: data.user.osu.globalTaikoRank,
     icon: OsuTaiko
   }, {
     label: 'osu! catch global rank',
     tooltipName: 'tooltip-catch-rank',
-    rank: null,
+    rank: data.user.osu.globalCatchRank,
     icon: OsuCatch
   }, {
     label: 'osu! mania global rank',
     tooltipName: 'tooltip-mania-rank',
-    rank: null,
+    rank: data.user.osu.globalManiaRank,
     icon: OsuMania
   }];
+
+  function viewAsAdmin(user: typeof data.user): user is Extract<typeof data.user, { viewAsAdmin: true; }> {
+    return user.viewAsAdmin;
+  }
+
+  function viewAsCurrent(user: typeof data.user): user is Extract<typeof data.user, { isCurrent: true; }> {
+    return user.isCurrent;
+  }
+
+  function viewAsPublicDiscord(user: typeof data.user): user is Extract<typeof data.user, { settings: { publicDiscord: true; }; }> {
+    return user.settings.publicDiscord;
+  }
 </script>
 
 <main class="main flex justify-center">
@@ -96,7 +108,7 @@
                 <KyosoBadges {kyosoBadges} />
               </div>
             </div>
-            {#if data.user.viewAsAdmin}
+            {#if viewAsAdmin(data.user) || viewAsCurrent(data.user) || viewAsPublicDiscord(data.user)}
               <div class="flex gap-1 items-center text-sm">
                 <Discord w={16} h={16} class="fill-surface-600 dark:fill-surface-300" />
                 <span class="block text-surface-600-300-token">{data.user.discord.username}</span>
@@ -153,7 +165,7 @@
         <div class="line-b" />
         <div class="flex gap-2 flex-wrap">
           <span class="block badge variant-soft-surface">Joined on {formatDate(data.user.registeredAt, 'full')}</span>
-          {#if data.user.viewAsAdmin}
+          {#if viewAsAdmin(data.user)}
             <span class="block badge variant-soft-surface">Updated API data on {formatDate(data.user.updatedApiDataAt, 'full')}</span>
           {/if}
         </div>

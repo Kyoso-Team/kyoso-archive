@@ -8,9 +8,9 @@ import type { PageServerLoad } from './$types';
 
 type UserT = Pick<
   typeof User.$inferSelect,
-  'registeredAt' | 'admin' | 'approvedHost' | 'updatedApiDataAt'
+  'registeredAt' | 'admin' | 'approvedHost' | 'settings' | 'updatedApiDataAt'
 > & {
-  osu: Pick<typeof OsuUser.$inferSelect, 'osuUserId' | 'username' | 'globalStdRank' | 'restricted'>;
+  osu: Pick<typeof OsuUser.$inferSelect, 'osuUserId' | 'username' | 'globalStdRank' | 'globalTaikoRank' | 'globalCatchRank' | 'globalManiaRank' | 'restricted'>;
   country: Pick<typeof Country.$inferSelect, 'code' | 'name'>;
   discord: Pick<typeof DiscordUser.$inferSelect, 'discordUserId' | 'username'>;
 };
@@ -25,19 +25,50 @@ type BanT = Pick<
     | null;
 };
 
+type BadgeT = (Pick<typeof OsuUserAwardedBadge.$inferSelect, 'awardedAt'> &
+  Pick<typeof OsuBadge.$inferSelect, 'imgFileName' | 'description'>);
+
+interface BaseReturnUser extends Omit<UserT, 'updatedApiDataAt' | 'discord'> {
+  viewAsAdmin: boolean;
+  isCurrent: boolean;
+  badges: BadgeT[];
+  bans: Omit<BanT, 'issuedBy' | 'revokedBy'>[];
+  owner: boolean;
+  activeBan?: BanT;
+  id: number;
+};
+
+interface ReturnUserAsAdmin extends BaseReturnUser, Pick<UserT, 'updatedApiDataAt' | 'discord'> {
+  viewAsAdmin: true;
+  bans: BanT[];
+}
+
+interface ReturnUserAsCurrent extends BaseReturnUser, Pick<UserT, 'discord'> {
+  isCurrent: true;
+}
+
+interface ReturnUserAsPublicDiscord extends BaseReturnUser, Pick<UserT, 'discord'> {
+  settings: UserT['settings'] & {
+    publicDiscord: true;
+  };
+}
+
+type ReturnUser = ReturnUserAsAdmin | ReturnUserAsCurrent | ReturnUserAsPublicDiscord;
+
 export const load = (async ({ params, route, parent }) => {
   const { session } = await parent();
   const viewAsAdmin = !!session?.admin;
   const userId = Number(params.user_id);
+  const isCurrent = userId === session?.userId;
 
   let user: Omit<UserT, 'updatedApiDataAt' | 'discord'> | undefined;
 
   try {
-    if (viewAsAdmin) {
+    if (viewAsAdmin || isCurrent) {
       const user_: UserT | undefined = await db
         .select({
-          ...pick(User, ['registeredAt', 'admin', 'approvedHost', 'updatedApiDataAt']),
-          osu: pick(OsuUser, ['osuUserId', 'username', 'globalStdRank', 'restricted']),
+          ...pick(User, ['registeredAt', 'admin', 'approvedHost', 'settings', 'updatedApiDataAt']),
+          osu: pick(OsuUser, ['osuUserId', 'username', 'globalStdRank', 'globalTaikoRank', 'globalCatchRank', 'globalManiaRank', 'restricted']),
           discord: pick(DiscordUser, ['discordUserId', 'username']),
           country: pick(Country, ['code', 'name'])
         })
@@ -53,8 +84,8 @@ export const load = (async ({ params, route, parent }) => {
     } else {
       const user_: Omit<UserT, 'updatedApiDataAt' | 'discord'> | undefined = await db
         .select({
-          ...pick(User, ['registeredAt', 'admin', 'approvedHost']),
-          osu: pick(OsuUser, ['osuUserId', 'username', 'globalStdRank', 'restricted']),
+          ...pick(User, ['registeredAt', 'admin', 'approvedHost', 'settings']),
+          osu: pick(OsuUser, ['osuUserId', 'username', 'globalStdRank', 'globalTaikoRank', 'globalCatchRank', 'globalManiaRank', 'restricted']),
           country: pick(Country, ['code', 'name'])
         })
         .from(User)
@@ -147,8 +178,7 @@ export const load = (async ({ params, route, parent }) => {
     error(403, 'User is currently banned');
   }
 
-  let badges: (Pick<typeof OsuUserAwardedBadge.$inferSelect, 'awardedAt'> &
-    Pick<typeof OsuBadge.$inferSelect, 'imgFileName' | 'description'>)[] = [];
+  let badges: BadgeT[] = [];
 
   try {
     badges = await db
@@ -171,27 +201,12 @@ export const load = (async ({ params, route, parent }) => {
     user: {
       ...user,
       viewAsAdmin,
+      isCurrent,
       badges,
       bans,
       owner,
       activeBan,
       id: userId
-    } as
-      | (UserT & {
-          viewAsAdmin: true;
-          badges: typeof badges;
-          bans: BanT[];
-          owner: boolean;
-          activeBan?: BanT;
-          id: number;
-        })
-      | (Omit<UserT, 'updatedApiDataAt' | 'discord'> & {
-          viewAsAdmin: false;
-          badges: typeof badges;
-          bans: Omit<BanT, 'issuedBy' | 'revokedBy'>[];
-          owner: boolean;
-          activeBan?: BanT;
-          id: number;
-        })
+    } as ReturnUser
   };
 }) satisfies PageServerLoad;
