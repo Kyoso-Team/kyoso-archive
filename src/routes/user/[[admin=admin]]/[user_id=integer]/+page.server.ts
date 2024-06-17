@@ -1,19 +1,9 @@
 import env from '$lib/server/env';
 import { apiError, future, pick } from '$lib/server/utils';
-import { and, desc, eq, isNotNull, isNull, not, or } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, isNull, or } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
-import { alias, unionAll } from 'drizzle-orm/pg-core';
-import {
-  Ban,
-  Country,
-  DiscordUser,
-  OsuBadge,
-  OsuUser,
-  OsuUserAwardedBadge,
-  Session,
-  User,
-  db
-} from '$db';
+import { alias } from 'drizzle-orm/pg-core';
+import { Ban, Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, User, db } from '$db';
 import type { PageServerLoad } from './$types';
 
 type UserT = Pick<
@@ -34,8 +24,6 @@ type BanT = Pick<
     | (Pick<typeof User.$inferSelect, 'id'> & Pick<typeof OsuUser.$inferSelect, 'username'>)
     | null;
 };
-
-type SessionT = Pick<typeof Session.$inferSelect, 'id' | 'createdAt' | 'lastActiveAt' | 'expired'>;
 
 export const load = (async ({ params, route, parent }) => {
   const { session, isUserOwner: isSessionUserOwner } = await parent();
@@ -145,41 +133,6 @@ export const load = (async ({ params, route, parent }) => {
     error(403, 'User is currently banned');
   }
 
-  let sessions:
-    | {
-        active: SessionT[];
-        expired: SessionT[];
-      }
-    | undefined;
-
-  if (viewAsAdmin) {
-    const getActiveSessionsQuery = db
-      .select(pick(Session, ['id', 'createdAt', 'lastActiveAt', 'expired']))
-      .from(Session)
-      .where(and(eq(Session.userId, user.id), not(Session.expired)))
-      .orderBy(desc(Session.lastActiveAt));
-
-    const getExpiredSessionsQuery = db
-      .select(pick(Session, ['id', 'createdAt', 'lastActiveAt', 'expired']))
-      .from(Session)
-      .where(and(eq(Session.userId, user.id), eq(Session.expired, true)))
-      .orderBy(desc(Session.lastActiveAt))
-      .limit(30);
-
-    let allSessions!: SessionT[];
-
-    try {
-      allSessions = await unionAll(getActiveSessionsQuery, getExpiredSessionsQuery);
-    } catch (err) {
-      throw await apiError(err, "Getting the user's sessions", route);
-    }
-
-    sessions = {
-      active: allSessions.filter(({ expired }) => !expired),
-      expired: allSessions.filter(({ expired }) => expired)
-    };
-  }
-
   let badges: (Pick<typeof OsuUserAwardedBadge.$inferSelect, 'awardedAt'> &
     Pick<typeof OsuBadge.$inferSelect, 'imgFileName' | 'description'>)[] = [];
 
@@ -207,14 +160,12 @@ export const load = (async ({ params, route, parent }) => {
       viewAsAdmin,
       badges,
       bans,
-      sessions,
       owner
     } as
       | (UserT & {
           viewAsAdmin: true;
           badges: typeof badges;
           bans: BanT[];
-          sessions: typeof sessions;
           owner: boolean;
         })
       | (Omit<UserT, 'updatedApiDataAt'> & {
