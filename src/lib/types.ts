@@ -32,6 +32,15 @@ export interface OAuthToken {
   tokenIssuedAt: number;
 }
 
+export interface UserSettings {
+  /** Whether or not to make their Discord username public on their profile page */
+  publicDiscord: boolean;
+  /** Whether or not to display their tournament staff history on their profile page */
+  publicStaffHistory: boolean;
+  /** Whether or not to display their tournament player history on their profile page */
+  publicPlayerHistory: boolean;
+}
+
 /** Linear: ABAB. Snake: ABBA */
 export type DraftType = Output<typeof draftTypeSchema>;
 export type RefereeSettings = Output<typeof refereeSettingsSchema>;

@@ -155,6 +155,13 @@
       "when": 1718581728507,
       "tag": "0021_bizarre_captain_flint",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1718664373020,
+      "tag": "0022_big_glorian",
+      "breakpoints": true
     }
   ]
 }
