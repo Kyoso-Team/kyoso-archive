@@ -30,28 +30,42 @@ export const load = (async ({ params, route, parent }) => {
   const viewAsAdmin = !!session?.admin;
   const userId = Number(params.user_id);
 
-  let user: Omit<UserT, 'updatedApiDataAt'> | undefined;
+  let user: Omit<UserT, 'updatedApiDataAt' | 'discord'> | undefined;
 
   try {
-    user = await db
-      .select({
-        ...pick(
-          User,
-          viewAsAdmin
-            ? ['registeredAt', 'admin', 'approvedHost', 'updatedApiDataAt']
-            : ['registeredAt', 'admin', 'approvedHost']
-        ),
-        osu: pick(OsuUser, ['osuUserId', 'username', 'globalStdRank', 'restricted']),
-        discord: pick(DiscordUser, ['discordUserId', 'username']),
-        country: pick(Country, ['code', 'name'])
-      })
-      .from(User)
-      .innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId))
-      .innerJoin(DiscordUser, eq(DiscordUser.discordUserId, User.discordUserId))
-      .innerJoin(Country, eq(Country.code, OsuUser.countryCode))
-      .where(eq(User.id, userId))
-      .limit(1)
-      .then((users) => users[0]);
+    if (viewAsAdmin) {
+      const user_: UserT | undefined = await db
+        .select({
+          ...pick(User, ['registeredAt', 'admin', 'approvedHost', 'updatedApiDataAt']),
+          osu: pick(OsuUser, ['osuUserId', 'username', 'globalStdRank', 'restricted']),
+          discord: pick(DiscordUser, ['discordUserId', 'username']),
+          country: pick(Country, ['code', 'name'])
+        })
+        .from(User)
+        .innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId))
+        .innerJoin(DiscordUser, eq(DiscordUser.discordUserId, User.discordUserId))
+        .innerJoin(Country, eq(Country.code, OsuUser.countryCode))
+        .where(eq(User.id, userId))
+        .limit(1)
+        .then((users) => users[0]);
+
+      user = user_;
+    } else {
+      const user_: Omit<UserT, 'updatedApiDataAt' | 'discord'> | undefined = await db
+        .select({
+          ...pick(User, ['registeredAt', 'admin', 'approvedHost']),
+          osu: pick(OsuUser, ['osuUserId', 'username', 'globalStdRank', 'restricted']),
+          country: pick(Country, ['code', 'name'])
+        })
+        .from(User)
+        .innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId))
+        .innerJoin(Country, eq(Country.code, OsuUser.countryCode))
+        .where(eq(User.id, userId))
+        .limit(1)
+        .then((users) => users[0]);
+
+      user = user_;
+    }
   } catch (err) {
     throw await apiError(err, 'Getting the user', route);
   }
@@ -160,6 +174,7 @@ export const load = (async ({ params, route, parent }) => {
       badges,
       bans,
       owner,
+      activeBan,
       id: userId
     } as
       | (UserT & {
@@ -167,13 +182,15 @@ export const load = (async ({ params, route, parent }) => {
           badges: typeof badges;
           bans: BanT[];
           owner: boolean;
+          activeBan?: BanT;
           id: number;
         })
-      | (Omit<UserT, 'updatedApiDataAt'> & {
+      | (Omit<UserT, 'updatedApiDataAt' | 'discord'> & {
           viewAsAdmin: false;
           badges: typeof badges;
           bans: Omit<BanT, 'issuedBy' | 'revokedBy'>[];
           owner: boolean;
+          activeBan?: BanT;
           id: number;
         })
   };
