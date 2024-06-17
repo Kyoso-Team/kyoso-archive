@@ -106,6 +106,55 @@
       "when": 1711302688657,
       "tag": "0014_funny_magneto",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "5",
+      "when": 1711476369143,
+      "tag": "0015_giant_blob",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "5",
+      "when": 1714860516797,
+      "tag": "0016_workable_lilandra",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1714870525076,
+      "tag": "0017_low_wallflower",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1716916232592,
+      "tag": "0018_kind_bill_hollister",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1718146231715,
+      "tag": "0019_square_wendigo",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1718247616772,
+      "tag": "0020_tough_joystick",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1718581728507,
+      "tag": "0021_bizarre_captain_flint",
+      "breakpoints": true
     }
   ]
 }

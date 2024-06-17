@@ -1,3 +1,4 @@
+<!-- NOTE: To be re-implemented
 <script lang="ts">
   import type { MaybePromise } from '@sveltejs/kit';
 
@@ -46,4 +47,4 @@
     {/if}
   {/each}
   <button class={arrowStyles} on:click={() => arrowBtnClick(page + 1)}>{'>'}</button>
-</div>
+</div> -->

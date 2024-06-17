@@ -1,10 +1,26 @@
 import * as v from 'valibot';
+import { formatDate, formatTime } from './utils';
 
 const required = 'This field is required';
 
 export const boolean = v.boolean;
 export const literal = v.literal;
-export const optional = v.optional;
+export const optional = v.nullable;
+
+export function array<TItem extends v.BaseSchema>(
+  item: TItem,
+  pipe?: Parameters<typeof v.array>[2]
+) {
+  return v.array(item, required, pipe);
+}
+
+export function minArrayLength<T extends any[], R extends number>(requirement: R) {
+  return v.minLength<T, R>(requirement, `Select ${requirement.toString()} or more options`);
+}
+
+export function maxArrayLength<T extends any[], R extends number>(requirement: R) {
+  return v.maxLength<T, R>(requirement, `Select ${requirement.toString()} or less options`);
+}
 
 export function string(pipe: Parameters<typeof v.string>[1]) {
   return v.string(required, pipe);
@@ -24,6 +40,10 @@ export function maxStrLength<T extends string, R extends number>(requirement: R)
   );
 }
 
+export function url() {
+  return v.url('Input must be a URL');
+}
+
 export function slug() {
   return v.custom(
     (input: string) => /^[a-z0-9_]+$/g.test(input),
@@ -33,6 +53,12 @@ export function slug() {
 
 export function number(pipe: Parameters<typeof v.number>[1]) {
   return v.number(required, pipe);
+}
+
+export function notValue<T extends string | number | bigint | boolean | Date, R extends T>(
+  requirement: R
+) {
+  return v.notValue<T, R>(requirement, `Input must not be equal to ${requirement.toString()}`);
 }
 
 export function integer() {
@@ -53,11 +79,19 @@ export function maxValue<T extends number | bigint, R extends T>(requirement: R)
   );
 }
 
-export function maxSafeInt() {
-  const maxSafeInt = Number.MAX_SAFE_INTEGER;
+export function maxIntLimit() {
+  const value = 2147483647;
   return v.maxValue<number, number>(
-    maxSafeInt,
-    `Input must be less than or equal to ${maxSafeInt.toString()}`
+    value,
+    `Input must be less than or equal to ${value.toString()}`
+  );
+}
+
+export function minIntLimit() {
+  const value = -2147483648;
+  return v.maxValue<number, number>(
+    value,
+    `Input must be less than or equal to ${value.toString()}`
   );
 }
 
@@ -65,5 +99,23 @@ export function union<T extends readonly string[]>(options: T) {
   return v.union<{ [K in keyof T]: v.LiteralSchema<T[K]> }>(
     options.map((type) => v.literal(type)) as any,
     required
+  );
+}
+
+export function date(pipe?: Parameters<typeof v.date>[1]) {
+  return v.date(required, pipe);
+}
+
+export function minDate(date: Date) {
+  return v.minValue<Date, Date>(
+    date,
+    `Inputted date must be after ${formatDate(date)} - ${formatTime(date)}`
+  );
+}
+
+export function maxDate(date: Date) {
+  return v.maxValue<Date, Date>(
+    date,
+    `Inputtted date must be before ${formatDate(date)} - ${formatTime(date)}`
   );
 }

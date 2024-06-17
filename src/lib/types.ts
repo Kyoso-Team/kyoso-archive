@@ -2,14 +2,19 @@ import type { MaybePromise, Page } from '@sveltejs/kit';
 import type { Router } from '$trpc/router';
 import type { Writable } from 'svelte/store';
 import type { BaseSchema, Output } from 'valibot';
+import type { Tournament, TournamentDates } from '$db';
 import type {
   bwsValuesSchema,
   draftTypeSchema,
   rankRangeSchema,
   refereeSettingsSchema,
   teamSettingsSchema,
-  tournamentDatesSchema,
-  tournamentLinkSchema
+  tournamentOtherDatesSchema,
+  tournamentLinkSchema,
+  modMultiplierSchema,
+  userFormFieldSchema,
+  userFormFieldResponseSchema,
+  tournamentThemeSchema
 } from './schemas';
 
 export type AnyComponent = any;
@@ -33,10 +38,17 @@ export type RefereeSettings = Output<typeof refereeSettingsSchema>;
 export type TournamentLink = Output<typeof tournamentLinkSchema>;
 export type BWSValues = Output<typeof bwsValuesSchema>;
 export type TeamSettings = Output<typeof teamSettingsSchema>;
-export type TournamentDates = Output<typeof tournamentDatesSchema>;
+export type TournamentOtherDates = Output<typeof tournamentOtherDatesSchema>;
 export type RankRange = Output<typeof rankRangeSchema>;
+export type ModMultiplier = Output<typeof modMultiplierSchema>;
+export type UserFormField = Output<typeof userFormFieldSchema>;
+export type UserFormFieldResponse = Output<typeof userFormFieldResponseSchema>;
+export type TournamentTheme = Output<typeof tournamentThemeSchema>;
 
 export type RoundConfig = StandardRoundConfig | QualifierRoundConfig | BattleRoyaleRoundConfig;
+
+export type FullTournament = typeof Tournament.$inferSelect &
+  Omit<typeof TournamentDates.$inferSelect, 'tournamentId'>;
 
 /** Applies to: Groups, swiss, single and double elim. */
 export interface StandardRoundConfig {
@@ -69,29 +81,46 @@ export type InferEnum<
 
 export type FileType = 'png' | 'jpg' | 'jpeg' | 'webp' | 'gif' | 'osr' | 'osz';
 
-export type TRPCRouter = {
+export type TRPCRouter<Input extends boolean = false> = {
   [K1 in Exclude<keyof Router, '_def' | 'createCaller' | 'getErrorShape'>]: {
     [K2 in Exclude<
       keyof Router[K1],
       '_def' | 'createCaller' | 'getErrorShape'
-    >]: Router[K1][K2] extends { _def: { _output_out: any } }
-      ? Router[K1][K2]['_def']['_output_out']
+    >]: Router[K1][K2] extends { _def: { _output_out: any; _input_in: any } }
+      ? Input extends true
+        ? Router[K1][K2]['_def']['_input_in']
+        : Router[K1][K2]['_def']['_output_out']
       : never;
   };
 };
 
 export type PageStore = Page<Record<string, string>, string | null>;
 
-export type FormStore = Writable<{
+export type AnyForm = {
   value: Record<string, any>;
-  errors: Record<string, string | undefined>;
+  errors: Partial<Record<string, string>>;
+  updated: Partial<Record<string, true>>;
+  overwritten: Partial<Record<string, true>>;
+  defaults: Record<string, any>;
   canSubmit: boolean;
-}> & {
+  hasUpdated: boolean;
+};
+
+export type FormStore = Writable<AnyForm> & {
+  reset: () => void;
+  setValue: (key: string, input: any) => void;
+  getFinalValue: <UpdatedOnly extends boolean = false>(
+    form: Pick<Record<string, any>, 'value' | 'updated' | 'errors'>,
+    options?:
+      | {
+          updatedFieldsOnly?: UpdatedOnly | undefined;
+        }
+      | undefined
+  ) => UpdatedOnly extends true ? Partial<Record<string, any>> : Record<string, any>;
+  overrideInitialValues: (newDefaults: Record<string, any>) => void;
+  setOverwrittenState: (key: string, state: boolean) => void;
   schemas: Record<string, BaseSchema>;
   labels: Record<string, string>;
-  setGlobalError: (err: string) => void;
-  setValue: (key: string, input: any) => void;
-  getFinalValue: (form: any) => Record<string, any>;
 };
 
 export type ParseInt<T> = T extends `${infer N extends number}` ? N : never;
@@ -127,10 +156,62 @@ export interface Asset<Put extends Record<string, any>, Delete extends Record<st
 }
 
 export interface Assets {
-  tournamentBanner: Asset<{
-    file: File;
-    tournamentId: number;
-  }, {
-    tournamentId: number;
-  }>;
-};
+  tournamentBanner: Asset<
+    {
+      file: File;
+      tournamentId: number;
+    },
+    {
+      tournamentId: number;
+    }
+  >;
+  tournamentLogo: Asset<
+    {
+      file: File;
+      tournamentId: number;
+    },
+    {
+      tournamentId: number;
+    }
+  >;
+}
+
+// Source: https://github.com/skeletonlabs/skeleton/blob/master/packages/skeleton/src/lib/utilities/Popup/types.ts
+type Direction = 'top' | 'bottom' | 'left' | 'right';
+type Placement = Direction | `${Direction}-start` | `${Direction}-end`;
+
+export interface Middleware {
+  // Required ---
+  /** Offset middleware settings: https://floating-ui.com/docs/offset */
+  offset?: number | Record<string, any>;
+  /** Shift middleware settings: https://floating-ui.com/docs/shift */
+  shift?: Record<string, any>;
+  /** Flip middleware settings: https://floating-ui.com/docs/flip */
+  flip?: Record<string, any>;
+  /** Arrow middleware settings: https://floating-ui.com/docs/arrow */
+  arrow?: { element: string } & Record<string, any>;
+  // Optional ---
+  /** Size middleware settings: https://floating-ui.com/docs/size */
+  size?: Record<string, any>;
+  /** Auto Placement middleware settings: https://floating-ui.com/docs/autoPlacement */
+  autoPlacement?: Record<string, any>;
+  /** Hide middleware settings: https://floating-ui.com/docs/hide */
+  hide?: Record<string, any>;
+  /** Inline middleware settings: https://floating-ui.com/docs/inline */
+  inline?: Record<string, any>;
+}
+
+export interface PopupSettings {
+  /** Provide the event type. */
+  event: 'click' | 'hover' | 'focus-blur' | 'focus-click' | 'focus-hover';
+  /** Match the popup data value `data-popup="targetNameHere"` */
+  target: string;
+  /** Set the placement position. Defaults 'bottom'. */
+  placement?: Placement;
+  /** Query elements that close the popup when clicked. Defaults `'a[href], button'`. */
+  closeQuery?: string;
+  /** Optional callback function that reports state change. */
+  state?: (event: { state: boolean }) => void;
+  /** Provide Floating UI middleware settings. */
+  middleware?: Middleware;
+}

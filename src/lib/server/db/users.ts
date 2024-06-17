@@ -1,21 +1,22 @@
 import {
-  pgTable,
-  serial,
-  varchar,
-  timestamp,
-  boolean,
-  integer,
-  text,
-  char,
-  primaryKey,
-  inet,
-  jsonb,
-  bigserial,
-  index,
   bigint,
-  uniqueIndex
+  bigserial,
+  boolean,
+  char,
+  index,
+  inet,
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  serial,
+  text,
+  timestamp,
+  uniqueIndex,
+  varchar
 } from 'drizzle-orm/pg-core';
-import { timestampConfig, citext } from './schema-utils';
+import { timestampConfig } from './schema-utils';
+import { sql } from 'drizzle-orm';
 import type { OAuthToken } from '$types';
 
 export const User = pgTable(
@@ -28,7 +29,7 @@ export const User = pgTable(
     approvedHost: boolean('approved_host').notNull().default(false),
     apiKey: varchar('api_key', {
       length: 24
-    }).unique('uni_user_api_key'),
+    }),
     // Relations
     osuUserId: integer('osu_user_id')
       .notNull()
@@ -41,7 +42,13 @@ export const User = pgTable(
   },
   (table) => ({
     uniqueIndexOsuUserId: uniqueIndex('udx_user_osu_user_id').on(table.osuUserId),
-    uniqueIndexDiscordUserId: uniqueIndex('udx_user_discord_user_id').on(table.discordUserId)
+    uniqueIndexDiscordUserId: uniqueIndex('udx_user_discord_user_id').on(table.discordUserId),
+    indexAdminApprovedHost: index('idx_user_admin_approved_host').on(
+      table.admin,
+      table.approvedHost
+    ),
+    uniqueIndexApiKey: uniqueIndex('udx_user_api_key').on(table.apiKey),
+    indexUpdatedApiDataAt: index('idx_user_updated_api_data_at').on(table.updatedApiDataAt)
   })
 );
 
@@ -49,7 +56,7 @@ export const OsuUser = pgTable(
   'osu_user',
   {
     osuUserId: integer('osu_user_id').primaryKey(),
-    username: citext('username').notNull(),
+    username: varchar('username', { length: 15 }).notNull().unique('uni_osu_user_username'),
     restricted: boolean('restricted').notNull(),
     globalStdRank: integer('global_std_rank'),
     token: jsonb('token').notNull().$type<OAuthToken>(),
@@ -60,7 +67,10 @@ export const OsuUser = pgTable(
       .references(() => Country.code)
   },
   (table) => ({
-    indexUsername: uniqueIndex('udx_osu_user_username').on(table.username)
+    indexUsername: index('idx_trgm_osu_user_username').using(
+      'gist',
+      sql`lower(${table.username}) gist_trgm_ops`
+    )
   })
 );
 
@@ -111,7 +121,7 @@ export const DiscordUser = pgTable('discord_user', {
   discordUserId: varchar('discord_user_id', {
     length: 19
   }).primaryKey(),
-  username: citext('username').notNull(),
+  username: varchar('username', { length: 32 }).notNull(),
   token: jsonb('token').notNull().$type<OAuthToken>()
 });
 
@@ -207,6 +217,7 @@ export const UserNotification = pgTable(
     pk: primaryKey({
       columns: [table.userId, table.notificationId]
     }),
+    indexNotificationId: index('idx_user_notification_notification_id').on(table.notificationId),
     indexUserIdReadNotifiedAt: index('idx_user_notification_user_id_read_notified_at').on(
       table.userId,
       table.read,

@@ -12,24 +12,21 @@
   export let ctx: ReturnType<typeof createContextStore>;
 
   const toast = getToastStore();
-
-  const main = createForm({
+  const mainForm = createForm({
     banReason: f.string([f.minStrLength(1)]),
     permanent: f.boolean()
   });
-
-  const time = createForm({
-    timeAmount: f.number([f.minValue(1), f.maxSafeInt()])
+  const timeForm = createForm({
+    timeAmount: f.number([f.minValue(1), f.maxIntLimit()])
   });
-
   const labels = {
-    ...main.labels,
-    ...time.labels
+    ...mainForm.labels,
+    ...timeForm.labels
   };
 
   async function submit() {
-    const { banReason } = main.getFinalValue($main);
-    const timeValue = timeCondition ? time.getFinalValue($time) : undefined;
+    const { banReason } = mainForm.getFinalValue($mainForm);
+    const timeValue = !isPermanent ? timeForm.getFinalValue($timeForm) : undefined;
 
     if (!$ctx.issueBanTo) {
       throw Error('"issueBanTo" is undefined in the context');
@@ -58,20 +55,20 @@
     ctx.toggleShowBanUserForm();
   }
 
-  $: timeCondition = !$main.value.permanent;
+  $: isPermanent = $mainForm.value.permanent;
 </script>
 
 <Form {submit}>
   <svelte:fragment slot="header">
     <span class="title">Ban User</span>
   </svelte:fragment>
-  <Text form={main} label={labels.banReason} legend="Reason" long>
+  <Text form={mainForm} label={labels.banReason} legend="Reason" long>
     Explain why this user is being banned.
   </Text>
-  <Checkbox form={main} label={labels.permanent} legend="Permanent ban?" />
-  {#if timeCondition}
+  <Checkbox form={mainForm} label={labels.permanent} legend="Permanent ban?" />
+  {#if !isPermanent}
     <Section>
-      <Number form={time} label={labels.timeAmount} legend="Amount of time banned" time>
+      <Number form={timeForm} label={labels.timeAmount} legend="Amount of time banned" time>
         How long will this ban last?
       </Number>
     </Section>
@@ -80,7 +77,8 @@
     <button
       type="submit"
       class="btn variant-filled-primary"
-      disabled={!($main.canSubmit && (timeCondition ? $time.canSubmit : true))}>Submit</button
+      disabled={!($mainForm.canSubmit && (!isPermanent ? $timeForm.canSubmit : true))}
+      >Submit</button
     >
     <button type="button" class="btn variant-filled" on:click={cancel}>Cancel</button>
   </svelte:fragment>

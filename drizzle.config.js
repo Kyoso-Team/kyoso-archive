@@ -4,9 +4,9 @@ import { defineConfig } from 'drizzle-kit';
 export default defineConfig({
   schema: './src/lib/server/db/schema.ts',
   out: './migrations',
-  driver: 'pg',
+  dialect: 'postgresql',
   verbose: true,
   dbCredentials: {
-    connectionString: process.env.DATABASE_URL
+    url: process.env.DATABASE_URL
   }
 });

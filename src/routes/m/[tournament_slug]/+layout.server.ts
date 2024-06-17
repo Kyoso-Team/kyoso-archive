@@ -1,50 +1,39 @@
 import { error } from '@sveltejs/kit';
-import { getSession, getStaffMember } from '$lib/server/helpers/api';
-import { Tournament, db } from '$db';
-import { apiError, pick } from '$lib/server/utils';
-import { eq, sql } from 'drizzle-orm';
+import { getStaffMember, getTournament } from '$lib/server/helpers/api';
+import { isDatePast } from '$lib/server/utils';
 import type { LayoutServerLoad } from './$types';
 
-export const load = (async ({ cookies, route, params }) => {
-  const session = getSession(cookies, true);
+export const load = (async ({ route, params, parent }) => {
+  const { session, isUserOwner } = await parent();
 
-  let tournament:
-    | (Pick<typeof Tournament.$inferSelect, 'id' | 'acronym' | 'deleted'> & {
-        concludesTime: number;
-      })
-    | undefined;
-
-  try {
-    tournament = await db
-      .select({
-        ...pick(Tournament, ['id', 'acronym', 'deleted']),
-        concludesTime: sql`${Tournament.dates} -> 'concludes'`.mapWith(Number).as('concludes_time')
-      })
-      .from(Tournament)
-      .where(eq(Tournament.urlSlug, params.tournament_slug))
-      .limit(1)
-      .then((tournaments) => tournaments[0]);
-  } catch (err) {
-    throw await apiError(err, 'Getting the tournament', route);
+  if (!session) {
+    throw error(401, 'You must be logged in');
   }
 
-  if (!tournament) {
-    throw error(404, 'Tournament not found');
-  }
+  const tournament = await getTournament(
+    params.tournament_slug,
+    {
+      tournament: ['id', 'acronym', 'deletedAt'],
+      dates: ['concludesAt']
+    },
+    route,
+    true
+  );
 
-  if (tournament.deleted) {
-    throw error(403, 'This tournament has been deleted');
+  if (tournament.deletedAt && isDatePast(tournament.deletedAt)) {
+    throw error(403, 'Tournament has been deleted');
   }
 
   const staffMember = await getStaffMember(session, tournament.id, route, true);
 
   return {
     session,
+    isUserOwner,
     staffMember,
     tournament: {
       id: tournament.id,
       acronym: tournament.acronym,
-      concludestime: tournament.concludesTime,
+      concludesAt: tournament.concludesAt,
       urlSlug: params.tournament_slug
     }
   };

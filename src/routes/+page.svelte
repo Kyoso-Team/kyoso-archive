@@ -8,7 +8,7 @@
   title="Kyoso"
   description="osu! tournament management beyond spreadsheets"
   image={{
-    url: `${$page.url.origin}/seo/home.png`,
+    url: `${$page.url.origin}/main-banner.png`,
     alt: 'kyoso-banner',
     height: 630,
     width: 1200,
@@ -34,6 +34,5 @@
       A web application for hosting osu! tournaments in a professional manner, regardless of scale
       or complexity.
     </p>
-    <!-- <a href="/dashboard" class="btn variant-filled-primary font-medium mt-6">Host Your Tournament Now</a> -->
   </div>
 </main>

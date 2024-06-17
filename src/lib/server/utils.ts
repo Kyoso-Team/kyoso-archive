@@ -105,29 +105,6 @@ export function paginate(page: number, elementsPerPage: number = 30) {
 }
 
 /**
- * Enable text search capabilities provided the table's columns and the search term (query)
- */
-// export function textSearch(...columns: AnyColumn[]) {
-//   let q = sql``;
-
-//   for (let i = 0; i < columns.length - 1; i++) {
-//     let sq = sql`lower(${columns[i]}) || ' ' || `;
-//     q.append(sq);
-//   }
-
-//   let sq = sql`lower(${columns.at(-1)}) ilike `;
-//   q.append(sq);
-
-//   return {
-//     query: (str: string) => {
-//       let sq = sql`'${str}'`;
-//       q.append(sq);
-//       return q;
-//     }
-//   };
-// }
-
-/**
  * Maps the table's columns in a select clause to avoid writing verbose objects.
  * Example:
  *
@@ -209,14 +186,49 @@ export function trpcUnknownError(err: unknown, when: string) {
   });
 }
 
-export function future(column: AnyPgColumn | SQL, ms?: boolean) {
-  return ms
-    ? gt(column as any, sql`(${new Date().getTime()})::bigint`)
-    : gt(column as any, new Date());
+export function catchUniqueConstraintError$(
+  constraints: {
+    name: string;
+    message: string;
+  }[]
+) {
+  return (err: unknown) => {
+    if (!(err instanceof postgres.PostgresError) || err.code !== '23505') return;
+    const constraint = err.message.split('"')[1];
+
+    for (let i = 0; i < constraints.length; i++) {
+      if (constraint === constraints[i].name) {
+        return constraints[i].message;
+      }
+    }
+  };
 }
 
-export function past(column: AnyPgColumn | SQL, ms?: boolean) {
-  return ms
-    ? lte(column as any, sql`(${new Date().getTime()})::bigint`)
-    : lte(column as any, new Date());
+export function future(column: AnyPgColumn | SQL) {
+  return gt(column as any, sql`now()`);
+}
+
+export function past(column: AnyPgColumn | SQL) {
+  return lte(column as any, sql`now()`);
+}
+
+export function isDatePast(date: Date | number | null) {
+  if (!date) return false;
+  return new Date(date).getTime() <= new Date().getTime();
+}
+
+export function isDateFuture(date: Date | number | null) {
+  if (!date) return false;
+  return new Date(date).getTime() > new Date().getTime();
+}
+
+export function trgmSearch(searchStr: string, columns: [AnyPgColumn, ...AnyPgColumn[]]) {
+  const q = sql`${searchStr} % (lower(${columns[0]})`;
+
+  for (const col in columns.slice(1)) {
+    q.append(sql` || ' ' || lower(${col})`);
+  }
+
+  q.append(sql`)`);
+  return q;
 }

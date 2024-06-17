@@ -1,15 +1,15 @@
-import { db, StaffMember, Tournament } from '$db';
-import { and, eq, or, sql, gt, isNull, not } from 'drizzle-orm';
-import { pick } from '$lib/server/utils';
+import { db, StaffMember, Tournament, TournamentDates } from '$db';
+import { and, eq, or, sql, isNull } from 'drizzle-orm';
+import { future, pick } from '$lib/server/utils';
 import { getSession } from '$lib/server/helpers/api';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ cookies }) => {
   const session = getSession(cookies, true);
 
-  const _tournaments = await db
+  const tournaments = await db
     .select({
-      ...pick(Tournament, ['id', 'name', 'bannerMetadata']),
+      ...pick(Tournament, ['id', 'urlSlug', 'name', 'bannerMetadata']),
       staffs: sql<boolean>`${StaffMember.userId} = ${session.userId}`.as('staffs'),
       // TODO: Replace with an actual condition when we have a player table
       plays: sql<boolean>`false`.as('plays')
@@ -22,40 +22,31 @@ export const load = (async ({ cookies }) => {
       // )
       and(
         eq(StaffMember.userId, session.userId),
-        not(Tournament.deleted),
-        or(
-          gt(
-            sql`(${Tournament.dates} -> 'concludes')::bigint`,
-            sql`(${new Date().getTime()})::bigint`
-          ),
-          isNull(sql`(${Tournament.dates} -> 'concludes')`)
-        )
+        or(isNull(Tournament.deletedAt), future(Tournament.deletedAt)),
+        or(isNull(TournamentDates.concludesAt), future(TournamentDates.concludesAt))
       )
     )
-    .leftJoin(StaffMember, eq(StaffMember.tournamentId, Tournament.id));
+    .leftJoin(StaffMember, eq(StaffMember.tournamentId, Tournament.id))
+    .leftJoin(TournamentDates, eq(TournamentDates.tournamentId, Tournament.id));
   //.leftJoin(dbPlayer, eq(dbPlayer.tournamentId, dbTournament.id));
 
   const tournamentsPlaying: Pick<
     typeof Tournament.$inferSelect,
-    'id' | 'name' | 'bannerMetadata'
+    'id' | 'urlSlug' | 'name' | 'bannerMetadata'
   >[] = [];
   const tournamentsStaffing: typeof tournamentsPlaying = [];
 
-  // tournaments.forEach((tournament) => {
-  //   const data = {
-  //     id: tournament.id,
-  //     name: tournament.name,
-  //     bannerMetadata: tournament.bannerMetadata
-  //   };
+  tournaments.forEach((tournament) => {
+    const { staffs, plays, ...rest } = tournament;
 
-  //   if (tournament.staffs) {
-  //     tournamentsStaffing.push(data);
-  //   }
+    if (staffs) {
+      tournamentsStaffing.push(rest);
+    }
 
-  //   if (tournament.plays) {
-  //     tournamentsPlaying.push(data);
-  //   }
-  // });
+    if (plays) {
+      tournamentsPlaying.push(rest);
+    }
+  });
 
   return {
     session,

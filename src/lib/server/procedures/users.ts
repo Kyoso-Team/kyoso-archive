@@ -11,6 +11,7 @@ import {
   Session,
   User
 } from '$db';
+import { type SQL } from 'drizzle-orm';
 import { and, desc, eq, isNull, not, or, sql } from 'drizzle-orm';
 import { t } from '$trpc';
 import { future, pick, trpcUnknownError } from '$lib/server/utils';
@@ -21,9 +22,10 @@ import { getSession } from '../helpers/api';
 import { TRPCError } from '@trpc/server';
 import { alias, unionAll } from 'drizzle-orm/pg-core';
 import { rateLimitMiddleware } from '$trpc/middleware';
-import type { SQL } from 'drizzle-orm';
+import { TRPCChecks } from '../helpers/checks';
 
 const getUser = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({
@@ -33,14 +35,9 @@ const getUser = t.procedure
   )
   .query(async ({ ctx, input }) => {
     const { userId } = input;
+    const checks = new TRPCChecks({ action: 'get this user' });
     const session = getSession(ctx.cookies, true);
-
-    if (!session.admin) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'You do not have the required permissions to get this user'
-      });
-    }
+    checks.userIsAdmin(session);
 
     let user!: Pick<
       typeof User.$inferSelect,
@@ -192,14 +189,9 @@ const searchUser = t.procedure
   )
   .query(async ({ ctx, input }) => {
     const { search, searchBy } = input;
+    const checks = new TRPCChecks({ action: 'search this user' });
     const session = getSession(ctx.cookies, true);
-
-    if (!session.admin) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'You do not have the required permissions to search this user'
-      });
-    }
+    checks.userIsAdmin(session);
 
     const searchNum = isNaN(Number(search)) ? 0 : Number(search);
     let where!: SQL;
@@ -231,7 +223,7 @@ const searchUser = t.procedure
     return user;
   });
 
-const updateSelf = t.procedure.mutation(async ({ ctx }) => {
+const updateSelf = t.procedure.use(rateLimitMiddleware).mutation(async ({ ctx }) => {
   const session = getSession(ctx.cookies, true);
 
   let user!: Pick<typeof User.$inferSelect, 'apiKey'>;
@@ -256,6 +248,7 @@ const updateSelf = t.procedure.mutation(async ({ ctx }) => {
 });
 
 const updateUser = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({
@@ -272,26 +265,14 @@ const updateUser = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { data, userId } = input;
     const { admin, approvedHost } = data;
+    const checks = new TRPCChecks({ action: 'update this user' });
     const session = getSession(ctx.cookies, true);
+    checks.userIsAdmin(session).partialHasValues(data);
 
     if (admin !== undefined && session.osu.id !== env.OWNER) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message: 'You do not have the required permissions to remove or add this user as an admin'
-      });
-    }
-
-    if (!session.admin) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'You do not have the required permissions update this user'
-      });
-    }
-
-    if (Object.keys(data).length === 0) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'Nothing to update'
       });
     }
 
@@ -318,6 +299,7 @@ const updateUser = t.procedure
   });
 
 const banUser = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({
@@ -330,14 +312,9 @@ const banUser = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { banReason, banTime, issuedToUserId } = input;
+    const checks = new TRPCChecks({ action: 'ban this user' });
     const session = getSession(ctx.cookies, true);
-
-    if (!session.admin) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'You do not have the required permissions to ban this user'
-      });
-    }
+    checks.userIsAdmin(session);
 
     let hasActiveBan!: boolean;
 
@@ -345,15 +322,17 @@ const banUser = t.procedure
       hasActiveBan = await db
         .execute(
           sql`
-        select exists (
-          select 1 from ${Ban}
-          where ${and(
-            eq(Ban.issuedToUserId, issuedToUserId),
-            and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
-          )}
-          limit 1
-        )
-      `
+              select exists (select 1
+                             from ${Ban}
+                             where ${and(
+                               eq(Ban.issuedToUserId, issuedToUserId),
+                               and(
+                                 isNull(Ban.revokedAt),
+                                 or(isNull(Ban.liftAt), future(Ban.liftAt))
+                               )
+                             )}
+                             limit 1)
+          `
         )
         .then((bans) => !!bans[0]?.exists);
     } catch (err) {
@@ -399,6 +378,7 @@ const banUser = t.procedure
   });
 
 const revokeBan = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({
@@ -409,14 +389,9 @@ const revokeBan = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { banId, revokeReason } = input;
+    const checks = new TRPCChecks({ action: 'revoke this ban' });
     const session = getSession(ctx.cookies, true);
-
-    if (!session.admin) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'You do not have the required permissions to revoke this ban'
-      });
-    }
+    checks.userIsAdmin(session);
 
     try {
       await db
@@ -433,6 +408,7 @@ const revokeBan = t.procedure
   });
 
 const expireSession = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({

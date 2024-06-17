@@ -9,7 +9,7 @@
   export let ctx: ReturnType<typeof createContextStore>;
 </script>
 
-<div class="card p-4 dark:bg-surface-700 bg-surface-200 w-full">
+<div class="card p-4 bg-surface-200-700-token w-full">
   <p>
     Ban of
     <span class="text-error-500">
