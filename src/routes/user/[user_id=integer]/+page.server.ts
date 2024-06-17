@@ -8,7 +8,7 @@ import type { PageServerLoad } from './$types';
 
 type UserT = Pick<
   typeof User.$inferSelect,
-  'id' | 'registeredAt' | 'admin' | 'approvedHost' | 'updatedApiDataAt'
+  'registeredAt' | 'admin' | 'approvedHost' | 'updatedApiDataAt'
 > & {
   osu: Pick<typeof OsuUser.$inferSelect, 'osuUserId' | 'username' | 'globalStdRank' | 'restricted'>;
   country: Pick<typeof Country.$inferSelect, 'code' | 'name'>;
@@ -26,8 +26,8 @@ type BanT = Pick<
 };
 
 export const load = (async ({ params, route, parent }) => {
-  const { session, isUserOwner: isSessionUserOwner } = await parent();
-  const viewAsAdmin = params.admin === 'admin';
+  const { session } = await parent();
+  const viewAsAdmin = !!session?.admin;
   const userId = Number(params.user_id);
 
   let user: Omit<UserT, 'updatedApiDataAt'> | undefined;
@@ -38,8 +38,8 @@ export const load = (async ({ params, route, parent }) => {
         ...pick(
           User,
           viewAsAdmin
-            ? ['id', 'registeredAt', 'admin', 'approvedHost', 'updatedApiDataAt']
-            : ['id', 'registeredAt', 'admin', 'approvedHost']
+            ? ['registeredAt', 'admin', 'approvedHost', 'updatedApiDataAt']
+            : ['registeredAt', 'admin', 'approvedHost']
         ),
         osu: pick(OsuUser, ['osuUserId', 'username', 'globalStdRank', 'restricted']),
         discord: pick(DiscordUser, ['discordUserId', 'username']),
@@ -85,7 +85,7 @@ export const load = (async ({ params, route, parent }) => {
         .innerJoin(IssuedByOsu, eq(IssuedByOsu.osuUserId, IssuedBy.osuUserId))
         .leftJoin(RevokedBy, eq(RevokedBy.id, Ban.revokedByUserId))
         .leftJoin(RevokedByOsu, eq(RevokedByOsu.osuUserId, RevokedBy.osuUserId))
-        .where(eq(Ban.issuedToUserId, user.id))
+        .where(eq(Ban.issuedToUserId, userId))
         .orderBy(desc(Ban.issuedAt))
         .then((bans) => {
           return bans.map((ban) => ({
@@ -108,7 +108,7 @@ export const load = (async ({ params, route, parent }) => {
         .from(Ban)
         .where(
           and(
-            eq(Ban.issuedToUserId, user.id),
+            eq(Ban.issuedToUserId, userId),
             or(
               and(isNull(Ban.liftAt), isNull(Ban.revokedAt)),
               and(isNotNull(Ban.liftAt), future(Ban.liftAt), isNull(Ban.revokedAt))
@@ -154,25 +154,27 @@ export const load = (async ({ params, route, parent }) => {
 
   return {
     session,
-    isSessionUserOwner,
     user: {
       ...user,
       viewAsAdmin,
       badges,
       bans,
-      owner
+      owner,
+      id: userId
     } as
       | (UserT & {
           viewAsAdmin: true;
           badges: typeof badges;
           bans: BanT[];
           owner: boolean;
+          id: number;
         })
       | (Omit<UserT, 'updatedApiDataAt'> & {
           viewAsAdmin: false;
           badges: typeof badges;
           bans: Omit<BanT, 'issuedBy' | 'revokedBy'>[];
           owner: boolean;
+          id: number;
         })
   };
 }) satisfies PageServerLoad;
