@@ -1,5 +1,5 @@
 import type { TournamentDates } from '$db';
-import type { ModMultiplier, TournamentLink } from '$types';
+import type { ModMultiplier, TournamentLink, UserFormField } from '$types';
 import { arraysHaveSameElements } from './utils';
 
 export function tournamentChecks({
@@ -176,12 +176,12 @@ export function tournamentLinkChecks(allLinks: TournamentLink[], link: Tournamen
 
 export function tournamentModMultipliersChecks(modMultipliers: ModMultiplier[]) {
   for (let i = 0; i < modMultipliers.length; i++) {
-    const err = modMultiplierchecks(modMultipliers, modMultipliers[i]);
+    const err = modMultiplierChecks(modMultipliers, modMultipliers[i]);
     if (err) return `${err} (at index ${i})`;
   }
 }
 
-export function modMultiplierchecks(
+export function modMultiplierChecks(
   allModMultipliers: ModMultiplier[],
   modMultiplier: ModMultiplier
 ) {
@@ -210,5 +210,27 @@ export function modMultiplierchecks(
     modMultiplier.multiplier.ifFailed >= modMultiplier.multiplier.ifSuccessful
   ) {
     return 'The multiplier in case of failure must be less than the multiplier in case of success';
+  }
+}
+
+export function userFormFieldsChecks(fields: UserFormField[]) {
+  for (let i = 0; i < fields.length; i++) {
+    const err = userFormFieldChecks(fields[i]);
+    if (err) return `${err} (at index ${i})`;
+  }
+}
+
+export function userFormFieldChecks(field: UserFormField) {
+  const { type } = field;
+
+  if (
+    type === 'short-text' ||
+    type === 'long-text' ||
+    ((type === 'number' || type === 'select-multiple' || type === 'datetime') &&
+      (field.validation === 'between' || field.validation === 'not-between'))
+  ) {
+    if (field.min && field.max && field.min > field.max) {
+      return 'The minimum must be less than or equal to the maximum';
+    }
   }
 }

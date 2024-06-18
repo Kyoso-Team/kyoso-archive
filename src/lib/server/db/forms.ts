@@ -20,20 +20,21 @@ export const Form = pgTable(
     id: serial('id').primaryKey(),
     createdAt: timestamp('created_at', timestampConfig).notNull().defaultNow(),
     deletedAt: timestamp('deleted_at', timestampConfig),
+    /** Date in which the form will stop accepting new responses. This field is ignored if TournamentForm.type is "staff_registration", in that case, TournamentDates.staffRegsCloseAt is used instead  */
+    closeAt: timestamp('close_at', timestampConfig),
     public: boolean('public').notNull().default(false),
     anonymousResponses: boolean('anonymous_responses').notNull().default(false),
-    acceptingResponses: boolean('accepting_responses').notNull().default(false),
     title: varchar('name', {
       length: 100
     }).notNull(),
     /** Written as Markdown */
     description: varchar('description', { length: 2000 }),
     /** Written as Markdown */
-    thankYouMessage: varchar('thank_you_message', { length: 1000 }),
+    thanksMessage: varchar('thanks_message', { length: 1000 }),
     /** Written as Markdown */
-    notAcceptingResponseMessage: varchar('not_accepting_response_message', { length: 1000 }),
+    closedMessage: varchar('closed_message', { length: 1000 }),
     fieldsWithResponses: char('fields_with_responses', { length: 8 }).array().notNull().default([]),
-    /** Limit of 20 fields */
+    /** Limit of 20 fields (not counting soft deleted fields) */
     fields: jsonb('fields').notNull().$type<UserFormField[]>().default([])
   },
   (table) => ({
@@ -56,7 +57,7 @@ export const TournamentForm = pgTable(
       }),
     type: TournamentFormType('type').notNull(),
     /** Only applies if type is "general" */
-    target: TournamentFormTarget('target').array().notNull(),
+    target: TournamentFormTarget('target').notNull(),
     tournamentId: integer('tournament_id')
       .notNull()
       .references(() => Tournament.id, {

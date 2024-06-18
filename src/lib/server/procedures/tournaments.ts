@@ -14,7 +14,7 @@ import { wrap } from '@typeschema/valibot';
 import { getSession, getStaffMember, getTournament } from '../helpers/trpc';
 import { TRPCError } from '@trpc/server';
 import { hasPermissions, isDatePast, sortByKey } from '$lib/utils';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import {
   bwsValuesSchema,
   modMultiplierSchema,
@@ -35,6 +35,7 @@ import {
   tournamentModMultipliersChecks,
   tournamentOtherDatesChecks
 } from '$lib/helpers';
+import { maxPossibleDate, oldestDatePossible } from '$lib/constants';
 
 const catchUniqueConstraintError = catchUniqueConstraintError$([
   {
@@ -158,6 +159,7 @@ const updateTournament = t.procedure
         data: v.partial(
           v.object({
             ...mutationSchemas,
+            description: v.nullable(v.string([v.minLength(0), v.maxLength(150)])),
             rankRange: v.nullable(rankRangeSchema),
             teamSettings: v.nullable(teamSettingsSchema),
             bwsValues: v.nullable(bwsValuesSchema),
@@ -176,6 +178,7 @@ const updateTournament = t.procedure
       name,
       acronym,
       urlSlug,
+      description,
       teamSettings,
       type,
       rankRange,
@@ -210,12 +213,12 @@ const updateTournament = t.procedure
     // Only the host can update these properties
     if (
       !hasPermissions(staffMember, ['host']) &&
-      (name || acronym || urlSlug || teamSettings || type || rankRange || bwsValues)
+      (name || acronym || urlSlug || description || teamSettings || type || rankRange || bwsValues)
     ) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message:
-          "You do not have the required permissions to update this tournament's name, acronym, URL slug, team settings (if applicable), type, rank range or BWS formula"
+          "You do not have the required permissions to update this tournament's name, acronym, URL slug, description, team settings (if applicable), type, rank range or BWS formula"
       });
     }
 
@@ -255,12 +258,24 @@ const updateTournamentDates = t.procedure
         tournamentId: positiveIntSchema,
         data: v.partial(
           v.object({
-            publishedAt: v.nullable(v.date()),
-            concludesAt: v.nullable(v.date()),
-            playerRegsOpenAt: v.nullable(v.date()),
-            playerRegsCloseAt: v.nullable(v.date()),
-            staffRegsOpenAt: v.nullable(v.date()),
-            staffRegsCloseAt: v.nullable(v.date()),
+            publishedAt: v.nullable(
+              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+            ),
+            concludesAt: v.nullable(
+              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+            ),
+            playerRegsOpenAt: v.nullable(
+              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+            ),
+            playerRegsCloseAt: v.nullable(
+              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+            ),
+            staffRegsOpenAt: v.nullable(
+              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+            ),
+            staffRegsCloseAt: v.nullable(
+              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+            ),
             other: v.array(tournamentOtherDatesSchema, [v.maxLength(20)])
           })
         )
@@ -423,21 +438,68 @@ const deleteTournament = t.procedure
     const tournament = await getTournament(
       tournamentId,
       {
+        tournament: ['deletedAt'],
         dates: ['concludesAt']
       },
       true
     );
     checks.tournamentNotConcluded(tournament);
 
+    if (tournament.deletedAt) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'This tournament is already scheduled to be deleted or it has already been deleted'
+      });
+    }
+
     try {
       await db
         .update(Tournament)
         .set({
-          deletedAt: sql`now()`
+          // Schedule to delete in the next 24 hours
+          deletedAt: new Date(new Date().getTime() + 86_400_000)
         })
         .where(eq(Tournament.id, tournamentId));
     } catch (err) {
-      throw trpcUnknownError(err, 'Deleting the tournament');
+      throw trpcUnknownError(err, "Scheduling the tournament's deletion");
+    }
+  });
+
+const cancelTournamentDeletion = t.procedure
+  .use(rateLimitMiddleware)
+  .input(
+    wrap(
+      v.object({
+        tournamentId: positiveIntSchema
+      })
+    )
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { tournamentId } = input;
+    const checks = new TRPCChecks({ action: 'cancel the deletion of this tournament' });
+    const session = getSession(ctx.cookies, true);
+    const staffMember = await getStaffMember(session, tournamentId, true);
+    checks.staffHasPermissions(staffMember, ['host']);
+
+    const tournament = await getTournament(
+      tournamentId,
+      {
+        tournament: ['deletedAt'],
+        dates: ['concludesAt']
+      },
+      true
+    );
+    checks.tournamentNotConcluded(tournament).tournamentNotDeleted(tournament);
+
+    try {
+      await db
+        .update(Tournament)
+        .set({
+          deletedAt: null
+        })
+        .where(eq(Tournament.id, tournamentId));
+    } catch (err) {
+      throw trpcUnknownError(err, "Updating the tournament's deletion date");
     }
   });
 
@@ -445,5 +507,6 @@ export const tournamentsRouter = t.router({
   createTournament,
   updateTournament,
   updateTournamentDates,
-  deleteTournament
+  deleteTournament,
+  cancelTournamentDeletion
 });

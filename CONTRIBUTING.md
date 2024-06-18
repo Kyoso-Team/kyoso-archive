@@ -146,7 +146,7 @@ Log into your IPInfo account and go to your [dashboard](https://ipinfo.io/accoun
 
 **Upstash**
 
-Log into your Upstash account and [create a Redis database](https://console.upstash.com). In the dashboard for the Redis DB, The rest URL is what's under "Endpoint" and the rest token is what's under "Password".
+Log into your Upstash account and [create a Redis database](https://console.upstash.com). In the dashboard for the Redis DB, go to the "REST API" section and copy variables.
 
 | Name                     | Type   | optional |
 | ------------------------ | ------ | -------- |
@@ -235,12 +235,3 @@ Make sure you do follow these guidelines when submitting a pull request:
 
 - Run `pnpm review` to first format, then lint the project.
 - Any pull request must point to the `dev` branch.
-
-## Development Shortcuts
-
-If `ENV` is set to `development` then the user will be able to execute keyboard shortcuts made specifically for use in a development environement, and are not accessible in test or production builds.
-
-The shortcuts are the following:
-
-- Shift+Ctrl+1: Opens a modal that allows the user to impersonate another. This is useful to test functionality that requires actions from two or more users, in that case, you can perform actions as different users (hence "impersonating").
-- Shift+Ctrl+2: Toggles the theme (between light and dark).

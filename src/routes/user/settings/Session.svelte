@@ -40,7 +40,7 @@
   <Backdrop>
     <Modal>
       <button class="close-btn" on:click={toggleShowMore}>
-        <X />
+        <X size={20} />
       </button>
       <span class="title">Session Info</span>
       <ul class="list-disc pl-4">
@@ -94,9 +94,14 @@
   <div class="flex flex-col">
     <span class="font-medium text-lg inline-block relative max-w-max">
       {#if current}
-        <span class="badge variant-soft-secondary top-[2px] absolute -right-16">Current</span>
+        <span class="badge variant-soft-primary top-[2px] absolute -right-16">Current</span>
       {/if}
-      {session.ipAddress}
+      {session.os.name && session.os.version
+        ? `${session.os.name} ${session.os.version}`
+        : 'Unknown OS'}
+      ({session.browser.name && session.browser.version
+        ? `${session.browser.name} ${session.browser.version}`
+        : 'Unknown browser'})
     </span>
     <span class="text-surface-600-300-token text-xs">
       {session.ipMetadata.city}, {session.ipMetadata.region}, {session.ipMetadata.country}

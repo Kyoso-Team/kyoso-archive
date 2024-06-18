@@ -141,6 +141,20 @@
       "when": 1718146231715,
       "tag": "0019_square_wendigo",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1718247616772,
+      "tag": "0020_tough_joystick",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1718581728507,
+      "tag": "0021_bizarre_captain_flint",
+      "breakpoints": true
     }
   ]
 }

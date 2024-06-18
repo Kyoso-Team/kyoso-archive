@@ -2,6 +2,7 @@ import type { MaybePromise, Page } from '@sveltejs/kit';
 import type { Router } from '$trpc/router';
 import type { Writable } from 'svelte/store';
 import type { BaseSchema, Output } from 'valibot';
+import type { Tournament, TournamentDates } from '$db';
 import type {
   bwsValuesSchema,
   draftTypeSchema,
@@ -10,9 +11,11 @@ import type {
   teamSettingsSchema,
   tournamentOtherDatesSchema,
   tournamentLinkSchema,
-  modMultiplierSchema
+  modMultiplierSchema,
+  userFormFieldSchema,
+  userFormFieldResponseSchema,
+  tournamentThemeSchema
 } from './schemas';
-import type { Tournament, TournamentDates } from '$db';
 
 export type AnyComponent = any;
 
@@ -38,6 +41,9 @@ export type TeamSettings = Output<typeof teamSettingsSchema>;
 export type TournamentOtherDates = Output<typeof tournamentOtherDatesSchema>;
 export type RankRange = Output<typeof rankRangeSchema>;
 export type ModMultiplier = Output<typeof modMultiplierSchema>;
+export type UserFormField = Output<typeof userFormFieldSchema>;
+export type UserFormFieldResponse = Output<typeof userFormFieldResponseSchema>;
+export type TournamentTheme = Output<typeof tournamentThemeSchema>;
 
 export type RoundConfig = StandardRoundConfig | QualifierRoundConfig | BattleRoyaleRoundConfig;
 
@@ -65,92 +71,6 @@ export interface QualifierRoundConfig {
 
 export interface BattleRoyaleRoundConfig {
   playersEliminatedPerMap: number;
-}
-
-export interface BaseUserFormField {
-  /** Nanoid of 8 characters (must be unique within the form itself, not across the entire database) */
-  id: string;
-  /** Limit of 200 characters */
-  title: string;
-  /** Limit of 300 characters. Written as markdown */
-  description: string;
-  required: boolean;
-  type: 'shortText' | 'longText' | 'number' | 'select' | 'checkbox' | 'scale';
-}
-
-export interface UserFormShortTextField extends BaseUserFormField {
-  type: 'shortText';
-  config: {
-    validation?: 'email' | 'url' | 'regex';
-    regex?: string;
-    length?: number | number[];
-  };
-}
-
-export interface UserFormLongTextField extends BaseUserFormField {
-  type: 'longText';
-  config: {
-    validation?: 'regex';
-    regex?: string;
-    length?: number | number[];
-  };
-}
-
-export interface UserFormNumberField extends BaseUserFormField {
-  type: 'number';
-  config: {
-    integer: boolean;
-    not: boolean;
-    validation?: 'gt' | 'gte' | 'lt' | 'lte' | 'eq' | 'between';
-    length?: number | number[];
-  };
-}
-
-export interface UserFormSelectField extends BaseUserFormField {
-  type: 'select';
-  config: {
-    dropdown: boolean;
-    /** Limit of 100 options */
-    options: string[];
-  };
-}
-
-export interface UserFormCheckboxField extends BaseUserFormField {
-  type: 'checkbox';
-  config: {
-    /** Limit of 100 options */
-    options: string[];
-    validation?: 'gt' | 'lt' | 'eq' | 'between';
-    length?: number | number[];
-  };
-}
-
-export interface UserFormScaleField extends BaseUserFormField {
-  type: 'scale';
-  config: {
-    from: {
-      value: number;
-      label?: string;
-    };
-    to: {
-      value: number;
-      label?: string;
-    };
-  };
-}
-
-export type UserFormField =
-  | UserFormShortTextField
-  | UserFormLongTextField
-  | UserFormNumberField
-  | UserFormSelectField
-  | UserFormCheckboxField
-  | UserFormScaleField;
-
-export interface UserFormFieldResponse {
-  /** ID of the field within the form */
-  id: string;
-  response: string;
 }
 
 export type InferEnum<

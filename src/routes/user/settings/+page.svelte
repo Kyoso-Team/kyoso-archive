@@ -193,7 +193,7 @@
     {/if}
     <div class="line-b my-8" />
     <h2>Sessions</h2>
-    <p class="text-surface-600-300-token text-sm">Some details may be inaccurate.</p>
+    <p class="text-surface-600-300-token text-sm mt-2">Some details may be inaccurate.</p>
     <div class="mt-4 flex flex-col gap-2">
       {#each data.activeSessions as session}
         <div transition:slide|global={{ duration: 150 }}>

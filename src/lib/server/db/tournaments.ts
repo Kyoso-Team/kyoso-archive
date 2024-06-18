@@ -24,7 +24,8 @@ import type {
   RoundConfig,
   TeamSettings,
   TournamentLink,
-  TournamentOtherDates
+  TournamentOtherDates,
+  TournamentTheme
 } from '$types';
 
 export const Tournament = pgTable(
@@ -34,6 +35,7 @@ export const Tournament = pgTable(
     createdAt: timestamp('created_at', timestampConfig).notNull().defaultNow(),
     deletedAt: timestamp('deleted_at', timestampConfig),
     name: varchar('name', { length: 50 }).notNull().unique(uniqueConstraints.tournament.name),
+    description: varchar('description', { length: 150 }),
     urlSlug: varchar('url_slug', {
       length: 16
     }).notNull(),
@@ -60,6 +62,7 @@ export const Tournament = pgTable(
     modMultipliers: jsonb('mod_multipliers').notNull().$type<ModMultiplier[]>().default([]),
     /** Limit of 20 links */
     links: jsonb('links').notNull().$type<TournamentLink[]>().default([]),
+    theme: jsonb('theme').$type<TournamentTheme>(),
     refereeSettings: jsonb('referee_settings')
       .notNull()
       .$type<RefereeSettings>()

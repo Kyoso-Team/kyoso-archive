@@ -24,7 +24,7 @@
   ];
 </script>
 
-<AppBar padding="py-3 px-6">
+<AppBar padding="py-3 px-6 line-b">
   <svelte:fragment slot="lead">
     <nav class="flex items-center gap-2">
       <a href="/" class="mr-4 duration-150 hover:opacity-75">

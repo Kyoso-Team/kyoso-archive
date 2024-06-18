@@ -27,8 +27,11 @@
   </Backdrop>
 {/if}
 <SEO page={$page} title="Dashboard" description="User dashboard" noIndex />
-<nav class="h-full w-64 line-r p-4 relative" use:portal={'#sidebar'}>
-  <div class="absolute inset-0 flex h-[calc(100%-74px)] flex-col gap-y-6 overflow-y-auto p-4">
+<nav
+  class="h-full w-64 line-r bg-surface-100-800-token grid grid-rows-[auto_max-content]"
+  use:portal={'#sidebar'}
+>
+  <div class="flex flex-col gap-y-8 overflow-y-auto p-4">
     <div>
       <span class="font-bold text-primary-500">STAFFING</span>
       {#if data.tournamentsStaffing.length === 0}
@@ -58,7 +61,7 @@
       {/if}
     </div>
   </div>
-  <div class="absolute bottom-0 left-0 w-full line-t p-4">
+  <div class="w-full line-t p-4">
     <button
       class="btn variant-filled-primary w-full [&>*]:pointer-events-none"
       on:click={toggleShowForm}
