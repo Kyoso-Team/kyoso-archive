@@ -4,8 +4,15 @@
   import { Check } from 'lucide-svelte';
   import { theme as defaultTheme } from '../../../../theme';
   import { portal } from 'svelte-portal';
+    import { onMount } from 'svelte';
 
   const theme = writable({});
+
+  onMount(() => {
+    const style = document.createElement('style');
+    style.innerHTML = generateCss('Roboto', 'roboto', 'ttf');
+    document.head.appendChild(style);
+  });
 
   function rgbColortoHex(color: number) {
     return `0${color.toString(16)}`.slice(-2);
@@ -15,15 +22,26 @@
     return `#${rgbColortoHex(r)}${rgbColortoHex(g)}${rgbColortoHex(b)}`;
   }
 
-  
-</script>
+  function generateCss(fontFamilyName: string, fontFamilyFolder: string, format: string) {
+    let css = '';
 
-<style use:portal={'head'}>
-  
-</style>
+    for (const weight of [400, 500, 700]) {
+      css += `@font-face{font-family:'${fontFamilyName}';src:url('/tournament-fonts/${fontFamilyFolder}/${weight}.${format}');font-weight:${weight};font-style:normal;}`;
+      css += `@font-face{font-family:'${fontFamilyName}';src:url('/tournament-fonts/${fontFamilyFolder}/${weight}-italic.${format}');font-weight:${weight};font-style:italic;}`;
+    }
+
+    return `${css}:root [data-theme='theme']{--theme-font-family-base:'${fontFamilyName}',sans-serif;--theme-font-family-heading:'${fontFamilyName}',sans-serif;}`;
+  }
+</script>
 
 <main class="main flex justify-center">
   <div class="w-full max-w-5xl">
+    <div class="text-3xl mb-2">The Quick Brown Fox Jumps Over The Lazy Dog.</div>
+    <div class="text-3xl mb-2 italic">The Quick Brown Fox Jumps Over The Lazy Dog.</div>
+    <div class="text-3xl mb-2 font-medium">The Quick Brown Fox Jumps Over The Lazy Dog.</div>
+    <div class="text-3xl mb-2 font-medium italic">The Quick Brown Fox Jumps Over The Lazy Dog.</div>
+    <div class="text-3xl mb-2 font-bold">The Quick Brown Fox Jumps Over The Lazy Dog.</div>
+    <div class="text-3xl mb-2 font-bold italic">The Quick Brown Fox Jumps Over The Lazy Dog.</div>
     <div class="mt-4 w-full card p-4 flex flex-col gap-4">
       <div class="flex gap-4">
         <div>
