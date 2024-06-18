@@ -1,6 +1,5 @@
 <script lang="ts">
   import * as f from '$lib/form-validation';
-  import Actions from './Actions.svelte';
   import OtherDate from './OtherDate.svelte';
   import Link from './Link.svelte';
   import ModMultiplier from './ModMultiplier.svelte';
@@ -9,7 +8,7 @@
   import ManageModMultiplierForm from './ManageModMultiplierForm.svelte';
   import { page } from '$app/stores';
   import { portal } from 'svelte-portal';
-  import { SEO } from '$components/general';
+  import { SEO, FormHandler } from '$components/general';
   import { Checkbox, Number, Select, Text, DateTime } from '$components/form';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { goto, invalidate } from '$app/navigation';
@@ -788,7 +787,7 @@
           </div>
         </div>
       </div>
-      <Actions
+      <FormHandler
         hasUpdated={generalSettingsHasUpdated}
         disableUpdateBtn={!canUpdateGeneralSettings}
         onUpdate={updateGeneralSettings}
@@ -876,7 +875,7 @@
           </div>
         {/if}
       </div>
-      <Actions
+      <FormHandler
         hasUpdated={datesHaveUpdated}
         disableUpdateBtn={!canUpdateDates}
         onUpdate={updateDates}
@@ -917,7 +916,7 @@
           </div>
         {/if}
       </div>
-      <Actions
+      <FormHandler
         hasUpdated={linksHaveUpdated}
         disableUpdateBtn={!linksHaveUpdated}
         onUpdate={updateLinks}
@@ -1018,7 +1017,7 @@
           />
         </div>
       </div>
-      <Actions
+      <FormHandler
         hasUpdated={$refereeSettingsForm.hasUpdated}
         disableUpdateBtn={!canUpdateRefereeSettings}
         onUpdate={updateRefereeSettings}
@@ -1051,7 +1050,7 @@
           </div>
         {/if}
       </div>
-      <Actions
+      <FormHandler
         hasUpdated={modMultipliersHaveUpdated}
         disableUpdateBtn={!modMultipliersHaveUpdated}
         onUpdate={updateModMultipliers}

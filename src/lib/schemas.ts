@@ -367,3 +367,12 @@ export const tournamentThemeSchema = v.object({
     headings: v.string()
   })
 });
+
+export const userSettingsSchema = v.object({
+  /** Whether or not to make their Discord username public on their profile page */
+  publicDiscord: v.boolean(),
+  /** Whether or not to display their tournament staff history on their profile page */
+  publicStaffHistory: v.boolean(),
+  /** Whether or not to display their tournament player history on their profile page */
+  publicPlayerHistory: v.boolean()
+});

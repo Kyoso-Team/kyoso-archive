@@ -1,22 +1,29 @@
 <script lang="ts">
+  import * as f from '$lib/form-validation';
   import Session from './Session.svelte';
-  import { SEO } from '$components/general';
+  import { Checkbox } from '$components/form';
+  import { SEO, FormHandler } from '$components/general';
   import { Backdrop, Modal } from '$components/layout';
   import { Osu, Discord } from '$components/icons';
   import { trpc } from '$lib/trpc';
   import { page } from '$app/stores';
-  import { loading } from '$stores';
+  import { createForm, loading } from '$stores';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { Copy, Eye, EyeOff, RotateCcw, Pencil } from 'lucide-svelte';
   import { displayError, toastSuccess } from '$lib/utils';
   import { slide } from 'svelte/transition';
+  import { invalidate } from '$app/navigation';
   import type { PageServerData } from './$types';
-  import type { TRPCRouter } from '$types';
 
   export let data: PageServerData;
   let showChangeDiscordPrompt = false;
   let showGenerateApiKeyPrompt = false;
   let viewApiKey = false;
+  const privacyForm = createForm({
+    publicDiscord: f.boolean(),
+    publicStaffHistory: f.boolean(),
+    publicPlayerHistory: f.boolean()
+  }, privacyFormInitialValues());
   const toast = getToastStore();
 
   function toggleChangeDiscordPrompt() {
@@ -37,25 +44,53 @@
   }
 
   async function generateApiKey() {
-    let user!: TRPCRouter['users']['updateSelf'];
-
     loading.set(true);
 
     try {
-      user = await trpc($page).users.updateSelf.mutate();
+      await trpc($page).users.resetApiKey.mutate();
     } catch (err) {
       displayError(toast, err);
     }
 
-    data.user = {
-      ...data.user,
-      apiKey: user.apiKey
-    };
-    data = Object.assign({}, data);
+    await invalidate('reload:user_settings');
+    loading.set(false);
 
     showGenerateApiKeyPrompt = false;
+    toastSuccess(toast, 'Generated new API key successfully');
+  }
+
+  function privacyFormInitialValues() {
+    return {
+      publicDiscord: data.user.settings.publicDiscord,
+      publicStaffHistory: data.user.settings.publicStaffHistory,
+      publicPlayerHistory: data.user.settings.publicPlayerHistory
+    };
+  }
+
+  async function updatePrivacySettings() {
+    const { publicDiscord, publicPlayerHistory, publicStaffHistory } = privacyForm.getFinalValue($privacyForm);
+    loading.set(true);
+
+    try {
+      await trpc($page).users.updateSelf.mutate({
+        settings: {
+          publicDiscord,
+          publicPlayerHistory,
+          publicStaffHistory
+        }
+      });
+    } catch (err) {
+      displayError(toast, err);
+    }
+    
+    await invalidate('reload:user_settings');
     loading.set(false);
-    toastSuccess(toast, 'New API key generated successfully');
+    privacyForm.overrideInitialValues(privacyFormInitialValues());
+    toastSuccess(toast, 'Updated privacy settings successfully');
+  }
+
+  async function resetPrivacySettings() {
+    privacyForm.reset();
   }
 
   async function deleteSession(sessionId: number) {
@@ -194,6 +229,28 @@
           Generate Key
         </button>
       {/if}
+    </section>
+    <div class="line-b my-8" />
+    <section>
+      <h2>Privacy</h2>
+      <div class="card mt-4 grid w-full md:grid-cols-[50%_50%] gap-4 p-4">
+        <Checkbox
+          form={privacyForm}
+          label={privacyForm.labels.publicDiscord}
+          legend="Make your Discord username public on your profile?"
+        />
+        <Checkbox
+          form={privacyForm}
+          label={privacyForm.labels.publicPlayerHistory}
+          legend="Make your playing history public?"
+        />
+        <Checkbox
+          form={privacyForm}
+          label={privacyForm.labels.publicStaffHistory}
+          legend="Make your staffing history public?"
+        />
+      </div>
+      <FormHandler hasUpdated={$privacyForm.hasUpdated} onUpdate={updatePrivacySettings} disableUpdateBtn={!($privacyForm.hasUpdated && $privacyForm.canSubmit)} onReset={resetPrivacySettings} />
     </section>
     <div class="line-b my-8" />
     <section>

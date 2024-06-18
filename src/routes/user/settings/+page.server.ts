@@ -5,14 +5,15 @@ import { and, desc, eq, not } from 'drizzle-orm';
 import { getSession } from '$lib/server/helpers/api';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ cookies, route }) => {
+export const load = (async ({ cookies, route, depends }) => {
+  depends('reload:user_settings');
   const session = getSession(cookies, true);
 
-  let user!: Pick<typeof User.$inferSelect, 'apiKey'>;
+  let user!: Pick<typeof User.$inferSelect, 'apiKey' | 'settings'>;
 
   try {
     user = await db
-      .select(pick(User, ['apiKey']))
+      .select(pick(User, ['apiKey', 'settings']))
       .from(User)
       .where(eq(User.id, session.userId))
       .limit(1)

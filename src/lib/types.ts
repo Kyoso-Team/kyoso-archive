@@ -14,7 +14,8 @@ import type {
   modMultiplierSchema,
   userFormFieldSchema,
   userFormFieldResponseSchema,
-  tournamentThemeSchema
+  tournamentThemeSchema,
+  userSettingsSchema
 } from './schemas';
 
 export type AnyComponent = any;
@@ -32,15 +33,6 @@ export interface OAuthToken {
   tokenIssuedAt: number;
 }
 
-export interface UserSettings {
-  /** Whether or not to make their Discord username public on their profile page */
-  publicDiscord: boolean;
-  /** Whether or not to display their tournament staff history on their profile page */
-  publicStaffHistory: boolean;
-  /** Whether or not to display their tournament player history on their profile page */
-  publicPlayerHistory: boolean;
-}
-
 /** Linear: ABAB. Snake: ABBA */
 export type DraftType = Output<typeof draftTypeSchema>;
 export type RefereeSettings = Output<typeof refereeSettingsSchema>;
@@ -53,6 +45,7 @@ export type ModMultiplier = Output<typeof modMultiplierSchema>;
 export type UserFormField = Output<typeof userFormFieldSchema>;
 export type UserFormFieldResponse = Output<typeof userFormFieldResponseSchema>;
 export type TournamentTheme = Output<typeof tournamentThemeSchema>;
+export type UserSettings = Output<typeof userSettingsSchema>;
 
 export type RoundConfig = StandardRoundConfig | QualifierRoundConfig | BattleRoyaleRoundConfig;
 

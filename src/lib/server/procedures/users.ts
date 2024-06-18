@@ -17,7 +17,7 @@ import { t } from '$trpc';
 import { future, pick, trpcUnknownError } from '$lib/server/utils';
 import { customAlphabet } from 'nanoid';
 import { wrap } from '@typeschema/valibot';
-import { positiveIntSchema } from '$lib/schemas';
+import { positiveIntSchema, userSettingsSchema } from '$lib/schemas';
 import { getSession } from '../helpers/api';
 import { TRPCError } from '@trpc/server';
 import { alias, unionAll } from 'drizzle-orm/pg-core';
@@ -223,13 +223,11 @@ const searchUser = t.procedure
     return user;
   });
 
-const updateSelf = t.procedure.use(rateLimitMiddleware).mutation(async ({ ctx }) => {
+const resetApiKey = t.procedure.use(rateLimitMiddleware).mutation(async ({ ctx }) => {
   const session = getSession(ctx.cookies, true);
 
-  let user!: Pick<typeof User.$inferSelect, 'apiKey'>;
-
   try {
-    user = await db
+    await db
       .update(User)
       .set({
         apiKey: customAlphabet(
@@ -237,15 +235,33 @@ const updateSelf = t.procedure.use(rateLimitMiddleware).mutation(async ({ ctx })
           24
         )()
       })
-      .where(eq(User.id, session.userId))
-      .returning(pick(User, ['apiKey']))
-      .then((rows) => rows[0]);
+      .where(eq(User.id, session.userId));
   } catch (err) {
     throw trpcUnknownError(err, 'Updating the user');
   }
-
-  return user;
 });
+
+const updateSelf = t
+  .procedure
+  .use(rateLimitMiddleware)
+  .input(wrap(v.partial(v.object({
+    settings: userSettingsSchema
+  }))))
+  .mutation(async ({ ctx, input }) => {
+    const { settings } = input;
+    const session = getSession(ctx.cookies, true);
+
+    try {
+      await db
+        .update(User)
+        .set({
+          settings
+        })
+        .where(eq(User.id, session.userId));
+    } catch (err) {
+      throw trpcUnknownError(err, 'Updating the user');
+    }
+  });
 
 const updateUser = t.procedure
   .use(rateLimitMiddleware)
@@ -435,6 +451,7 @@ export const usersRouter = t.router({
   getUser,
   searchUser,
   updateSelf,
+  resetApiKey,
   updateUser,
   banUser,
   revokeBan,
