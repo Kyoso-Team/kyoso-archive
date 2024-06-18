@@ -10,9 +10,26 @@
   src: url('/fonts/VioletSans-Regular.ttf');
 }
 
+:root [data-theme='theme'] {
+  --theme-font-color-headings: #000000;
+  --theme-font-color-headings-dark: #ffffff;
+}
+
 html,
 body {
   @apply h-full overflow-hidden;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--theme-font-color-headings);
+}
+
+.dark h1,
+.dark h2,
+.dark h3 {
+  color: var(--theme-font-color-headings-dark);
 }
 
 h1:not(.m-title),
