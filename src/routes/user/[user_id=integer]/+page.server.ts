@@ -5,6 +5,8 @@ import { error } from '@sveltejs/kit';
 import { alias } from 'drizzle-orm/pg-core';
 import { Ban, Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, User, db } from '$db';
 import type { PageServerLoad } from './$types';
+import { getUserPlayerHistory, getUserStaffHistory } from '$lib/server/helpers/queries';
+import { paginate } from '$lib/utils';
 
 type UserT = Pick<
   typeof User.$inferSelect,
@@ -34,13 +36,14 @@ interface BaseReturnUser extends Omit<UserT, 'updatedApiDataAt' | 'discord'> {
   badges: BadgeT[];
   bans: Omit<BanT, 'issuedBy' | 'revokedBy'>[];
   owner: boolean;
-  activeBan?: BanT;
+  activeBan?: Omit<BanT, 'issuedBy' | 'revokedBy'>;
   id: number;
 };
 
 interface ReturnUserAsAdmin extends BaseReturnUser, Pick<UserT, 'updatedApiDataAt' | 'discord'> {
   viewAsAdmin: true;
   bans: BanT[];
+  activeBan?: BanT;
 }
 
 interface ReturnUserAsCurrent extends BaseReturnUser, Pick<UserT, 'discord'> {
@@ -195,18 +198,26 @@ export const load = (async ({ params, route, parent }) => {
   }
 
   const owner = user.osu.osuUserId === env.OWNER;
+  const returnUser = {
+    ...user,
+    viewAsAdmin,
+    isCurrent,
+    badges,
+    bans,
+    owner,
+    activeBan,
+    id: userId
+  } as ReturnUser;
+
+  const tournamentsStaffed = await getUserStaffHistory(userId, paginate(1, 10));
+  const tournamentsPlayed = await getUserPlayerHistory(userId, paginate(1, 10));
 
   return {
     session,
-    user: {
-      ...user,
-      viewAsAdmin,
-      isCurrent,
-      badges,
-      bans,
-      owner,
-      activeBan,
-      id: userId
-    } as ReturnUser
+    user: returnUser,
+    tournaments: {
+      staffed: tournamentsStaffed,
+      played: tournamentsPlayed
+    }
   };
 }) satisfies PageServerLoad;

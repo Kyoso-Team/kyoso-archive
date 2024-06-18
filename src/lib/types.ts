@@ -33,6 +33,11 @@ export interface OAuthToken {
   tokenIssuedAt: number;
 }
 
+export interface PaginationSettings {
+  offset: number;
+  limit: number;
+}
+
 /** Linear: ABAB. Snake: ABBA */
 export type DraftType = Output<typeof draftTypeSchema>;
 export type RefereeSettings = Output<typeof refereeSettingsSchema>;
