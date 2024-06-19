@@ -109,8 +109,8 @@
 
 <SEO
   page={$page}
-  title={`${data.tournament.acronym} - Assets`}
-  description={`Manage assets for ${data.tournament.acronym}`}
+  title={`${data.tournament.acronym} - Graphics & Design`}
+  description={`Manage assets and the theme for ${data.tournament.acronym}`}
   noIndex
 />
 {#if showDeleteLogoPrompt}
@@ -167,13 +167,13 @@
     </UploadImgModal>
   </Backdrop>
 {/if}
-<h1 class="m-title" use:portal={'#page-title'}>Assets</h1>
+<h1 class="m-title" use:portal={'#page-title'}>Graphics & Design</h1>
 <ol class="breadcrumb" use:portal={'#breadcrumbs'}>
   <li class="crumb">
     <a class="anchor" href={`/m/${data.tournament.urlSlug}`}>{data.tournament.acronym}</a>
   </li>
   <li class="crumb-separator" aria-hidden>&rsaquo;</li>
-  <li class="crumb">Assets</li>
+  <li class="crumb">Graphics & Design</li>
 </ol>
 <main class="main flex justify-center">
   <div class="w-full max-w-5xl">
@@ -203,6 +203,15 @@
           disabled={!data.manageAssets}
         />
       </div>
+    </section>
+    <div class="line-b my-8" />
+    <section>
+      <h2>Theme</h2>
+      {#if !data.manageTheme}
+        <div class="card variant-soft-error p-btn mt-4">
+          You do not have the required permission to manage the theme.
+        </div>
+      {/if}
     </section>
   </div>
 </main>

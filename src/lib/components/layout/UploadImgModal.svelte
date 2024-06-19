@@ -38,7 +38,7 @@
   {/if}
   {#if invertColorOnDark}
     <div
-      class="card variant-soft-primary flex gap-2 justify-center items-center p-btn w-full mb-4"
+      class="card variant-soft-warning flex gap-2 justify-center items-center p-btn w-full mb-4"
       transition:fade={{ duration: 150 }}
     >
       Colors for this image will be inverted when using light mode. Try to use a monochrome image.
