@@ -144,11 +144,12 @@
       currentSrc={logoSrc}
       onUpload={uploadLogo}
       onCancel={toggleShowUploadLogoModal}
+      invertColorOnDark
     >
       <span class="title">Upload Logo</span>
       <p><strong>Aspect ratio:</strong> 1:1</p>
       <p><strong>Dimensions:</strong> 250x250 (or greater)</p>
-      <p class="mb-4">An image with a transparent background is preferred.</p>
+      <p>An image with a transparent background is preferred.</p>
     </UploadImgModal>
   </Backdrop>
 {/if}
@@ -162,7 +163,7 @@
     >
       <span class="title">Upload Banner</span>
       <p><strong>Aspect ratio:</strong> 21:9</p>
-      <p class="mb-4"><strong>Dimensions:</strong> 1600x685 (or greater)</p>
+      <p><strong>Dimensions:</strong> 1600x685 (or greater)</p>
     </UploadImgModal>
   </Backdrop>
 {/if}
@@ -174,21 +175,34 @@
   <li class="crumb-separator" aria-hidden>&rsaquo;</li>
   <li class="crumb">Assets</li>
 </ol>
-<main class="main flex justify-center items-center h-full">
-  <div class="flex gap-4 max-2sm:flex-col flex-wrap justify-center h-max max-w-5xl">
-    <Asset
-      label="Logo"
-      imgAspectRatio="1/1"
-      src={logoSrc}
-      onUpload={toggleShowUploadLogoModal}
-      onDelete={toggleShowDeleteLogoPrompt}
-    />
-    <Asset
-      label="Banner"
-      imgAspectRatio="21/9"
-      src={bannerSrc}
-      onUpload={toggleShowUploadBannerModal}
-      onDelete={toggleShowDeleteBannerPrompt}
-    />
+<main class="main flex justify-center">
+  <div class="w-full max-w-5xl">
+    <section>
+      <h2>Assets</h2>
+      {#if !data.manageAssets}
+        <div class="card variant-soft-error p-btn mt-4">
+          You do not have the required permission to manage assets.
+        </div>
+      {/if}
+      <div class="mt-4 flex max-2md:flex-col gap-4 card items-center justify-center flex-wrap p-4">
+        <Asset
+          label="Logo"
+          imgAspectRatio="1/1"
+          src={logoSrc}
+          onUpload={toggleShowUploadLogoModal}
+          onDelete={toggleShowDeleteLogoPrompt}
+          disabled={!data.manageAssets}
+          invertColorOnDark
+        />
+        <Asset
+          label="Banner"
+          imgAspectRatio="21/9"
+          src={bannerSrc}
+          onUpload={toggleShowUploadBannerModal}
+          onDelete={toggleShowDeleteBannerPrompt}
+          disabled={!data.manageAssets}
+        />
+      </div>
+    </section>
   </div>
 </main>

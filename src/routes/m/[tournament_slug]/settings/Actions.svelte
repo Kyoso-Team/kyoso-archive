@@ -22,7 +22,7 @@
     </button>
     {#if hasUpdated}
       <div
-        class="card variant-soft-warning flex justify-center items-center py-[9px] px-5 w-full 2md:w-max"
+        class="card variant-soft-warning flex justify-center items-center p-btn w-full 2md:w-max"
         transition:fade={{ duration: 150 }}
       >
         <AlertTriangle size={20} class="mr-2" />

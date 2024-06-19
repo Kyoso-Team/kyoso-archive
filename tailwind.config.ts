@@ -17,6 +17,15 @@ export default {
         '2md': '900px',
         '2sm': '525px',
         'xs': '450px'
+      },
+      keyframes: {
+        'fade-in': {
+          'from': { opacity: '0' },
+          'to': { opacity: '1' }
+        }
+      },
+      animation: {
+        'fade-in': 'fade-in 150ms ease'
       }
     }
   },

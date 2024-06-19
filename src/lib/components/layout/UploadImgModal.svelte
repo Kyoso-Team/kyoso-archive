@@ -1,13 +1,14 @@
 <script lang="ts">
-  import { fly } from 'svelte/transition';
   import { NoFile } from '$components/general';
   import { FileButton } from '@skeletonlabs/skeleton';
+  import { fade, fly } from 'svelte/transition';
   import type { MaybePromise } from '@sveltejs/kit';
 
   export let onUpload: (file: File) => MaybePromise<void>;
   export let onCancel: () => MaybePromise<void>;
   export let currentSrc: string | undefined;
   export let imgAspectRatio: string;
+  export let invertColorOnDark = false;
   let showNewImg = true;
   let files: FileList;
   let fileInput: HTMLInputElement | undefined;
@@ -29,8 +30,20 @@
   $: newSrc = file ? URL.createObjectURL(file) : undefined;
 </script>
 
-<div class="modal w-[480px]" transition:fly={{ duration: 150, y: 100 }}>
-  <slot />
+<div class="modal w-[512px]" transition:fly={{ duration: 150, y: 100 }}>
+  {#if $$slots.default}
+    <div class="mb-4">
+      <slot />
+    </div>
+  {/if}
+  {#if invertColorOnDark}
+    <div
+      class="card variant-soft-primary flex gap-2 justify-center items-center p-btn w-full mb-4"
+      transition:fade={{ duration: 150 }}
+    >
+      Colors for this image will be inverted when using light mode. Try to use a monochrome image.
+    </div>
+  {/if}
   <div class="p-2 border-dashed border border-surface-500 rounded-md flex items-center gap-2">
     <button class="btn btn-sm variant-filled-primary" on:click={onSelectFileBtnclick}>
       Select File
@@ -48,9 +61,9 @@
           style={`aspect-ratio: ${imgAspectRatio};`}
         >
           {#if showNewImg && newSrc}
-            <img src={newSrc} alt="new logo" class="w-full h-full" />
+            <img src={newSrc} alt="new logo" class={`w-full h-full${invertColorOnDark ? ' invert dark:invert-0' : ''}`} />
           {:else}
-            <img src={currentSrc} alt="logo" class="w-full h-full" />
+            <img src={currentSrc} alt="logo" class={`w-full h-full${invertColorOnDark ? ' invert dark:invert-0' : ''}`} />
           {/if}
         </div>
       {:else}
