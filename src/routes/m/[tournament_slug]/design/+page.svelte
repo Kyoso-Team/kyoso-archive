@@ -52,7 +52,7 @@
       tournamentId: data.tournament.id
     });
 
-    await invalidate('reload:manage_assets');
+    await invalidate('reload:manage_design');
     loading.set(false);
 
     toggleShowUploadLogoModal();
@@ -66,7 +66,7 @@
       tournamentId: data.tournament.id
     });
 
-    await invalidate('reload:manage_assets');
+    await invalidate('reload:manage_design');
     loading.set(false);
 
     toggleShowUploadBannerModal();
@@ -79,7 +79,7 @@
       tournamentId: data.tournament.id
     });
 
-    await invalidate('reload:manage_assets');
+    await invalidate('reload:manage_design');
     loading.set(false);
 
     toggleShowDeleteLogoPrompt();
@@ -92,7 +92,7 @@
       tournamentId: data.tournament.id
     });
 
-    await invalidate('reload:manage_assets');
+    await invalidate('reload:manage_design');
     loading.set(false);
 
     toggleShowDeleteBannerPrompt();

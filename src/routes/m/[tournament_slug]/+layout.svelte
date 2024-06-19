@@ -5,7 +5,7 @@
   import {
     Settings,
     Home,
-    Image,
+    Palette,
     // Network,
     // Users,
     // LockKeyhole,
@@ -122,7 +122,7 @@
       // shownLinks.push({
       //   href: '/registrations',
       //   icon: Users,
-      //   tip: 'Player Regs.',
+      //   tip: 'Player Regsistrations',
       //   tipName: 'tooltip-regs'
       // });
     }
@@ -182,12 +182,12 @@
       // });
     }
 
-    if (hasPermissions(data.staffMember, baseRoles.concat(['manage_assets']))) {
+    if (hasPermissions(data.staffMember, baseRoles.concat(['manage_assets', 'manage_theme']))) {
       shownLinks.push({
-        href: '/assets',
-        icon: Image,
-        tip: 'Assets',
-        tipName: 'tooltip-assets'
+        href: '/design',
+        icon: Palette,
+        tip: 'Graphics & Design',
+        tipName: 'tooltip-design'
       });
     }
 
