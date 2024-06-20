@@ -16,6 +16,7 @@ import type {
   userFormFieldResponseSchema,
   tournamentThemeSchema
 } from './schemas';
+import type { PgColumn } from 'drizzle-orm/pg-core';
 
 export type AnyComponent = any;
 
@@ -126,6 +127,23 @@ export type FormStore = Writable<AnyForm> & {
 export type ParseInt<T> = T extends `${infer N extends number}` ? N : never;
 
 export type OnServerError = (err: unknown) => MaybePromise<void>;
+
+export type AnyPgNumberColumn = PgColumn<
+  {
+    name: any;
+    tableName: any;
+    dataType: 'number';
+    columnType: any;
+    data: any;
+    driverParam: any;
+    notNull: any;
+    hasDefault: any;
+    enumValues: any;
+    baseColumn: any;
+  },
+  any,
+  any
+>;
 
 export interface AuthSession {
   sessionId: number;
