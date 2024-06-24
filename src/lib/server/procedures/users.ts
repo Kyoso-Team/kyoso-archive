@@ -5,13 +5,18 @@ import {
   Country,
   db,
   DiscordUser,
+  Invite,
+  InviteWithRole,
   OsuBadge,
   OsuUser,
   OsuUserAwardedBadge,
   Session,
+  StaffMember,
+  StaffMemberRole,
+  StaffRole,
   User
 } from '$db';
-import { type SQL } from 'drizzle-orm';
+import { inArray } from 'drizzle-orm';
 import { and, desc, eq, isNull, not, or, sql } from 'drizzle-orm';
 import { t } from '$trpc';
 import { future, pick, trpcUnknownError } from '$lib/server/utils';
@@ -23,6 +28,7 @@ import { TRPCError } from '@trpc/server';
 import { alias, unionAll } from 'drizzle-orm/pg-core';
 import { rateLimitMiddleware } from '$trpc/middleware';
 import { TRPCChecks } from '../helpers/checks';
+import type { SQL } from 'drizzle-orm';
 
 const getUser = t.procedure
   .use(rateLimitMiddleware)
@@ -241,12 +247,17 @@ const resetApiKey = t.procedure.use(rateLimitMiddleware).mutation(async ({ ctx }
   }
 });
 
-const updateSelf = t
-  .procedure
+const updateSelf = t.procedure
   .use(rateLimitMiddleware)
-  .input(wrap(v.partial(v.object({
-    settings: userSettingsSchema
-  }))))
+  .input(
+    wrap(
+      v.partial(
+        v.object({
+          settings: userSettingsSchema
+        })
+      )
+    )
+  )
   .mutation(async ({ ctx, input }) => {
     const { settings } = input;
     const session = getSession(ctx.cookies, true);
@@ -258,6 +269,206 @@ const updateSelf = t
           settings
         })
         .where(eq(User.id, session.userId));
+    } catch (err) {
+      throw trpcUnknownError(err, 'Updating the user');
+    }
+  });
+
+const makeAdmin = t.procedure
+  .use(rateLimitMiddleware)
+  .input(
+    wrap(
+      v.object({
+        userId: positiveIntSchema
+      })
+    )
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { userId } = input;
+    const checks = new TRPCChecks({ action: 'make this user an admin' });
+    const session = getSession(ctx.cookies, true);
+    checks.userIsOwner(session);
+
+    try {
+      await db.transaction(async (tx) => {
+        await tx
+          .update(User)
+          .set({
+            admin: true
+          })
+          .where(eq(User.id, userId));
+
+        await tx
+          .update(Session)
+          .set({
+            updateCookie: true
+          })
+          .where(and(eq(Session.userId, userId), not(Session.expired)));
+      });
+    } catch (err) {
+      throw trpcUnknownError(err, 'Updating the user');
+    }
+  });
+
+const removeAdmin = t.procedure
+  .use(rateLimitMiddleware)
+  .input(
+    wrap(
+      v.object({
+        userId: positiveIntSchema
+      })
+    )
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { userId } = input;
+    const checks = new TRPCChecks({ action: "remove this user's admin status" });
+    const session = getSession(ctx.cookies, true);
+    checks.userIsOwner(session);
+
+    const asDebuggerSq = db.$with('as_debugger').as(
+      db
+        .select(pick(StaffMemberRole, ['staffMemberId']))
+        .from(StaffMemberRole)
+        .innerJoin(StaffRole, eq(StaffRole.id, StaffMemberRole.staffRoleId))
+        .innerJoin(StaffMember, eq(StaffMember.id, StaffMemberRole.staffMemberId))
+        .where(and(eq(StaffRole.order, 1), eq(StaffMember.userId, userId)))
+    );
+
+    const inviteAsDebuggerSq = db.$with('invite_as_debugger').as(
+      db
+        .select(pick(InviteWithRole, ['inviteId']))
+        .from(InviteWithRole)
+        .innerJoin(StaffRole, eq(StaffRole.id, InviteWithRole.staffRoleId))
+        .innerJoin(Invite, eq(Invite.id, InviteWithRole.inviteId))
+        .where(
+          and(eq(StaffRole.order, 1), eq(Invite.status, 'pending'), eq(Invite.toUserId, userId))
+        )
+    );
+
+    try {
+      await db.transaction(async (tx) => {
+        await tx
+          .update(User)
+          .set({
+            admin: false
+          })
+          .where(eq(User.id, userId));
+
+        await tx
+          .update(Session)
+          .set({
+            updateCookie: true
+          })
+          .where(and(eq(Session.userId, userId), not(Session.expired)));
+
+        // Remove admin from any tournament where they're a debugger, since a debugger must be an admin
+        await tx
+          .with(asDebuggerSq)
+          .delete(StaffMemberRole)
+          .where(inArray(StaffMemberRole.staffMemberId, db.select().from(asDebuggerSq)));
+
+        await tx
+          .update(StaffMember)
+          .set({
+            deletedAt: sql`now()`
+          })
+          .where(eq(StaffMember.userId, userId));
+
+        // Cancel pending invitations to become a debugger in a tournament
+        await tx
+          .with(inviteAsDebuggerSq)
+          .update(Invite)
+          .set({
+            status: 'cancelled'
+          })
+          .where(inArray(Invite.id, db.select().from(inviteAsDebuggerSq)));
+      });
+    } catch (err) {
+      throw trpcUnknownError(err, 'Updating the user');
+    }
+  });
+
+const makeApprovedHost = t.procedure
+  .use(rateLimitMiddleware)
+  .input(
+    wrap(
+      v.object({
+        userId: positiveIntSchema
+      })
+    )
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { userId } = input;
+    const checks = new TRPCChecks({ action: 'make this user an approved host' });
+    const session = getSession(ctx.cookies, true);
+    checks.userIsAdmin(session);
+
+    try {
+      await db.transaction(async (tx) => {
+        await tx
+          .update(User)
+          .set({
+            approvedHost: true
+          })
+          .where(eq(User.id, userId));
+
+        await tx
+          .update(Session)
+          .set({
+            updateCookie: true
+          })
+          .where(and(eq(Session.userId, userId), not(Session.expired)));
+      });
+    } catch (err) {
+      throw trpcUnknownError(err, 'Updating the user');
+    }
+  });
+
+const removeApprovedHost = t.procedure
+  .use(rateLimitMiddleware)
+  .input(
+    wrap(
+      v.object({
+        userId: positiveIntSchema
+      })
+    )
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { userId } = input;
+    const checks = new TRPCChecks({ action: "remove this user's approved host status" });
+    const session = getSession(ctx.cookies, true);
+    checks.userIsAdmin(session);
+
+    try {
+      await db.transaction(async (tx) => {
+        await tx
+          .update(User)
+          .set({
+            approvedHost: false
+          })
+          .where(eq(User.id, userId));
+
+        await tx
+          .update(Session)
+          .set({
+            updateCookie: true
+          })
+          .where(and(eq(Session.userId, userId), not(Session.expired)));
+
+        // Cancel pending invitations to become a tournament's host
+        await tx
+          .update(Invite)
+          .set({
+            status: 'cancelled'
+          })
+          .where(
+            and(
+              eq(Invite.status, 'pending'),
+              eq(Invite.reason, 'delegate_host'),
+              eq(Invite.toUserId, userId)
+            )
+          );
+      });
     } catch (err) {
       throw trpcUnknownError(err, 'Updating the user');
     }
@@ -453,6 +664,10 @@ export const usersRouter = t.router({
   updateSelf,
   resetApiKey,
   updateUser,
+  makeAdmin,
+  removeAdmin,
+  makeApprovedHost,
+  removeApprovedHost,
   banUser,
   revokeBan,
   expireSession

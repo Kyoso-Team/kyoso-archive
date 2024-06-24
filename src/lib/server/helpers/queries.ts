@@ -73,7 +73,7 @@ export async function getUserStaffHistory(userId: number, { offset, limit }: Pag
   return await db
     .selectDistinctOn([Tournament.id, TournamentDates.publishedAt], {
       ...baseUserHistorySelect,
-      staffRoles: sql`
+      staffRoles: sql<Simplify<Pick<typeof StaffRole.$inferSelect, 'name' | 'color' | 'order'>>[]>`
         coalesce(
           json_agg(
             json_build_object(
@@ -87,14 +87,7 @@ export async function getUserStaffHistory(userId: number, { offset, limit }: Pag
           ),
           '[]'::json
         )
-      `
-        .mapWith(
-          (value) =>
-            JSON.parse(value) as Simplify<
-              Pick<typeof StaffRole.$inferSelect, 'name' | 'color' | 'order'>
-            >[]
-        )
-        .as('staff_roles')
+      `.as('staff_roles')
     })
     .from(Tournament)
     .innerJoin(TournamentDates, eq(TournamentDates.tournamentId, Tournament.id))

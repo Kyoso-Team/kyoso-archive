@@ -25,6 +25,11 @@ import {
 import { timestampConfig, uniqueConstraints } from './schema-utils';
 import { sql } from 'drizzle-orm';
 
+/* In a tournament, order 1-5 are reserved as follows:
+  1- Debugger
+  2- Host
+  3-5 are available in case any new defaults are added
+*/
 export const StaffRole = pgTable(
   'staff_role',
   {
