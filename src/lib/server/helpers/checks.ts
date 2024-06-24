@@ -33,7 +33,7 @@ abstract class Checks<ErrCodeT = number | TRPC_ERROR_CODE_KEY> {
   }
 
   public userIsOwner(session: AuthSession) {
-    if (session.userId === env.OWNER) return this;
+    if (session.osu.id === env.OWNER) return this;
     throw this.error(this.codes.unauthorized, `You must be the website owner to ${this.action}`);
   }
 

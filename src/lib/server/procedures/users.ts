@@ -289,6 +289,33 @@ const makeAdmin = t.procedure
     const session = getSession(ctx.cookies, true);
     checks.userIsOwner(session);
 
+    let user: Pick<typeof User.$inferSelect, 'admin'> | undefined;
+
+    try {
+      user = await db
+        .select(pick(User, ['admin']))
+        .from(User)
+        .where(eq(User.id, userId))
+        .limit(1)
+        .then((users) => users[0]);
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting the user');
+    }
+
+    if (!user) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'User not found'
+      });
+    }
+
+    if (user.admin) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'User is already an admin'
+      });
+    }
+
     try {
       await db.transaction(async (tx) => {
         await tx
@@ -324,6 +351,33 @@ const removeAdmin = t.procedure
     const checks = new TRPCChecks({ action: "remove this user's admin status" });
     const session = getSession(ctx.cookies, true);
     checks.userIsOwner(session);
+
+    let user: Pick<typeof User.$inferSelect, 'admin'> | undefined;
+
+    try {
+      user = await db
+        .select(pick(User, ['admin']))
+        .from(User)
+        .where(eq(User.id, userId))
+        .limit(1)
+        .then((users) => users[0]);
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting the user');
+    }
+
+    if (!user) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'User not found'
+      });
+    }
+
+    if (!user.admin) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'User is already not an admin'
+      });
+    }
 
     const asDebuggerSq = db.$with('as_debugger').as(
       db
@@ -403,6 +457,40 @@ const makeApprovedHost = t.procedure
     const session = getSession(ctx.cookies, true);
     checks.userIsAdmin(session);
 
+    let user: Pick<typeof User.$inferSelect, 'approvedHost' | 'osuUserId'> | undefined;
+
+    try {
+      user = await db
+        .select(pick(User, ['approvedHost', 'osuUserId']))
+        .from(User)
+        .where(eq(User.id, userId))
+        .limit(1)
+        .then((users) => users[0]);
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting the user');
+    }
+
+    if (!user) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'User not found'
+      });
+    }
+
+    if (user.osuUserId === env.OWNER) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'You can\'t update the owner\'s approved host status'
+      });
+    }
+
+    if (user.approvedHost) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'User is already an approved host'
+      });
+    }
+
     try {
       await db.transaction(async (tx) => {
         await tx
@@ -438,6 +526,40 @@ const removeApprovedHost = t.procedure
     const checks = new TRPCChecks({ action: "remove this user's approved host status" });
     const session = getSession(ctx.cookies, true);
     checks.userIsAdmin(session);
+
+    let user: Pick<typeof User.$inferSelect, 'approvedHost' | 'osuUserId'> | undefined;
+
+    try {
+      user = await db
+        .select(pick(User, ['approvedHost', 'osuUserId']))
+        .from(User)
+        .where(eq(User.id, userId))
+        .limit(1)
+        .then((users) => users[0]);
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting the user');
+    }
+
+    if (!user) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'User not found'
+      });
+    }
+
+    if (user.osuUserId === env.OWNER) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'You can\'t update the owner\'s approved host status'
+      });
+    }
+
+    if (!user.approvedHost) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'User is already not an approved host'
+      });
+    }
 
     try {
       await db.transaction(async (tx) => {

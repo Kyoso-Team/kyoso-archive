@@ -1,21 +1,88 @@
 <script lang="ts">
   import KyosoBadges from './KyosoBadges.svelte';
   import { Discord, OsuCatch, OsuMania, OsuStandard, OsuTaiko } from '$components/icons';
-  import { Tooltip } from '$components/general';
+  import { Tooltip, SEO } from '$components/general';
+  import { Backdrop, Modal } from '$components/layout';
   import { buildUrl } from 'osu-web.js';
-  import { formatDate, formatNumber, tooltip } from '$lib/utils';
+  import { displayError, formatDate, formatNumber, toastSuccess, tooltip } from '$lib/utils';
   import { popup } from '$lib/popup';
+  import { loading } from '$stores';
+  import { trpc } from '$lib/trpc';
+  import { page } from '$app/stores';
+  import { getToastStore } from '@skeletonlabs/skeleton';
+  import { invalidate } from '$app/navigation';
   import type { PageServerData } from './$types';
-  import type { AnyComponent } from '$types';
+  import type { AnyComponent, TRPCRouter } from '$types';
 
   export let data: PageServerData;
-  const kyosoBadges: {
+  let procedure: keyof Pick<TRPCRouter['users'], 'makeAdmin' | 'removeAdmin' | 'makeApprovedHost' | 'removeApprovedHost'> | undefined;
+  let kyosoBadges: {
     label: string;
     description: string;
     tooltipName: string;
     variant: string;
     show: boolean;
-  }[] = [{
+  }[] = [];
+  let rankings: {
+    label: string;
+    tooltipName: string;
+    rank: number | null;
+    icon: AnyComponent;
+  }[] = [];
+  const toast = getToastStore();
+
+  function viewAsAdmin(user: typeof data.user): user is Extract<typeof data.user, { viewAsAdmin: true; }> {
+    return user.viewAsAdmin;
+  }
+
+  function viewAsCurrent(user: typeof data.user): user is Extract<typeof data.user, { isCurrent: true; }> {
+    return user.isCurrent;
+  }
+
+  function viewAsPublicDiscord(user: typeof data.user): user is Extract<typeof data.user, { settings: { publicDiscord: true; }; }> {
+    return user.settings.publicDiscord;
+  }
+
+  async function updateUser() {
+    if (!procedure) return;
+    loading.set(true);
+
+    try {
+      await trpc($page).users[procedure].mutate({
+        userId: data.user.id
+      });
+    } catch (err) {
+      displayError(toast, err);
+    }
+    
+    await invalidate('reload:user');
+    procedure = undefined;
+    loading.set(false);
+    toastSuccess(toast, 'Updated user successfully');
+  }
+  
+
+  function makeUserAdmin() {
+    procedure = 'makeAdmin';
+  }
+
+  function removeUserAdmin() {
+    procedure = 'removeAdmin';
+  }
+
+  function makeUserApprovedHost() {
+    procedure = 'makeApprovedHost';
+  }
+
+  function removeUserApprovedHost() {
+    procedure = 'removeApprovedHost';
+  }
+
+  function toggleUpdateUserPrompt() {
+    procedure = undefined;
+  }
+
+  $: kyosoBadges = [{
     label: 'Owner',
     description: 'Owner of Kyoso',
     tooltipName: 'tooltip-owner',
@@ -40,13 +107,7 @@
     variant: 'variant-soft-red',
     show: !!data.user.activeBan
   }];
-  // NOTE: Update later with other ruleset rankings
-  const rankings: {
-    label: string;
-    tooltipName: string;
-    rank: number | null;
-    icon: AnyComponent;
-  }[] = [{
+  $: rankings = [{
     label: 'osu! standard global rank',
     tooltipName: 'tooltip-standard-rank',
     rank: data.user.osu.globalStdRank,
@@ -67,20 +128,21 @@
     rank: data.user.osu.globalManiaRank,
     icon: OsuMania
   }];
-
-  function viewAsAdmin(user: typeof data.user): user is Extract<typeof data.user, { viewAsAdmin: true; }> {
-    return user.viewAsAdmin;
-  }
-
-  function viewAsCurrent(user: typeof data.user): user is Extract<typeof data.user, { isCurrent: true; }> {
-    return user.isCurrent;
-  }
-
-  function viewAsPublicDiscord(user: typeof data.user): user is Extract<typeof data.user, { settings: { publicDiscord: true; }; }> {
-    return user.settings.publicDiscord;
-  }
 </script>
 
+<SEO page={$page} title={`${data.user.osu.username} - User Profile`} description={`User profile and information for ${data.user.osu.username} on osu!`} />
+{#if procedure}
+  <Backdrop>
+    <Modal>
+      <span class="title">{procedure.includes('make') ? 'Make' : 'Remove'} {procedure.includes('Admin') ? 'Admin' : 'Approved Host'}</span>
+      <p>Are you sure you want to update this user and {procedure.includes('make') ? 'grant them additional permissions' : 'remove some of their permissions'}?</p>
+      <div class="actions">
+        <button class="btn variant-filled-primary" on:click={updateUser}>Update</button>
+        <button class="btn variant-filled" on:click={toggleUpdateUserPrompt}>Cancel</button>
+      </div>
+    </Modal>
+  </Backdrop>
+{/if}
 <main class="main flex justify-center">
   <div class="w-full max-w-5xl">
     <h1>User Profile</h1>
@@ -135,7 +197,7 @@
             {#each data.user.badges as { awardedAt, description, imgFileName }, i}
               <button class="cursor-default [&>*]:pointer-events-none" use:popup={tooltip(`tooltip-badge-${i.toString()}`)}>
                 <img
-                  src={imgFileName}
+                  src={`https://assets.ppy.sh/profile-badges/${imgFileName}`}
                   alt={description}
                   width={86}
                   height={40}
@@ -169,6 +231,23 @@
             <span class="block badge variant-soft-surface">Updated API data on {formatDate(data.user.updatedApiDataAt, 'full')}</span>
           {/if}
         </div>
+        {#if !data.user.owner && (data.isSessionUserOwner || data.session?.admin)}
+          <div class="line-b" />
+          <div class="flex gap-2 flex-wrap">
+            {#if data.isSessionUserOwner}
+              {#if data.user.admin}
+                <button class="btn variant-filled-error" on:click={removeUserAdmin}>Remove Admin</button>
+              {:else}
+                <button class="btn variant-filled" on:click={makeUserAdmin}>Make Admin</button>
+              {/if}
+            {/if}
+            {#if data.user.approvedHost}
+              <button class="btn variant-filled-error" on:click={removeUserApprovedHost}>Remove Approved Host</button>
+            {:else}
+              <button class="btn variant-filled" on:click={makeUserApprovedHost}>Make Approved Host</button>
+            {/if}
+          </div>
+        {/if}
       </div>
     </section>
     <div class="line-b my-8" />

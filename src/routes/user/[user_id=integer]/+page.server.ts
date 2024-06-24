@@ -58,8 +58,9 @@ interface ReturnUserAsPublicDiscord extends BaseReturnUser, Pick<UserT, 'discord
 
 type ReturnUser = ReturnUserAsAdmin | ReturnUserAsCurrent | ReturnUserAsPublicDiscord;
 
-export const load = (async ({ params, route, parent }) => {
-  const { session } = await parent();
+export const load = (async ({ params, route, parent, depends }) => {
+  depends('reload:user');
+  const { session, isUserOwner: isSessionUserOwner } = await parent();
   const viewAsAdmin = !!session?.admin;
   const userId = Number(params.user_id);
   const isCurrent = userId === session?.userId;
@@ -214,6 +215,7 @@ export const load = (async ({ params, route, parent }) => {
 
   return {
     session,
+    isSessionUserOwner,
     user: returnUser,
     tournaments: {
       staffed: tournamentsStaffed,
