@@ -98,7 +98,7 @@ export async function upsertOsuUser(
 
   const badges: (typeof OsuBadge.$inferInsert)[] = user.badges.map((badge) => ({
     description: badge.description,
-    imgFileName: badge.image_url.split('/').at(-1) || ''
+    imgFileName: badge.image_url.match(/https:\/\/assets\.ppy\.sh\/profile-badges\/(.*)/)?.[1] || ''
   }));
 
   if (badges.length > 0) {
