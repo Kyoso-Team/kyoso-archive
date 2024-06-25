@@ -1,5 +1,5 @@
 {
-  "id": "f1f7f70e-eba1-4d16-aa0c-b30eb015ca25",
+  "id": "ae7ce16b-c874-42eb-ae84-20df5fa2bbfe",
   "prevId": "175c5e24-0821-4fd0-ad74-893e1694fe33",
   "version": "7",
   "dialect": "postgresql",
@@ -640,17 +640,23 @@
           "method": "btree",
           "with": {}
         },
-        "idx_player_deleted_at_registered_at": {
-          "name": "idx_player_deleted_at_registered_at",
+        "idx_player_registered_at_joined_team_at_deleted_at": {
+          "name": "idx_player_registered_at_joined_team_at_deleted_at",
           "columns": [
             {
-              "expression": "deleted_at",
+              "expression": "registered_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
             },
             {
-              "expression": "registered_at",
+              "expression": "joined_team_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "deleted_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -760,6 +766,21 @@
             }
           ],
           "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_staff_member_joined_staff_at": {
+          "name": "idx_staff_member_joined_staff_at",
+          "columns": [
+            {
+              "expression": "joined_staff_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}

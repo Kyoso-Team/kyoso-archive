@@ -76,6 +76,7 @@ export const StaffMember = pgTable(
       table.userId,
       table.tournamentId
     ),
+    indexJoinedStaffAt: index('idx_staff_member_joined_staff_at').on(table.joinedStaffAt.desc()),
     indexDeletedAt: index('idx_staff_member_deleted_at').on(table.deletedAt)
   })
 );
@@ -169,9 +170,10 @@ export const Player = pgTable(
       table.teamId,
       table.userId
     ),
-    indexDeletedRegisteredAt: index('idx_player_deleted_at_registered_at').on(
-      table.deletedAt,
-      table.registeredAt
+    indexDeletedRegisteredAt: index('idx_player_registered_at_joined_team_at_deleted_at').on(
+      table.registeredAt,
+      table.joinedTeamAt,
+      table.deletedAt
     )
   })
 );

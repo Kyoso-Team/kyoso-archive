@@ -250,6 +250,13 @@
         {/if}
       </div>
     </section>
-    <div class="line-b my-8" />
+    {#if data.user.bans > 0}
+      <div class="line-b my-8" />
+      <section>
+        <div class="card p-4 flex flex-col gap-4">
+          
+        </div>
+      </section>
+    {/if}
   </div>
 </main>
