@@ -60,6 +60,7 @@ async function main() {
   spinner = createSpinner('Reset database').start();
 
   await db.execute(sql`
+    DROP EXTENSION IF EXISTS pg_trgm CASCADE;
     DROP SCHEMA IF EXISTS public CASCADE;
     CREATE SCHEMA public;
     DROP SCHEMA IF EXISTS drizzle CASCADE;
@@ -178,7 +179,7 @@ async function main() {
     osuBadgesInsert.push(
       ...osu.badges.map(({ description, image_url }) => ({
         description,
-        imgFileName: image_url.split('/').at(-1) || ''
+        imgFileName: image_url.match(/https:\/\/assets\.ppy\.sh\/profile-badges\/(.*)/)?.[1] || ''
       }))
     );
 
@@ -186,7 +187,7 @@ async function main() {
       ...osu.badges.map(({ awarded_at, image_url }) => ({
         awardedAt: new Date(awarded_at),
         osuUserId: osu.id,
-        imgFileName: image_url.split('/').at(-1) || ''
+        imgFileName: image_url.match(/https:\/\/assets\.ppy\.sh\/profile-badges\/(.*)/)?.[1] || ''
       }))
     );
 

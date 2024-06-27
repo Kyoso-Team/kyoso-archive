@@ -63,13 +63,13 @@
         </ul>
         <li>
           <strong>Signed in:</strong>
-          {formatDate(session.createdAt)} - {formatTime(session.createdAt)}
+          {formatDate(session.createdAt)}, {formatTime(session.createdAt)}
         </li>
         <li>
           <strong>Last active:</strong>
           {current
             ? 'Now'
-            : `${formatDate(session.lastActiveAt)} - ${formatTime(session.lastActiveAt)}`}
+            : `${formatDate(session.lastActiveAt)}, ${formatTime(session.lastActiveAt)}`}
         </li>
       </ul>
     </Modal>

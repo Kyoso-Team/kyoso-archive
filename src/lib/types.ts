@@ -14,7 +14,8 @@ import type {
   modMultiplierSchema,
   userFormFieldSchema,
   userFormFieldResponseSchema,
-  tournamentThemeSchema
+  tournamentThemeSchema,
+  userSettingsSchema
 } from './schemas';
 import type { PgColumn } from 'drizzle-orm/pg-core';
 
@@ -33,6 +34,11 @@ export interface OAuthToken {
   tokenIssuedAt: number;
 }
 
+export interface PaginationSettings {
+  offset: number;
+  limit: number;
+}
+
 /** Linear: ABAB. Snake: ABBA */
 export type DraftType = Output<typeof draftTypeSchema>;
 export type RefereeSettings = Output<typeof refereeSettingsSchema>;
@@ -45,6 +51,7 @@ export type ModMultiplier = Output<typeof modMultiplierSchema>;
 export type UserFormField = Output<typeof userFormFieldSchema>;
 export type UserFormFieldResponse = Output<typeof userFormFieldResponseSchema>;
 export type TournamentTheme = Output<typeof tournamentThemeSchema>;
+export type UserSettings = Output<typeof userSettingsSchema>;
 
 export type RoundConfig = StandardRoundConfig | QualifierRoundConfig | BattleRoyaleRoundConfig;
 

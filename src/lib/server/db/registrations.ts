@@ -25,6 +25,11 @@ import {
 import { timestampConfig, uniqueConstraints } from './schema-utils';
 import { sql } from 'drizzle-orm';
 
+/* In a tournament, order 1-5 are reserved as follows:
+  1- Debugger
+  2- Host
+  3-5 are available in case any new defaults are added
+*/
 export const StaffRole = pgTable(
   'staff_role',
   {
@@ -71,6 +76,7 @@ export const StaffMember = pgTable(
       table.userId,
       table.tournamentId
     ),
+    indexJoinedStaffAt: index('idx_staff_member_joined_staff_at').on(table.joinedStaffAt.desc()),
     indexDeletedAt: index('idx_staff_member_deleted_at').on(table.deletedAt)
   })
 );
@@ -164,9 +170,10 @@ export const Player = pgTable(
       table.teamId,
       table.userId
     ),
-    indexDeletedRegisteredAt: index('idx_player_deleted_at_registered_at').on(
-      table.deletedAt,
-      table.registeredAt
+    indexDeletedRegisteredAt: index('idx_player_registered_at_joined_team_at_deleted_at').on(
+      table.registeredAt,
+      table.joinedTeamAt,
+      table.deletedAt
     )
   })
 );
