@@ -226,18 +226,18 @@ const updateTournament = t.procedure
       tournamentId,
       {
         tournament: ['deletedAt'],
-        dates: ['publishedAt', 'concludesAt']
+        dates: ['playerRegsOpenAt', 'concludesAt']
       },
       true
     );
     checks.tournamentNotDeleted(info).tournamentNotConcluded(info);
 
-    // Only update if the tournament is not public yet
-    if (isDatePast(info.publishedAt) && (type || teamSettings || rankRange || bwsValues)) {
+    // Only update if the player registrations haven't opened yet
+    if (isDatePast(info.playerRegsOpenAt) && (type || teamSettings || rankRange || bwsValues)) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message:
-          "This tournament is public. You can no longer update this tournament's type, team settings (if applicable), rank range or BWS formula"
+          "This tournament has already opened its player registrations. You can no longer update this tournament's type, team settings (if applicable), rank range or BWS formula"
       });
     }
 

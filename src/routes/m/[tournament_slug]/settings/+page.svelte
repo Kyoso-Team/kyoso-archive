@@ -548,11 +548,12 @@
   $: isPublic = isDatePast(t.publishedAt);
   $: isTeamBased = ['teams', 'draft'].includes($tournamentForm.value.type as any);
   $: isOpenRank = $tournamentForm.value.openRank;
+  $: arePlayerRegsOpen = isDatePast(t.playerRegsOpenAt);
   $: useBWS = $tournamentForm.value.useBWS;
   $: notHostMsg = !data.isHost ? 'Only the host can update this setting' : undefined;
-  $: isGoingPublicWarningMsg =
-    t.publishedAt && isDateFuture(t.publishedAt)
-      ? `You can't update this setting after the tournament has been published (${formatDate(t.publishedAt, 'shortened')}, ${formatTime(t.publishedAt)})`
+  $: arePlayerRegsOpeningWarningMsg =
+    t.playerRegsOpenAt && isDateFuture(t.playerRegsOpenAt)
+      ? `You can't update this setting after the tournament's player registrations open (${formatDate(t.playerRegsOpenAt, 'shortened')}, ${formatTime(t.playerRegsOpenAt)})`
       : undefined;
 </script>
 
@@ -675,32 +676,32 @@
             label={labels.type}
             legend="Type"
             options={tournamentTypeOptions}
-            disabled={!data.isHost || isPublic}
-            warningMsg={isGoingPublicWarningMsg}
+            disabled={!data.isHost || arePlayerRegsOpen}
+            warningMsg={arePlayerRegsOpeningWarningMsg}
             notAllowedMsg={notHostMsg}
           />
           <Number
             form={teamForm}
             label={labels.minTeamSize}
             legend="Min. team size"
-            disabled={!isTeamBased || !data.isHost || isPublic}
-            warningMsg={isGoingPublicWarningMsg}
+            disabled={!isTeamBased || !data.isHost || arePlayerRegsOpen}
+            warningMsg={arePlayerRegsOpeningWarningMsg}
             notAllowedMsg={notHostMsg}
           />
           <Number
             form={teamForm}
             label={labels.maxTeamSize}
             legend="Max. team size"
-            disabled={!isTeamBased || !data.isHost || isPublic}
-            warningMsg={isGoingPublicWarningMsg}
+            disabled={!isTeamBased || !data.isHost || arePlayerRegsOpen}
+            warningMsg={arePlayerRegsOpeningWarningMsg}
             notAllowedMsg={notHostMsg}
           />
           <Checkbox
             form={teamForm}
             label={labels.useTeamBanners}
             legend="Team banners?"
-            disabled={!isTeamBased || !data.isHost || isPublic}
-            warningMsg={isGoingPublicWarningMsg}
+            disabled={!isTeamBased || !data.isHost || arePlayerRegsOpen}
+            warningMsg={arePlayerRegsOpeningWarningMsg}
             notAllowedMsg={notHostMsg}
           />
         </div>
@@ -711,8 +712,8 @@
               form={tournamentForm}
               label={labels.openRank}
               legend="Open rank?"
-              disabled={!data.isHost || isPublic}
-              warningMsg={isGoingPublicWarningMsg}
+              disabled={!data.isHost || arePlayerRegsOpen}
+              warningMsg={arePlayerRegsOpeningWarningMsg}
               notAllowedMsg={notHostMsg}
             />
           </div>
@@ -722,16 +723,16 @@
                 form={rankRangeForm}
                 label={labels.lower}
                 legend="Lower rank range"
-                disabled={isOpenRank || !data.isHost || isPublic}
-                warningMsg={isGoingPublicWarningMsg}
+                disabled={isOpenRank || !data.isHost || arePlayerRegsOpen}
+                warningMsg={arePlayerRegsOpeningWarningMsg}
                 notAllowedMsg={notHostMsg}
               />
               <Number
                 form={rankRangeForm}
                 label={labels.upper}
                 legend="Upper rank range"
-                disabled={isOpenRank || !data.isHost || isPublic}
-                warningMsg={isGoingPublicWarningMsg}
+                disabled={isOpenRank || !data.isHost || arePlayerRegsOpen}
+                warningMsg={arePlayerRegsOpeningWarningMsg}
                 notAllowedMsg={notHostMsg}
               />
             </div>
@@ -747,8 +748,8 @@
               form={tournamentForm}
               label={labels.useBWS}
               legend="Use BWS?"
-              disabled={!data.isHost || isPublic}
-              warningMsg={isGoingPublicWarningMsg}
+              disabled={!data.isHost || arePlayerRegsOpen}
+              warningMsg={arePlayerRegsOpeningWarningMsg}
               notAllowedMsg={notHostMsg}
             />
           </div>
@@ -758,24 +759,24 @@
                 form={bwsForm}
                 label={labels.x}
                 legend="Value for X"
-                disabled={!useBWS || !data.isHost || isPublic}
-                warningMsg={isGoingPublicWarningMsg}
+                disabled={!useBWS || !data.isHost || arePlayerRegsOpen}
+                warningMsg={arePlayerRegsOpeningWarningMsg}
                 notAllowedMsg={notHostMsg}
               />
               <Number
                 form={bwsForm}
                 label={labels.y}
                 legend="Value for Y"
-                disabled={!useBWS || !data.isHost || isPublic}
-                warningMsg={isGoingPublicWarningMsg}
+                disabled={!useBWS || !data.isHost || arePlayerRegsOpen}
+                warningMsg={arePlayerRegsOpeningWarningMsg}
                 notAllowedMsg={notHostMsg}
               />
               <Number
                 form={bwsForm}
                 label={labels.z}
                 legend="Value for Z"
-                disabled={!useBWS || !data.isHost || isPublic}
-                warningMsg={isGoingPublicWarningMsg}
+                disabled={!useBWS || !data.isHost || arePlayerRegsOpen}
+                warningMsg={arePlayerRegsOpeningWarningMsg}
                 notAllowedMsg={notHostMsg}
               />
             </div>
