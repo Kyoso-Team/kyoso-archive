@@ -34,7 +34,7 @@ interface BaseReturnUser extends Omit<UserT, 'updatedApiDataAt' | 'discord'> {
   viewAsAdmin: boolean;
   isCurrent: boolean;
   badges: BadgeT[];
-  bans: Omit<BanT, 'issuedBy' | 'revokedBy'>[];
+  pastBans: Omit<BanT, 'issuedBy' | 'revokedBy'>[];
   owner: boolean;
   activeBan?: Omit<BanT, 'issuedBy' | 'revokedBy'>;
   id: number;
@@ -42,7 +42,7 @@ interface BaseReturnUser extends Omit<UserT, 'updatedApiDataAt' | 'discord'> {
 
 interface ReturnUserAsAdmin extends BaseReturnUser, Pick<UserT, 'updatedApiDataAt' | 'discord'> {
   viewAsAdmin: true;
-  bans: BanT[];
+  pastBans: BanT[];
   activeBan?: BanT;
 }
 
@@ -177,6 +177,7 @@ export const load = (async ({ params, route, parent, depends }) => {
       (!liftAt && !revokedAt) || (liftAt && liftAt.getTime() > new Date().getTime() && !revokedAt)
     );
   });
+  const pastBans = bans.filter((ban) => ban.id !== activeBan?.id);
 
   if (activeBan && !viewAsAdmin) {
     error(403, 'User is currently banned');
@@ -204,7 +205,7 @@ export const load = (async ({ params, route, parent, depends }) => {
     viewAsAdmin,
     isCurrent,
     badges,
-    bans,
+    pastBans,
     owner,
     activeBan,
     id: userId

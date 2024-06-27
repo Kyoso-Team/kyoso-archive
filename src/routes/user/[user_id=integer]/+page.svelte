@@ -1,5 +1,8 @@
 <script lang="ts">
+  import Ban from './Ban.svelte';
   import KyosoBadges from './KyosoBadges.svelte';
+  import BanUserForm from './BanUserForm.svelte';
+  import RevokeBanForm from './RevokeBanForm.svelte';
   import { Discord, OsuCatch, OsuMania, OsuStandard, OsuTaiko } from '$components/icons';
   import { Tooltip, SEO } from '$components/general';
   import { Backdrop, Modal } from '$components/layout';
@@ -15,6 +18,10 @@
   import type { AnyComponent, TRPCRouter } from '$types';
 
   export let data: PageServerData;
+  let showBanUserModal = false;
+  let showRevokeBanModal = false;
+  let showBanUserForm = false;
+  let showRevokeBanForm = false;
   let procedure: keyof Pick<TRPCRouter['users'], 'makeAdmin' | 'removeAdmin' | 'makeApprovedHost' | 'removeApprovedHost'> | undefined;
   let kyosoBadges: {
     label: string;
@@ -60,7 +67,6 @@
     loading.set(false);
     toastSuccess(toast, 'Updated user successfully');
   }
-  
 
   function makeUserAdmin() {
     procedure = 'makeAdmin';
@@ -80,6 +86,24 @@
 
   function toggleUpdateUserPrompt() {
     procedure = undefined;
+  }
+
+  function toggleShowBanUserModal() {
+    showBanUserModal = !showBanUserModal;
+  }
+
+  function toggleShowRevokeBanModal() {
+    showRevokeBanModal = !showRevokeBanModal;
+  }
+
+  function toggleShowBanUserForm() {
+    showBanUserForm = !showBanUserForm;
+    showBanUserModal = false;
+  }
+
+  function toggleShowRevokeBanForm() {
+    showRevokeBanForm = !showRevokeBanForm;
+    showRevokeBanModal = false;
   }
 
   $: kyosoBadges = [{
@@ -143,6 +167,40 @@
     </Modal>
   </Backdrop>
 {/if}
+{#if showBanUserModal}
+  <Backdrop>
+    <Modal>
+      <span class="title">Ban User</span>
+      <p>Are you sure you want to ban this user? This will deny the user from accessing any of Kyoso's services and causes many other destructive actions tied to this user.</p>
+      <div class="actions">
+        <button class="btn variant-filled-error" on:click={toggleShowBanUserForm}>Next</button>
+        <button class="btn variant-filled" on:click={toggleShowBanUserModal}>Cancel</button>
+      </div>
+    </Modal>
+  </Backdrop>
+{/if}
+{#if showRevokeBanModal}
+  <Backdrop>
+    <Modal>
+      <span class="title">Revoke Ban</span>
+      <p>Are you sure you want to revoke this user's ban? This will grant the user access to Kyoso's services again.</p>
+      <div class="actions">
+        <button class="btn variant-filled-error" on:click={toggleShowRevokeBanForm}>Next</button>
+        <button class="btn variant-filled" on:click={toggleShowBanUserModal}>Cancel</button>
+      </div>
+    </Modal>
+  </Backdrop>
+{/if}
+{#if showBanUserForm}
+  <Backdrop>
+    <BanUserForm issuedToUserId={data.user.id} bind:show={showBanUserForm} />
+  </Backdrop>
+{/if}
+{#if showRevokeBanForm}
+  <Backdrop>
+    <RevokeBanForm banId={data.user.activeBan?.id || 0} bind:show={showRevokeBanForm} />
+  </Backdrop>
+{/if}
 <main class="main flex justify-center">
   <div class="w-full max-w-5xl">
     <h1>User Profile</h1>
@@ -163,9 +221,9 @@
           </div>
           <div class="flex flex-col">
             <div class="flex gap-4 items-center">
-              <h2 class="text-xl font-medium leading-7">
+              <h3>
                 <a class="hover:text-primary-500 duration-150" href={buildUrl.user(data.user.osu.osuUserId)}>{data.user.osu.username}</a>
-              </h2>
+              </h3>
               <div class="gap-1 h-max hidden md:flex">
                 <KyosoBadges {kyosoBadges} />
               </div>
@@ -231,7 +289,7 @@
             <span class="block badge variant-soft-surface">Updated API data on {formatDate(data.user.updatedApiDataAt, 'full')}</span>
           {/if}
         </div>
-        {#if !data.user.owner && (data.isSessionUserOwner || data.session?.admin)}
+        {#if !data.user.owner && (data.isSessionUserOwner || data.session?.admin) && data.user.activeBan}
           <div class="line-b" />
           <div class="flex gap-2 flex-wrap">
             {#if data.isSessionUserOwner}
@@ -250,13 +308,33 @@
         {/if}
       </div>
     </section>
-    {#if data.user.bans > 0}
-      <div class="line-b my-8" />
-      <section>
-        <div class="card p-4 flex flex-col gap-4">
-          
-        </div>
-      </section>
-    {/if}
+    <div class="line-b my-8" />
+    <section>
+      <h2>Bans</h2>
+      <div class="card p-4 flex flex-col gap-4 mt-4">
+        {#if data.user.pastBans.length === 0 && !data.user.activeBan}
+          <span class="text-surface-600-300-token">This user hasn't been banned before.</span>
+        {:else}
+          {#if data.user.activeBan}
+            <span class="text-lg font-medium block">Current Ban</span>
+            <Ban ban={data.user.activeBan} showUsers={data.user.viewAsAdmin} />
+            <div>
+              <button class="btn variant-filled-error" on:click={toggleShowRevokeBanModal}>Revoke Ban</button>
+            </div>
+          {/if}
+          {#if data.user.activeBan && data.user.pastBans.length > 0}
+            <div class="line-b" />
+          {/if}
+          {#each data.user.pastBans as ban}
+            <Ban {ban} showUsers={data.user.viewAsAdmin} />
+          {/each}
+        {/if}
+        {#if data.user.viewAsAdmin && !data.user.activeBan}
+          <div>
+            <button class="btn variant-filled-error" on:click={toggleShowBanUserModal}>Ban User</button>
+          </div>
+        {/if}
+      </div>
+    </section>
   </div>
 </main>

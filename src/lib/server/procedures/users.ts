@@ -749,7 +749,7 @@ const banUser = t.procedure
           .where(
             and(
               eq(StaffRole.order, 2),
-              eq(StaffMember, issuedToUserId),
+              eq(StaffMember.userId, issuedToUserId),
               or(isNull(StaffMember.deletedAt), future(StaffMember.deletedAt)),
               or(isNull(TournamentDates.concludesAt), future(TournamentDates.concludesAt)),
               or(isNull(Tournament.deletedAt), future(Tournament.deletedAt))
@@ -766,6 +766,7 @@ const banUser = t.procedure
         })
         .from(Team)
         .innerJoin(Tournament, eq(Tournament.id, Team.tournamentId))
+        .innerJoin(TournamentDates, eq(TournamentDates.tournamentId, Tournament.id))
         .innerJoin(Player, eq(Player.teamId, Team.id))
         .where(
           and(
@@ -777,6 +778,7 @@ const banUser = t.procedure
             or(isNull(Tournament.deletedAt), future(Tournament.deletedAt))
           )
         )
+        .groupBy(Team.id)
     );
 
     try {
@@ -792,7 +794,8 @@ const banUser = t.procedure
           .update(User)
           .set({
             admin: false,
-            approvedHost: false
+            approvedHost: false,
+            apiKey: null
           })
           .where(eq(User.id, issuedToUserId));
 
@@ -813,9 +816,11 @@ const banUser = t.procedure
           .returning(pick(StaffMember, ['id']))
           .then((staffMembers) => staffMembers.map((staffMember) => staffMember.id));
 
-        await tx
-          .delete(StaffMemberRole)
-          .where(inArray(StaffMemberRole.staffMemberId, asStaffMember));
+        if (asStaffMember.length > 0) {
+          await tx
+            .delete(StaffMemberRole)
+            .where(inArray(StaffMemberRole.staffMemberId, asStaffMember));
+        }
 
         // TOD: If the banned user was a host for a tournament, automatically delegate host to a random staff member with the highest staff role
         // await tx.execute(
