@@ -19,11 +19,14 @@
   let showChangeDiscordPrompt = false;
   let showGenerateApiKeyPrompt = false;
   let viewApiKey = false;
-  const privacyForm = createForm({
-    publicDiscord: f.boolean(),
-    publicStaffHistory: f.boolean(),
-    publicPlayerHistory: f.boolean()
-  }, privacyFormInitialValues());
+  const privacyForm = createForm(
+    {
+      publicDiscord: f.boolean(),
+      publicStaffHistory: f.boolean(),
+      publicPlayerHistory: f.boolean()
+    },
+    privacyFormInitialValues()
+  );
   const toast = getToastStore();
 
   function toggleChangeDiscordPrompt() {
@@ -68,7 +71,8 @@
   }
 
   async function updatePrivacySettings() {
-    const { publicDiscord, publicPlayerHistory, publicStaffHistory } = privacyForm.getFinalValue($privacyForm);
+    const { publicDiscord, publicPlayerHistory, publicStaffHistory } =
+      privacyForm.getFinalValue($privacyForm);
     loading.set(true);
 
     try {
@@ -82,7 +86,7 @@
     } catch (err) {
       displayError(toast, err);
     }
-    
+
     await invalidate('reload:user_settings');
     loading.set(false);
     privacyForm.overrideInitialValues(privacyFormInitialValues());
@@ -173,7 +177,8 @@
           </div>
           <div class="flex flex-col">
             <strong class="text-lg">{data.session.discord.username}</strong>
-            <span class="text-xs xs:text-sm"><strong>User ID:</strong> {data.session.discord.id}</span
+            <span class="text-xs xs:text-sm"
+              ><strong>User ID:</strong> {data.session.discord.id}</span
             >
           </div>
           <div class="absolute top-0 right-4 h-full flex items-center">
@@ -199,7 +204,12 @@
       {#if data.user.apiKey}
         <div class="p-4 card flex max-2sm:flex-col gap-4 relative">
           {#if viewApiKey}
-            <input type="text" class="input w-full md:w-80" readonly bind:value={data.user.apiKey} />
+            <input
+              type="text"
+              class="input w-full md:w-80"
+              readonly
+              bind:value={data.user.apiKey}
+            />
           {:else}
             <input
               type="password"
@@ -250,7 +260,12 @@
           legend="Make your staffing history public?"
         />
       </div>
-      <FormHandler hasUpdated={$privacyForm.hasUpdated} onUpdate={updatePrivacySettings} disableUpdateBtn={!($privacyForm.hasUpdated && $privacyForm.canSubmit)} onReset={resetPrivacySettings} />
+      <FormHandler
+        hasUpdated={$privacyForm.hasUpdated}
+        onUpdate={updatePrivacySettings}
+        disableUpdateBtn={!($privacyForm.hasUpdated && $privacyForm.canSubmit)}
+        onReset={resetPrivacySettings}
+      />
     </section>
     <div class="line-b my-8" />
     <section>

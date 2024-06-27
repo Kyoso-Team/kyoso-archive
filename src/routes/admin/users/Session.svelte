@@ -15,7 +15,6 @@
   </div>
   <div class="flex flex-col sm:block">
     <strong>Last active at:</strong>
-    <span>{formatDate(session.lastActiveAt, 'shortened')}, {formatTime(session.lastActiveAt)}</span
-    >
+    <span>{formatDate(session.lastActiveAt, 'shortened')}, {formatTime(session.lastActiveAt)}</span>
   </div>
 </div>

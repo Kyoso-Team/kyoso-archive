@@ -17,8 +17,9 @@
 
 {#each kyosoBadges as { label, description, tooltipName, variant, show }}
   {#if show}
-    <button class={`badge cursor-default ${variant} ${styles}`.trim()} use:popup={tooltip(responsive ? `responsive-${tooltipName}` : tooltipName)}
-      >{label}</button
+    <button
+      class={`badge cursor-default ${variant} ${styles}`.trim()}
+      use:popup={tooltip(responsive ? `responsive-${tooltipName}` : tooltipName)}>{label}</button
     >
     <Tooltip target={responsive ? `responsive-${tooltipName}` : tooltipName} label={description} />
   {/if}

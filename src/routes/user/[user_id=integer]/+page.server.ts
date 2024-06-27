@@ -12,7 +12,16 @@ type UserT = Pick<
   typeof User.$inferSelect,
   'registeredAt' | 'admin' | 'approvedHost' | 'settings' | 'updatedApiDataAt'
 > & {
-  osu: Pick<typeof OsuUser.$inferSelect, 'osuUserId' | 'username' | 'globalStdRank' | 'globalTaikoRank' | 'globalCatchRank' | 'globalManiaRank' | 'restricted'>;
+  osu: Pick<
+    typeof OsuUser.$inferSelect,
+    | 'osuUserId'
+    | 'username'
+    | 'globalStdRank'
+    | 'globalTaikoRank'
+    | 'globalCatchRank'
+    | 'globalManiaRank'
+    | 'restricted'
+  >;
   country: Pick<typeof Country.$inferSelect, 'code' | 'name'>;
   discord: Pick<typeof DiscordUser.$inferSelect, 'discordUserId' | 'username'>;
 };
@@ -27,8 +36,8 @@ type BanT = Pick<
     | null;
 };
 
-type BadgeT = (Pick<typeof OsuUserAwardedBadge.$inferSelect, 'awardedAt'> &
-  Pick<typeof OsuBadge.$inferSelect, 'imgFileName' | 'description'>);
+type BadgeT = Pick<typeof OsuUserAwardedBadge.$inferSelect, 'awardedAt'> &
+  Pick<typeof OsuBadge.$inferSelect, 'imgFileName' | 'description'>;
 
 interface BaseReturnUser extends Omit<UserT, 'updatedApiDataAt' | 'discord'> {
   viewAsAdmin: boolean;
@@ -38,7 +47,7 @@ interface BaseReturnUser extends Omit<UserT, 'updatedApiDataAt' | 'discord'> {
   owner: boolean;
   activeBan?: Omit<BanT, 'issuedBy' | 'revokedBy'>;
   id: number;
-};
+}
 
 interface ReturnUserAsAdmin extends BaseReturnUser, Pick<UserT, 'updatedApiDataAt' | 'discord'> {
   viewAsAdmin: true;
@@ -72,7 +81,15 @@ export const load = (async ({ params, route, parent, depends }) => {
       const user_: UserT | undefined = await db
         .select({
           ...pick(User, ['registeredAt', 'admin', 'approvedHost', 'settings', 'updatedApiDataAt']),
-          osu: pick(OsuUser, ['osuUserId', 'username', 'globalStdRank', 'globalTaikoRank', 'globalCatchRank', 'globalManiaRank', 'restricted']),
+          osu: pick(OsuUser, [
+            'osuUserId',
+            'username',
+            'globalStdRank',
+            'globalTaikoRank',
+            'globalCatchRank',
+            'globalManiaRank',
+            'restricted'
+          ]),
           discord: pick(DiscordUser, ['discordUserId', 'username']),
           country: pick(Country, ['code', 'name'])
         })
@@ -89,7 +106,15 @@ export const load = (async ({ params, route, parent, depends }) => {
       const user_: Omit<UserT, 'updatedApiDataAt' | 'discord'> | undefined = await db
         .select({
           ...pick(User, ['registeredAt', 'admin', 'approvedHost', 'settings']),
-          osu: pick(OsuUser, ['osuUserId', 'username', 'globalStdRank', 'globalTaikoRank', 'globalCatchRank', 'globalManiaRank', 'restricted']),
+          osu: pick(OsuUser, [
+            'osuUserId',
+            'username',
+            'globalStdRank',
+            'globalTaikoRank',
+            'globalCatchRank',
+            'globalManiaRank',
+            'restricted'
+          ]),
           country: pick(Country, ['code', 'name'])
         })
         .from(User)

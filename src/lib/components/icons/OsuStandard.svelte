@@ -14,19 +14,8 @@
   width={size}
   height={size}
   stroke={color}
-  stroke-width={
-    absoluteStrokeWidth
-      ? Number(strokeWidth) * 24 / Number(size)
-      : strokeWidth
-  }
-  class={
-    mergeClasses(
-      'lucide-icon',
-      'lucide',
-      name ? `lucide-${name}`: '',
-      $$props.class
-    )
-  }
+  stroke-width={absoluteStrokeWidth ? (Number(strokeWidth) * 24) / Number(size) : strokeWidth}
+  class={mergeClasses('lucide-icon', 'lucide', name ? `lucide-${name}` : '', $$props.class)}
 >
   <circle cx="12" cy="12" r="6" />
   <path

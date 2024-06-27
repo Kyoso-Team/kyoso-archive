@@ -13,9 +13,9 @@ export const defaultAttributes: SVGAttributes<SVGSVGElement> = {
   'stroke-linejoin': 'round'
 };
 
-export const mergeClasses = <ClassType = string | undefined | null>(
-  ...classes: ClassType[]
-) => classes.filter((className, index, array) => {
-    return Boolean(className) && array.indexOf(className) === index;
-  })
-  .join(' ');
+export const mergeClasses = <ClassType = string | undefined | null>(...classes: ClassType[]) =>
+  classes
+    .filter((className, index, array) => {
+      return Boolean(className) && array.indexOf(className) === index;
+    })
+    .join(' ');
