@@ -139,7 +139,7 @@ export function trimStringValues<T extends Record<string, unknown>>(obj: T): T {
   return newObj as T;
 }
 
-function fillDateDigits(n: number) {
+export function fillDateDigits(n: number) {
   return n < 10 ? `0${n}` : n.toString();
 }
 

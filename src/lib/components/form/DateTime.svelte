@@ -2,7 +2,7 @@
   import Warning from './Warning.svelte';
   import NotAllowed from './NotAllowed.svelte';
   import { slide } from 'svelte/transition';
-  import { dateToHtmlInput } from '$lib/utils';
+  import { dateToHtmlInput, fillDateDigits, formatTime } from '$lib/utils';
   import type { FormStore } from '$types';
 
   export let form: FormStore;
@@ -17,6 +17,7 @@
     ? dateToHtmlInput($form.value[label])
     : undefined;
   let error = $form.errors?.[label];
+  let utc = 'mm/dd/yyyy --:-- --';
 
   function onInput() {
     hasSelected = true;
@@ -39,6 +40,21 @@
       hasSelected = false;
       value = $form.value[label] ? dateToHtmlInput($form.value[label]) : undefined;
       form.setOverwrittenState(label, false);
+    }
+  }
+
+  $: {
+    if (value) {
+      const offset = new Date().getTimezoneOffset();
+      const utcDate = new Date(new Date(value).getTime() - offset * 60 * 1000);
+
+      const mm = fillDateDigits(utcDate.getMonth() + 1);
+      const dd = fillDateDigits(utcDate.getDate());
+      const yyyy = utcDate.getFullYear();
+
+      utc = `${mm}/${dd}/${yyyy} ${formatTime(utcDate)}`;
+    } else {
+      utc = 'mm/dd/yyyy --:-- --';
     }
   }
 </script>
@@ -67,6 +83,9 @@
     on:input={onInput}
     bind:value
   />
+  <span class="block text-sm text-surface-600-300-token">
+    {utc} UTC
+  </span>
   {#if $$slots.preview}
     <span class="block text-xs text-primary-500">
       <slot name="preview" />

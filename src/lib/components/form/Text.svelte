@@ -13,7 +13,7 @@
   export let notAllowedMsg: string | undefined = undefined;
   let hasWritten = false;
   let optional = false;
-  let value: string | undefined = $form.value[label];
+  let value: string | undefined | null = $form.value[label];
   let error = $form.errors?.[label];
 
   function onInput() {
@@ -25,7 +25,7 @@
   }
 
   $: {
-    form.setValue(label, value === undefined ? null : value);
+    form.setValue(label, value === undefined || value === null ? null : value.trim());
   }
 
   $: {
