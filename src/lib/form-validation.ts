@@ -46,7 +46,7 @@ export function url() {
 
 export function slug() {
   return v.custom(
-    (input: string) => /^[a-z0-9_]+$/g.test(input),
+    (input: string) => /^[a-z0-9-]+$/g.test(input),
     'Input can only contain the following characters: "abcdefghijkmnlopqrstuvwxyz0123456789-"'
   );
 }
