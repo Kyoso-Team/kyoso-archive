@@ -11,6 +11,7 @@ import { discordMainAuth, osuAuth, discordMainAuthOptions } from '$lib/server/co
 import { unionAll } from 'drizzle-orm/pg-core';
 import { upsertDiscordUser, upsertOsuUser } from '$lib/server/helpers/auth';
 import { ratelimit } from '$lib/server/ratelimit';
+import { building } from '$app/environment';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { Token } from 'osu-web.js';
 import type { Cookies } from '@sveltejs/kit';
@@ -184,6 +185,10 @@ async function updateUser(session: AuthSession, cookies: Cookies, route: { id: s
 }
 
 const mainHandle: Handle = async ({ event, resolve }) => {
+  if (building) {
+    return await resolve(event);
+  }
+
   const { url, route, cookies, getClientAddress } = event;
 
   const ip = getClientAddress();

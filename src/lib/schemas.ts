@@ -376,3 +376,21 @@ export const userSettingsSchema = v.object({
   /** Whether or not to display their tournament player history on their profile page */
   publicPlayerHistory: v.boolean()
 });
+
+export const blogSchema = v.object({
+  tags: v.array(v.string()),
+  posts: v.array(
+    v.object({
+      title: v.string(),
+      slug: v.string(),
+      preview: v.string(),
+      image_pathname: v.string(),
+      tags: v.array(v.string()),
+      published_at: v.transform(v.string(), (input) => new Date(input)),
+      author: v.object({
+        osu_user_id: v.number(),
+        osu_username: v.string()
+      })
+    })
+  )
+});

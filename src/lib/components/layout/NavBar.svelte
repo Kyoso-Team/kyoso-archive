@@ -13,10 +13,10 @@
       href: 'dashboard',
       label: 'Dashboard'
     },
-    {
-      href: 'tournaments',
-      label: 'Tournaments'
-    },
+    // {
+    //   href: 'tournaments',
+    //   label: 'Tournaments'
+    // },
     {
       href: 'blog',
       label: 'Blog'
