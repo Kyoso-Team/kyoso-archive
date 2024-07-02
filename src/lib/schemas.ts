@@ -30,6 +30,11 @@ export const urlSlugSchema = v.custom(
   'only contain the following characters: "abcdefghijkmnlopqrstuvwxyz0123456789_"'
 );
 
+export const hexColorSchema = v.custom(
+  (input: string) => /^[0-9a-fA-F]{6}$/i.test(input),
+  'be a color in hexadecimal format'
+);
+
 export const draftTypeSchema = v.union(
   [v.literal('linear'), v.literal('snake')],
   'be "linear" or "snake"'
@@ -331,3 +336,41 @@ export const userFormFieldResponseSchema = v.record(
   v.string([v.length(8)]),
   v.string([v.minLength(0), v.maxLength(10000)])
 );
+
+export const colorShadesSchema = v.union([
+  v.literal('50'),
+  v.literal('100'),
+  v.literal('200'),
+  v.literal('300'),
+  v.literal('400'),
+  v.literal('500'),
+  v.literal('600'),
+  v.literal('700'),
+  v.literal('800'),
+  v.literal('900')
+]);
+
+export const tournamentThemeSchema = v.object({
+  use: v.boolean(),
+  colors: v.object({
+    surface: v.record(colorShadesSchema, v.string([hexColorSchema])),
+    primary: v.record(colorShadesSchema, v.string([hexColorSchema]))
+  }),
+  fontFamilies: v.object({
+    base: v.string(),
+    headings: v.string()
+  }),
+  fontColors: v.object({
+    base: v.string(),
+    headings: v.string()
+  })
+});
+
+export const userSettingsSchema = v.object({
+  /** Whether or not to make their Discord username public on their profile page */
+  publicDiscord: v.boolean(),
+  /** Whether or not to display their tournament staff history on their profile page */
+  publicStaffHistory: v.boolean(),
+  /** Whether or not to display their tournament player history on their profile page */
+  publicPlayerHistory: v.boolean()
+});

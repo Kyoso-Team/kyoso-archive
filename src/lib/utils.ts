@@ -2,7 +2,7 @@ import colors from 'tailwindcss/colors';
 import { TRPCClientError } from '@trpc/client';
 import { loading } from '$stores';
 import type { ToastStore } from '@skeletonlabs/skeleton';
-import type { InferEnum, PopupSettings } from '$types';
+import type { InferEnum, PaginationSettings, PopupSettings } from '$types';
 import type { StaffPermission } from '$db';
 
 /**
@@ -139,7 +139,7 @@ export function trimStringValues<T extends Record<string, unknown>>(obj: T): T {
   return newObj as T;
 }
 
-function fillDateDigits(n: number) {
+export function fillDateDigits(n: number) {
   return n < 10 ? `0${n}` : n.toString();
 }
 
@@ -313,4 +313,11 @@ export function isDatePast(date: Date | number | null) {
 export function isDateFuture(date: Date | number | null) {
   if (!date) return false;
   return new Date(date).getTime() > new Date().getTime();
+}
+
+export function paginate(page: number, elementsPerPage: number): PaginationSettings {
+  return {
+    offset: elementsPerPage * (page - 1),
+    limit: elementsPerPage
+  };
 }

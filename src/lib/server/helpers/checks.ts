@@ -1,3 +1,4 @@
+import env from '$lib/server/env';
 import { hasPermissions, isDateFuture } from '$lib/utils';
 import { error } from '@sveltejs/kit';
 import { TRPCError } from '@trpc/server';
@@ -29,6 +30,11 @@ abstract class Checks<ErrCodeT = number | TRPC_ERROR_CODE_KEY> {
   public partialHasValues(data: Record<string, any> | undefined) {
     if (Object.keys(data || {}).length > 0) return this;
     throw this.error(this.codes.badRequest, 'Nothing to update');
+  }
+
+  public userIsOwner(session: AuthSession) {
+    if (session.osu.id === env.OWNER) return this;
+    throw this.error(this.codes.unauthorized, `You must be the website owner to ${this.action}`);
   }
 
   /**

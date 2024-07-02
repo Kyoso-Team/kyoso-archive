@@ -2,6 +2,7 @@ import type { MaybePromise, Page } from '@sveltejs/kit';
 import type { Router } from '$trpc/router';
 import type { Writable } from 'svelte/store';
 import type { BaseSchema, Output } from 'valibot';
+import type { Tournament, TournamentDates } from '$db';
 import type {
   bwsValuesSchema,
   draftTypeSchema,
@@ -12,9 +13,11 @@ import type {
   tournamentLinkSchema,
   modMultiplierSchema,
   userFormFieldSchema,
-  userFormFieldResponseSchema
+  userFormFieldResponseSchema,
+  tournamentThemeSchema,
+  userSettingsSchema
 } from './schemas';
-import type { Tournament, TournamentDates } from '$db';
+import type { PgColumn } from 'drizzle-orm/pg-core';
 
 export type AnyComponent = any;
 
@@ -31,6 +34,11 @@ export interface OAuthToken {
   tokenIssuedAt: number;
 }
 
+export interface PaginationSettings {
+  offset: number;
+  limit: number;
+}
+
 /** Linear: ABAB. Snake: ABBA */
 export type DraftType = Output<typeof draftTypeSchema>;
 export type RefereeSettings = Output<typeof refereeSettingsSchema>;
@@ -42,6 +50,8 @@ export type RankRange = Output<typeof rankRangeSchema>;
 export type ModMultiplier = Output<typeof modMultiplierSchema>;
 export type UserFormField = Output<typeof userFormFieldSchema>;
 export type UserFormFieldResponse = Output<typeof userFormFieldResponseSchema>;
+export type TournamentTheme = Output<typeof tournamentThemeSchema>;
+export type UserSettings = Output<typeof userSettingsSchema>;
 
 export type RoundConfig = StandardRoundConfig | QualifierRoundConfig | BattleRoyaleRoundConfig;
 
@@ -124,6 +134,23 @@ export type FormStore = Writable<AnyForm> & {
 export type ParseInt<T> = T extends `${infer N extends number}` ? N : never;
 
 export type OnServerError = (err: unknown) => MaybePromise<void>;
+
+export type AnyPgNumberColumn = PgColumn<
+  {
+    name: any;
+    tableName: any;
+    dataType: 'number';
+    columnType: any;
+    data: any;
+    driverParam: any;
+    notNull: any;
+    hasDefault: any;
+    enumValues: any;
+    baseColumn: any;
+  },
+  any,
+  any
+>;
 
 export interface AuthSession {
   sessionId: number;

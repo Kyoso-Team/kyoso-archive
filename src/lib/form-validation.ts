@@ -46,8 +46,8 @@ export function url() {
 
 export function slug() {
   return v.custom(
-    (input: string) => /^[a-z0-9_]+$/g.test(input),
-    'Input can only contain the following characters: "abcdefghijkmnlopqrstuvwxyz0123456789_"'
+    (input: string) => /^[a-z0-9-]+$/g.test(input),
+    'Input can only contain the following characters: "abcdefghijkmnlopqrstuvwxyz0123456789-"'
   );
 }
 
@@ -109,13 +109,13 @@ export function date(pipe?: Parameters<typeof v.date>[1]) {
 export function minDate(date: Date) {
   return v.minValue<Date, Date>(
     date,
-    `Inputted date must be after ${formatDate(date)} - ${formatTime(date)}`
+    `Inputted date must be after ${formatDate(date)}, ${formatTime(date)}`
   );
 }
 
 export function maxDate(date: Date) {
   return v.maxValue<Date, Date>(
     date,
-    `Inputtted date must be before ${formatDate(date)} - ${formatTime(date)}`
+    `Inputtted date must be before ${formatDate(date)}, ${formatTime(date)}`
   );
 }

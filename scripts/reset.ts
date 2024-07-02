@@ -9,6 +9,7 @@ async function main() {
   const db = drizzle(client);
 
   await db.execute(sql`
+    DROP EXTENSION IF EXISTS pg_trgm CASCADE;
     DROP SCHEMA IF EXISTS public CASCADE;
     CREATE SCHEMA public;
     DROP SCHEMA IF EXISTS drizzle CASCADE;

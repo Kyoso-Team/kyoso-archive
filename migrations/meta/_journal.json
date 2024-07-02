@@ -148,6 +148,20 @@
       "when": 1718247616772,
       "tag": "0020_tough_joystick",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1718581728507,
+      "tag": "0021_bizarre_captain_flint",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1719273810619,
+      "tag": "0022_quick_luke_cage",
+      "breakpoints": true
     }
   ]
 }

@@ -17,7 +17,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { timestampConfig } from './schema-utils';
 import { sql } from 'drizzle-orm';
-import type { OAuthToken } from '$types';
+import type { OAuthToken, UserSettings } from '$types';
 
 export const User = pgTable(
   'user',
@@ -29,6 +29,11 @@ export const User = pgTable(
     approvedHost: boolean('approved_host').notNull().default(false),
     apiKey: varchar('api_key', {
       length: 24
+    }),
+    settings: jsonb('settings').notNull().$type<UserSettings>().default({
+      publicDiscord: false,
+      publicStaffHistory: true,
+      publicPlayerHistory: true
     }),
     // Relations
     osuUserId: integer('osu_user_id')
@@ -59,6 +64,9 @@ export const OsuUser = pgTable(
     username: varchar('username', { length: 15 }).notNull().unique('uni_osu_user_username'),
     restricted: boolean('restricted').notNull(),
     globalStdRank: integer('global_std_rank'),
+    globalTaikoRank: integer('global_taiko_rank'),
+    globalCatchRank: integer('global_catch_rank'),
+    globalManiaRank: integer('global_mania_rank'),
     token: jsonb('token').notNull().$type<OAuthToken>(),
     countryCode: char('country_code', {
       length: 2
