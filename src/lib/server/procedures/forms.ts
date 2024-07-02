@@ -1,6 +1,6 @@
 import { t } from '$trpc';
 import { rateLimitMiddleware } from '$trpc/middleware';
-import { wrap } from '@typeschema/valibot';
+import { type Infer, wrap } from '@typeschema/valibot';
 import * as v from 'valibot';
 import { TRPCChecks } from '$lib/server/helpers/checks';
 import { getSession, getStaffMember, getTournament } from '$lib/server/helpers/trpc';
@@ -10,6 +10,12 @@ import { positiveIntSchema, userFormFieldSchema } from '$lib/schemas';
 import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
 import { getCount } from '$lib/server/helpers/queries';
+import { nonEmptyStringSchema } from '$lib/env';
+import { maxPossibleDate, oldestDatePossible } from '$lib/constants';
+import type { Context } from '$trpc/context';
+import { checkPublicForm, userFormFieldsChecks } from '$lib/helpers';
+import { difference, intersection } from 'lodash';
+import type { UserFormField } from '$types';
 
 const formSchema = v.object({
   anonymousResponses: v.boolean(),
@@ -22,6 +28,65 @@ const tournamentFormSchema = v.object({
   target: v.picklist(TournamentFormTarget.enumValues),
   tournamentId: positiveIntSchema
 });
+
+const formUpdateSchema = v.object({
+  formId: positiveIntSchema,
+  data: v.partial(
+    v.object({
+      ...v.omit(tournamentFormSchema, ['type']).entries,
+      description: nonEmptyStringSchema,
+      public: v.boolean(),
+      closeAt: v.nullable(v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])),
+      thanksMessage: nonEmptyStringSchema,
+      closedMessage: nonEmptyStringSchema,
+      fields: v.array(userFormFieldSchema)
+    })
+  )
+});
+
+export type FormUpdateSchemaData = Infer<typeof formUpdateSchema>['data'];
+
+const handleTournamentForm = async (
+  ctx: Context,
+  input: Infer<typeof formUpdateSchema>,
+  tournamentForm: typeof TournamentForm.$inferSelect
+) => {
+  const { formId, data } = input;
+  const { tournamentId, target } = data;
+  const checks = new TRPCChecks({ action: 'update a tournament form' });
+  const session = getSession(ctx.cookies, true);
+  const staffMember = await getStaffMember(session, data.tournamentId!, true);
+  checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
+
+  const tournament = await getTournament(
+    data.tournamentId!,
+    { tournament: ['deletedAt'], dates: ['concludesAt', 'staffRegsCloseAt'] },
+    true
+  );
+
+  checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
+
+  if (data.fields) {
+    const checksErr = userFormFieldsChecks(data.fields);
+
+    if (checksErr) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: checksErr
+      });
+    }
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(TournamentForm)
+      .set({
+        tournamentId,
+        target: tournamentForm.type === 'staff_registration' ? 'public' : target
+      })
+      .where(eq(TournamentForm.formId, formId));
+  });
+};
 
 const createForm = t.procedure
   .use(rateLimitMiddleware)
@@ -98,4 +163,82 @@ const createTournamentForm = t.procedure
     });
   });
 
-export const formsRouter = t.router({ createForm, createTournamentForm });
+const updateForm = t.procedure.input(wrap(formUpdateSchema)).mutation(async ({ ctx, input }) => {
+  const { formId, data } = input;
+  const checks = new TRPCChecks({ action: 'update a form' });
+  checks.partialHasValues(data);
+
+  let form: typeof Form.$inferSelect;
+  let tournamentForm: typeof TournamentForm.$inferSelect | null;
+
+  try {
+    form = await db
+      .select()
+      .from(Form)
+      .where(eq(Form.id, formId))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    tournamentForm = await db
+      .select()
+      .from(TournamentForm)
+      .where(eq(TournamentForm.formId, formId))
+      .limit(1)
+      .then((rows) => rows[0]);
+  } catch (err) {
+    throw trpcUnknownError(err, 'Getting forms');
+  }
+
+  if (tournamentForm && data.tournamentId) {
+    handleTournamentForm(ctx, input, tournamentForm);
+  } else {
+    throw new TRPCError({
+      code: 'BAD_REQUEST'
+    });
+  }
+
+  if (form.public) {
+    const errors = checkPublicForm(data);
+
+    if (errors.length !== 0) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: errors.join('\n')
+      });
+    }
+  }
+
+  let updatedFormFields: UserFormField[] | undefined;
+
+  if (data.fields) {
+    const errors = userFormFieldsChecks(data.fields);
+
+    if (errors) {
+      throw new TRPCError({
+        message: errors,
+        code: 'BAD_REQUEST'
+      });
+    }
+
+    const deletedFieldIds = difference(form.fields, data.fields).map((field) => field.id);
+
+    if (intersection(form.fieldsWithResponses, deletedFieldIds).length !== 0) {
+      updatedFormFields = form.fields.map((field) => {
+        if (deletedFieldIds.includes(field.id)) {
+          field.deleted = true;
+        }
+        return field;
+      });
+    }
+  }
+
+  await db
+    .update(Form)
+    .set({
+      ...data,
+      fields: updatedFormFields ?? form.fields
+    })
+    .where(eq(Form.id, formId));
+});
+
+export const formsRouter = t.router({ createForm, createTournamentForm, updateForm });

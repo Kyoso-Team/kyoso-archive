@@ -1,6 +1,8 @@
+import { arraysHaveSameElements } from './utils';
+
 import type { TournamentDates } from '$db';
 import type { ModMultiplier, TournamentLink, UserFormField } from '$types';
-import { arraysHaveSameElements } from './utils';
+import type { FormUpdateSchemaData } from '$lib/server/procedures';
 
 export function tournamentChecks({
   teamSettings,
@@ -233,4 +235,18 @@ export function userFormFieldChecks(field: UserFormField) {
       return 'The minimum must be less than or equal to the maximum';
     }
   }
+}
+
+export function checkPublicForm(data: FormUpdateSchemaData): string[] {
+  const errors: string[] = [];
+
+  if (data.public === false) {
+    errors.push('Public form cannot be unpublished!');
+  }
+
+  if (data.anonymousResponses === false) {
+    errors.push('Public form responses cannot be changed to anonymous!');
+  }
+
+  return errors;
 }
