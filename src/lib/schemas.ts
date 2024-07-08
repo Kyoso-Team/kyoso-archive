@@ -377,20 +377,19 @@ export const userSettingsSchema = v.object({
   publicPlayerHistory: v.boolean()
 });
 
-export const blogSchema = v.object({
+export const blogPostSchema = v.object({
+  id: v.number(),
+  title: v.string(),
+  slug: v.string(),
+  preview: v.string(),
   tags: v.array(v.string()),
-  posts: v.array(
-    v.object({
-      title: v.string(),
-      slug: v.string(),
-      preview: v.string(),
-      image_pathname: v.string(),
-      tags: v.array(v.string()),
-      published_at: v.transform(v.string(), (input) => new Date(input)),
-      author: v.object({
-        osu_user_id: v.number(),
-        osu_username: v.string()
-      })
-    })
-  )
+  published_at: v.string(),
+  authors: v.array(v.string())
 });
+
+export const blogAuthorsSchema = v.record(v.string(), v.string());
+
+export const blogTagsSchema = v.record(v.string(), v.object({
+  name: v.string(),
+  slug: v.string()
+}));

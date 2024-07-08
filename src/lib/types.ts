@@ -15,7 +15,10 @@ import type {
   userFormFieldSchema,
   userFormFieldResponseSchema,
   tournamentThemeSchema,
-  userSettingsSchema
+  userSettingsSchema,
+  blogPostSchema,
+  blogAuthorsSchema,
+  blogTagsSchema
 } from './schemas';
 import type { PgColumn } from 'drizzle-orm/pg-core';
 
@@ -52,6 +55,9 @@ export type UserFormField = Output<typeof userFormFieldSchema>;
 export type UserFormFieldResponse = Output<typeof userFormFieldResponseSchema>;
 export type TournamentTheme = Output<typeof tournamentThemeSchema>;
 export type UserSettings = Output<typeof userSettingsSchema>;
+export type BlogPost = Output<typeof blogPostSchema>;
+export type BlogAuthors = Output<typeof blogAuthorsSchema>;
+export type BlogTags = Output<typeof blogTagsSchema>;
 
 export type RoundConfig = StandardRoundConfig | QualifierRoundConfig | BattleRoyaleRoundConfig;
 
