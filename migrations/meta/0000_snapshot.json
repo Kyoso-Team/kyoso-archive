@@ -1,10 +1,8 @@
 {
-  "id": "5a539f15-3d5c-4018-9b14-1f864dd52ae4",
-  "prevId": "00000000-0000-0000-0000-000000000000",
-  "version": "5",
-  "dialect": "pg",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "ban": {
+    "public.ban": {
       "name": "ban",
       "schema": "",
       "columns": {
@@ -51,7 +49,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "country": {
+    "public.country": {
       "name": "country",
       "schema": "",
       "columns": {
@@ -73,7 +71,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "discord_user": {
+    "public.discord_user": {
       "name": "discord_user",
       "schema": "",
       "columns": {
@@ -101,7 +99,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "osu_badge": {
+    "public.osu_badge": {
       "name": "osu_badge",
       "schema": "",
       "columns": {
@@ -123,7 +121,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "osu_user": {
+    "public.osu_user": {
       "name": "osu_user",
       "schema": "",
       "columns": {
@@ -169,29 +167,29 @@
         "osu_user_country_code_country_code_fk": {
           "name": "osu_user_country_code_country_code_fk",
           "tableFrom": "osu_user",
-          "tableTo": "country",
           "columnsFrom": [
             "country_code"
           ],
+          "tableTo": "country",
           "columnsTo": [
             "code"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "uni_osu_user_username": {
           "name": "uni_osu_user_username",
-          "nullsNotDistinct": false,
           "columns": [
             "username"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "osu_user_awarded_badge": {
+    "public.osu_user_awarded_badge": {
       "name": "osu_user_awarded_badge",
       "schema": "",
       "columns": {
@@ -219,28 +217,28 @@
         "osu_user_awarded_badge_osu_user_id_osu_user_osu_user_id_fk": {
           "name": "osu_user_awarded_badge_osu_user_id_osu_user_osu_user_id_fk",
           "tableFrom": "osu_user_awarded_badge",
-          "tableTo": "osu_user",
           "columnsFrom": [
             "osu_user_id"
           ],
+          "tableTo": "osu_user",
           "columnsTo": [
             "osu_user_id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "osu_user_awarded_badge_osu_badge_img_file_name_osu_badge_img_file_name_fk": {
           "name": "osu_user_awarded_badge_osu_badge_img_file_name_osu_badge_img_file_name_fk",
           "tableFrom": "osu_user_awarded_badge",
-          "tableTo": "osu_badge",
           "columnsFrom": [
             "osu_badge_img_file_name"
           ],
+          "tableTo": "osu_badge",
           "columnsTo": [
             "img_file_name"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -254,7 +252,7 @@
       },
       "uniqueConstraints": {}
     },
-    "session": {
+    "public.session": {
       "name": "session",
       "schema": "",
       "columns": {
@@ -309,7 +307,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "user": {
+    "public.user": {
       "name": "user",
       "schema": "",
       "columns": {
@@ -364,52 +362,52 @@
         "user_osu_user_id_osu_user_osu_user_id_fk": {
           "name": "user_osu_user_id_osu_user_osu_user_id_fk",
           "tableFrom": "user",
-          "tableTo": "osu_user",
           "columnsFrom": [
             "osu_user_id"
           ],
+          "tableTo": "osu_user",
           "columnsTo": [
             "osu_user_id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "user_discord_user_id_discord_user_discord_user_id_fk": {
           "name": "user_discord_user_id_discord_user_discord_user_id_fk",
           "tableFrom": "user",
-          "tableTo": "discord_user",
           "columnsFrom": [
             "discord_user_id"
           ],
+          "tableTo": "discord_user",
           "columnsTo": [
             "discord_user_id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "uni_user_api_key": {
           "name": "uni_user_api_key",
-          "nullsNotDistinct": false,
           "columns": [
             "api_key"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "uni_user_osu_user_id": {
           "name": "uni_user_osu_user_id",
-          "nullsNotDistinct": false,
           "columns": [
             "osu_user_id"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "uni_user_discord_user_id": {
           "name": "uni_user_discord_user_id",
-          "nullsNotDistinct": false,
           "columns": [
             "discord_user_id"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     }
@@ -417,8 +415,10 @@
   "enums": {},
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "5a539f15-3d5c-4018-9b14-1f864dd52ae4",
+  "prevId": "00000000-0000-0000-0000-000000000000"
 }

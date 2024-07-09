@@ -15,7 +15,7 @@ body {
   @apply h-full overflow-hidden;
 }
 
-h1,
+h1:not(.m-title),
 h2,
 h3 {
   @apply tracking-tight;
@@ -25,7 +25,7 @@ h3 {
   @apply max-w-2xl leading-relaxed;
 }
 
-h1 {
+h1:not(.m-title) {
   @apply text-3xl font-medium leading-10;
 }
 
@@ -79,7 +79,7 @@ strong {
 }
 
 .modal {
-  @apply card p-8 m-auto shadow-md max-w-[660px] relative;
+  @apply card p-8 m-auto shadow-md relative;
 }
 
 .modal .title {
@@ -103,7 +103,7 @@ strong {
 }
 
 .form {
-  @apply flex flex-col m-auto p-8 w-[450px] card shadow-md duration-150;
+  @apply flex flex-col m-auto p-8 w-[512px] card shadow-md duration-150;
 }
 
 .form .title {
@@ -128,4 +128,20 @@ strong {
 
 .line-l {
   @apply border-l line;
+}
+
+.variant-soft-indigo {
+  @apply variant-soft dark:text-indigo-200 text-indigo-700 dark:bg-indigo-500/20 bg-indigo-400/20;
+}
+
+.variant-soft-blue {
+  @apply variant-soft dark:text-blue-200 text-blue-700 dark:bg-blue-500/20 bg-blue-400/20;
+}
+
+.variant-soft-teal {
+  @apply variant-soft dark:text-teal-200 text-teal-700 dark:bg-teal-500/20 bg-teal-400/20;
+}
+
+.variant-soft-red {
+  @apply variant-soft dark:text-red-200 text-red-700 dark:bg-red-500/20 bg-red-400/20;
 }

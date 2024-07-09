@@ -1,5 +1,10 @@
 import * as v from 'valibot';
-import { oldestDatePossible } from './constants';
+import {
+  lower32BitIntLimit,
+  maxPossibleDate,
+  oldestDatePossible,
+  upper32BitIntLimit
+} from './constants';
 
 // When writing the error messages for scehmas, keep in mind that the message will be formated like:
 // "Invalid input: {object_name}.{property} should {message}"
@@ -22,7 +27,12 @@ export const boolStringSchema = v.transform(
 
 export const urlSlugSchema = v.custom(
   (input: string) => /^[a-z0-9_]+$/g.test(input),
-  'only containt the following characters: "abcdefghijkmnlopqrstuvwxyz0123456789_"'
+  'only contain the following characters: "abcdefghijkmnlopqrstuvwxyz0123456789_"'
+);
+
+export const hexColorSchema = v.custom(
+  (input: string) => /^[0-9a-fA-F]{6}$/i.test(input),
+  'be a color in hexadecimal format'
 );
 
 export const draftTypeSchema = v.union(
@@ -41,29 +51,27 @@ export const tournamentLinkIconSchema = v.union(
     v.literal('discord'),
     v.literal('google_sheets'),
     v.literal('google_forms'),
+    v.literal('google_docs'),
     v.literal('twitch'),
     v.literal('youtube'),
     v.literal('x'),
     v.literal('challonge'),
-    v.literal('donate'),
+    v.literal('liquipedia'),
+    v.literal('donation'),
     v.literal('website')
   ],
-  'be "osu", "discord", "google_sheets", "google_forms", "twitch", "youtube", "x", "challonge", "donate" or "website"'
+  'be "osu", "discord", "google_sheets", "google_forms", "google_docs", "twitch", "youtube", "x", "challonge", "liquipedia", "donation" or "website"'
 );
-
-export const oldestPossibleDateMsSchema = v.number('be a number', [
-  v.minValue(oldestDatePossible.getTime(), `be greater or equal to ${oldestDatePossible.getTime()}`)
-]);
 
 // Schemas below this do not require error messages to be set
 
 export const refereeSettingsSchema = v.object({
   timerLength: v.object({
-    pick: positiveIntSchema,
-    ban: positiveIntSchema,
-    protect: positiveIntSchema,
-    ready: positiveIntSchema,
-    start: positiveIntSchema
+    pick: v.number([v.integer(), v.minValue(1), v.maxValue(600)]),
+    ban: v.number([v.integer(), v.minValue(1), v.maxValue(600)]),
+    protect: v.number([v.integer(), v.minValue(1), v.maxValue(600)]),
+    ready: v.number([v.integer(), v.minValue(1), v.maxValue(600)]),
+    start: v.number([v.integer(), v.minValue(1), v.maxValue(600)])
   }),
   allow: v.object({
     doublePick: v.boolean(),
@@ -81,15 +89,15 @@ export const refereeSettingsSchema = v.object({
 });
 
 export const tournamentLinkSchema = v.object({
-  label: v.string([v.minLength(1), v.maxLength(20)]),
+  label: v.string([v.minLength(2), v.maxLength(30)]),
   url: v.string([v.url()]),
   icon: tournamentLinkIconSchema
 });
 
 export const bwsValuesSchema = v.object({
-  x: v.number(),
-  y: v.number(),
-  z: v.number()
+  x: v.number([v.notValue(0), v.minValue(-10), v.maxValue(10)]),
+  y: v.number([v.notValue(0), v.minValue(-10), v.maxValue(10)]),
+  z: v.number([v.notValue(0), v.minValue(-10), v.maxValue(10)])
 });
 
 export const teamSettingsSchema = v.object({
@@ -99,69 +107,272 @@ export const teamSettingsSchema = v.object({
 });
 
 export const tournamentOtherDatesSchema = v.object({
-  label: v.string(),
-  fromDate: v.number(),
-  toDate: v.nullable(v.number())
+  label: v.string([v.minLength(2), v.maxLength(35)]),
+  onlyDate: v.boolean(),
+  fromDate: v.number([
+    v.minValue(oldestDatePossible.getTime()),
+    v.maxValue(maxPossibleDate.getTime())
+  ]),
+  toDate: v.nullable(
+    v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())])
+  )
 });
 
 export const rankRangeSchema = v.object({
   lower: v.number([v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER)]),
-  upper: v.optional(v.number([v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER)]))
+  upper: v.nullable(v.number([v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER)]))
 });
 
-// export const whereIdSchema = z.object({
-//   id: z.number().int()
-// });
+export const modMultiplierSchema = v.union([
+  v.object({
+    /** Easy, Hidden, Hard Rock, Flashlight, Blinds */
+    mods: v.array(
+      v.union([
+        v.literal('ez'),
+        v.literal('hd'),
+        v.literal('hr'),
+        v.literal('fl'),
+        v.literal('bl')
+      ]),
+      [v.minLength(1), v.maxLength(5)]
+    ),
+    multiplier: v.number([v.minValue(-5), v.maxValue(5)])
+  }),
+  v.object({
+    /** Sudden Death, Perfect */
+    mods: v.array(
+      v.union([
+        // Same as above
+        v.literal('ez'),
+        v.literal('hd'),
+        v.literal('hr'),
+        v.literal('fl'),
+        v.literal('bl'),
+        // -------------
+        v.literal('sd'),
+        v.literal('pf')
+      ]),
+      [v.minLength(1), v.maxLength(5)]
+    ),
+    multiplier: v.object({
+      ifSuccessful: v.number([v.minValue(-5), v.maxValue(5)]),
+      ifFailed: v.number([v.minValue(-5), v.maxValue(5)])
+    })
+  })
+]);
 
-// export const sortSchema = z.union([z.literal('asc'), z.literal('desc')]);
+const baseUserFormFieldSchemas = {
+  /** Nanoid (must be unique within the form itself, not across the entire database) */
+  id: v.string([v.length(8)]),
+  title: v.string([v.minLength(2), v.maxLength(200)]),
+  /** Written as markdown */
+  description: v.nullable(v.string([v.maxLength(300)])),
+  optional: v.boolean(),
+  deleted: v.boolean()
+};
 
-// export const withTournamentSchema = z.object({
-//   tournamentId: z.number().int()
-// });
+const baseUserFormShortTextFieldSchemas = {
+  ...baseUserFormFieldSchemas,
+  type: v.literal('short-text'),
+  validation: v.undefined_(),
+  min: v.number([v.integer(), v.minValue(0)]),
+  max: v.number([v.integer(), v.maxValue(100)])
+};
 
-// export const withRoundSchema = withTournamentSchema.extend({
-//   roundId: z.number().int()
-// });
+const userFormShortTextField = v.union([
+  v.object(baseUserFormShortTextFieldSchemas),
+  v.object({
+    ...baseUserFormShortTextFieldSchemas,
+    validation: v.union([v.literal('email'), v.literal('url')])
+  }),
+  v.object({
+    ...baseUserFormShortTextFieldSchemas,
+    validation: v.union([v.literal('regex'), v.literal('contains'), v.literal('not-contains')]),
+    value: v.string([v.minLength(1), v.maxLength(100)])
+  })
+]);
 
-// export const mToN = z.object({
-//   addIds: z.array(z.number().int()).optional().default([]),
-//   removeIds: z.array(z.number().int()).optional().default([])
-// });
+const baseUserFormLongTextFieldSchemas = {
+  ...baseUserFormFieldSchemas,
+  type: v.literal('long-text'),
+  validation: v.undefined_(),
+  min: v.number([v.integer(), v.minValue(0)]),
+  max: v.number([v.integer(), v.maxValue(10000)])
+};
 
-// export const modSchema = z.union([
-//   z.literal('ez'),
-//   z.literal('hd'),
-//   z.literal('hr'),
-//   z.literal('sd'),
-//   z.literal('dt'),
-//   z.literal('rx'),
-//   z.literal('ht'),
-//   z.literal('fl'),
-//   z.literal('pf')
-// ]);
+const userFormLongTextFieldSchema = v.union([
+  v.object(baseUserFormLongTextFieldSchemas),
+  v.object({
+    ...baseUserFormLongTextFieldSchemas,
+    validation: v.literal('regex'),
+    value: v.string([v.minLength(1), v.maxLength(100)])
+  })
+]);
 
-// export const skillsetSchema = z.union([
-//   z.literal('consistency'),
-//   z.literal('streams'),
-//   z.literal('tech'),
-//   z.literal('alt'),
-//   z.literal('speed'),
-//   z.literal('gimmick'),
-//   z.literal('rhythm'),
-//   z.literal('aim'),
-//   z.literal('awkward_aim'),
-//   z.literal('flow_aim'),
-//   z.literal('reading'),
-//   z.literal('precision'),
-//   z.literal('stamina'),
-//   z.literal('finger_control'),
-//   z.literal('jack_of_all_trades')
-// ]);
+const baseUserFormNumberFieldSchema = {
+  ...baseUserFormFieldSchemas,
+  type: v.literal('number'),
+  validation: v.undefined_(),
+  integer: v.boolean()
+};
 
-// export const availabilitySchema = z
-//   .string()
-//   .length(99)
-//   .refine((str) => {
-//     const regex = /(1|0){24}\.(1|0){24}\.(1|0){24}\.(1|0){24}/g;
-//     return regex.test(str);
-//   }, "Input doesn't match availability string format");
+const userFormNumberFieldSchema = v.union([
+  v.object(baseUserFormNumberFieldSchema),
+  v.object({
+    ...baseUserFormNumberFieldSchema,
+    validation: v.union([
+      v.literal('gt'),
+      v.literal('gte'),
+      v.literal('lt'),
+      v.literal('lte'),
+      v.literal('not-eq')
+    ]),
+    value: v.number([v.minValue(lower32BitIntLimit), v.maxValue(upper32BitIntLimit)])
+  }),
+  v.object({
+    ...baseUserFormNumberFieldSchema,
+    validation: v.union([v.literal('between'), v.literal('not-between')]),
+    min: v.number([v.minValue(lower32BitIntLimit), v.maxValue(upper32BitIntLimit)]),
+    max: v.number([v.minValue(lower32BitIntLimit), v.maxValue(upper32BitIntLimit)])
+  })
+]);
+
+const userFormSelectFieldSchema = v.object({
+  ...baseUserFormFieldSchemas,
+  type: v.literal('select'),
+  options: v.array(v.string([v.minLength(1), v.maxLength(100)]), [v.minLength(2), v.maxLength(100)])
+});
+
+const userFormCheckboxFieldSchema = v.object({
+  ...baseUserFormFieldSchemas,
+  type: v.literal('checkbox'),
+  check: v.boolean()
+});
+
+const baseUserFormSelectMultipleFieldSchema = {
+  ...baseUserFormFieldSchemas,
+  type: v.literal('select-multiple'),
+  validation: v.undefined_(),
+  options: v.array(v.string([v.minLength(1), v.maxLength(100)]), [v.minLength(2), v.maxLength(100)])
+};
+
+const userFormSelectMultipleFieldSchema = v.union([
+  v.object(baseUserFormSelectMultipleFieldSchema),
+  v.object({
+    ...baseUserFormSelectMultipleFieldSchema,
+    validation: v.union([
+      v.literal('gt'),
+      v.literal('gte'),
+      v.literal('lt'),
+      v.literal('lte'),
+      v.literal('eq'),
+      v.literal('not-eq')
+    ]),
+    value: v.number([v.integer(), v.minValue(0), v.maxValue(100)])
+  }),
+  v.object({
+    ...baseUserFormSelectMultipleFieldSchema,
+    validation: v.union([v.literal('between'), v.literal('not-between')]),
+    min: v.number([v.integer(), v.minValue(0), v.maxValue(100)]),
+    max: v.number([v.integer(), v.minValue(0), v.maxValue(100)])
+  })
+]);
+
+const userFormScaleFieldSchema = v.object({
+  ...baseUserFormFieldSchemas,
+  type: v.literal('scale'),
+  from: v.number([v.integer(), v.minValue(0), v.maxValue(1)]),
+  fromLabel: v.string([v.minLength(1), v.maxLength(100)]),
+  to: v.number([v.integer(), v.minValue(2), v.maxValue(10)]),
+  toLabel: v.string([v.minLength(1), v.maxLength(100)])
+});
+
+const baseUserFormDateTimeFieldSchemas = {
+  ...baseUserFormFieldSchemas,
+  type: v.literal('datetime'),
+  onlyDate: v.boolean(),
+  validation: v.undefined_()
+};
+
+const userFormDateTimeFieldSchema = v.union([
+  v.object(baseUserFormDateTimeFieldSchemas),
+  v.object({
+    ...baseUserFormDateTimeFieldSchemas,
+    validation: v.union([
+      v.literal('gt'),
+      v.literal('gte'),
+      v.literal('lt'),
+      v.literal('lte'),
+      v.literal('not-eq')
+    ]),
+    value: v.number([
+      v.minValue(oldestDatePossible.getTime()),
+      v.maxValue(maxPossibleDate.getTime())
+    ])
+  }),
+  v.object({
+    ...baseUserFormDateTimeFieldSchemas,
+    validation: v.union([v.literal('between'), v.literal('not-between')]),
+    min: v.number([
+      v.minValue(oldestDatePossible.getTime()),
+      v.maxValue(maxPossibleDate.getTime())
+    ]),
+    max: v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())])
+  })
+]);
+
+export const userFormFieldSchema = v.union([
+  userFormShortTextField,
+  userFormLongTextFieldSchema,
+  userFormNumberFieldSchema,
+  userFormSelectFieldSchema,
+  userFormCheckboxFieldSchema,
+  userFormSelectMultipleFieldSchema,
+  userFormScaleFieldSchema,
+  userFormDateTimeFieldSchema
+]);
+
+v.record(v.string([v.length(8)]), v.string([v.minLength(0), v.maxLength(10000)]));
+
+export const userFormFieldResponseSchema = v.record(
+  v.string([v.length(8)]),
+  v.string([v.minLength(0), v.maxLength(10000)])
+);
+
+export const colorShadesSchema = v.union([
+  v.literal('50'),
+  v.literal('100'),
+  v.literal('200'),
+  v.literal('300'),
+  v.literal('400'),
+  v.literal('500'),
+  v.literal('600'),
+  v.literal('700'),
+  v.literal('800'),
+  v.literal('900')
+]);
+
+export const tournamentThemeSchema = v.object({
+  use: v.boolean(),
+  colors: v.object({
+    surface: v.record(colorShadesSchema, v.string([hexColorSchema])),
+    primary: v.record(colorShadesSchema, v.string([hexColorSchema]))
+  }),
+  fontFamilies: v.object({
+    base: v.string(),
+    headings: v.string()
+  }),
+  fontColors: v.object({
+    base: v.string(),
+    headings: v.string()
+  })
+});
+
+export const userSettingsSchema = v.object({
+  /** Whether or not to make their Discord username public on their profile page */
+  publicDiscord: v.boolean(),
+  /** Whether or not to display their tournament staff history on their profile page */
+  publicStaffHistory: v.boolean(),
+  /** Whether or not to display their tournament player history on their profile page */
+  publicPlayerHistory: v.boolean()
+});

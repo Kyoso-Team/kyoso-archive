@@ -5,25 +5,37 @@ import {
   Country,
   db,
   DiscordUser,
+  Invite,
+  InviteWithRole,
   OsuBadge,
   OsuUser,
   OsuUserAwardedBadge,
+  Player,
   Session,
+  StaffMember,
+  StaffMemberRole,
+  StaffRole,
+  Team,
+  Tournament,
+  TournamentDates,
   User
 } from '$db';
-import { asc, ilike, notExists, type SQL } from 'drizzle-orm';
+import { count, inArray, lt } from 'drizzle-orm';
 import { and, desc, eq, isNull, not, or, sql } from 'drizzle-orm';
 import { t } from '$trpc';
 import { future, pick, trpcUnknownError } from '$lib/server/utils';
 import { customAlphabet } from 'nanoid';
 import { wrap } from '@typeschema/valibot';
-import { positiveIntSchema } from '$lib/schemas';
+import { positiveIntSchema, userSettingsSchema } from '$lib/schemas';
 import { getSession } from '../helpers/api';
 import { TRPCError } from '@trpc/server';
 import { alias, unionAll } from 'drizzle-orm/pg-core';
 import { rateLimitMiddleware } from '$trpc/middleware';
+import { TRPCChecks } from '../helpers/checks';
+import type { SQL } from 'drizzle-orm';
 
 const getUser = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({
@@ -33,14 +45,9 @@ const getUser = t.procedure
   )
   .query(async ({ ctx, input }) => {
     const { userId } = input;
+    const checks = new TRPCChecks({ action: 'get this user' });
     const session = getSession(ctx.cookies, true);
-
-    if (!session.admin) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'You do not have the required permissions to get this user'
-      });
-    }
+    checks.userIsAdmin(session);
 
     let user!: Pick<
       typeof User.$inferSelect,
@@ -192,14 +199,9 @@ const searchUser = t.procedure
   )
   .query(async ({ ctx, input }) => {
     const { search, searchBy } = input;
+    const checks = new TRPCChecks({ action: 'search this user' });
     const session = getSession(ctx.cookies, true);
-
-    if (!session.admin) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'You do not have the required permissions to search this user'
-      });
-    }
+    checks.userIsAdmin(session);
 
     const searchNum = isNaN(Number(search)) ? 0 : Number(search);
     let where!: SQL;
@@ -231,13 +233,11 @@ const searchUser = t.procedure
     return user;
   });
 
-const updateSelf = t.procedure.mutation(async ({ ctx }) => {
+const resetApiKey = t.procedure.use(rateLimitMiddleware).mutation(async ({ ctx }) => {
   const session = getSession(ctx.cookies, true);
 
-  let user!: Pick<typeof User.$inferSelect, 'apiKey'>;
-
   try {
-    user = await db
+    await db
       .update(User)
       .set({
         apiKey: customAlphabet(
@@ -245,17 +245,363 @@ const updateSelf = t.procedure.mutation(async ({ ctx }) => {
           24
         )()
       })
-      .where(eq(User.id, session.userId))
-      .returning(pick(User, ['apiKey']))
-      .then((rows) => rows[0]);
+      .where(eq(User.id, session.userId));
   } catch (err) {
     throw trpcUnknownError(err, 'Updating the user');
   }
-
-  return user;
 });
 
+const updateSelf = t.procedure
+  .use(rateLimitMiddleware)
+  .input(
+    wrap(
+      v.partial(
+        v.object({
+          settings: userSettingsSchema
+        })
+      )
+    )
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { settings } = input;
+    const session = getSession(ctx.cookies, true);
+
+    try {
+      await db
+        .update(User)
+        .set({
+          settings
+        })
+        .where(eq(User.id, session.userId));
+    } catch (err) {
+      throw trpcUnknownError(err, 'Updating the user');
+    }
+  });
+
+const makeAdmin = t.procedure
+  .use(rateLimitMiddleware)
+  .input(
+    wrap(
+      v.object({
+        userId: positiveIntSchema
+      })
+    )
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { userId } = input;
+    const checks = new TRPCChecks({ action: 'make this user an admin' });
+    const session = getSession(ctx.cookies, true);
+    checks.userIsOwner(session);
+
+    let user: Pick<typeof User.$inferSelect, 'admin'> | undefined;
+
+    try {
+      user = await db
+        .select(pick(User, ['admin']))
+        .from(User)
+        .where(eq(User.id, userId))
+        .limit(1)
+        .then((users) => users[0]);
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting the user');
+    }
+
+    if (!user) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'User not found'
+      });
+    }
+
+    if (user.admin) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'User is already an admin'
+      });
+    }
+
+    try {
+      await db.transaction(async (tx) => {
+        await tx
+          .update(User)
+          .set({
+            admin: true
+          })
+          .where(eq(User.id, userId));
+
+        await tx
+          .update(Session)
+          .set({
+            updateCookie: true
+          })
+          .where(and(eq(Session.userId, userId), not(Session.expired)));
+      });
+    } catch (err) {
+      throw trpcUnknownError(err, 'Updating the user');
+    }
+  });
+
+const removeAdmin = t.procedure
+  .use(rateLimitMiddleware)
+  .input(
+    wrap(
+      v.object({
+        userId: positiveIntSchema
+      })
+    )
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { userId } = input;
+    const checks = new TRPCChecks({ action: "remove this user's admin status" });
+    const session = getSession(ctx.cookies, true);
+    checks.userIsOwner(session);
+
+    let user: Pick<typeof User.$inferSelect, 'admin'> | undefined;
+
+    try {
+      user = await db
+        .select(pick(User, ['admin']))
+        .from(User)
+        .where(eq(User.id, userId))
+        .limit(1)
+        .then((users) => users[0]);
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting the user');
+    }
+
+    if (!user) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'User not found'
+      });
+    }
+
+    if (!user.admin) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'User is already not an admin'
+      });
+    }
+
+    const asDebuggerSq = db.$with('as_debugger').as(
+      db
+        .select(pick(StaffMemberRole, ['staffMemberId']))
+        .from(StaffMemberRole)
+        .innerJoin(StaffRole, eq(StaffRole.id, StaffMemberRole.staffRoleId))
+        .innerJoin(StaffMember, eq(StaffMember.id, StaffMemberRole.staffMemberId))
+        .where(and(eq(StaffRole.order, 1), eq(StaffMember.userId, userId)))
+    );
+
+    const inviteAsDebuggerSq = db.$with('invite_as_debugger').as(
+      db
+        .select(pick(InviteWithRole, ['inviteId']))
+        .from(InviteWithRole)
+        .innerJoin(StaffRole, eq(StaffRole.id, InviteWithRole.staffRoleId))
+        .innerJoin(Invite, eq(Invite.id, InviteWithRole.inviteId))
+        .where(
+          and(eq(StaffRole.order, 1), eq(Invite.status, 'pending'), eq(Invite.toUserId, userId))
+        )
+    );
+
+    try {
+      await db.transaction(async (tx) => {
+        await tx
+          .update(User)
+          .set({
+            admin: false
+          })
+          .where(eq(User.id, userId));
+
+        await tx
+          .update(Session)
+          .set({
+            updateCookie: true
+          })
+          .where(and(eq(Session.userId, userId), not(Session.expired)));
+
+        // Remove admin from any tournament where they're a debugger, since a debugger must be an admin
+        await tx
+          .with(asDebuggerSq)
+          .delete(StaffMemberRole)
+          .where(inArray(StaffMemberRole.staffMemberId, db.select().from(asDebuggerSq)));
+
+        await tx
+          .update(StaffMember)
+          .set({
+            deletedAt: sql`now()`
+          })
+          .where(eq(StaffMember.userId, userId));
+
+        // Cancel pending invitations to become a debugger in a tournament
+        await tx
+          .with(inviteAsDebuggerSq)
+          .update(Invite)
+          .set({
+            status: 'cancelled'
+          })
+          .where(inArray(Invite.id, db.select().from(inviteAsDebuggerSq)));
+      });
+    } catch (err) {
+      throw trpcUnknownError(err, 'Updating the user');
+    }
+  });
+
+const makeApprovedHost = t.procedure
+  .use(rateLimitMiddleware)
+  .input(
+    wrap(
+      v.object({
+        userId: positiveIntSchema
+      })
+    )
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { userId } = input;
+    const checks = new TRPCChecks({ action: 'make this user an approved host' });
+    const session = getSession(ctx.cookies, true);
+    checks.userIsAdmin(session);
+
+    let user: Pick<typeof User.$inferSelect, 'approvedHost' | 'osuUserId'> | undefined;
+
+    try {
+      user = await db
+        .select(pick(User, ['approvedHost', 'osuUserId']))
+        .from(User)
+        .where(eq(User.id, userId))
+        .limit(1)
+        .then((users) => users[0]);
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting the user');
+    }
+
+    if (!user) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'User not found'
+      });
+    }
+
+    if (user.osuUserId === env.OWNER) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: "You can't update the owner's approved host status"
+      });
+    }
+
+    if (user.approvedHost) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'User is already an approved host'
+      });
+    }
+
+    try {
+      await db.transaction(async (tx) => {
+        await tx
+          .update(User)
+          .set({
+            approvedHost: true
+          })
+          .where(eq(User.id, userId));
+
+        await tx
+          .update(Session)
+          .set({
+            updateCookie: true
+          })
+          .where(and(eq(Session.userId, userId), not(Session.expired)));
+      });
+    } catch (err) {
+      throw trpcUnknownError(err, 'Updating the user');
+    }
+  });
+
+const removeApprovedHost = t.procedure
+  .use(rateLimitMiddleware)
+  .input(
+    wrap(
+      v.object({
+        userId: positiveIntSchema
+      })
+    )
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { userId } = input;
+    const checks = new TRPCChecks({ action: "remove this user's approved host status" });
+    const session = getSession(ctx.cookies, true);
+    checks.userIsAdmin(session);
+
+    let user: Pick<typeof User.$inferSelect, 'approvedHost' | 'osuUserId'> | undefined;
+
+    try {
+      user = await db
+        .select(pick(User, ['approvedHost', 'osuUserId']))
+        .from(User)
+        .where(eq(User.id, userId))
+        .limit(1)
+        .then((users) => users[0]);
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting the user');
+    }
+
+    if (!user) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'User not found'
+      });
+    }
+
+    if (user.osuUserId === env.OWNER) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: "You can't update the owner's approved host status"
+      });
+    }
+
+    if (!user.approvedHost) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'User is already not an approved host'
+      });
+    }
+
+    try {
+      await db.transaction(async (tx) => {
+        await tx
+          .update(User)
+          .set({
+            approvedHost: false
+          })
+          .where(eq(User.id, userId));
+
+        await tx
+          .update(Session)
+          .set({
+            updateCookie: true
+          })
+          .where(and(eq(Session.userId, userId), not(Session.expired)));
+
+        // Cancel pending invitations to become a tournament's host
+        await tx
+          .update(Invite)
+          .set({
+            status: 'cancelled'
+          })
+          .where(
+            and(
+              eq(Invite.status, 'pending'),
+              eq(Invite.reason, 'delegate_host'),
+              eq(Invite.toUserId, userId)
+            )
+          );
+      });
+    } catch (err) {
+      throw trpcUnknownError(err, 'Updating the user');
+    }
+  });
+
 const updateUser = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({
@@ -271,8 +617,10 @@ const updateUser = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { data, userId } = input;
-    const { admin } = data;
+    const { admin, approvedHost } = data;
+    const checks = new TRPCChecks({ action: 'update this user' });
     const session = getSession(ctx.cookies, true);
+    checks.userIsAdmin(session).partialHasValues(data);
 
     if (admin !== undefined && session.osu.id !== env.OWNER) {
       throw new TRPCError({
@@ -281,25 +629,14 @@ const updateUser = t.procedure
       });
     }
 
-    if (!session.admin) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'You do not have the required permissions update this user'
-      });
-    }
-
-    if (Object.keys(data).length === 0) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'Nothing to update'
-      });
-    }
-
     try {
       await db.transaction(async (tx) => {
         await tx
           .update(User)
-          .set(data)
+          .set({
+            admin,
+            approvedHost
+          })
           .where(eq(User.id, userId));
 
         await tx
@@ -315,6 +652,7 @@ const updateUser = t.procedure
   });
 
 const banUser = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({
@@ -327,14 +665,9 @@ const banUser = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { banReason, banTime, issuedToUserId } = input;
+    const checks = new TRPCChecks({ action: 'ban this user' });
     const session = getSession(ctx.cookies, true);
-
-    if (!session.admin) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'You do not have the required permissions to ban this user'
-      });
-    }
+    checks.userIsAdmin(session);
 
     let hasActiveBan!: boolean;
 
@@ -366,14 +699,94 @@ const banUser = t.procedure
       });
     }
 
-    const liftAt = banTime ? new Date(new Date().getTime() + banTime) : undefined;
+    let user: Pick<typeof User.$inferSelect, 'admin' | 'osuUserId'> | undefined;
+
+    try {
+      user = await db
+        .select(pick(User, ['admin', 'osuUserId']))
+        .from(User)
+        .where(eq(User.id, issuedToUserId))
+        .limit(1)
+        .then((users) => users[0]);
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting the user');
+    }
+
+    if (!user) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'User not found'
+      });
+    }
+
+    if (user.osuUserId === env.OWNER) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: "You can't ban the owner"
+      });
+    }
+
+    if (user.admin && session.osu.id !== env.OWNER) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'Only the owner can ban other admins'
+      });
+    }
+
+    const tournamentCurrentlyHostedByBannedUserSq = db
+      .$with('tournament_currently_hosted_by_banned_user')
+      .as(
+        db
+          .select({
+            ...pick(Tournament, ['id']),
+            staffMemberCount: count(StaffMember.id).as('staff_member_count')
+          })
+          .from(Tournament)
+          .innerJoin(TournamentDates, eq(TournamentDates.tournamentId, Tournament.id))
+          .innerJoin(StaffMember, eq(StaffMember.tournamentId, Tournament.id))
+          .innerJoin(StaffMemberRole, eq(StaffMemberRole.staffMemberId, StaffMember.id))
+          .innerJoin(StaffRole, eq(StaffRole.id, StaffMemberRole.staffRoleId))
+          .where(
+            and(
+              eq(StaffRole.order, 2),
+              eq(StaffMember.userId, issuedToUserId),
+              or(isNull(StaffMember.deletedAt), future(StaffMember.deletedAt)),
+              or(isNull(TournamentDates.concludesAt), future(TournamentDates.concludesAt)),
+              or(isNull(Tournament.deletedAt), future(Tournament.deletedAt))
+            )
+          )
+          .groupBy(Tournament.id)
+      );
+
+    const teamWhereBannedUserIsCaptainSq = db.$with('team_where_banned_user_is_captain').as(
+      db
+        .select({
+          ...pick(Team, ['id']),
+          playerCount: count(Player.id).as('player_count')
+        })
+        .from(Team)
+        .innerJoin(Tournament, eq(Tournament.id, Team.tournamentId))
+        .innerJoin(TournamentDates, eq(TournamentDates.tournamentId, Tournament.id))
+        .innerJoin(Player, eq(Player.teamId, Team.id))
+        .where(
+          and(
+            eq(Player.userId, issuedToUserId),
+            eq(Team.captainPlayerId, Player.id),
+            or(isNull(Team.deletedAt), future(Team.deletedAt)),
+            or(isNull(Player.deletedAt), future(Player.deletedAt)),
+            or(isNull(TournamentDates.concludesAt), future(TournamentDates.concludesAt)),
+            or(isNull(Tournament.deletedAt), future(Tournament.deletedAt))
+          )
+        )
+        .groupBy(Team.id)
+    );
 
     try {
       await db.transaction(async (tx) => {
         await tx.insert(Ban).values({
           banReason,
           issuedToUserId,
-          liftAt,
+          liftAt: banTime ? new Date(new Date().getTime() + banTime) : undefined,
           issuedByUserId: session.userId
         });
 
@@ -381,7 +794,8 @@ const banUser = t.procedure
           .update(User)
           .set({
             admin: false,
-            approvedHost: false
+            approvedHost: false,
+            apiKey: null
           })
           .where(eq(User.id, issuedToUserId));
 
@@ -391,6 +805,125 @@ const banUser = t.procedure
             expired: true
           })
           .where(and(eq(Session.userId, issuedToUserId), not(Session.expired)));
+
+        // Remove the banned user from any tournaments they're staffing
+        const asStaffMember = await tx
+          .update(StaffMember)
+          .set({
+            deletedAt: sql`now()`
+          })
+          .where(eq(StaffMember.userId, issuedToUserId))
+          .returning(pick(StaffMember, ['id']))
+          .then((staffMembers) => staffMembers.map((staffMember) => staffMember.id));
+
+        if (asStaffMember.length > 0) {
+          await tx
+            .delete(StaffMemberRole)
+            .where(inArray(StaffMemberRole.staffMemberId, asStaffMember));
+        }
+
+        // TOD: If the banned user was a host for a tournament, automatically delegate host to a random staff member with the highest staff role
+        // await tx.execute(
+        //   sql`
+        //     with ${tournamentCurrentlyHostedByBannedUserSq}
+        //     insert into ${StaffMemberRole} (${StaffMemberRole.staffMemberId}, ${StaffMemberRole.staffRoleId})
+        //     select distinct on (${Tournament.id}) ${StaffMemberRole.staffMemberId}, ${StaffMemberRole.staffRoleId}
+        //     from ${StaffMemberRole}
+        //     inner join ${StaffMember} on ${StaffMember.id} = ${StaffMemberRole.staffMemberId}
+        //     inner join ${StaffRole} on ${StaffRole.id} = ${StaffMemberRole.staffRoleId}
+        //     inner join ${Tournament} on ${Tournament.id} = ${StaffMember.tournamentId}
+        //     inner join ${TournamentDates} on ${TournamentDates.tournamentId} = ${Tournament.id}
+        //     where ${
+        //       and(
+        //         gt(StaffRole.order, 5),
+        //         inArray(
+        //           StaffMember.tournamentId,
+        //           db
+        //             .select({ id: tournamentCurrentlyHostedByBannedUserSq.id })
+        //             .from(tournamentCurrentlyHostedByBannedUserSq)
+        //             .where(gt(tournamentCurrentlyHostedByBannedUserSq.staffMemberCount, 1))
+        //         )
+        //       )
+        //     }
+        //     order by ${StaffRole.order} asc, ${StaffMember.joinedStaffAt} desc
+        //   `
+        // );
+
+        // If the hosted tournament doesn't have any other staff members, then delete
+        await tx
+          .with(tournamentCurrentlyHostedByBannedUserSq)
+          .update(Tournament)
+          .set({
+            deletedAt: sql`now()`
+          })
+          .where(
+            inArray(
+              Tournament.id,
+              db
+                .select({ id: tournamentCurrentlyHostedByBannedUserSq.id })
+                .from(tournamentCurrentlyHostedByBannedUserSq)
+                .where(lt(tournamentCurrentlyHostedByBannedUserSq.staffMemberCount, 2))
+            )
+          );
+
+        // Remove the banned user from any tournaments they're playing
+        await tx
+          .update(Player)
+          .set({
+            deletedAt: sql`now()`
+          })
+          .where(eq(Player.userId, issuedToUserId));
+
+        // TODO: If the banned user was a captain for a team, delegate captaincy to a random player
+        // await tx.execute(
+        //   sql`
+        //     update ${Team}
+        //     set ${Team.captainPlayerId} = (select ${Player.id} from ${Player} where ${Player.teamId} = ${Team.id} order by random() limit 1)
+        //     where ${
+        //       and(
+        //         or(isNull(Team.deletedAt), future(Team.deletedAt)),
+        //         or(isNull(Player.deletedAt), future(Player.deletedAt)),
+        //         inArray(
+        //           Team.id,
+        //           db
+        //             .select({ id: teamWhereBannedUserIsCaptainSq.id })
+        //             .from(teamWhereBannedUserIsCaptainSq)
+        //             .where(gt(teamWhereBannedUserIsCaptainSq.playerCount, 1))
+        //         )
+        //       )
+        //     }
+        //   `
+        // );
+
+        // If the team doesn't have any other players, then delete
+        await tx
+          .with(teamWhereBannedUserIsCaptainSq)
+          .update(Team)
+          .set({
+            deletedAt: sql`now()`
+          })
+          .where(
+            inArray(
+              Team.id,
+              db
+                .select({ id: teamWhereBannedUserIsCaptainSq.id })
+                .from(teamWhereBannedUserIsCaptainSq)
+                .where(lt(teamWhereBannedUserIsCaptainSq.playerCount, 2))
+            )
+          );
+
+        // Cancel any invitations for and from the banned user
+        await tx
+          .update(Invite)
+          .set({
+            status: 'cancelled'
+          })
+          .where(
+            and(
+              eq(Invite.status, 'pending'),
+              or(eq(Invite.byUserId, issuedToUserId), eq(Invite.toUserId, issuedToUserId))
+            )
+          );
       });
     } catch (err) {
       throw trpcUnknownError(err, 'Banning the user');
@@ -398,6 +931,7 @@ const banUser = t.procedure
   });
 
 const revokeBan = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({
@@ -408,14 +942,9 @@ const revokeBan = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { banId, revokeReason } = input;
+    const checks = new TRPCChecks({ action: 'revoke this ban' });
     const session = getSession(ctx.cookies, true);
-
-    if (!session.admin) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'You do not have the required permissions to revoke this ban'
-      });
-    }
+    checks.userIsAdmin(session);
 
     try {
       await db
@@ -432,6 +961,7 @@ const revokeBan = t.procedure
   });
 
 const expireSession = t.procedure
+  .use(rateLimitMiddleware)
   .input(
     wrap(
       v.object({
@@ -454,59 +984,17 @@ const expireSession = t.procedure
     }
   });
 
-// const newSearchUser = t.procedure.input(wrap(v.string())).query(async ({ ctx, input }) => {
-//   getSession(ctx.cookies, true);
-//
-//   try {
-//     const isBanned = db.$with('is_banned').as(
-//       db
-//         .select()
-//         .from(Ban)
-//         .where(
-//           notExists(
-//             sql`select 1
-//         from ${Ban}
-//         where ${and(
-//           eq(Ban.issuedToUserId, +input),
-//           and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
-//         )}
-//         limit 1
-//     `
-//           )
-//         )
-//     );
-//
-//     return await db
-//       .with(isBanned)
-//       .select({
-//         id: User.id,
-//         osuId: User.osuUserId,
-//         username: OsuUser.username
-//       })
-//       .from(User)
-//       .leftJoin(OsuUser, eq(User.osuUserId, OsuUser.osuUserId))
-//       .where(
-//         or(
-//           eq(User.id, +input),
-//           eq(User.osuUserId, +input),
-//           eq(User.discordUserId, input),
-//           ilike(OsuUser.username, `%${input}%`)
-//         )
-//       )
-//       .orderBy(({ username }) => asc(username))
-//       .limit(10);
-//   } catch (err) {
-//     throw trpcUnknownError(err, 'Expiring the session');
-//   }
-// });
-
 export const usersRouter = t.router({
   getUser,
   searchUser,
   updateSelf,
+  resetApiKey,
   updateUser,
+  makeAdmin,
+  removeAdmin,
+  makeApprovedHost,
+  removeApprovedHost,
   banUser,
   revokeBan,
   expireSession
-  // newSearchUser
 });

@@ -40,7 +40,7 @@
   <Backdrop>
     <Modal>
       <button class="close-btn" on:click={toggleShowMore}>
-        <X />
+        <X size={20} />
       </button>
       <span class="title">Session Info</span>
       <ul class="list-disc pl-4">
@@ -63,13 +63,13 @@
         </ul>
         <li>
           <strong>Signed in:</strong>
-          {formatDate(session.createdAt)} - {formatTime(session.createdAt)}
+          {formatDate(session.createdAt)}, {formatTime(session.createdAt)}
         </li>
         <li>
           <strong>Last active:</strong>
           {current
             ? 'Now'
-            : `${formatDate(session.lastActiveAt)} - ${formatTime(session.lastActiveAt)}`}
+            : `${formatDate(session.lastActiveAt)}, ${formatTime(session.lastActiveAt)}`}
         </li>
       </ul>
     </Modal>
@@ -94,21 +94,26 @@
   <div class="flex flex-col">
     <span class="font-medium text-lg inline-block relative max-w-max">
       {#if current}
-        <span class="badge variant-soft-secondary top-[2px] absolute -right-16">Current</span>
+        <span class="badge variant-soft-primary top-[2px] absolute -right-16">Current</span>
       {/if}
-      {session.ipAddress}
+      {session.os.name && session.os.version
+        ? `${session.os.name} ${session.os.version}`
+        : 'Unknown OS'}
+      ({session.browser.name && session.browser.version
+        ? `${session.browser.name} ${session.browser.version}`
+        : 'Unknown browser'})
     </span>
-    <span class="dark:text-zinc-300 text-zinc-700 text-xs">
+    <span class="text-surface-600-300-token text-xs">
       {session.ipMetadata.city}, {session.ipMetadata.region}, {session.ipMetadata.country}
     </span>
   </div>
   <div class="flex gap-2 xs:justify-end mt-4 xs:mt-0 w-full">
     <button class="btn-icon variant-filled" on:click={toggleShowMore}>
-      <Info size={24} />
+      <Info size={20} />
     </button>
     {#if !current}
       <button class="btn-icon variant-filled-error" on:click={toggleEndSessionPrompt}>
-        <X size={24} />
+        <X size={20} />
       </button>
     {/if}
   </div>

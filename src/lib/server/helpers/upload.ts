@@ -19,22 +19,18 @@ export async function parseFormData<T extends Record<string, v.BaseSchema>>(
   }
 
   const data: Record<string, any> = {};
+  let currentKey = '';
 
   try {
     for (const key in schemas) {
-      data[key] = v.parse(schemas[key], fd.get(key));
+      currentKey = key;
+      const value = fd.get(key);
+      data[key] = v.parse(schemas[key], !isNaN(Number(value)) ? Number(value) : value);
     }
   } catch (err) {
     if (err instanceof v.ValiError) {
-      let str = 'Invalid input:\n';
-      const issues = v.flatten(err.issues).nested;
-
-      for (const key in issues) {
-        str += `- body.${key} should ${issues[key]}\n`;
-      }
-
-      str = str.trimEnd();
-      error(400, str);
+      const issue = (v.flatten(err.issues).root || [])[0];
+      error(400, `Invalid input: body.${currentKey} should ${issue}`);
     } else {
       throw await apiError(err, 'Parsing the form data', route);
     }
@@ -77,7 +73,7 @@ export async function transformFile(config: {
   return await Promise.all(
     resizes.map(async ({ width, height, quality, name }) => {
       const buffer = await file.arrayBuffer();
-      const newBuffer = await sharp(buffer).resize({ width, height }).jpeg({ quality }).toBuffer();
+      const newBuffer = await sharp(buffer).resize({ width, height }).webp({ quality }).toBuffer();
 
       const newFile = new File([new Blob([newBuffer]) as any], name, {
         lastModified: new Date().getTime()

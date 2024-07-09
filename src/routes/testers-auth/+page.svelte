@@ -1,5 +1,5 @@
 <main class="main fixed z-50 inset-0 bg-surface-900 flex justify-center items-center flex-col">
-  <div class="max-w-[56rem]">
+  <div class="max-w-4xl">
     <h1 class="text-center">Kyoso Test Build</h1>
     <p class="mt-4 mb-2">
       This build of the website is for testing purposes only, it shall not be used to store real

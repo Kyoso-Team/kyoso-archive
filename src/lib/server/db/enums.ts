@@ -2,7 +2,7 @@ import { pgEnum } from 'drizzle-orm/pg-core';
 
 export const TournamentType = pgEnum('tournament_type', ['teams', 'draft', 'solo']);
 
-export const StageFormat = pgEnum('stage_format', [
+export const RoundType = pgEnum('round_type', [
   'groups',
   'swiss',
   'qualifiers',
@@ -26,6 +26,8 @@ export const StaffPermission = pgEnum('staff_permission', [
   'manage_tournament',
   // Tournament assets (upload and delete banner and logo)
   'manage_assets',
+  // Custom tournament theme
+  'manage_theme',
   // Player regs.
   'manage_regs',
   // Mappool structure,
@@ -70,57 +72,20 @@ export const StaffColor = pgEnum('staff_color', [
   'pink'
 ]);
 
-// export const dbJoinRequestStatus = pgEnum('join_request_status', [
-//   'pending', // Pending response
-//   'accepted',
-//   'rejected'
-// ]);
+export const InviteStatus = pgEnum('invite_status', [
+  'pending',
+  'accepted',
+  'rejected',
+  'cancelled'
+]);
 
-// export const dbMod = pgEnum('mod', ['ez', 'hd', 'hr', 'sd', 'dt', 'rx', 'ht', 'fl', 'pf']);
+export const InviteReason = pgEnum('invite_reason', ['join_team', 'join_staff', 'delegate_host']);
 
-// export const dbSkillset = pgEnum('skillset', [
-//   'consistency',
-//   'streams',
-//   'tech',
-//   'alt',
-//   'speed',
-//   'gimmick',
-//   'rhythm',
-//   'aim',
-//   'awkward_aim',
-//   'flow_aim',
-//   'reading',
-//   'precision',
-//   'stamina',
-//   'finger_control',
-//   'jack_of_all_trades'
-// ]);
+export const TournamentFormType = pgEnum('tournament_form_type', ['general', 'staff_registration']);
 
-// export const dbOpponent = pgEnum('opponent', ['opponent1', 'opponent2']);
-
-// export const dbIssueType = pgEnum('issue_type', [
-//   'security', // Security vulnerability
-//   'enhancement',
-//   'new_feature',
-//   'bug',
-//   'user_behavior' // Inappropriate behavior from a user
-// ]);
-
-// export const dbIssueNotifType = pgEnum('issue_notification_type', ['submission', 'resolved']);
-
-// export const dbStaffChangeNotifAction = pgEnum('staff_change_notification_action', [
-//   'added',
-//   'removed'
-// ]);
-
-// export const dbTeamChangeNotifAction = pgEnum('team_change_notification_action', [
-//   'joined',
-//   'left',
-//   'kicked'
-// ]);
-
-// export const dbRoundPublicationNotifType = pgEnum('round_publication_notification_type', [
-//   'mappool',
-//   'schedules',
-//   'statistics'
-// ]);
+export const TournamentFormTarget = pgEnum('tournament_form_target', [
+  'public',
+  'staff',
+  'players',
+  'team_captains'
+]);

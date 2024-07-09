@@ -1,8 +1,8 @@
 import colors from 'tailwindcss/colors';
 import { TRPCClientError } from '@trpc/client';
 import { loading } from '$stores';
-import type { PopupSettings, ToastStore } from '@skeletonlabs/skeleton';
-import type { InferEnum, PageStore } from '$types';
+import type { ToastStore } from '@skeletonlabs/skeleton';
+import type { InferEnum, PaginationSettings, PopupSettings } from '$types';
 import type { StaffPermission } from '$db';
 
 /**
@@ -90,79 +90,14 @@ export function formatDigits(n: number, digitCount: number) {
   return `${str}${nStr}`;
 }
 
+/**
+ * ```plain
+ * Example: 1000 => '1,000'
+ * ```
+ */
 export function formatNumber(n: number) {
   return new Intl.NumberFormat('us-US').format(n);
 }
-
-/**
- * Format numbers
- */
-// export const format = {
-//   price: (n: number) => {
-//     return new Intl.NumberFormat('us-US', {
-//       style: 'currency',
-//       currency: 'USD'
-//     }).format(n);
-//   },
-//   /**
-//    * Example: ['Mario564', 'Taevas', 'Rekunan'] => 'Mario564, Taevas & Rekunan'
-//    */
-//   listArray: (arr: (string | number)[]) => {
-//     let str = '';
-
-//     if (arr.length > 1) {
-//       str += `${arr[0]}`;
-
-//       for (let i = 1; i < arr.length - 1; i++) {
-//         str += `, ${arr[i]}`;
-//       }
-
-//       str += ` & ${arr[arr.length - 1]}`;
-//     }
-
-//     return str;
-//   },
-//   /**
-//    * Example: 1 => '1st'
-//    */
-//   cardinal: (n: number) => {
-//     let str = n.toString();
-
-//     if (['1', '2', '3'].find((n) => n === str.at(-1)) && str.at(-2) !== '1') {
-//       switch (str.at(-1)) {
-//         default:
-//           return `${n}th`;
-//         case '1':
-//           return `${n}st`;
-//         case '2':
-//           return `${n}nd`;
-//         case '3':
-//           return `${n}rd`;
-//       }
-//     }
-
-//     return `${n}th`;
-//   },
-//   /**
-//    * Examples:
-//    * - [1] => '1st'
-//    * - [2,3] => '2nd & 3rd'
-//    * - [4,6] => '4th-6th'
-//    */
-//   placements: (placements: number[]) => {
-//     let str = '';
-
-//     if (placements.length === 1) {
-//       str = format.cardinal(placements[0]);
-//     } else if (placements.length === 2) {
-//       str = `${format.cardinal(placements[0])} & ${format.cardinal(placements[1])}`;
-//     } else {
-//       str = `${format.cardinal(placements[0])}-${format.cardinal(placements.at(-1) || 0)}`;
-//     }
-
-//     return str;
-//   }
-// };
 
 /**
  * Transform a numerical value in a different byte unit
@@ -182,7 +117,7 @@ export function tooltip(
   return {
     target,
     placement,
-    event: 'hover'
+    event: 'focus-hover'
   };
 }
 
@@ -204,17 +139,25 @@ export function trimStringValues<T extends Record<string, unknown>>(obj: T): T {
   return newObj as T;
 }
 
-function fillDateDigits(n: number) {
+export function fillDateDigits(n: number) {
   return n < 10 ? `0${n}` : n.toString();
 }
 
 /**
  * Parses a Date type value and transforms it into a valid string for an HTML input of type datetime-local
+ * ```plain
+ * Example: new Date('2023-08-20T20:07:11.768Z') => '2023-08-20T20:07:11'
+ * Example (only date): new Date('2023-08-20T20:07:11.768Z') => '2023-08-20'
+ * ```
  */
-export function dateToHtmlInput(date: Date) {
+export function dateToHtmlInput(date: Date, onlyDate?: boolean) {
   const year = date.getFullYear();
   const month = fillDateDigits(date.getMonth() + 1);
   const day = fillDateDigits(date.getDate());
+
+  if (onlyDate) {
+    return `${year}-${month}-${day}`;
+  }
 
   const hour = fillDateDigits(date.getHours());
   const minute = fillDateDigits(date.getMinutes());
@@ -223,22 +166,52 @@ export function dateToHtmlInput(date: Date) {
   return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
 }
 
+/**
+ * Type safe alternative to Object.keys
+ */
 export function keys<T extends Record<string, any>>(obj: T): (keyof T)[] {
   return Object.keys(obj) as any;
 }
 
 /**
- * Get the full URL a user uploaded file
+ * Does the inputted staff member have the required permissions?
  */
-export function getFileUrl(page: PageStore, path: string) {
-  return `${page.url.origin}/api/assets/${path}`;
-}
-
 export function hasPermissions(
   staffMember: { permissions: InferEnum<typeof StaffPermission>[] } | undefined,
   requiredPerms: InferEnum<typeof StaffPermission>[]
 ) {
   return staffMember ? staffMember.permissions.some((perm) => requiredPerms.includes(perm)) : false;
+}
+
+/**
+ * Sort an array of objects based on a given key
+ */
+export function sortByKey<T extends Record<string, any>>(
+  arr: T[],
+  key: keyof T,
+  direction: 'asc' | 'desc'
+): T[] {
+  return arr.sort((obj1, obj2) => {
+    const a = obj1[key];
+    const b = obj2[key];
+
+    if (a === b) {
+      return 0;
+    }
+
+    if (direction === 'asc') {
+      return a < b ? -1 : 1;
+    } else {
+      return a > b ? -1 : 1;
+    }
+  });
+}
+
+/**
+ * Do the two arrays have the same elements? Regardless of other
+ */
+export function arraysHaveSameElements<T>(arr1: T[], arr2: T[]) {
+  return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
 }
 
 /**
@@ -330,4 +303,21 @@ export function displayError(toast: ToastStore, err: unknown) {
   }
 
   throw err;
+}
+
+export function isDatePast(date: Date | number | null) {
+  if (!date) return false;
+  return new Date(date).getTime() <= new Date().getTime();
+}
+
+export function isDateFuture(date: Date | number | null) {
+  if (!date) return false;
+  return new Date(date).getTime() > new Date().getTime();
+}
+
+export function paginate(page: number, elementsPerPage: number): PaginationSettings {
+  return {
+    offset: elementsPerPage * (page - 1),
+    limit: elementsPerPage
+  };
 }

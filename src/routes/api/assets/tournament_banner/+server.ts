@@ -1,8 +1,8 @@
 import * as v from 'valibot';
 import { error } from '@sveltejs/kit';
-import { generateFileId, past, pick, apiError } from '$lib/server/utils';
+import { generateFileId, past, pick, apiError, future } from '$lib/server/utils';
 import { Tournament, db, TournamentDates } from '$db';
-import { and, eq, isNotNull, not } from 'drizzle-orm';
+import { and, eq, isNotNull, isNull, or } from 'drizzle-orm';
 import { boolStringSchema, fileIdSchema, fileSchema, positiveIntSchema } from '$lib/schemas';
 import {
   deleteFile,
@@ -44,7 +44,7 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
       .where(
         and(
           eq(Tournament.id, params.tournament_id),
-          not(Tournament.deleted),
+          or(isNull(Tournament.deletedAt), future(Tournament.deletedAt)),
           params.public ? isNotNull(TournamentDates.publishedAt) : undefined,
           params.public ? past(TournamentDates.publishedAt) : undefined
         )
@@ -53,7 +53,7 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
       .limit(1)
       .then((rows) => rows[0].bannerMetadata?.fileId);
   } catch (err) {
-    throw await apiError(err, 'Updating the tournament', route);
+    throw await apiError(err, 'Getting the tournament', route);
   }
 
   if (!fileId) {
@@ -64,11 +64,18 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
     error(400, 'Incorrect file ID');
   }
 
-  const file = await getFile(
-    route,
-    'tournament-banners',
-    `${formatDigits(params.tournament_id, 9)}-${params.size || 'thumb'}.jpeg`
-  );
+  let file!: Blob;
+
+  try {
+    file = await getFile(
+      route,
+      'tournament-banners',
+      `${formatDigits(params.tournament_id, 9)}-${params.size || 'thumb'}.jpeg`
+    );
+  } catch (err) {
+    throw await apiError(err, 'Getting the file', route);
+  }
+
   return new Response(file);
 }) satisfies RequestHandler;
 
@@ -100,19 +107,23 @@ export const PUT = (async ({ cookies, route, request }) => {
       {
         name: names.full,
         width: 1600,
-        height: 667,
+        height: 685,
         quality: 100
       },
       {
         name: names.thumb,
         width: 620,
-        height: 258,
+        height: 266,
         quality: 75
       }
     ]
   });
 
-  await Promise.all(files.map((file) => uploadFile(route, 'tournament-banners', file)));
+  try {
+    await Promise.all(files.map((file) => uploadFile(route, 'tournament-banners', file)));
+  } catch (err) {
+    throw await apiError(err, 'Uploading the files', route);
+  }
 
   try {
     await db
@@ -158,8 +169,13 @@ export const DELETE = (async ({ cookies, route, request }) => {
     throw await apiError(err, 'Updating the tournament', route);
   }
 
-  await Promise.all(
-    Object.values(names).map((fileName) => deleteFile(route, 'tournament-banners', fileName))
-  );
+  try {
+    await Promise.all(
+      Object.values(names).map((fileName) => deleteFile(route, 'tournament-banners', fileName))
+    );
+  } catch (err) {
+    throw await apiError(err, 'Deleting the files', route);
+  }
+
   return new Response('Success');
 }) satisfies RequestHandler;

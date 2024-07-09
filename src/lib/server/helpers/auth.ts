@@ -98,7 +98,7 @@ export async function upsertOsuUser(
 
   const badges: (typeof OsuBadge.$inferInsert)[] = user.badges.map((badge) => ({
     description: badge.description,
-    imgFileName: badge.image_url.split('/').at(-1) || ''
+    imgFileName: badge.image_url.match(/https:\/\/assets\.ppy\.sh\/profile-badges\/(.*)/)?.[1] || ''
   }));
 
   if (badges.length > 0) {
@@ -136,7 +136,10 @@ export async function upsertOsuUser(
     countryCode: user.country.code,
     restricted: user.is_restricted,
     username: user.username,
-    globalStdRank: user.statistics.global_rank,
+    globalStdRank: user.statistics_rulesets.osu?.global_rank ?? null,
+    globalTaikoRank: user.statistics_rulesets.taiko?.global_rank ?? null,
+    globalCatchRank: user.statistics_rulesets.fruits?.global_rank ?? null,
+    globalManiaRank: user.statistics_rulesets.mania?.global_rank ?? null,
     token: {
       accesstoken: token.access_token,
       refreshToken: token.refresh_token,

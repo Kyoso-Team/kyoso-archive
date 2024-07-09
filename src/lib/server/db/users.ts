@@ -1,21 +1,23 @@
 import {
-  pgTable,
-  serial,
-  varchar,
-  timestamp,
-  boolean,
-  integer,
-  text,
-  char,
-  primaryKey,
-  inet,
-  jsonb,
+  bigint,
   bigserial,
+  boolean,
+  char,
   index,
-  uniqueIndex
+  inet,
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  serial,
+  text,
+  timestamp,
+  uniqueIndex,
+  varchar
 } from 'drizzle-orm/pg-core';
-import { timestampConfig, citext } from './schema-utils';
-import type { OAuthToken } from '$types';
+import { timestampConfig } from './schema-utils';
+import { sql } from 'drizzle-orm';
+import type { OAuthToken, UserSettings } from '$types';
 
 export const User = pgTable(
   'user',
@@ -27,7 +29,12 @@ export const User = pgTable(
     approvedHost: boolean('approved_host').notNull().default(false),
     apiKey: varchar('api_key', {
       length: 24
-    }).unique('uni_user_api_key'),
+    }),
+    settings: jsonb('settings').notNull().$type<UserSettings>().default({
+      publicDiscord: false,
+      publicStaffHistory: true,
+      publicPlayerHistory: true
+    }),
     // Relations
     osuUserId: integer('osu_user_id')
       .notNull()
@@ -40,7 +47,13 @@ export const User = pgTable(
   },
   (table) => ({
     uniqueIndexOsuUserId: uniqueIndex('udx_user_osu_user_id').on(table.osuUserId),
-    uniqueIndexDiscordUserId: uniqueIndex('udx_user_discord_user_id').on(table.discordUserId)
+    uniqueIndexDiscordUserId: uniqueIndex('udx_user_discord_user_id').on(table.discordUserId),
+    indexAdminApprovedHost: index('idx_user_admin_approved_host').on(
+      table.admin,
+      table.approvedHost
+    ),
+    uniqueIndexApiKey: uniqueIndex('udx_user_api_key').on(table.apiKey),
+    indexUpdatedApiDataAt: index('idx_user_updated_api_data_at').on(table.updatedApiDataAt)
   })
 );
 
@@ -48,9 +61,12 @@ export const OsuUser = pgTable(
   'osu_user',
   {
     osuUserId: integer('osu_user_id').primaryKey(),
-    username: citext('username').notNull(),
+    username: varchar('username', { length: 15 }).notNull().unique('uni_osu_user_username'),
     restricted: boolean('restricted').notNull(),
     globalStdRank: integer('global_std_rank'),
+    globalTaikoRank: integer('global_taiko_rank'),
+    globalCatchRank: integer('global_catch_rank'),
+    globalManiaRank: integer('global_mania_rank'),
     token: jsonb('token').notNull().$type<OAuthToken>(),
     countryCode: char('country_code', {
       length: 2
@@ -59,7 +75,10 @@ export const OsuUser = pgTable(
       .references(() => Country.code)
   },
   (table) => ({
-    indexUsername: uniqueIndex('udx_osu_user_username').on(table.username)
+    indexUsername: index('idx_trgm_osu_user_username').using(
+      'gist',
+      sql`lower(${table.username}) gist_trgm_ops`
+    )
   })
 );
 
@@ -110,7 +129,7 @@ export const DiscordUser = pgTable('discord_user', {
   discordUserId: varchar('discord_user_id', {
     length: 19
   }).primaryKey(),
-  username: citext('username').notNull(),
+  username: varchar('username', { length: 32 }).notNull(),
   token: jsonb('token').notNull().$type<OAuthToken>()
 });
 
@@ -173,28 +192,40 @@ export const Ban = pgTable(
   })
 );
 
-export const Notification = pgTable(
-  'notification',
+export const Notification = pgTable('notification', {
+  id: bigserial('id', {
+    mode: 'number'
+  }).primaryKey(),
+  /**
+   * This message can contain variables that can then be replaced client side. Example:
+   * ```plain
+   * "You've been added as a staff member for {tournament:id} by {user:id}."
+   * ```
+   */
+  message: text('message').notNull()
+});
+
+export const UserNotification = pgTable(
+  'user_notification',
   {
-    id: bigserial('id', {
-      mode: 'number'
-    }).primaryKey(),
     userId: integer('user_id')
       .notNull()
       .references(() => User.id, {
         onDelete: 'cascade'
       }),
-    /**
-     * This message can contain variables that can then be replaced client side. Example:
-     * ```plain
-     * "You've been added as a staff member for {tournament:id} by {user:id}."
-     * ```
-     */
-    message: text('message').notNull(),
+    notificationId: bigint('notification_id', {
+      mode: 'number'
+    })
+      .notNull()
+      .references(() => Notification.id),
     notifiedAt: timestamp('notified_at', timestampConfig).notNull().defaultNow(),
     read: boolean('read').notNull().default(false)
   },
   (table) => ({
+    pk: primaryKey({
+      columns: [table.userId, table.notificationId]
+    }),
+    indexNotificationId: index('idx_user_notification_notification_id').on(table.notificationId),
     indexUserIdReadNotifiedAt: index('idx_user_notification_user_id_read_notified_at').on(
       table.userId,
       table.read,

@@ -61,7 +61,7 @@
       class="font-medium truncate block hover:opacity-75 duration-150 w-max">{user.osu.username}</a
     >
     <div class="flex gap-1 items-center">
-      <Discord w={12} h={12} class="fill-black dark:fill-white" />
+      <Discord w={12} h={12} class="fill-black dark:fill-white min-h-3 min-w-3" />
       <a
         href={`https://discordapp.com/users/${user.discord.discordUserId}`}
         class="truncate text-sm hover:opacity-75 duration-150 w-max">{user.discord.username}</a
@@ -79,7 +79,7 @@
           transition:scale={{ duration: 150, start: 0.5, opacity: 0 }}
           on:click={onLookupUser}
         >
-          <Search size={24} />
+          <Search size={20} />
         </button>
       {:else if showRemoveBtn}
         <button
@@ -87,7 +87,7 @@
           transition:scale={{ duration: 150, start: 0.5, opacity: 0 }}
           on:click={onAction}
         >
-          <X size={24} />
+          <X size={20} />
         </button>
       {/if}
     </div>
