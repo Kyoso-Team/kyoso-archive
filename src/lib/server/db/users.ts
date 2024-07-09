@@ -192,18 +192,52 @@ export const Ban = pgTable(
   })
 );
 
-export const Notification = pgTable('notification', {
-  id: bigserial('id', {
-    mode: 'number'
-  }).primaryKey(),
-  /**
-   * This message can contain variables that can then be replaced client side. Example:
-   * ```plain
-   * "You've been added as a staff member for {tournament:id} by {user:id}."
-   * ```
-   */
-  message: text('message').notNull()
-});
+export const Notification = pgTable(
+  'notification',
+  {
+    id: bigserial('id', {
+      mode: 'number'
+    }).primaryKey(),
+    notifiedAt: timestamp('notified_at', timestampConfig).defaultNow(),
+    /**
+     * This message can contain variables that can then be replaced client side. Example:
+     * ```plain
+     * "You've been added as a staff member for {tournament:id} by {user:id}."
+     * ```
+     */
+    message: text('message').notNull()
+  },
+  (table) => ({
+    indexNotifiedAt: index('idx_notification_notified_at').on(table.notifiedAt.desc())
+  })
+);
+
+export const ScheduledNotification = pgTable(
+  'scheduled_notification',
+  {
+    notificationId: bigint('notification_id', {
+      mode: 'number'
+    })
+      .primaryKey()
+      .references(() => Notification.id, {
+        onDelete: 'cascade'
+      }),
+    /** The event that triggers the notification. Format: "{table}:{id or some other unique identifier}:{description}". Example:
+     * ```plain
+     * "tournament:2:player_regs_close_at_reminder_1"
+     * ```
+     */
+    event: text('event').notNull(),
+    /**
+     * If null, then the notifications is cancelled
+     */
+    scheduledAt: timestamp('scheduled_at', timestampConfig)
+  },
+  (table) => ({
+    uniqueIndexEvent: uniqueIndex('udx_scheduled_notification_event').on(table.event),
+    indexScheduledAt: index('idx_scheduled_notification_scheduled_at').on(table.scheduledAt)
+  })
+);
 
 export const UserNotification = pgTable(
   'user_notification',
@@ -217,8 +251,7 @@ export const UserNotification = pgTable(
       mode: 'number'
     })
       .notNull()
-      .references(() => Notification.id),
-    notifiedAt: timestamp('notified_at', timestampConfig).notNull().defaultNow(),
+      .references(() => Notification.id, { onDelete: 'cascade' }),
     read: boolean('read').notNull().default(false)
   },
   (table) => ({
@@ -226,10 +259,6 @@ export const UserNotification = pgTable(
       columns: [table.userId, table.notificationId]
     }),
     indexNotificationId: index('idx_user_notification_notification_id').on(table.notificationId),
-    indexUserIdReadNotifiedAt: index('idx_user_notification_user_id_read_notified_at').on(
-      table.userId,
-      table.read,
-      table.notifiedAt
-    )
+    indexUserIdRead: index('idx_user_notification_user_id_read').on(table.userId, table.read)
   })
 );
