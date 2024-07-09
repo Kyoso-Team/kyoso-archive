@@ -200,6 +200,14 @@ export const Notification = pgTable(
     }).primaryKey(),
     notifiedAt: timestamp('notified_at', timestampConfig).defaultNow(),
     /**
+     * Whether to notify all users
+     */
+    global: boolean('global').notNull(),
+    /**
+     * One example of an important notification is one that alerts about a security vulnerability, major change, an important date, etc.
+     */
+    important: boolean('important').notNull(),
+    /**
      * This message can contain variables that can then be replaced client side. Example:
      * ```plain
      * "You've been added as a staff member for {tournament:id} by {user:id}."

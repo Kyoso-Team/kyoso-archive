@@ -8,6 +8,7 @@ import {
   Team,
   Tournament,
   TournamentDates,
+  User,
   UserNotification,
   db
 } from '$db';
@@ -47,6 +48,7 @@ export async function setSimilarityThreshold() {
 export async function createNotification(options: {
   tx: PgTransaction<any, any, any>;
   message: string;
+  important: boolean;
   notifyTo: (
     db: PgTransaction<any, any, any>,
     pickUserId: <T extends AnyPgNumberColumn>(columnAsUserId: T) => { userId: T }
@@ -54,11 +56,16 @@ export async function createNotification(options: {
   /** @internal Only used in `rescheduleNotification` function */
   scheduled?: boolean;
 }) {
-  const { message, notifyTo, tx, scheduled } = options;
+  const { message, notifyTo, tx, scheduled, important } = options;
 
   const notification = await tx
     .insert(Notification)
-    .values({ message, notifiedAt: scheduled ? null : undefined })
+    .values({
+      message,
+      important,
+      global: false,
+      notifiedAt: scheduled ? null : undefined
+    })
     .returning(pick(Notification, ['id']))
     .then((rows) => rows[0]);
 
@@ -76,9 +83,38 @@ export async function createNotification(options: {
   return notification;
 }
 
+export async function createGlobalNotification(options: {
+  tx: PgTransaction<any, any, any>;
+  message: string;
+  important: boolean;
+}) {
+  const { message, tx, important } = options;
+
+  const notification = await tx
+    .insert(Notification)
+    .values({
+      message,
+      important,
+      global: true
+    })
+    .returning(pick(Notification, ['id']))
+    .then((rows) => rows[0]);
+
+  await tx.execute(
+    sql`
+      insert into ${UserNotification} (${UserNotification.notificationId}, ${UserNotification.userId})
+      select ${notification.id}, ${User.id}
+      from ${User}
+    `
+  );
+
+  return notification;
+}
+
 export async function rescheduleNotification(options: {
   tx: PgTransaction<any, any, any>;
   message: string;
+  important: boolean;
   event: string;
   scheduledAt: Date;
   notifyTo: (
@@ -87,7 +123,7 @@ export async function rescheduleNotification(options: {
   ) => PgSelectBase<any, any, any>;
   scheduleIf: boolean;
 }) {
-  const { message, notifyTo, tx, scheduledAt, event } = options;
+  const { message, notifyTo, tx, scheduledAt, event, important, scheduleIf } = options;
 
   const notification = await tx
     .select(pick(ScheduledNotification, ['notificationId']))
@@ -97,10 +133,11 @@ export async function rescheduleNotification(options: {
     .then((rows) => rows?.[0]);
 
   // Create a scheduled notification
-  if (options.scheduleIf && !notification) {
+  if (scheduleIf && !notification) {
     const createdNotification = await createNotification({
       tx,
       message,
+      important,
       notifyTo,
       scheduled: true
     });
@@ -110,7 +147,7 @@ export async function rescheduleNotification(options: {
   }
 
   // Reschedule notification
-  if (options.scheduleIf && notification) {
+  if (scheduleIf && notification) {
     await tx
       .update(ScheduledNotification)
       .set({ scheduledAt })
@@ -118,7 +155,7 @@ export async function rescheduleNotification(options: {
   }
 
   // Cancel notification
-  if (!options.scheduleIf && notification) {
+  if (!scheduleIf && notification) {
     await tx.delete(Notification).where(eq(Notification.id, notification.notificationId));
   }
 }

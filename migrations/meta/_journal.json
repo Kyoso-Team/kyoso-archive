@@ -162,6 +162,13 @@
       "when": 1719273810619,
       "tag": "0022_quick_luke_cage",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1720561318991,
+      "tag": "0023_fixed_revanche",
+      "breakpoints": true
     }
   ]
 }
