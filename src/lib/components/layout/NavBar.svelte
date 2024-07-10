@@ -9,7 +9,7 @@
   import type { AuthSession } from '$types';
 
   export let session: AuthSession | undefined;
-  export let unreadNotificationCount: Promise<number>;
+  export let unreadNotificationCount: number;
   const navLinks = [
     {
       href: 'dashboard',

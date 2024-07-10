@@ -12,7 +12,7 @@
   import { Loader2 } from 'lucide-svelte';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
   import { fly } from 'svelte/transition';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { page } from '$app/stores';
   import { inject } from '@vercel/analytics';
   import { dev } from '$app/environment';
@@ -25,8 +25,28 @@
 
   export let data: LayoutServerData;
   let devMenuComponent: AnyComponent;
+  let notificationListener: EventSource | undefined;
 
   onMount(async () => {
+    listenNotifications();
+    mountDevMenu();
+  });
+
+  onDestroy(() => {
+    notificationListener?.close();
+  });
+
+  function listenNotifications() {
+    if (!data.session) return;
+    notificationListener = new EventSource('/api/notifications');
+    notificationListener.addEventListener('message', onNewNotification);
+  }
+
+  async function onNewNotification(e: MessageEvent) {
+    console.log(`New notification: ${e.data}`);
+  }
+
+  async function mountDevMenu() {
     if (!dev) return;
 
     devMenuComponent = (await import('$components/layout/DevMenu.svelte')).default;
@@ -37,7 +57,9 @@
         isUserOwner: data.isUserOwner
       });
     }
-  });
+  }
+
+  $: console.log(notificationListener?.readyState)
 </script>
 
 {#if dev && devMenuComponent !== undefined}
@@ -57,7 +79,7 @@
 <AppShell slotPageHeader="sticky top-0 z-[11]" slotSidebarLeft="z-[9]">
   <svelte:fragment slot="header">
     {#if $showNavBar}
-      <NavBar session={data.session} unreadNotificationCount={data.streamed.unreadNotificationCount} />
+      <NavBar session={data.session} unreadNotificationCount={1} />
     {/if}
     <div id="header" class="h-max" />
   </svelte:fragment>
