@@ -2,14 +2,13 @@ import * as v from 'valibot';
 import { t } from '$trpc';
 import { wrap } from '@typeschema/valibot';
 import { db, StaffColor, StaffPermission, StaffRole, uniqueConstraints } from '$db';
-import { and, eq, gt, inArray, sql } from 'drizzle-orm';
+import { and, count, eq, gt, inArray, sql } from 'drizzle-orm';
 import { catchUniqueConstraintError$, pick, trpcUnknownError } from '$lib/server/utils';
 import { positiveIntSchema } from '$lib/schemas';
 import { TRPCError } from '@trpc/server';
 import { getSession, getStaffMember, getTournament } from '$lib/server/helpers/trpc';
 import { TRPCChecks } from '../helpers/checks';
 import { rateLimitMiddleware } from '$trpc/middleware';
-import { getCount } from '../helpers/queries';
 import { arraysHaveSameElements } from '$lib/utils';
 
 const DEFAULT_ROLES = ['Host', 'Debugger'];
@@ -53,9 +52,11 @@ const createStaffRole = t.procedure
     let staffRolesCount!: number;
 
     try {
-      staffRolesCount =
-        (await getCount(StaffRole, eq(StaffRole.tournamentId, tournamentId))) -
-        DEFAULT_ROLES.length;
+      staffRolesCount = await db
+        .select({ count: count().as('count') })
+        .from(StaffRole)
+        .where(eq(StaffRole.tournamentId, tournamentId))
+        .then(([{ count }]) => count - DEFAULT_ROLES.length);
     } catch (err) {
       throw trpcUnknownError(err, 'Getting amount of staff roles');
     }
