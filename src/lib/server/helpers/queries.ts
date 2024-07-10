@@ -1,5 +1,6 @@
 import {
   Notification,
+  OsuUser,
   Player,
   ScheduledNotification,
   StaffMember,
@@ -12,11 +13,29 @@ import {
   UserNotification,
   db
 } from '$db';
-import { and, count, desc, eq, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
+import {
+  and,
+  count,
+  desc,
+  eq,
+  getTableName,
+  inArray,
+  isNotNull,
+  isNull,
+  or,
+  sql
+} from 'drizzle-orm';
 import { future, past, pick } from '$lib/server/utils';
-import type { AnyPgTable, PgTransaction, PgSelectBase } from 'drizzle-orm/pg-core';
+import type {
+  AnyPgTable,
+  PgTransaction,
+  PgSelectBase,
+  AnyPgColumn,
+  AnyPgSelect
+} from 'drizzle-orm/pg-core';
 import type { SQL } from 'drizzle-orm';
 import type { AnyPgNumberColumn, PaginationSettings, Simplify } from '$types';
+import type { notificationLinkTypes } from '$lib/constants';
 
 export async function getCount(table: AnyPgTable, where?: SQL) {
   return await db
@@ -53,16 +72,18 @@ export async function createNotification(options: {
     db: PgTransaction<any, any, any>,
     pickUserId: <T extends AnyPgNumberColumn>(columnAsUserId: T) => { userId: T }
   ) => PgSelectBase<any, any, any>;
+  linkTo?: string;
   /** @internal Only used in `rescheduleNotification` function */
   scheduled?: boolean;
 }) {
-  const { message, notifyTo, tx, scheduled, important } = options;
+  const { message, notifyTo, tx, scheduled, important, linkTo } = options;
 
   const notification = await tx
     .insert(Notification)
     .values({
       message,
       important,
+      linkTo,
       global: false,
       notifiedAt: scheduled ? null : undefined
     })
@@ -87,14 +108,16 @@ export async function createGlobalNotification(options: {
   tx: PgTransaction<any, any, any>;
   message: string;
   important: boolean;
+  linkTo?: string;
 }) {
-  const { message, tx, important } = options;
+  const { message, tx, important, linkTo } = options;
 
   const notification = await tx
     .insert(Notification)
     .values({
       message,
       important,
+      linkTo,
       global: true
     })
     .returning(pick(Notification, ['id']))
@@ -192,6 +215,172 @@ export async function noLongerNotifyScheduledNotificationToUser(options: {
         inArray(UserNotification.userId, db.select().from(dontNotifyUser))
       )
     );
+}
+
+function msgVarSubquery(options: {
+  table: AnyPgTable;
+  id: AnyPgColumn;
+  label: AnyPgColumn | SQL;
+  urlParam: AnyPgColumn | SQL;
+  where: SQL | undefined;
+  joins?: (db: Pick<AnyPgSelect, 'fullJoin' | 'leftJoin' | 'innerJoin' | 'rightJoin'>) => any;
+}) {
+  let a: AnyPgSelect = db
+    .select({
+      label: options.label,
+      id: sql`(${options.id})::text`,
+      table: sql`${getTableName(options.table)}`,
+      urlParams: sql`(${options.urlParam})::text`
+    })
+    .from(options.table)
+    .$dynamic();
+
+  if (options.joins) {
+    a = options.joins(a);
+  }
+
+  return sql`(${a.where(options.where)})`;
+}
+
+const notificationLinkMap: Record<(typeof notificationLinkTypes)[number], string> = {
+  dashboard: '/dashboard',
+  user: '/user/{user}',
+  manage_tournament: '/m/{tournament}',
+  tournament: '/t/{tournament}',
+  manage_round_mappool: '/',
+  manage_round_schedule: '/',
+  manage_round_stats: '/',
+  round_mappool: '/',
+  round_schedule: '/',
+  round_stats: '/',
+  manage_form: '/',
+  manage_staff_roles: '/',
+  manage_staff_members: '/',
+  manage_registrations: '/',
+  manage_registration: '/'
+};
+
+export async function getNotificationMessageVariableValues<
+  T extends Pick<typeof Notification.$inferSelect, 'message' | 'linkTo'>
+>(notifications: T | T[]): Promise<T[]> {
+  const notifications1 = Array.isArray(notifications) ? notifications : [notifications];
+  const messageVars = [
+    ...new Set(notifications1.map(({ message }) => message.match(/(\w+):(\w+)/g) || []).flat())
+  ];
+
+  const vars = [getTableName(Tournament), getTableName(User)] as const;
+  const ids = Object.fromEntries(vars.map((v) => [v, [] as string[]]));
+  const subqueries: SQL[] = [];
+
+  for (let i = 0; i < messageVars.length; i++) {
+    const split = messageVars[i].split(':');
+    const thing = split[0];
+    const id = split[1];
+    ids[thing]?.push(id);
+  }
+
+  if (ids.tournaments.length > 0) {
+    subqueries.push(
+      msgVarSubquery({
+        table: Tournament,
+        id: Tournament.id,
+        label: Tournament.name,
+        urlParam: Tournament.urlSlug,
+        where: and(
+          or(isNull(Tournament.deletedAt), past(Tournament.deletedAt)),
+          inArray(Tournament.id, ids.tournaments.map(Number))
+        )
+      })
+    );
+  }
+
+  if (ids.users.length > 0) {
+    subqueries.push(
+      msgVarSubquery({
+        table: User,
+        id: User.id,
+        label: OsuUser.username,
+        urlParam: User.id,
+        joins: (db) => db.innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId)),
+        where: inArray(User.id, ids.users.map(Number))
+      })
+    );
+  }
+
+  const values = Object.fromEntries(vars.map((v) => [v, {}])) as Record<
+    (typeof vars)[number],
+    Partial<
+      Record<
+        string,
+        {
+          label: string;
+          urlParam: string;
+        }
+      >
+    >
+  >;
+  if (subqueries.length > 0) {
+    const results = await db.execute(sql.join(subqueries, sql` union all `));
+
+    for (const result of results) {
+      const { id, label, table, urlParam } = result as {
+        id: string;
+        label: string;
+        table: (typeof vars)[number];
+        urlParam: string;
+      };
+      values[table][id] = { label, urlParam };
+    }
+  }
+
+  const deleted = Object.fromEntries(
+    vars.map((v) => {
+      const label = v
+        .split('_')
+        .map((word) => `${word[0].toUpperCase()}${word.slice(1)}`)
+        .join(' ');
+      return [v, `[Deleted ${label}]`];
+    })
+  ) as Record<(typeof vars)[number], string>;
+
+  return notifications1.map((notification) => {
+    const { message } = notification;
+    let { linkTo } = notification;
+    const messageVars = message.match(/{(\w+):(\w+)}/g) || [];
+
+    for (let i = 0; i < messageVars.length; i++) {
+      const split = messageVars[i].slice(1, -1).split(':');
+      const thing = split[0] as (typeof vars)[number];
+      const id = split[1];
+      const value = values[thing][id];
+      const str = `<span data-color="primary">${value ? value.label : deleted[thing]}</span>`;
+      message.replace(messageVars[i], str);
+    }
+
+    if (linkTo && (notificationLinkMap as Record<string, string>)[linkTo]) {
+      const pathname = notificationLinkMap[linkTo as keyof typeof notificationLinkMap];
+      const pathnameVars = pathname.match(/{(\w+)}/g) || [];
+
+      for (let i = 0; i < pathnameVars.length; i++) {
+        const thing = pathnameVars[i].slice(1, -1) as (typeof vars)[number];
+        const id = messageVars.find((varName) => varName.includes(thing))?.slice(1, -1).split(':')[1];
+        const value = id ? values[thing][id]?.urlParam : undefined;
+
+        if (!value) {
+          linkTo = null;
+          break;
+        }
+
+        linkTo.replace(pathnameVars[i], value);
+      }
+    }
+
+    return {
+      ...notification,
+      message,
+      linkTo
+    };
+  });
 }
 
 const baseUserHistorySelect = {

@@ -1,5 +1,5 @@
 {
-  "id": "c175f900-4581-42ed-9f43-321f7f8f4f77",
+  "id": "7314e87e-122c-46e7-a6f0-8025e727ba5e",
   "prevId": "ae7ce16b-c874-42eb-ae84-20df5fa2bbfe",
   "version": "7",
   "dialect": "postgresql",
@@ -1169,7 +1169,7 @@
           "name": "target_star_rating",
           "type": "real",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "playtesting_pool": {
           "name": "playtesting_pool",
@@ -1781,6 +1781,12 @@
           "primaryKey": false,
           "notNull": false,
           "default": "now()"
+        },
+        "link_to": {
+          "name": "link_to",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "global": {
           "name": "global",

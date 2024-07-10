@@ -59,3 +59,25 @@ export const staffPermissionsOptions: Record<InferEnum<typeof StaffPermission>, 
   manage_stats: 'Manage stats',
   can_play: 'Can play'
 };
+
+export const notificationLinkTypes = [
+  'dashboard',
+  'user',
+  'manage_tournament',
+  'tournament',
+  'manage_round_mappool',
+  'manage_round_schedule',
+  'manage_round_stats',
+  'round_mappool',
+  'round_schedule',
+  'round_stats',
+  'manage_form',
+  'manage_staff_roles',
+  'manage_staff_members',
+  'manage_registrations',
+  'manage_registration'
+] as const;
+
+export const notificationLinkTypesEnum = Object.fromEntries(
+  notificationLinkTypes.map((type) => [type, type])
+) as { [K in (typeof notificationLinkTypes)[number]]: K };

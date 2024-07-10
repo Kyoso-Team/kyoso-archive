@@ -136,7 +136,7 @@ export const Round = pgTable(
     deletedAt: timestamp('deleted_at', timestampConfig),
     type: RoundType('type').notNull(),
     order: smallint('order').notNull(),
-    targetStarRating: real('target_star_rating').notNull(),
+    targetStarRating: real('target_star_rating'),
     playtestingPool: boolean('playtesting_pool').notNull().default(false),
     publishPoolAt: timestamp('publish_pool_at', timestampConfig),
     publishSchedulesAt: timestamp('publish_schedules_at', timestampConfig),

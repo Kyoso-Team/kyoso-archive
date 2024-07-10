@@ -200,6 +200,13 @@ export const Notification = pgTable(
     }).primaryKey(),
     notifiedAt: timestamp('notified_at', timestampConfig).defaultNow(),
     /**
+     * Can link to:
+     * - A common path represented as a string (See `notificationLinkTypes` in `src/lib/constants.ts`)
+     * - A pathname
+     * - A full URL
+     */
+    linkTo: text('link_to'),
+    /**
      * Whether to notify all users
      */
     global: boolean('global').notNull(),

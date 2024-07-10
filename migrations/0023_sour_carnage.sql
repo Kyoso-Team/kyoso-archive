@@ -8,8 +8,10 @@ ALTER TABLE "user_notification" DROP CONSTRAINT "user_notification_notification_
 --> statement-breakpoint
 DROP INDEX IF EXISTS "idx_round_tournament_id_order";--> statement-breakpoint
 DROP INDEX IF EXISTS "idx_user_notification_user_id_read_notified_at";--> statement-breakpoint
+ALTER TABLE "round" ALTER COLUMN "target_star_rating" DROP NOT NULL;--> statement-breakpoint
 ALTER TABLE "round" ADD COLUMN "deleted_at" timestamp (3) with time zone;--> statement-breakpoint
 ALTER TABLE "notification" ADD COLUMN "notified_at" timestamp (3) with time zone DEFAULT now();--> statement-breakpoint
+ALTER TABLE "notification" ADD COLUMN "link_to" text;--> statement-breakpoint
 ALTER TABLE "notification" ADD COLUMN "global" boolean NOT NULL;--> statement-breakpoint
 ALTER TABLE "notification" ADD COLUMN "important" boolean NOT NULL;--> statement-breakpoint
 DO $$ BEGIN
@@ -34,20 +36,24 @@ ALTER TABLE "user_notification" DROP COLUMN IF EXISTS "notified_at";
 CREATE OR REPLACE FUNCTION notify_new_notification()
 RETURNS TRIGGER AS $$
 	DECLARE
+		notification JSONB;
 		user_ids INTEGER[];
-		now TIMESTAMPTZ := NOW();
 		offset_value INTEGER := 0;
 		-- Notify 1000 users at a time
 		limit_value INTEGER := 1000;
 	BEGIN
-		IF NEW.notified_at IS NOT NULL AND date_trunc('second', NEW.notified_at) >= date_trunc('second', now) THEN
+		IF NEW.notified_at IS NOT NULL THEN
+			notification := jsonb_build_object(
+				'notification_id', NEW.id,
+				'important', NEW.important,
+				'message', NEW.message,
+				'link_to', NEW.link_to
+			);
 			IF NEW.global THEN
-				PERFORM pg_notify('new_notification', json_build_object(
-					'notification_id', NEW.id,
-					'important', NEW.important,
-					'message', NEW.message,
-					'notify', 'all'
-				)::text);
+				PERFORM pg_notify(
+					'new_notification',
+					jsonb_set(notification, '{notify}', '"all"')::text
+				);
 			ELSE
 				LOOP
 					SELECT ARRAY(
@@ -58,12 +64,10 @@ RETURNS TRIGGER AS $$
 						OFFSET offset_value
 					) INTO user_ids;
 					EXIT WHEN array_length(user_ids, 1) = 0;
-					PERFORM pg_notify('new_notification', json_build_object(
-						'notification_id', NEW.id,
-						'important', NEW.important,
-						'message', NEW.message,
-						'notify', user_ids
-					)::text);
+					PERFORM pg_notify(
+						'new_notification',
+						jsonb_set(notification, '{notify}', to_json(user_ids))::text
+					);
 					offset_value := offset_value + limit_value;
 				END LOOP;
 			END IF;
