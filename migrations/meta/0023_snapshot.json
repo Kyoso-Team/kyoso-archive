@@ -1,5 +1,5 @@
 {
-  "id": "2221ab46-3f2a-4858-96b8-a25040238634",
+  "id": "c175f900-4581-42ed-9f43-321f7f8f4f77",
   "prevId": "ae7ce16b-c874-42eb-ae84-20df5fa2bbfe",
   "version": "7",
   "dialect": "postgresql",
@@ -1146,6 +1146,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
         "type": {
           "name": "type",
           "type": "round_type",
@@ -1204,11 +1210,17 @@
         }
       },
       "indexes": {
-        "idx_round_tournament_id_order": {
-          "name": "idx_round_tournament_id_order",
+        "idx_round_tournament_id_deleted_at_order": {
+          "name": "idx_round_tournament_id_deleted_at_order",
           "columns": [
             {
               "expression": "tournament_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "deleted_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

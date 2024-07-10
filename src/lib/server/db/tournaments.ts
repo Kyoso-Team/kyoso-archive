@@ -133,6 +133,7 @@ export const Round = pgTable(
   {
     id: serial('id').primaryKey(),
     name: varchar('name', { length: 20 }).notNull(),
+    deletedAt: timestamp('deleted_at', timestampConfig),
     type: RoundType('type').notNull(),
     order: smallint('order').notNull(),
     targetStarRating: real('target_star_rating').notNull(),
@@ -152,8 +153,9 @@ export const Round = pgTable(
       table.name,
       table.tournamentId
     ),
-    indexTournamentIdOrder: index('idx_round_tournament_id_order').on(
+    indexTournamentIdDeletedAtOrder: index('idx_round_tournament_id_deleted_at_order').on(
       table.tournamentId,
+      table.deletedAt,
       table.order
     )
   })

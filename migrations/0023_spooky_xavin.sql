@@ -6,7 +6,9 @@ CREATE TABLE IF NOT EXISTS "scheduled_notification" (
 --> statement-breakpoint
 ALTER TABLE "user_notification" DROP CONSTRAINT "user_notification_notification_id_notification_id_fk";
 --> statement-breakpoint
+DROP INDEX IF EXISTS "idx_round_tournament_id_order";--> statement-breakpoint
 DROP INDEX IF EXISTS "idx_user_notification_user_id_read_notified_at";--> statement-breakpoint
+ALTER TABLE "round" ADD COLUMN "deleted_at" timestamp (3) with time zone;--> statement-breakpoint
 ALTER TABLE "notification" ADD COLUMN "notified_at" timestamp (3) with time zone DEFAULT now();--> statement-breakpoint
 ALTER TABLE "notification" ADD COLUMN "global" boolean NOT NULL;--> statement-breakpoint
 ALTER TABLE "notification" ADD COLUMN "important" boolean NOT NULL;--> statement-breakpoint
@@ -24,6 +26,7 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_round_tournament_id_deleted_at_order" ON "round" USING btree ("tournament_id","deleted_at","order");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_notification_notified_at" ON "notification" USING btree ("notified_at" DESC NULLS LAST);--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_user_notification_user_id_read" ON "user_notification" USING btree ("user_id","read");--> statement-breakpoint
 ALTER TABLE "user_notification" DROP COLUMN IF EXISTS "notified_at";
@@ -32,18 +35,19 @@ CREATE OR REPLACE FUNCTION notify_new_notification()
 RETURNS TRIGGER AS $$
 	DECLARE
 		user_ids INTEGER[];
+		now TIMESTAMPTZ := NOW();
 		offset_value INTEGER := 0;
 		-- Notify 1000 users at a time
 		limit_value INTEGER := 1000;
 	BEGIN
-		IF NEW.notified_at IS NOT NULL AND NEW.notified_at >= NOW() THEN
+		IF NEW.notified_at IS NOT NULL AND date_trunc('second', NEW.notified_at) >= date_trunc('second', now) THEN
 			IF NEW.global THEN
 				PERFORM pg_notify('new_notification', json_build_object(
 					'notification_id', NEW.id,
 					'important', NEW.important,
 					'message', NEW.message,
 					'notify', 'all'
-				));
+				)::text);
 			ELSE
 				LOOP
 					SELECT ARRAY(
@@ -59,7 +63,7 @@ RETURNS TRIGGER AS $$
 						'important', NEW.important,
 						'message', NEW.message,
 						'notify', user_ids
-					));
+					)::text);
 					offset_value := offset_value + limit_value;
 				END LOOP;
 			END IF;
@@ -68,7 +72,11 @@ RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 --> statement-breakpoint
-CREATE OR REPLACE CONSTRAINT TRIGGER "new_notification_trigger"
-AFTER INSERT OR UPDATE OF "notified_at" ON "notification"
-INITIALLY DEFERRED
-FOR EACH ROW EXECUTE FUNCTION notify_new_notification();
+DO $$ BEGIN
+ CREATE CONSTRAINT TRIGGER "new_notification_trigger"
+	AFTER INSERT OR UPDATE OF "notified_at" ON "notification"
+	INITIALLY DEFERRED
+	FOR EACH ROW EXECUTE FUNCTION notify_new_notification();
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
