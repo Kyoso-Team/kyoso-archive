@@ -286,9 +286,10 @@ const notificationLinkMap: Record<(typeof notificationLinkTypes)[number], string
  * ```
  */
 export async function mapNotificationVars<
-  T extends Pick<typeof Notification.$inferSelect, 'message' | 'linkTo'>
->(notifications: T | T[]): Promise<T[]> {
-  const notifications1 = Array.isArray(notifications) ? notifications : [notifications];
+  T1 extends Pick<typeof Notification.$inferSelect, 'message' | 'linkTo'>,
+  T2 extends T1 | T1[]
+>(notifications: T2): Promise<T2> {
+  let notifications1 = (Array.isArray(notifications) ? notifications : [notifications]) as T1[];
   const messageVars = [
     ...new Set(notifications1.map(({ message }) => message.match(/(\w+):(\w+)/g) || []).flat())
   ];
@@ -368,7 +369,7 @@ export async function mapNotificationVars<
     })
   ) as Record<(typeof vars)[number], string>;
 
-  return notifications1.map((notification) => {
+  notifications1 = notifications1.map((notification) => {
     const { message } = notification;
     let { linkTo } = notification;
     const messageVars = message.match(/{(\w+):(\w+)}/g) || [];
@@ -409,4 +410,6 @@ export async function mapNotificationVars<
       linkTo
     };
   });
+
+  return (Array.isArray(notifications) ? notifications1 : notifications1[0]) as any;
 }

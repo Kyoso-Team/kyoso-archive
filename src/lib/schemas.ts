@@ -376,3 +376,11 @@ export const userSettingsSchema = v.object({
   /** Whether or not to display their tournament player history on their profile page */
   publicPlayerHistory: v.boolean()
 });
+
+export const notificationListenRespSchema = v.object({
+  notification_id: positiveIntSchema,
+  important: v.boolean(),
+  message: v.string(),
+  link_to: v.nullable(v.string()),
+  notify: v.union([v.array(positiveIntSchema), v.literal('all')])
+});

@@ -6,6 +6,7 @@ import { isOsuJSError } from 'osu-web.js';
 import { TRPCError } from '@trpc/server';
 import { customAlphabet } from 'nanoid';
 import { SQL, gt, lte, sql } from 'drizzle-orm';
+import { ValiError } from 'valibot';
 import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
 
 export function signJWT<T>(data: T) {
@@ -153,6 +154,8 @@ export async function logError(err: unknown, when: string, from: string | null) 
     message = err.message;
     query = err.query;
     queryParams = err.parameters;
+  } else if (err instanceof ValiError) {
+    message = err.message;
   }
 
   message = `${message}. Error thrown when: ${when}`;
@@ -171,11 +174,17 @@ export async function logError(err: unknown, when: string, from: string | null) 
     console.log(`Database query: ${query}`);
     console.log(`Query parameters: ${JSON.stringify(queryParams)}`);
   }
+
+  if (err instanceof ValiError) {
+    console.log(`Validation issues: ${JSON.stringify(err.issues)}`);
+  }
+
+  return `Internal server error. Error thrown when: ${when}`;
 }
 
 export async function apiError(err: unknown, when: string, route: { id: string | null }) {
-  await logError(err, when, route.id);
-  error(500, `Internal server error. Error thrown when: ${when}`);
+  const message = await logError(err, when, route.id);
+  error(500, message);
 }
 
 export function trpcUnknownError(err: unknown, when: string) {
@@ -231,4 +240,16 @@ export function trgmSearch(searchStr: string, columns: [AnyPgColumn, ...AnyPgCol
 
   q.append(sql`)`);
   return q;
+}
+
+export async function retryIfError<T>(fn: () => Promise<T>, retries: number = 3): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    if (retries > 0) {
+      return await retryIfError(fn, retries - 1);
+    } else {
+      throw err;
+    }
+  }
 }

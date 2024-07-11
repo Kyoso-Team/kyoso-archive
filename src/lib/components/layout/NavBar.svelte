@@ -9,7 +9,7 @@
   import type { AuthSession } from '$types';
 
   export let session: AuthSession | undefined;
-  export let unreadNotificationCount: number;
+  export let unreadNotificationCount: number | undefined;
   const navLinks = [
     {
       href: 'dashboard',
@@ -72,14 +72,12 @@
     <div class="flex justify-center gap-2">
       {#if session}
         <button class="relative btn-icon hover:variant-soft-primary">
-          {#await unreadNotificationCount}
-            <span class="hidden" />
-          {:then count}
-            <span class="badge absolute top-0 right-0 tracking-tighter z-[2] variant-filled-primary rounded-full w-6 h-6">
-              {count > 9 ? '9+' : count}
+          {#if unreadNotificationCount}
+            <span class="badge absolute top-1 left-[50%] z-[2] variant-filled-primary rounded-full px-[6px] min-w-[18px] h-[18px] text-[10px] font-medium">
+              {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
             </span>
-          {/await}
-          <Bell size={24} class="stroke-black fill-black dark:stroke-white dark:fill-white !ml-0" />
+          {/if}
+          <Bell size={24} class="stroke-black fill-black dark:stroke-white dark:fill-white !mx-0" />
         </button>
         <button
           use:popup={{

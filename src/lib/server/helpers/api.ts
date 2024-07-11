@@ -4,7 +4,7 @@ import { error } from '@sveltejs/kit';
 import { baseGetSession, baseGetStaffMember, baseGetTournament } from './base';
 import { Tournament, TournamentDates } from '$db';
 import type { Cookies } from '@sveltejs/kit';
-import type { AuthSession } from '$types';
+import type { AuthSession, SSEConnection } from '$types';
 
 export async function getStaffMember<T extends boolean>(
   session: AuthSession | undefined,
@@ -116,4 +116,14 @@ export async function parseRequestBody<T extends v.BaseSchema>(
   }
 
   return body as any;
+}
+
+export function createSSESender<T extends SSEConnection>() {
+  return <Type extends T['message']['type']>(
+    controller: ReadableStreamDefaultController<any>,
+    type: Type,
+    data: Extract<T['message'], { type: Type }>['data']
+  ) => {
+    controller.enqueue(`data: ${JSON.stringify({ type, data })}\n\n`);
+  };
 }

@@ -7,7 +7,8 @@
     setInitialClassState,
     AppShell,
     storePopup,
-    Toast
+    Toast,
+    getToastStore
   } from '@skeletonlabs/skeleton';
   import { Loader2 } from 'lucide-svelte';
   import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
@@ -16,8 +17,10 @@
   import { page } from '$app/stores';
   import { inject } from '@vercel/analytics';
   import { dev } from '$app/environment';
+  import { createSSEListener } from '$lib/sse';
+  import { toastError, toastNotify } from '$lib/utils';
   import type { LayoutServerData } from './$types';
-  import type { AnyComponent } from '$types';
+  import type { AnyComponent, SSEConnectionData, SSEConnections } from '$types';
 
   storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
   initializeStores();
@@ -25,25 +28,37 @@
 
   export let data: LayoutServerData;
   let devMenuComponent: AnyComponent;
-  let notificationListener: EventSource | undefined;
+  let unmountNotificationListener: (() => void) | undefined;
+  let unreadNotificationCount: number | undefined;
+  const toast = getToastStore();
 
   onMount(async () => {
-    listenNotifications();
-    mountDevMenu();
+    unmountNotificationListener = createSSEListener<SSEConnections['notifications']>(
+      '/api/notifications',
+      {
+        error: (err) => toastError(toast, err),
+        new_notification: onNewNotification,
+        notification_count: onNotificationCount
+      }
+    );
+
+    await mountDevMenu();
   });
 
   onDestroy(() => {
-    notificationListener?.close();
+    unmountNotificationListener?.();
   });
 
-  function listenNotifications() {
-    if (!data.session) return;
-    notificationListener = new EventSource('/api/notifications');
-    notificationListener.addEventListener('message', onNewNotification);
+  function onNewNotification(notification: SSEConnectionData<SSEConnections['notifications'], 'new_notification'>) {
+    if (unreadNotificationCount !== undefined) {
+      unreadNotificationCount++;
+    }
+
+    toastNotify(toast, notification.message);
   }
 
-  async function onNewNotification(e: MessageEvent) {
-    console.log(`New notification: ${e.data}`);
+  function onNotificationCount(count: SSEConnectionData<SSEConnections['notifications'], 'notification_count'>) {
+    unreadNotificationCount = count;
   }
 
   async function mountDevMenu() {
@@ -58,8 +73,6 @@
       });
     }
   }
-
-  $: console.log(notificationListener?.readyState)
 </script>
 
 {#if dev && devMenuComponent !== undefined}
@@ -79,7 +92,7 @@
 <AppShell slotPageHeader="sticky top-0 z-[11]" slotSidebarLeft="z-[9]">
   <svelte:fragment slot="header">
     {#if $showNavBar}
-      <NavBar session={data.session} unreadNotificationCount={1} />
+      <NavBar session={data.session} {unreadNotificationCount} />
     {/if}
     <div id="header" class="h-max" />
   </svelte:fragment>

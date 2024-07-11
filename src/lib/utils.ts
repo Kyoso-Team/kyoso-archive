@@ -268,6 +268,17 @@ export function arraysHaveSameElements<T>(arr1: T[], arr2: T[]) {
 //   return color[value];
 // }
 
+export function toastNotify(toast: ToastStore, message: string) {
+  toast.trigger({
+    message,
+    background: 'bg-zinc-500/10',
+    classes:
+      'relative border-l-4 border-zinc-500 text-white before:bg-zinc-900 before:w-full before:h-full before:absolute before:inset-0 before:-z-[1] before:rounded-md',
+    hideDismiss: true,
+    timeout: 5000
+  });
+}
+
 export function toastSuccess(toast: ToastStore, message: string) {
   toast.trigger({
     message,

@@ -15,7 +15,8 @@ import type {
   userFormFieldSchema,
   userFormFieldResponseSchema,
   tournamentThemeSchema,
-  userSettingsSchema
+  userSettingsSchema,
+  notificationListenRespSchema
 } from './schemas';
 import type { PgColumn } from 'drizzle-orm/pg-core';
 
@@ -175,10 +176,33 @@ export interface AuthSession {
   };
 }
 
-export interface Asset<Put extends Record<string, any>, Delete extends Record<string, any>> {
+export type SSEConnection<
+  T1 extends Record<string, any> = Record<string, any>,
+  T2 = T1 & { error: string }
+> = Simplify<{
+  message: {
+    [K in keyof T2]: { type: K; data: T2[K] };
+  }[keyof T2];
+  handle: {
+    [K in keyof T2]: (data: T2[K]) => void;
+  };
+}>;
+
+export interface SSEConnections {
+  notifications: SSEConnection<{
+    notification_count: number;
+    new_notification: Omit<Output<typeof notificationListenRespSchema>, 'notify'>;
+  }>;
+}
+
+export type SSEConnectionData<S extends SSEConnection, K extends S['message']['type']> = Simplify<
+  Extract<S['message'], { type: K }>['data']
+>;
+
+export type Asset<Put extends Record<string, any>, Delete extends Record<string, any>> = Simplify<{
   put: Put;
   delete: Delete;
-}
+}>;
 
 export interface Assets {
   tournamentBanner: Asset<
