@@ -13,17 +13,29 @@ export const GET = (async ({ cookies, route }) => {
   const send = createSSESender<SSEConnections['notifications']>();
   const session = getSession(cookies, true);
   let listener!: postgres.ListenMeta;
+  const errExtension = ' while listening for new notifications';
   const stream = new ReadableStream({
     start: startStream,
     cancel: cancelStream
   });
 
+  async function catchError(controller: ReadableStreamDefaultController<any>, err: unknown) {
+    const message = await logError(err, 'Listening for new notifications', route.id);
+    send(controller, 'error', message);
+  }
+
   async function startStream(controller: ReadableStreamDefaultController<any>) {
-    listener = await dbClient.listen(
-      'new_notification',
-      (data) => onNewNotificationNotify(controller, data),
-      async () => await onNewNotificationListen(controller)
-    );
+    try {
+      listener = await dbClient.listen(
+        'new_notification',
+        async (data) => await onNewNotificationNotify(controller, data).catch((err) => catchError(controller, err)),
+        async () => await onNewNotificationListen(controller).catch((err) => catchError(controller, err))
+      );
+    } catch (err) {
+      const message = await logError(err, 'Connecting to the database to listen for new notifications', route.id);
+      send(controller, 'error', message);
+      return;
+    }
   }
 
   async function onNewNotificationNotify(controller: ReadableStreamDefaultController<any>, data: any) {
@@ -32,12 +44,12 @@ export const GET = (async ({ cookies, route }) => {
     try {
       notification = v.parse(notificationListenRespSchema, JSON.parse(data));
     } catch (err) {
-      const message = await logError(err, 'Validationg the notification', route.id);
+      const message = await logError(err, `Validationg the notification${errExtension}`, route.id);
       send(controller, 'error', message);
       return;
     }
 
-    if (!(notification.notify === 'all' || notification.notify.includes(session.userId))) return;
+    if (notification.notify !== 'all' && !notification.notify.includes(session.userId)) return;
 
     try {
       notification = await retryIfError(async () => {
@@ -47,7 +59,7 @@ export const GET = (async ({ cookies, route }) => {
         });
       }); 
     } catch (err) {
-      const message = await logError(err, 'Mapping the notification message', route.id);
+      const message = await logError(err, `Mapping the notification message${errExtension}`, route.id);
       send(controller, 'error', message);
       return;
     }
@@ -75,7 +87,7 @@ export const GET = (async ({ cookies, route }) => {
           .then(([{ count }]) => count);
       });
     } catch (err) {
-      const message = await logError(err, 'Getting the number of unread notifications', route.id);
+      const message = await logError(err, `Getting the number of unread notifications${errExtension}`, route.id);
       send(controller, 'error', message);
       return;
     }
@@ -83,8 +95,12 @@ export const GET = (async ({ cookies, route }) => {
     send(controller, 'notification_count', unreadNotificationCount);
   }
 
-  function cancelStream() {
-    listener.unlisten();
+  async function cancelStream() {
+    try {
+      await listener.unlisten();
+    } catch (err) {
+      await logError(err, 'Stop listening for new notifications', route.id);
+    }
   }
 
   return new Response(stream, {

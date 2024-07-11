@@ -32,6 +32,7 @@ import { TRPCError } from '@trpc/server';
 import { alias, unionAll } from 'drizzle-orm/pg-core';
 import { rateLimitMiddleware } from '$trpc/middleware';
 import { TRPCChecks } from '../helpers/checks';
+import { createNotification } from '../helpers/notifications';
 import type { SQL } from 'drizzle-orm';
 
 const getUser = t.procedure
@@ -335,6 +336,17 @@ const makeAdmin = t.procedure
             updateCookie: true
           })
           .where(and(eq(Session.userId, userId), not(Session.expired)));
+
+        await createNotification({
+          tx,
+          message: `{user:${session.userId.toString()}} has made you a website admin. You may need to reload the current page to the appropriate permissions`,
+          important: false,
+          notifyTo: (db, id) => db
+            .select(id(User.id))
+            .from(User)
+            .where(eq(User.id, userId))
+            .limit(1)
+        });
       });
     } catch (err) {
       throw trpcUnknownError(err, 'Updating the user');
@@ -440,6 +452,17 @@ const removeAdmin = t.procedure
             status: 'cancelled'
           })
           .where(inArray(Invite.id, db.select().from(inviteAsDebuggerSq)));
+
+        await createNotification({
+          tx,
+          message: `{user:${session.userId.toString()}} has revoked your website admin status`,
+          important: false,
+          notifyTo: (db, id) => db
+            .select(id(User.id))
+            .from(User)
+            .where(eq(User.id, userId))
+            .limit(1)
+        });
       });
     } catch (err) {
       throw trpcUnknownError(err, 'Updating the user');

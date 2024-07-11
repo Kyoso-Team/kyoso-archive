@@ -1,26 +1,26 @@
-import * as v from 'valibot';
-import { db, Notification, OsuUser, Tournament, User } from '$db';
+// import * as v from 'valibot';
+// import { db, Notification, OsuUser, Tournament, User } from '$db';
 import { t } from '$trpc';
-import { pick, trpcUnknownError } from '$lib/server/utils';
-import { wrap } from '@typeschema/valibot';
-import { getSession } from '../helpers/trpc';
-import { and, desc, eq, inArray } from 'drizzle-orm';
-import { positiveIntSchema } from '$lib/schemas';
+// import { pick, trpcUnknownError } from '$lib/server/utils';
+// import { wrap } from '@typeschema/valibot';
+// import { getSession } from '../helpers/trpc';
+// import { and, desc, eq, inArray } from 'drizzle-orm';
+// import { positiveIntSchema } from '$lib/schemas';
 
-const getNotifications = t.procedure
-  .input(
-    wrap(
-      v.object({
-        pagination: v.object({
-          limit: positiveIntSchema,
-          offset: positiveIntSchema
-        })
-      })
-    )
-  )
-  .query(async ({ ctx, input }) => {
-    const { pagination } = input;
-    const session = getSession(ctx.cookies, true);
+// const getNotifications = t.procedure
+//   .input(
+//     wrap(
+//       v.object({
+//         pagination: v.object({
+//           limit: positiveIntSchema,
+//           offset: positiveIntSchema
+//         })
+//       })
+//     )
+//   )
+//   .query(async ({ ctx, input }) => {
+//     const { pagination } = input;
+//     const session = getSession(ctx.cookies, true);
 
     // let notifications: Pick<typeof Notification.$inferSelect, 'notifiedAt' | 'message' | 'read'>[] =
     //   [];
@@ -103,13 +103,13 @@ const getNotifications = t.procedure
     //     users
     //   }
     // };
-  });
+  // });
 
-const markNotificationAsRead = t.procedure
-  .input(wrap(v.object({ notificationId: positiveIntSchema })))
-  .mutation(async ({ ctx, input }) => {
-    const { notificationId } = input;
-    const session = getSession(ctx.cookies, true);
+// const markNotificationAsRead = t.procedure
+//   .input(wrap(v.object({ notificationId: positiveIntSchema })))
+//   .mutation(async ({ ctx, input }) => {
+//     const { notificationId } = input;
+//     const session = getSession(ctx.cookies, true);
 
     // try {
     //   await db
@@ -121,10 +121,10 @@ const markNotificationAsRead = t.procedure
     // } catch (err) {
     //   throw trpcUnknownError(err, 'Marking the notification as read');
     // }
-  });
+//   });
 
-const markAllNotificationsAsRead = t.procedure.mutation(async ({ ctx }) => {
-  const session = getSession(ctx.cookies, true);
+// const markAllNotificationsAsRead = t.procedure.mutation(async ({ ctx }) => {
+  // const session = getSession(ctx.cookies, true);
 
   // try {
   //   await db
@@ -136,10 +136,10 @@ const markAllNotificationsAsRead = t.procedure.mutation(async ({ ctx }) => {
   // } catch (err) {
   //   throw trpcUnknownError(err, "Marking all the user's notifications as read");
   // }
-});
+// });
 
 export const notificationsRouter = t.router({
-  getNotifications,
-  markNotificationAsRead,
-  markAllNotificationsAsRead
+  // getNotifications,
+  // markNotificationAsRead,
+  // markAllNotificationsAsRead
 });

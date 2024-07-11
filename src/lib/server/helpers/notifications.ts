@@ -9,14 +9,8 @@ import {
 } from '$db';
 import { and, count, eq, getTableName, inArray, isNull, or, sql } from 'drizzle-orm';
 import { past, pick } from '$lib/server/utils';
-import type {
-  AnyPgTable,
-  PgTransaction,
-  PgSelectBase,
-  AnyPgColumn,
-  AnyPgSelect
-} from 'drizzle-orm/pg-core';
 import type postgres from 'postgres';
+import type { AnyPgTable, PgTransaction, AnyPgColumn, AnyPgSelect } from 'drizzle-orm/pg-core';
 import type { SQL } from 'drizzle-orm';
 import type { AnyPgNumberColumn } from '$types';
 import type { notificationLinkTypes } from '$lib/constants';
@@ -37,16 +31,16 @@ export async function createNotification(options: {
   notifyTo: (
     db: PgTransaction<any, any, any>,
     pickUserId: <T extends AnyPgNumberColumn>(columnAsUserId: T) => { userId: T }
-  ) => PgSelectBase<any, any, any>;
+  ) => Omit<AnyPgSelect, keyof AnyPgSelect>;
   linkTo?: string;
   scheduled?: boolean;
 }) {
   const { message, notifyTo, tx, scheduled, important, linkTo } = options;
 
-  const sq = notifyTo(tx, (userId) => ({ userId }));
+  const sq = notifyTo(tx, (userId) => ({ userId })) as any;
   const userCount = await tx
     .select({ count: count().as('count') })
-    .from(sq as any)
+    .from(sq)
     .then(([{ count }]) => count);
 
   if (userCount === 0) return;
@@ -67,7 +61,7 @@ export async function createNotification(options: {
   await tx.execute(
     sql`
       with "user_to_notify" as (${sq})
-      insert into ${UserNotification} (${UserNotification.notificationId}, ${UserNotification.userId})
+      insert into ${UserNotification} (${sql.raw(UserNotification.notificationId.name)}, ${sql.raw(UserNotification.userId.name)})
       select ${notification.id}, ${userId}
       from "user_to_notify"
     `
@@ -104,7 +98,7 @@ export async function createGlobalNotification(options: {
 
   await tx.execute(
     sql`
-      insert into ${UserNotification} (${UserNotification.notificationId}, ${UserNotification.userId})
+      insert into ${UserNotification} (${sql.raw(UserNotification.notificationId.name)}, ${sql.raw(UserNotification.userId.name)})
       select ${notification.id}, ${User.id}
       from ${User}
     `
@@ -133,7 +127,7 @@ export async function rescheduleNotification(options: {
   notifyTo: (
     db: PgTransaction<any, any, any>,
     pickUserId: <T extends AnyPgNumberColumn>(columnAsUserId: T) => { userId: T }
-  ) => PgSelectBase<any, any, any>;
+  ) => Omit<AnyPgSelect, keyof AnyPgSelect>;
   scheduleIf: boolean;
   linkTo?: string;
 }) {
@@ -190,13 +184,13 @@ export async function noLongerNotifyScheduledNotificationToUser(options: {
   dontNotifyTo: (
     db: PgTransaction<any, any, any>,
     pickUserId: <T extends AnyPgNumberColumn>(columnAsUserId: T) => { userId: T }
-  ) => PgSelectBase<any, any, any>;
+  ) => Omit<AnyPgSelect, keyof AnyPgSelect>;
 }) {
   const { tx, event, dontNotifyTo } = options;
 
   const dontNotifyUser = tx
     .$with('dont_notify_user')
-    .as(dontNotifyTo(tx, (userId) => ({ userId })));
+    .as(dontNotifyTo(tx, (userId) => ({ userId })) as any);
 
   const notification = await tx
     .select({
@@ -244,10 +238,10 @@ function msgVarSubquery(options: {
 }) {
   let a: AnyPgSelect = db
     .select({
-      label: options.label,
-      id: sql`(${options.id})::text`,
-      table: sql`${getTableName(options.table)}`,
-      urlParams: sql`(${options.urlParam})::text`
+      label: sql`${options.label}`.as('label'),
+      id: sql`(${options.id})::text`.as('id'),
+      table: sql`${getTableName(options.table)}`.as('table'),
+      urlParam: sql`(${options.urlParam})::text`.as('url_param')
     })
     .from(options.table)
     .$dynamic();
@@ -295,17 +289,17 @@ export async function mapNotificationVars<
   ];
 
   const vars = [getTableName(Tournament), getTableName(User)] as const;
-  const ids = Object.fromEntries(vars.map((v) => [v, [] as string[]]));
+  const ids = Object.fromEntries(vars.map((v) => [v, []] as any)) as Record<typeof vars[number], string[]>;
   const subqueries: SQL[] = [];
 
   for (let i = 0; i < messageVars.length; i++) {
     const split = messageVars[i].split(':');
-    const thing = split[0];
+    const thing = split[0] as typeof vars[number];
     const id = split[1];
     ids[thing]?.push(id);
   }
 
-  if (ids.tournaments.length > 0) {
+  if (ids.tournament.length > 0) {
     subqueries.push(
       msgVarSubquery({
         table: Tournament,
@@ -314,13 +308,13 @@ export async function mapNotificationVars<
         urlParam: Tournament.urlSlug,
         where: and(
           or(isNull(Tournament.deletedAt), past(Tournament.deletedAt)),
-          inArray(Tournament.id, ids.tournaments.map(Number))
+          inArray(Tournament.id, ids.tournament.map(Number))
         )
       })
     );
   }
 
-  if (ids.users.length > 0) {
+  if (ids.user.length > 0) {
     subqueries.push(
       msgVarSubquery({
         table: User,
@@ -328,7 +322,7 @@ export async function mapNotificationVars<
         label: OsuUser.username,
         urlParam: User.id,
         joins: (db) => db.innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId)),
-        where: inArray(User.id, ids.users.map(Number))
+        where: inArray(User.id, ids.user.map(Number))
       })
     );
   }
@@ -349,13 +343,13 @@ export async function mapNotificationVars<
     const results = await db.execute(sql.join(subqueries, sql` union all `));
 
     for (const result of results) {
-      const { id, label, table, urlParam } = result as {
+      const { id, label, table, url_param } = result as {
         id: string;
         label: string;
         table: (typeof vars)[number];
-        urlParam: string;
+        url_param: string;
       };
-      values[table][id] = { label, urlParam };
+      values[table][id] = { label, urlParam: url_param };
     }
   }
 
@@ -370,8 +364,7 @@ export async function mapNotificationVars<
   ) as Record<(typeof vars)[number], string>;
 
   notifications1 = notifications1.map((notification) => {
-    const { message } = notification;
-    let { linkTo } = notification;
+    let { message, linkTo } = notification;
     const messageVars = message.match(/{(\w+):(\w+)}/g) || [];
 
     for (let i = 0; i < messageVars.length; i++) {
@@ -380,7 +373,7 @@ export async function mapNotificationVars<
       const id = split[1];
       const value = values[thing][id];
       const str = `<span data-color="primary">${value ? value.label : deleted[thing]}</span>`;
-      message.replace(messageVars[i], str);
+      message = message.replace(messageVars[i], str);
     }
 
     if (linkTo && (notificationLinkMap as Record<string, string>)[linkTo]) {
@@ -400,7 +393,7 @@ export async function mapNotificationVars<
           break;
         }
 
-        linkTo.replace(pathnameVars[i], value);
+        linkTo = linkTo.replace(pathnameVars[i], value);
       }
     }
 

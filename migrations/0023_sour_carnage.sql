@@ -52,7 +52,7 @@ RETURNS TRIGGER AS $$
 			IF NEW.global THEN
 				PERFORM pg_notify(
 					'new_notification',
-					jsonb_set(notification, '{notify}', '"all"')::text
+					jsonb_set(notification, '{notify}'::TEXT[], '"all"'::JSONB)::TEXT
 				);
 			ELSE
 				LOOP
@@ -63,10 +63,10 @@ RETURNS TRIGGER AS $$
 						LIMIT limit_value
 						OFFSET offset_value
 					) INTO user_ids;
-					EXIT WHEN array_length(user_ids, 1) = 0;
+					EXIT WHEN coalesce(array_length(user_ids, 1), 0) = 0;
 					PERFORM pg_notify(
 						'new_notification',
-						jsonb_set(notification, '{notify}', to_json(user_ids))::text
+						jsonb_set(notification, '{notify}'::TEXT[], to_json(user_ids)::JSONB)::TEXT
 					);
 					offset_value := offset_value + limit_value;
 				END LOOP;
@@ -83,4 +83,36 @@ DO $$ BEGIN
 	FOR EACH ROW EXECUTE FUNCTION notify_new_notification();
 EXCEPTION
  WHEN duplicate_object THEN null;
+END $$;
+
+
+
+DO $$
+DECLARE
+notification JSONB := jsonb_build_object(
+	'notification_id', 1,
+	'important', false,
+	'message', '{user:74} has revoked your website admin status',
+	'link_to', null
+);
+user_ids INTEGER[];
+offset_value INTEGER := 0;
+-- Notify 1000 users at a time
+limit_value INTEGER := 1000;
+BEGIN
+	LOOP
+		SELECT ARRAY(
+			SELECT "user_notification"."user_id"
+			FROM "user_notification"
+			WHERE "user_notification"."notification_id" = NEW."id"
+			LIMIT limit_value
+			OFFSET offset_value
+		) INTO user_ids;
+		EXIT WHEN array_length(user_ids, 1) = 0;
+		PERFORM pg_notify(
+			'new_notification',
+			notification::TEXT
+		);
+		offset_value := offset_value + limit_value;
+	END LOOP;
 END $$;
