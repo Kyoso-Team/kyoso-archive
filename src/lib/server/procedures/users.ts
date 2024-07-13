@@ -27,7 +27,7 @@ import { future, pick, trpcUnknownError } from '$lib/server/utils';
 import { customAlphabet } from 'nanoid';
 import { wrap } from '@typeschema/valibot';
 import { positiveIntSchema, userSettingsSchema } from '$lib/schemas';
-import { getSession } from '../helpers/api';
+import { getSession } from '../helpers/trpc';
 import { TRPCError } from '@trpc/server';
 import { alias, unionAll } from 'drizzle-orm/pg-core';
 import { rateLimitMiddleware } from '$trpc/middleware';
@@ -46,7 +46,7 @@ const getUser = t.procedure
   .query(async ({ ctx, input }) => {
     const { userId } = input;
     const checks = new TRPCChecks({ action: 'get this user' });
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     checks.userIsAdmin(session);
 
     let user!: Pick<
@@ -200,7 +200,7 @@ const searchUser = t.procedure
   .query(async ({ ctx, input }) => {
     const { search, searchBy } = input;
     const checks = new TRPCChecks({ action: 'search this user' });
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     checks.userIsAdmin(session);
 
     const searchNum = isNaN(Number(search)) ? 0 : Number(search);
@@ -234,7 +234,7 @@ const searchUser = t.procedure
   });
 
 const resetApiKey = t.procedure.use(rateLimitMiddleware).mutation(async ({ ctx }) => {
-  const session = getSession(ctx.cookies, true);
+  const session = getSession(ctx.sessionCookie, true);
 
   try {
     await db
@@ -264,7 +264,7 @@ const updateSelf = t.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { settings } = input;
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
 
     try {
       await db
@@ -290,7 +290,7 @@ const makeAdmin = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { userId } = input;
     const checks = new TRPCChecks({ action: 'make this user an admin' });
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     checks.userIsOwner(session);
 
     let user: Pick<typeof User.$inferSelect, 'admin'> | undefined;
@@ -353,7 +353,7 @@ const removeAdmin = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { userId } = input;
     const checks = new TRPCChecks({ action: "remove this user's admin status" });
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     checks.userIsOwner(session);
 
     let user: Pick<typeof User.$inferSelect, 'admin'> | undefined;
@@ -458,7 +458,7 @@ const makeApprovedHost = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { userId } = input;
     const checks = new TRPCChecks({ action: 'make this user an approved host' });
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     checks.userIsAdmin(session);
 
     let user: Pick<typeof User.$inferSelect, 'approvedHost' | 'osuUserId'> | undefined;
@@ -528,7 +528,7 @@ const removeApprovedHost = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { userId } = input;
     const checks = new TRPCChecks({ action: "remove this user's approved host status" });
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     checks.userIsAdmin(session);
 
     let user: Pick<typeof User.$inferSelect, 'approvedHost' | 'osuUserId'> | undefined;
@@ -619,7 +619,7 @@ const updateUser = t.procedure
     const { data, userId } = input;
     const { admin, approvedHost } = data;
     const checks = new TRPCChecks({ action: 'update this user' });
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     checks.userIsAdmin(session).partialHasValues(data);
 
     if (admin !== undefined && session.osu.id !== env.OWNER) {
@@ -666,7 +666,7 @@ const banUser = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { banReason, banTime, issuedToUserId } = input;
     const checks = new TRPCChecks({ action: 'ban this user' });
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     checks.userIsAdmin(session);
 
     let hasActiveBan!: boolean;
@@ -943,7 +943,7 @@ const revokeBan = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { banId, revokeReason } = input;
     const checks = new TRPCChecks({ action: 'revoke this ban' });
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     checks.userIsAdmin(session);
 
     try {
@@ -970,7 +970,7 @@ const expireSession = t.procedure
     )
   )
   .mutation(async ({ ctx, input }) => {
-    getSession(ctx.cookies, true);
+    getSession(ctx.sessionCookie, true);
 
     try {
       await db

@@ -64,7 +64,7 @@ export function getSession<T extends boolean>(
   cookies: Cookies,
   mustBeSignedIn?: T
 ): T extends true ? AuthSession : AuthSession | undefined {
-  return baseGetSession<T>(cookies, false, mustBeSignedIn);
+  return baseGetSession<T>(cookies.get('session'), false, mustBeSignedIn);
 }
 
 export async function getNotifications(

@@ -1,18 +1,9 @@
 import type { RequestEvent } from '@sveltejs/kit';
 import type { inferAsyncReturnType } from '@trpc/server';
 
-export async function createContext({
-  request,
-  cookies,
-  fetch,
-  url,
-  getClientAddress
-}: RequestEvent) {
+export function createContext({ cookies, getClientAddress }: RequestEvent) {
   return {
-    request,
-    fetch,
-    url,
-    cookies,
+    sessionCookie: cookies.get('session'),
     getClientAddress
   };
 }

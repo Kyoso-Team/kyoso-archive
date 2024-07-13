@@ -5,7 +5,6 @@ import { pick, verifyJWT } from '$lib/server/utils';
 import { error } from '@sveltejs/kit';
 import { TRPCError } from '@trpc/server';
 import { redis } from '$lib/server/redis';
-import type { Cookies } from '@sveltejs/kit';
 import type { AuthSession, InferEnum, OnServerError, Simplify } from '$types';
 import type { StaffPermission } from '$db';
 
@@ -148,11 +147,11 @@ export async function baseGetTournament<
 }
 
 export function baseGetSession<T extends boolean>(
-  cookies: Cookies,
+  sessionCookie: string | undefined,
   trpc: boolean,
   mustBeSignedIn?: T
 ): T extends true ? AuthSession : AuthSession | undefined {
-  const user = verifyJWT<AuthSession>(cookies.get('session'));
+  const user = verifyJWT<AuthSession>(sessionCookie);
 
   if (mustBeSignedIn && !user) {
     const errMessage = 'You must be logged in';

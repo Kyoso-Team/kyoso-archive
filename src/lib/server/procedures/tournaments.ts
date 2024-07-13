@@ -68,7 +68,7 @@ const createTournament = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { teamSettings, rankRange } = input;
     const checks = new TRPCChecks({ action: 'create a tournament' });
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     checks.userIsApprovedHost(session);
 
     const checksErr = tournamentChecks({ teamSettings, rankRange });
@@ -206,7 +206,7 @@ const updateTournament = t.procedure
       });
     }
 
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
     checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
@@ -334,7 +334,7 @@ const updateTournamentDates = t.procedure
       }
     }
 
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
     checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
@@ -431,7 +431,7 @@ const deleteTournament = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { tournamentId } = input;
     const checks = new TRPCChecks({ action: 'delete this tournament' });
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
     checks.staffHasPermissions(staffMember, ['host']);
 
@@ -477,7 +477,7 @@ const cancelTournamentDeletion = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { tournamentId } = input;
     const checks = new TRPCChecks({ action: 'cancel the deletion of this tournament' });
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
     checks.staffHasPermissions(staffMember, ['host']);
 

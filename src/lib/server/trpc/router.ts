@@ -15,7 +15,7 @@ import {
 import type { SQL } from 'drizzle-orm';
 
 const search = t.procedure.input(wrap(v.string([v.minLength(1)]))).query(async ({ ctx, input }) => {
-  getSession(ctx.cookies, true);
+  getSession(ctx.sessionCookie, true);
 
   try {
     await setSimilarityThreshold();

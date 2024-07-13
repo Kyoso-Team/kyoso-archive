@@ -11,7 +11,7 @@ const markNotificationAsRead = t.procedure
   .input(wrap(v.object({ notificationId: positiveIntSchema })))
   .mutation(async ({ ctx, input }) => {
     const { notificationId } = input;
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
 
     try {
       await db
@@ -31,7 +31,7 @@ const markNotificationAsRead = t.procedure
   });
 
 const markAllNotificationsAsRead = t.procedure.mutation(async ({ ctx }) => {
-  const session = getSession(ctx.cookies, true);
+  const session = getSession(ctx.sessionCookie, true);
 
   try {
     await db

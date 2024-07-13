@@ -36,7 +36,7 @@ const createStaffRole = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { name, tournamentId } = input;
     const checks = new TRPCChecks({ action: 'create a staff role for this tournament' });
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
     checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
@@ -102,7 +102,7 @@ const updateStaffRole = t.procedure
     const checks = new TRPCChecks({ action: 'update this staff role' });
     checks.partialHasValues(data);
 
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
     checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
@@ -167,7 +167,7 @@ const swapStaffRoleOrder = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { tournamentId, swaps } = input;
     const checks = new TRPCChecks({ action: 'swap the order of these staff roles' });
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
     checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
@@ -262,7 +262,7 @@ const deleteStaffRole = t.procedure
   .mutation(async ({ ctx, input }) => {
     const { tournamentId, staffRoleId } = input;
     const checks = new TRPCChecks({ action: 'delete this staff role' });
-    const session = getSession(ctx.cookies, true);
+    const session = getSession(ctx.sessionCookie, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
     checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 

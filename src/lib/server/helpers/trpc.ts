@@ -1,7 +1,6 @@
 import { trpcUnknownError } from '$lib/server/utils';
 import { baseGetSession, baseGetStaffMember, baseGetTournament } from './base';
 import type { AuthSession } from '$types';
-import type { Cookies } from '@sveltejs/kit';
 import type { Tournament, TournamentDates } from '$db';
 
 export async function getStaffMember<T extends boolean>(
@@ -48,8 +47,8 @@ export async function getTournament<
 }
 
 export function getSession<T extends boolean>(
-  cookies: Cookies,
+  sessionCookie: string | undefined,
   mustBeSignedIn?: T
 ): T extends true ? AuthSession : AuthSession | undefined {
-  return baseGetSession<T>(cookies, true, mustBeSignedIn);
+  return baseGetSession<T>(sessionCookie, true, mustBeSignedIn);
 }
