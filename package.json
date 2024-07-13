@@ -36,6 +36,7 @@
     "@typescript-eslint/parser": "^7.2.0",
     "@web-std/file": "^3.0.3",
     "autoprefixer": "^10.4.18",
+    "cypress": "^13.13.0",
     "dotenv": "^16.4.5",
     "drizzle-dbml-generator": "^0.6.1",
     "drizzle-kit": "^0.22.7",
@@ -56,7 +57,8 @@
     "tslib": "^2.4.1",
     "typescript": "^5.4.2",
     "vite": "^5.1.7",
-    "vite-plugin-tailwind-purgecss": "^0.2.0"
+    "vite-plugin-tailwind-purgecss": "^0.2.0",
+    "vitest": "^2.0.2"
   },
   "type": "module",
   "dependencies": {
