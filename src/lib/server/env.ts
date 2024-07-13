@@ -1,66 +1,32 @@
-import * as v from 'valibot';
-import {
-  NODE_ENV,
-  JWT_SECRET,
-  OSU_CLIENT_SECRET,
-  DISCORD_CLIENT_SECRET,
-  DISCORD_BOT_TOKEN,
-  BUNNY_HOSTNAME,
-  BUNNY_USERNAME,
-  BUNNY_PASSWORD,
-  OWNER,
-  DATABASE_URL,
-  TESTERS,
-  ENV,
-  IPINFO_ACCESS_TOKEN,
-  UPSTASH_REDIS_REST_URL,
-  UPSTASH_REDIS_REST_TOKEN
-} from '$env/static/private';
-import { clientEnvSchema, clientEnv, nonEmptyStringSchema, parseEnv } from '../env';
+import { config } from 'dotenv';
+import { serverEnvSchema } from '$lib/schemas';
+import { parseEnv } from '$lib/helpers';
 
-const serverEnvSchema = v.object({
-  ...clientEnvSchema.entries,
-  /** Preferrably, use `ENV` instead. This is mainly for Vite, but it does have its use cases */
-  NODE_ENV: v.union(
-    [v.literal('production'), v.literal('development')],
-    'be equal to "production" or "development"'
-  ),
-  ENV: v.union(
-    [v.literal('production'), v.literal('testing'), v.literal('development')],
-    'be equal to "production", "testing" or "development"'
-  ),
-  JWT_SECRET: nonEmptyStringSchema,
-  OSU_CLIENT_SECRET: nonEmptyStringSchema,
-  DISCORD_CLIENT_SECRET: nonEmptyStringSchema,
-  DISCORD_BOT_TOKEN: nonEmptyStringSchema,
-  BUNNY_HOSTNAME: nonEmptyStringSchema,
-  BUNNY_USERNAME: nonEmptyStringSchema,
-  BUNNY_PASSWORD: nonEmptyStringSchema,
-  IPINFO_ACCESS_TOKEN: nonEmptyStringSchema,
-  DATABASE_URL: nonEmptyStringSchema,
-  OWNER: v.number('be a number', [v.integer('be an integer')]),
-  TESTERS: v.array(v.number('be a number', [v.integer('be an integer')]), 'be an array'),
-  UPSTASH_REDIS_REST_URL: nonEmptyStringSchema,
-  UPSTASH_REDIS_REST_TOKEN: nonEmptyStringSchema
-});
+config();
 
 const serverEnv = {
-  ...clientEnv,
-  NODE_ENV,
-  ENV,
-  JWT_SECRET,
-  OSU_CLIENT_SECRET,
-  DISCORD_CLIENT_SECRET,
-  DISCORD_BOT_TOKEN,
-  BUNNY_HOSTNAME,
-  BUNNY_USERNAME,
-  BUNNY_PASSWORD,
-  IPINFO_ACCESS_TOKEN,
-  DATABASE_URL,
-  OWNER: Number(OWNER),
-  TESTERS: (JSON.parse(TESTERS || '[]') as string[]).map((id) => Number(id)),
-  UPSTASH_REDIS_REST_URL,
-  UPSTASH_REDIS_REST_TOKEN
+  PUBLIC_OSU_CLIENT_ID: Number(process.env.PUBLIC_OSU_CLIENT_ID),
+  PUBLIC_OSU_REDIRECT_URI: process.env.PUBLIC_OSU_REDIRECT_URI,
+  PUBLIC_DISCORD_CLIENT_ID: process.env.PUBLIC_DISCORD_CLIENT_ID,
+  PUBLIC_DISCORD_MAIN_REDIRECT_URI: process.env.PUBLIC_DISCORD_MAIN_REDIRECT_URI,
+  PUBLIC_DISCORD_CHANGE_ACCOUNT_REDIRECT_URI: process.env.PUBLIC_DISCORD_CHANGE_ACCOUNT_REDIRECT_URI,
+  PUBLIC_CONTACT_EMAIL: process.env.PUBLIC_CONTACT_EMAIL || 'example@gmail.com',
+  // Vitest sets NODE_ENV to 'test', but this is not supported by SvelteKit, so we'll set it to 'development' instead
+  NODE_ENV: process.env.NODE_ENV === 'test' ? 'development' : process.env.NODE_ENV,
+  ENV: process.env.ENV,
+  JWT_SECRET: process.env.JWT_SECRET,
+  OSU_CLIENT_SECRET: process.env.OSU_CLIENT_SECRET,
+  DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
+  DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
+  BUNNY_HOSTNAME: process.env.BUNNY_HOSTNAME,
+  BUNNY_USERNAME: process.env.BUNNY_USERNAME,
+  BUNNY_PASSWORD: process.env.BUNNY_PASSWORD,
+  IPINFO_ACCESS_TOKEN: process.env.IPINFO_ACCESS_TOKEN,
+  DATABASE_URL: process.env.DATABASE_URL,
+  OWNER: Number(process.env.OWNER),
+  TESTERS: (JSON.parse(process.env.TESTERS || '[]') as string[]).map((id) => Number(id)),
+  UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+  UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN
 };
 
 const env = parseEnv(serverEnvSchema, serverEnv);

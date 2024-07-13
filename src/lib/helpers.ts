@@ -1,6 +1,26 @@
+import * as v from 'valibot';
+import { arraysHaveSameElements } from './utils';
 import type { TournamentDates } from '$db';
 import type { ModMultiplier, TournamentLink, UserFormField } from '$types';
-import { arraysHaveSameElements } from './utils';
+
+export function parseEnv<T extends v.BaseSchema>(schema: T, env: unknown) {
+  const parsed = v.safeParse(schema, env);
+
+  if (!parsed.success) {
+    const issues = v.flatten(parsed.issues).nested;
+
+    for (const key in issues) {
+      const split = key.split('.');
+      console.error(
+        `Env. variable "${split[0]}"${split[1] ? ` (at index ${split[1]})` : ''} must ${issues[key]}`
+      );
+    }
+
+    throw new Error('Invalid environment variables');
+  }
+
+  return parsed.output;
+}
 
 export function tournamentChecks({
   teamSettings,

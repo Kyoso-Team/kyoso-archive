@@ -6,7 +6,7 @@ import {
   upper32BitIntLimit
 } from './constants';
 
-// When writing the error messages for scehmas, keep in mind that the message will be formated like:
+// When writing the error messages for schemas, keep in mind that the message will be formated like:
 // "Invalid input: {object_name}.{property} should {message}"
 // Example: "Invalid input: body.tournamentId should be a number"
 // (The messages will not appear in tRPC procedures)
@@ -63,7 +63,46 @@ export const tournamentLinkIconSchema = v.union(
   'be "osu", "discord", "google_sheets", "google_forms", "google_docs", "twitch", "youtube", "x", "challonge", "liquipedia", "donation" or "website"'
 );
 
+export const nonEmptyStringSchema = v.string('be a string', [
+  v.minLength(1, 'have 1 character or more')
+]);
+
 // Schemas below this do not require error messages to be set
+
+export const clientEnvSchema = v.object({
+  PUBLIC_OSU_CLIENT_ID: v.number('be a number', [v.integer('be an integer')]),
+  PUBLIC_OSU_REDIRECT_URI: nonEmptyStringSchema,
+  PUBLIC_DISCORD_CLIENT_ID: nonEmptyStringSchema,
+  PUBLIC_DISCORD_MAIN_REDIRECT_URI: nonEmptyStringSchema,
+  PUBLIC_DISCORD_CHANGE_ACCOUNT_REDIRECT_URI: nonEmptyStringSchema,
+  PUBLIC_CONTACT_EMAIL: v.string('be a string', [v.email('be an email')])
+});
+
+export const serverEnvSchema = v.object({
+  ...clientEnvSchema.entries,
+  /** Preferrably, use `ENV` instead. This is mainly for Vite, but it does have its use cases */
+  NODE_ENV: v.union(
+    [v.literal('production'), v.literal('development')],
+    'be equal to "production" or "development"'
+  ),
+  ENV: v.union(
+    [v.literal('production'), v.literal('testing'), v.literal('development')],
+    'be equal to "production", "testing" or "development"'
+  ),
+  JWT_SECRET: nonEmptyStringSchema,
+  OSU_CLIENT_SECRET: nonEmptyStringSchema,
+  DISCORD_CLIENT_SECRET: nonEmptyStringSchema,
+  DISCORD_BOT_TOKEN: nonEmptyStringSchema,
+  BUNNY_HOSTNAME: nonEmptyStringSchema,
+  BUNNY_USERNAME: nonEmptyStringSchema,
+  BUNNY_PASSWORD: nonEmptyStringSchema,
+  IPINFO_ACCESS_TOKEN: nonEmptyStringSchema,
+  DATABASE_URL: nonEmptyStringSchema,
+  OWNER: v.number('be a number', [v.integer('be an integer')]),
+  TESTERS: v.array(v.number('be a number', [v.integer('be an integer')]), 'be an array'),
+  UPSTASH_REDIS_REST_URL: nonEmptyStringSchema,
+  UPSTASH_REDIS_REST_TOKEN: nonEmptyStringSchema
+});
 
 export const refereeSettingsSchema = v.object({
   timerLength: v.object({
