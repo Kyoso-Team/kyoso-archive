@@ -157,8 +157,9 @@ export const Session = pgTable(
       })
   },
   (table) => ({
-    indexIdExpired: index('idx_session_id_expired').on(table.id, table.expired),
-    indexUserIdExpired: index('idx_session_user_id_expired').on(table.userId, table.expired)
+    indexUserIdExpired: index('idx_session_user_id_expired').on(table.userId, table.expired),
+    indexCreatedAt: index('idx_session_created_at').on(table.createdAt.desc()),
+    indexLastActiveAt: index('idx_session_last_active_at').on(table.lastActiveAt.desc())
   })
 );
 
