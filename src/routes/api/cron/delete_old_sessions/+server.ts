@@ -11,14 +11,11 @@ export const DELETE = (async ({ request, route }) => {
     await db
       .delete(Session)
       .where(
-        and(
-          eq(Session.expired, true),
-          lte(Session.createdAt, sql`now() - interval '7 days'`)
-        )
+        and(eq(Session.expired, true), lte(Session.createdAt, sql`now() - interval '7 days'`))
       );
   } catch (err) {
     throw await apiError(err, 'Deleting sessions', route);
   }
-  
+
   return new Response('Successfully deleted expired sessions older than 7 days');
 }) satisfies RequestHandler;
