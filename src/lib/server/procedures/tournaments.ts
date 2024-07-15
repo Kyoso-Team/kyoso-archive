@@ -32,7 +32,7 @@ import {
   tournamentChecks,
   tournamentDatesChecks,
   tournamentLinksChecks,
-  tournamentModMultipliersChecks,
+  modMultipliersChecks,
   tournamentOtherDatesChecks
 } from '$lib/helpers';
 import { maxPossibleDate, oldestDatePossible } from '$lib/constants';
@@ -196,7 +196,7 @@ const updateTournament = t.procedure
     }
 
     if (modMultipliers && checksErr === undefined) {
-      checksErr = tournamentModMultipliersChecks(modMultipliers);
+      checksErr = modMultipliersChecks(modMultipliers);
     }
 
     if (checksErr) {

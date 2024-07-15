@@ -39,23 +39,23 @@ export function tournamentChecks({
 }
 
 export function tournamentDatesChecks(
-  newDates: Record<
+  newDates: Partial<Record<
     Exclude<keyof typeof TournamentDates.$inferSelect, 'other' | 'tournamentId'>,
-    Date | null | undefined
-  >,
-  setDates: Record<
+    Date | null
+  >>,
+  setDates: Partial<Record<
     Exclude<keyof typeof TournamentDates.$inferSelect, 'other' | 'tournamentId'>,
-    Date | null | undefined
-  >
+    Date | null
+  >>
 ): string | undefined {
-  const publishedAtTime = setDates.publishedAt?.getTime();
-  const concludesAtTime = setDates.concludesAt?.getTime();
-  const playerRegsOpenAtTime = setDates.playerRegsOpenAt?.getTime();
-  const playerRegsCloseAtTime = setDates.playerRegsCloseAt?.getTime();
-  const staffRegsOpenAtTime = setDates.staffRegsOpenAt?.getTime();
-  const staffRegsCloseAtTime = setDates.staffRegsCloseAt?.getTime();
+  const publishedAtTime = (setDates.publishedAt ?? newDates.publishedAt)?.getTime();
+  const concludesAtTime = (setDates.concludesAt ?? newDates.concludesAt)?.getTime();
+  const playerRegsOpenAtTime = (setDates.playerRegsOpenAt ?? newDates.playerRegsOpenAt)?.getTime();
+  const playerRegsCloseAtTime = (setDates.playerRegsCloseAt ?? newDates.playerRegsCloseAt)?.getTime();
+  const staffRegsOpenAtTime = (setDates.staffRegsOpenAt ?? newDates.staffRegsOpenAt)?.getTime();
+  const staffRegsCloseAtTime = (setDates.staffRegsCloseAt ?? newDates.staffRegsCloseAt)?.getTime();
   const map = new Map<
-    number | undefined,
+    number,
     {
       newDate: Date | undefined | null;
       label: string;
@@ -64,7 +64,7 @@ export function tournamentDatesChecks(
     }
   >([
     [
-      publishedAtTime,
+      publishedAtTime ?? -1,
       {
         label: 'publish date',
         newDate: newDates.publishedAt,
@@ -78,7 +78,7 @@ export function tournamentDatesChecks(
       }
     ],
     [
-      playerRegsOpenAtTime,
+      playerRegsOpenAtTime ?? -2,
       {
         label: 'player regs. opening date',
         newDate: newDates.playerRegsOpenAt,
@@ -87,7 +87,7 @@ export function tournamentDatesChecks(
       }
     ],
     [
-      playerRegsCloseAtTime,
+      playerRegsCloseAtTime ?? -3,
       {
         label: 'player regs. closing date',
         newDate: newDates.playerRegsCloseAt,
@@ -96,7 +96,7 @@ export function tournamentDatesChecks(
       }
     ],
     [
-      staffRegsOpenAtTime,
+      staffRegsOpenAtTime ?? -4,
       {
         label: 'staff regs. opening date',
         newDate: newDates.staffRegsOpenAt,
@@ -105,7 +105,7 @@ export function tournamentDatesChecks(
       }
     ],
     [
-      staffRegsCloseAtTime,
+      staffRegsCloseAtTime ?? -5,
       {
         label: 'staff regs. closing date',
         newDate: newDates.staffRegsCloseAt,
@@ -114,12 +114,12 @@ export function tournamentDatesChecks(
       }
     ],
     [
-      concludesAtTime,
+      concludesAtTime ?? -6,
       {
         label: 'conclusion date',
         newDate: newDates.concludesAt,
         after: [
-          concludesAtTime,
+          publishedAtTime,
           playerRegsOpenAtTime,
           playerRegsCloseAtTime,
           staffRegsOpenAtTime,
@@ -151,71 +151,70 @@ export function tournamentDatesChecks(
   }
 }
 
+function compareValues(a: any, b: any) {
+  return a === b;
+}
+
+function compareArrays(a: any[], b: any[]) {
+  return arraysHaveSameElements(a, b);
+}
+
+function identifyDuplicates<T extends Record<string, any>>(items: T[], current: T, by: keyof T, compareExisting?: boolean) {
+  const labels = items.map((item) => item[by]);
+  const compare = Array.isArray(current[by]) ? compareArrays : compareValues;
+  return compareExisting
+    ? items.some((item, i) => compare(item[by], current[by]) && i !== labels.indexOf(current[by]))
+    : items.some((item) => compare(item[by], current[by]));
+}
+
 export function tournamentOtherDatesChecks(
   dates: (typeof TournamentDates.$inferSelect)['other']
 ): string | undefined {
   for (let i = 0; i < dates.length; i++) {
-    const err = tournamentOtherDateChecks(dates, dates[i]);
+    const err = tournamentOtherDateChecks(dates, dates[i], true);
     if (err) return `${err} (at index ${i})`;
   }
 }
 
 export function tournamentOtherDateChecks(
   allOtherDates: (typeof TournamentDates.$inferSelect)['other'],
-  date: (typeof TournamentDates.$inferSelect)['other'][number]
+  date: (typeof TournamentDates.$inferSelect)['other'][number],
+  compareExisting?: boolean
 ): string | undefined {
   if (date.toDate && date.fromDate > date.toDate) {
     return 'The starting date must be less than or equal to the maximum';
   }
 
-  const allOtherDatesLabels = allOtherDates.map(({ label }) => label);
-  if (
-    allOtherDates.some(
-      ({ label }, i) => label === date.label && i !== allOtherDatesLabels.indexOf(date.label)
-    )
-  ) {
+  if (identifyDuplicates(allOtherDates, date, 'label', compareExisting)) {
     return `Date labeled "${date.label}" already exists in this tournament`;
   }
 }
 
 export function tournamentLinksChecks(links: TournamentLink[]) {
   for (let i = 0; i < links.length; i++) {
-    const err = tournamentLinkChecks(links, links[i]);
+    const err = tournamentLinkChecks(links, links[i], true);
     if (err) return `${err} (at index ${i})`;
   }
 }
 
-export function tournamentLinkChecks(allLinks: TournamentLink[], link: TournamentLink) {
-  const allLinksLabels = allLinks.map(({ label }) => label);
-  if (
-    allLinks.some(({ label }, i) => label === link.label && i !== allLinksLabels.indexOf(label))
-  ) {
+export function tournamentLinkChecks(allLinks: TournamentLink[], link: TournamentLink, compareExisting?: boolean) {
+  if (identifyDuplicates(allLinks, link, 'label', compareExisting)) {
     return `Link labeled "${link.label}" already exists in this tournament`;
   }
 }
 
-export function tournamentModMultipliersChecks(modMultipliers: ModMultiplier[]) {
+export function modMultipliersChecks(modMultipliers: ModMultiplier[]) {
   for (let i = 0; i < modMultipliers.length; i++) {
-    const err = modMultiplierChecks(modMultipliers, modMultipliers[i]);
+    const err = modMultiplierChecks(modMultipliers, modMultipliers[i], true);
     if (err) return `${err} (at index ${i})`;
   }
 }
 
 export function modMultiplierChecks(
   allModMultipliers: ModMultiplier[],
-  modMultiplier: ModMultiplier
+  modMultiplier: ModMultiplier,
+  compareExisting?: boolean
 ) {
-  const allModMultipliersMods = allModMultipliers.map(({ mods }) => mods.join(''));
-  if (
-    allModMultipliers.some(
-      ({ mods }, i) =>
-        arraysHaveSameElements(mods, modMultiplier.mods) &&
-        i !== allModMultipliersMods.indexOf(modMultiplier.mods.join(''))
-    )
-  ) {
-    return `Mod multiplier with the mod combination ${modMultiplier.mods.join('').toUpperCase()} already exists in this tournament`;
-  }
-
   const { mods } = modMultiplier as Extract<ModMultiplier, { multiplier: Record<string, any> }>;
   if (
     (mods.includes('ez') && mods.includes('hr')) ||
@@ -231,16 +230,24 @@ export function modMultiplierChecks(
   ) {
     return 'The multiplier in case of failure must be less than the multiplier in case of success';
   }
+
+  if (mods.length !== new Set(mods).size) {
+    return 'The mod combination contains duplicate mods';
+  }
+
+  if (identifyDuplicates(allModMultipliers, modMultiplier, 'mods', compareExisting)) {
+    return `Mod multiplier with the mod combination ${modMultiplier.mods.join('').toUpperCase()} already exists in this tournament`;
+  }
 }
 
 export function userFormFieldsChecks(fields: UserFormField[]) {
   for (let i = 0; i < fields.length; i++) {
-    const err = userFormFieldChecks(fields[i]);
+    const err = userFormFieldChecks(fields, fields[i], true);
     if (err) return `${err} (at index ${i})`;
   }
 }
 
-export function userFormFieldChecks(field: UserFormField) {
+export function userFormFieldChecks(allFields: UserFormField[], field: UserFormField, compareExisting?: boolean) {
   const { type } = field;
 
   if (
@@ -252,5 +259,9 @@ export function userFormFieldChecks(field: UserFormField) {
     if (field.min && field.max && field.min > field.max) {
       return 'The minimum must be less than or equal to the maximum';
     }
+  }
+
+  if (identifyDuplicates(allFields, field, 'id', compareExisting)) {
+    return `Field with ID "${field.id}" already exists in this form`;
   }
 }

@@ -3,7 +3,8 @@ import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
 
 const client = postgres(env.DATABASE_URL, {
-  debug: true
+  debug: true,
+  onnotice: env.ENV === 'automatic_testing' ? (() => false) : undefined
 });
 export const db = drizzle(client);
 

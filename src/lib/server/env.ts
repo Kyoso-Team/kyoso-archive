@@ -13,7 +13,7 @@ const serverEnv = {
   PUBLIC_CONTACT_EMAIL: process.env.PUBLIC_CONTACT_EMAIL || 'example@gmail.com',
   // Vitest sets NODE_ENV to 'test', but this is not supported by SvelteKit, so we'll set it to 'development' instead
   NODE_ENV: process.env.NODE_ENV === 'test' ? 'development' : process.env.NODE_ENV,
-  ENV: process.env.ENV,
+  ENV: process.env.NODE_ENV === 'test' ? 'automatic_testing' : process.env.ENV,
   JWT_SECRET: process.env.JWT_SECRET,
   OSU_CLIENT_SECRET: process.env.OSU_CLIENT_SECRET,
   DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
