@@ -37,7 +37,6 @@
     "@typescript-eslint/parser": "^7.2.0",
     "@web-std/file": "^3.0.3",
     "autoprefixer": "^10.4.18",
-    "cypress": "^13.13.0",
     "drizzle-dbml-generator": "^0.6.1",
     "drizzle-kit": "^0.22.7",
     "eslint": "^8.57.0",

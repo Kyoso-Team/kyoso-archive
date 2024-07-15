@@ -8,8 +8,8 @@ function lib(path?: string) {
 
 export default defineConfig({
   test: {
-    include: ['**/src/tests/**/*.test.ts'],
-    exclude: ['**/src/tests/e2e/**'],
+    include: ['**/tests/**/*.test.ts'],
+    exclude: ['**/tests/e2e/**'],
     alias: {
       $lib: lib(),
       $stores: lib('stores'),
@@ -17,8 +17,8 @@ export default defineConfig({
       $components: lib('components'),
       $trpc: lib('server/trpc'),
       $db: lib('server/db'),
-      $tests: `${process.cwd()}/src/tests`
+      $tests: `${process.cwd()}/tests`
     },
-    globalSetup: ['./src/tests/global-setup.ts']
+    globalSetup: ['./tests/global-setup.ts']
   }
 });
