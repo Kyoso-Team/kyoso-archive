@@ -23,6 +23,7 @@ const serverEnv = {
   BUNNY_PASSWORD: process.env.BUNNY_PASSWORD,
   IPINFO_ACCESS_TOKEN: process.env.IPINFO_ACCESS_TOKEN,
   DATABASE_URL: process.env.DATABASE_URL,
+  AUTO_TESTING_DATABASE_URL: process.env.AUTO_TESTING_DATABASE_URL,
   OWNER: Number(process.env.OWNER),
   TESTERS: (JSON.parse(process.env.TESTERS || '[]') as string[]).map((id) => Number(id)),
   UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,

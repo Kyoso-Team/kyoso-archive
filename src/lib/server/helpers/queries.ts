@@ -16,6 +16,16 @@ import type { AnyPgTable, PgTransaction, PgSelectBase } from 'drizzle-orm/pg-cor
 import type { SQL } from 'drizzle-orm';
 import type { AnyPgNumberColumn, PaginationSettings, Simplify } from '$types';
 
+export async function resetDatabase() {
+  return await db.execute(sql`
+    DROP EXTENSION IF EXISTS pg_trgm CASCADE;
+    DROP SCHEMA IF EXISTS public CASCADE;
+    CREATE SCHEMA public;
+    DROP SCHEMA IF EXISTS drizzle CASCADE;
+    CREATE SCHEMA drizzle;
+  `);
+}
+
 export async function getCount(table: AnyPgTable, where?: SQL) {
   return await db
     .select({ count: count().as('count') })

@@ -1,17 +1,8 @@
 import './polyfill';
-import { db } from '$db';
-import { sql } from 'drizzle-orm';
-
+import { resetDatabase } from '$lib/server/helpers/queries';
 
 async function main() {
-  await db.execute(sql`
-    DROP EXTENSION IF EXISTS pg_trgm CASCADE;
-    DROP SCHEMA IF EXISTS public CASCADE;
-    CREATE SCHEMA public;
-    DROP SCHEMA IF EXISTS drizzle CASCADE;
-    CREATE SCHEMA drizzle;
-  `);
-
+  await resetDatabase();
   console.log('Reset database successfully');
 }
 

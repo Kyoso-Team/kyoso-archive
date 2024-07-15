@@ -1,4 +1,4 @@
-import './utils/mocks';
+import './utils/polyfill';
 import { describe, expect, it } from 'vitest';
 import { modMultiplierChecks, modMultipliersChecks, tournamentChecks, tournamentDatesChecks, tournamentLinkChecks, tournamentLinksChecks, tournamentOtherDatesChecks, userFormFieldChecks, userFormFieldsChecks } from '$lib/helpers';
 import { futureDate, pastDate } from './utils';

@@ -79,7 +79,7 @@ export async function createMockUser(user?: {
         target: [Country.code]
       });
 
-    await db.insert(OsuUser).values({
+    await tx.insert(OsuUser).values({
       osuUserId,
       countryCode: user?.osu?.country?.code ?? 'US',
       restricted: user?.osu?.restricted ?? false,
@@ -125,7 +125,7 @@ export async function createMockUser(user?: {
         });
     }
 
-    await db.insert(DiscordUser).values({
+    await tx.insert(DiscordUser).values({
       discordUserId,
       username: discordUsername,
       token: {
@@ -135,7 +135,7 @@ export async function createMockUser(user?: {
       }
     });
 
-    const createdUser = await db
+    const createdUser = await tx
       .insert(User)
       .values({
         discordUserId,
@@ -146,7 +146,7 @@ export async function createMockUser(user?: {
       .returning(pick(User, ['id', 'admin', 'approvedHost']))
       .then((user) => user[0]);
 
-    const session = await db
+    const session = await tx
       .insert(Session)
       .values({
         userId: createdUser.id,

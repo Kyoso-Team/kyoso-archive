@@ -98,6 +98,7 @@ export const serverEnvSchema = v.object({
   BUNNY_PASSWORD: nonEmptyStringSchema,
   IPINFO_ACCESS_TOKEN: nonEmptyStringSchema,
   DATABASE_URL: nonEmptyStringSchema,
+  AUTO_TESTING_DATABASE_URL: v.optional(nonEmptyStringSchema),
   OWNER: v.number('be a number', [v.integer('be an integer')]),
   TESTERS: v.array(v.number('be a number', [v.integer('be an integer')]), 'be an array'),
   UPSTASH_REDIS_REST_URL: nonEmptyStringSchema,

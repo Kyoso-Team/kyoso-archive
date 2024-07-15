@@ -17,6 +17,7 @@ export default defineConfig({
       $components: lib('components'),
       $trpc: lib('server/trpc'),
       $db: lib('server/db')
-    }
+    },
+    globalSetup: ['./src/tests/global-setup.ts']
   }
 });
