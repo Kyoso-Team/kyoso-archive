@@ -14,11 +14,11 @@
     "db:generate": "npx drizzle-kit generate",
     "db:generate-custom": "npx drizzle-kit generate --custom",
     "db:migrate": "npx drizzle-kit migrate",
-    "db:reset": "node --experimental-specifier-resolution=node --loader ts-node/esm scripts/reset.ts",
-    "db:seed": "node --experimental-specifier-resolution=node --loader ts-node/esm scripts/seed/index.ts",
+    "db:reset": "tsx scripts/reset.ts",
+    "db:seed": "tsx scripts/seed/index.ts",
     "db:studio": "npx drizzle-kit studio",
     "db:drop": "npx drizzle-kit drop",
-    "db:dbml": "node --experimental-specifier-resolution=node --loader ts-node/esm scripts/dbml.ts"
+    "db:dbml": "tsx scripts/dbml.ts"
   },
   "devDependencies": {
     "@skeletonlabs/skeleton": "^2.9.0",
@@ -43,6 +43,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-drizzle": "^0.2.3",
     "eslint-plugin-svelte": "^2.35.1",
+    "execa": "8.0.1",
     "nanospinner": "^1.1.0",
     "pg": "^8.11.2",
     "postcss": "^8.4.35",
@@ -52,8 +53,8 @@
     "svelte": "^4.2.12",
     "svelte-check": "^3.6.7",
     "tailwindcss": "^3.4.1",
-    "ts-node": "^10.9.2",
     "tslib": "^2.4.1",
+    "tsx": "^4.16.2",
     "typescript": "^5.4.2",
     "vite": "^5.1.7",
     "vite-plugin-tailwind-purgecss": "^0.2.0",

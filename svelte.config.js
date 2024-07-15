@@ -16,6 +16,12 @@ const config = {
       $components: lib('components'),
       $trpc: lib('server/trpc'),
       $db: lib('server/db')
+    },
+    typescript: {
+      config: (config) => {
+        config.include.push('../scripts/**/*.ts');
+        return config;
+      }
     }
   }
 };
