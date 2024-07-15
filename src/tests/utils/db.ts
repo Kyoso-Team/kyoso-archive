@@ -1,99 +1,180 @@
-import env from '$lib/server/env';
-import { db, User } from '$db';
-import { Auth } from 'osu-web.js';
-import { createSession, upsertDiscordUser, upsertOsuUser } from '$lib/server/helpers/auth';
-import { sql } from 'drizzle-orm';
+import {
+  Country,
+  db,
+  DiscordUser,
+  OsuBadge,
+  OsuUser,
+  OsuUserAwardedBadge,
+  Session,
+  User
+} from '$db';
+import { count, sql } from 'drizzle-orm';
 import { pick } from '$lib/server/utils';
-import type DiscordOAuth2 from 'discord-oauth2';
 import type { AuthSession } from '$types';
 import type { AnyPgTable } from 'drizzle-orm/pg-core';
 
 /** https://www.postgresql.org/docs/current/sql-truncate.html */
 export async function truncateTables(tables: AnyPgTable | AnyPgTable[]) {
   const truncate = Array.isArray(tables)
-    ? sql.join(tables.map((table) => table), sql`, `)
+    ? sql.join(
+        tables.map((table) => table),
+        sql`, `
+      )
     : tables;
   await db.execute(sql`truncate ${truncate} restart identity cascade`);
 }
 
-// export async function createMockSession(sessionAttributes?: Partial<Pick<AuthSession, 'admin' | 'approvedHost'>>) {
-//   const osuAuth = new Auth(
-//     env.PUBLIC_OSU_CLIENT_ID,
-//     env.OSU_CLIENT_SECRET,
-//     env.PUBLIC_OSU_REDIRECT_URI
-//   );
-//   let osuToken = await osuAuth.clientCredentialsGrant();
+export async function createMockUser(user?: {
+  admin?: boolean;
+  approvedHost?: boolean;
+  osu?: {
+    /** Automatically generated if undefined */
+    id?: number;
+    globalStdRank?: number;
+    globalTaikoRank?: number;
+    globalCatchRank?: number;
+    globalManiaRank?: number;
+    /** Defaults to false if undefined */
+    restricted?: boolean;
+    /** Defaults to United States if undefined */
+    country?: { code: string; name: string };
+    badgeCount?: number;
+  };
+  discord?: {
+    /** Automatically generated if undefined */
+    id?: string;
+  };
+}): Promise<Readonly<AuthSession>> {
+  const osuUserId: number =
+    user?.osu?.id ??
+    (await db
+      .select({ count: count().as('count') })
+      .from(OsuUser)
+      .then(([{ count }]) => count + 1));
+  const osuUsername = `osu-${osuUserId}`;
 
-//   osuToken = await fetch('https://osu.ppy.sh/oauth/token', {
-//     method: 'POST',
-//     body: JSON.stringify({
-//       client_id: env.PUBLIC_OSU_CLIENT_ID,
-//       client_secret: env.OSU_CLIENT_SECRET,
-//       grant_type: 'client_credentials',
-//       scope: 'identify'
-//     }),
-//     headers: {
-//       'Content-Type': 'application/json',
-//       'Authorization': `Basic ${btoa(`${env.PUBLIC_OSU_CLIENT_ID}:${env.OSU_CLIENT_SECRET}`)}`
-//     }
-//   }).then((r) => r.json());
+  const discordUserId: string =
+    user?.discord?.id ??
+    (await db
+      .select({ count: count().as('count') })
+      .from(DiscordUser)
+      .then(([{ count }]) => (count + 1).toString()));
+  const discordUsername = `discord-${discordUserId}`;
 
-//   const discordtokenResp = await fetch('https://discord.com/api/v10/oauth2/token', {
-//     method: 'POST',
-//     body: JSON.stringify({
-//       grant_type: 'client_credentials',
-//       scope: 'identify'
-//     }),
-//     headers: {
-//       'Content-Type': 'application/x-www-form-urlencoded',
-//       'Authorization': `Basic ${btoa(`${env.PUBLIC_DISCORD_CLIENT_ID}:${env.DISCORD_CLIENT_SECRET}`)}`
-//     }
-//   });
-//   const discordToken: DiscordOAuth2.TokenRequestResult = await discordtokenResp.json();
+  return await db.transaction(async (tx) => {
+    await tx
+      .insert(Country)
+      .values(
+        user?.osu?.country
+          ? {
+              code: user.osu.country.code,
+              name: user.osu.country.name
+            }
+          : {
+              code: 'US',
+              name: 'United States'
+            }
+      )
+      .onConflictDoNothing({
+        target: [Country.code]
+      });
 
-//   const tokensIssuedAt = new Date();
-//   const route = { id: null };
-//   const osuUser = await upsertOsuUser({
-//     access_token: osuToken.access_token,
-//     expires_in: osuToken.expires_in,
-//     token_type: osuToken.token_type,
-//     refresh_token: 'xxx'
-//   }, tokensIssuedAt, route);
-//   const discordUser = await upsertDiscordUser({
-//     access_token: discordToken.access_token,
-//     expires_in: discordToken.expires_in,
-//     scope: discordToken.scope,
-//     token_type: discordToken.token_type,
-//     refresh_token: 'xxx'
-//   }, tokensIssuedAt, route);
+    await db.insert(OsuUser).values({
+      osuUserId,
+      countryCode: user?.osu?.country?.code ?? 'US',
+      restricted: user?.osu?.restricted ?? false,
+      username: osuUsername,
+      globalStdRank: user?.osu?.globalStdRank ?? null,
+      globalTaikoRank: user?.osu?.globalTaikoRank ?? null,
+      globalCatchRank: user?.osu?.globalCatchRank ?? null,
+      globalManiaRank: user?.osu?.globalManiaRank ?? null,
+      token: {
+        accesstoken: 'xxx',
+        refreshToken: 'xxx',
+        tokenIssuedAt: new Date().getTime()
+      }
+    });
 
-//   const user = await db
-//       .insert(User)
-//       .values({
-//         discordUserId: discordUser.id,
-//         osuUserId: osuUser.id,
-//         admin: sessionAttributes?.admin,
-//         approvedHost: sessionAttributes?.approvedHost
-//       })
-//       .returning(pick(User, ['id', 'updatedApiDataAt', 'admin', 'approvedHost']))
-//       .then((user) => user[0]);
-//   const session = await createSession(user.id, '127.0.0.1', 'User Agent', route);
+    if (user?.osu?.badgeCount) {
+      const badges = Array.from({ length: user.osu.badgeCount }).map(() => {
+        const n = Math.random();
+        return {
+          imgFileName: `badge-${n}.png`,
+          description: `Badge ${n}`
+        };
+      });
 
-//   const authSession: AuthSession = {
-//     sessionId: session.id,
-//     userId: user.id,
-//     admin: user.admin,
-//     approvedHost: user.approvedHost,
-//     updatedApiDataAt: user.updatedApiDataAt.getTime(),
-//     discord: {
-//       id: discordUser.id,
-//       username: discordUser.username
-//     },
-//     osu: {
-//       id: osuUser.id,
-//       username: osuUser.username
-//     }
-//   };
+      const createdBadges = await tx
+        .insert(OsuBadge)
+        .values(badges)
+        .returning(pick(OsuBadge, ['id']));
 
-//   return authSession;
-// }
+      const awardedBadges: (typeof OsuUserAwardedBadge.$inferInsert)[] = createdBadges.map(
+        (badge) => ({
+          osuUserId,
+          osuBadgeId: badge.id,
+          awardedAt: new Date()
+        })
+      );
+
+      await tx
+        .insert(OsuUserAwardedBadge)
+        .values(awardedBadges)
+        .onConflictDoNothing({
+          target: [OsuUserAwardedBadge.osuBadgeId, OsuUserAwardedBadge.osuUserId]
+        });
+    }
+
+    await db.insert(DiscordUser).values({
+      discordUserId,
+      username: discordUsername,
+      token: {
+        accesstoken: 'xxx',
+        refreshToken: 'xxx',
+        tokenIssuedAt: new Date().getTime()
+      }
+    });
+
+    const createdUser = await db
+      .insert(User)
+      .values({
+        discordUserId,
+        osuUserId,
+        admin: user?.admin,
+        approvedHost: user?.approvedHost
+      })
+      .returning(pick(User, ['id', 'admin', 'approvedHost']))
+      .then((user) => user[0]);
+
+    const session = await db
+      .insert(Session)
+      .values({
+        userId: createdUser.id,
+        ipAddress: '127.0.0.1',
+        userAgent: 'User Agent',
+        ipMetadata: {
+          city: 'Some city',
+          region: 'Some region',
+          country: 'Some country'
+        }
+      })
+      .returning(pick(Session, ['id']))
+      .then((session) => session[0]);
+
+    return Object.freeze({
+      admin: createdUser.admin,
+      approvedHost: createdUser.approvedHost,
+      userId: createdUser.id,
+      sessionId: session.id,
+      updatedApiDataAt: new Date().getTime(),
+      discord: {
+        id: discordUserId,
+        username: discordUsername
+      },
+      osu: {
+        id: osuUserId,
+        username: osuUsername
+      }
+    });
+  });
+}
