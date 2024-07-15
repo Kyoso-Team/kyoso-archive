@@ -32,7 +32,7 @@
     const rankRange = !isOpenRank ? rankRangeForm.getFinalValue($rankRangeForm) : undefined;
     let tournament!: TRPCRouter['tournaments']['createTournament'];
 
-    const err = tournamentChecks({ teamSettings, rankRange });
+    const err = tournamentChecks({ type, teamSettings, rankRange });
 
     if (err) {
       toastError(toast, err);

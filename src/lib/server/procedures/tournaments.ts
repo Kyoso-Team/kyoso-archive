@@ -66,12 +66,12 @@ const createTournament = t.procedure
   .use(rateLimitMiddleware)
   .input(wrap(v.object(mutationSchemas)))
   .mutation(async ({ ctx, input }) => {
-    const { teamSettings, rankRange } = input;
+    const { type, teamSettings, rankRange } = input;
     const checks = new TRPCChecks({ action: 'create a tournament' });
     const session = getSession(ctx.sessionCookie, true);
     checks.userIsApprovedHost(session);
 
-    const checksErr = tournamentChecks({ teamSettings, rankRange });
+    const checksErr = tournamentChecks({ type, teamSettings, rankRange });
 
     if (checksErr) {
       throw new TRPCError({
@@ -189,23 +189,6 @@ const updateTournament = t.procedure
     const checks = new TRPCChecks({ action: 'update this tournament' });
     checks.partialHasValues(data);
 
-    let checksErr = tournamentChecks({ teamSettings, rankRange });
-
-    if (links && checksErr === undefined) {
-      checksErr = tournamentLinksChecks(links);
-    }
-
-    if (modMultipliers && checksErr === undefined) {
-      checksErr = modMultipliersChecks(modMultipliers);
-    }
-
-    if (checksErr) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: checksErr
-      });
-    }
-
     const session = getSession(ctx.sessionCookie, true);
     const staffMember = await getStaffMember(session, tournamentId, true);
     checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
@@ -225,12 +208,33 @@ const updateTournament = t.procedure
     const info = await getTournament(
       tournamentId,
       {
-        tournament: ['deletedAt'],
+        tournament: ['deletedAt', 'type', 'teamSettings'],
         dates: ['playerRegsOpenAt', 'concludesAt']
       },
       true
     );
     checks.tournamentNotDeleted(info).tournamentNotConcluded(info);
+
+    let checksErr = tournamentChecks({
+      type: info.type,
+      teamSettings: teamSettings ?? info.teamSettings,
+      rankRange
+    });
+
+    if (links && checksErr === undefined) {
+      checksErr = tournamentLinksChecks(links);
+    }
+
+    if (modMultipliers && checksErr === undefined) {
+      checksErr = modMultipliersChecks(modMultipliers);
+    }
+
+    if (checksErr) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: checksErr
+      });
+    }
 
     // Only update if the player registrations haven't opened yet
     if (isDatePast(info.playerRegsOpenAt) && (type || teamSettings || rankRange || bwsValues)) {

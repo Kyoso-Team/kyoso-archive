@@ -1,6 +1,6 @@
 import * as v from 'valibot';
 import { arraysHaveSameElements } from './utils';
-import type { TournamentDates } from '$db';
+import type { Tournament, TournamentDates } from '$db';
 import type { ModMultiplier, TournamentLink, UserFormField } from '$types';
 
 export function parseEnv<T extends v.BaseSchema>(schema: T, env: unknown) {
@@ -23,12 +23,22 @@ export function parseEnv<T extends v.BaseSchema>(schema: T, env: unknown) {
 }
 
 export function tournamentChecks({
+  type,
   teamSettings,
   rankRange
 }: {
+  type: typeof Tournament.$inferSelect['type'];
   teamSettings?: { minTeamSize: number; maxTeamSize: number } | null;
   rankRange?: { lower: number; upper?: number | null } | null;
 }): string | undefined {
+  if (type !== 'solo' && !teamSettings) {
+    return 'Team settings are required for team-based tournaments';
+  }
+
+  if (type === 'solo' && teamSettings) {
+    return 'Team settings can\'t be set for solo tournaments';
+  }
+
   if (teamSettings && teamSettings.minTeamSize > teamSettings.maxTeamSize) {
     return 'The minimum team size must be less than or equal to the maximum';
   }

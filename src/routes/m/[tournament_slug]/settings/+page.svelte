@@ -315,7 +315,11 @@
     const teamSettings = isTeamBased ? teamForm.getFinalValue($teamForm) : undefined;
     const rankRange = !isOpenRank ? rankRangeForm.getFinalValue($rankRangeForm) : undefined;
     const bwsValues = useBWS ? bwsForm.getFinalValue($bwsForm) : undefined;
-    const err = tournamentChecks({ teamSettings, rankRange });
+    const err = tournamentChecks({
+      type: type ?? t.type,
+      teamSettings,
+      rankRange
+    });
 
     if (err) {
       toastError(toast, err);

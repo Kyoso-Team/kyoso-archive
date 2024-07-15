@@ -15,18 +15,31 @@ function errorArray(errorCount: number, successCount: number) {
 describe.concurrent('Check functions', async () => {
   it('Tests tournamentChecks', () => {
     const invalidTeamSettings = tournamentChecks({
+      type: 'teams',
       teamSettings: {
         minTeamSize: 2,
         maxTeamSize: 1
       }
     });
     const invalidRankRange = tournamentChecks({
+      type: 'teams',
       rankRange: {
         lower: 2,
         upper: 1
       }
     });
+    const soloWithTeamSettings = tournamentChecks({
+      type: 'solo',
+      teamSettings: {
+        minTeamSize: 2,
+        maxTeamSize: 2
+      }
+    });
+    const teamsWithoutTeamSettings = tournamentChecks({
+      type: 'teams'
+    });
     const valid1 = tournamentChecks({
+      type: 'teams',
       teamSettings: {
         minTeamSize: 2,
         maxTeamSize: 2
@@ -37,18 +50,20 @@ describe.concurrent('Check functions', async () => {
       }
     });
     const valid2 = tournamentChecks({
+      type: 'solo',
       rankRange: {
         lower: 1
       }
     });
     const valid3 = tournamentChecks({
+      type: 'solo',
       rankRange: {
         lower: 1,
         upper: 2
       }
     });
 
-    expect([invalidRankRange, invalidTeamSettings, valid1, valid2, valid3].map(getTypeOf)).toMatchObject(errorArray(2, 3));
+    expect([invalidRankRange, invalidTeamSettings, soloWithTeamSettings, teamsWithoutTeamSettings, valid1, valid2, valid3].map(getTypeOf)).toMatchObject(errorArray(4, 3));
   });
 
   it('Tests tournamentDatesChecks', () => {
