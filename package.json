@@ -18,7 +18,8 @@
     "db:seed": "tsx scripts/seed/index.ts",
     "db:studio": "npx drizzle-kit studio",
     "db:drop": "npx drizzle-kit drop",
-    "db:dbml": "tsx scripts/dbml.ts"
+    "db:dbml": "tsx scripts/dbml.ts",
+    "test": "npx vitest run"
   },
   "devDependencies": {
     "@skeletonlabs/skeleton": "^2.9.0",

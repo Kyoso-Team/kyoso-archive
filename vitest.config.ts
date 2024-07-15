@@ -16,7 +16,8 @@ export default defineConfig({
       $types: lib('types'),
       $components: lib('components'),
       $trpc: lib('server/trpc'),
-      $db: lib('server/db')
+      $db: lib('server/db'),
+      $tests: `${process.cwd()}/src/tests`
     },
     globalSetup: ['./src/tests/global-setup.ts']
   }

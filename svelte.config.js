@@ -15,7 +15,8 @@ const config = {
       $types: lib('types'),
       $components: lib('components'),
       $trpc: lib('server/trpc'),
-      $db: lib('server/db')
+      $db: lib('server/db'),
+      $tests: `${process.cwd()}/src/tests`
     },
     typescript: {
       config: (config) => {

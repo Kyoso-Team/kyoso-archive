@@ -1,8 +1,8 @@
-import './utils/polyfill';
+import '$tests/utils/polyfill';
 import { describe, expect, it } from 'vitest';
 import { modMultiplierChecks, modMultipliersChecks, tournamentChecks, tournamentDatesChecks, tournamentLinkChecks, tournamentLinksChecks, tournamentOtherDatesChecks, userFormFieldChecks, userFormFieldsChecks } from '$lib/helpers';
-import { futureDate, pastDate } from './utils';
-import { tournamentOtherDateChecks } from '../lib/helpers';
+import { futureDate, pastDate } from '$tests/utils';
+import { tournamentOtherDateChecks } from '$lib/helpers';
 
 function getTypeOf(value: any) {
   return typeof value;

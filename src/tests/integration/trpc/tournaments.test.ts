@@ -1,7 +1,7 @@
-import '../utils/polyfill';
+import '$tests/utils/polyfill';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createCaller } from '../utils/trpc';
-import { createMockUser, truncateTables } from '../utils/db';
+import { createCaller } from '$tests/utils/trpc';
+import { createMockUser, truncateTables } from '$tests/utils/db';
 import { Tournament, User } from '$db';
 import { TRPCError } from '@trpc/server';
 import type { AuthSession } from '$types';
