@@ -15,6 +15,7 @@ jobs:
       ENV: 'development'
       DATABASE_URL: 'postgresql://example:example@localhost:5432/example'
       JWT_SECRET: 'secret'
+      CRON_SECRET: 'secret'
       OWNER: '1'
       TESTERS: '[1]'
       PUBLIC_CONTACT_EMAIL: 'example@example.com'
