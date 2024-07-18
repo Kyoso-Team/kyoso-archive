@@ -19,7 +19,7 @@
     "db:studio": "npx drizzle-kit studio",
     "db:drop": "npx drizzle-kit drop",
     "db:dbml": "tsx scripts/dbml.ts",
-    "test": "npx vitest run",
+    "test": "npx vitest run --config vitest.config.ts",
     "test:components": "npx vitest run --config vitest-components.config.ts"
   },
   "devDependencies": {

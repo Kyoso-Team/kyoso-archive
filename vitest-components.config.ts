@@ -9,6 +9,6 @@ export default defineConfig({
     unstubGlobals: true,
     environment: 'jsdom',
     include: ['**/tests/components/**/*.test.ts'],
-    setupFiles: ['./tests/setup.ts']
+    setupFiles: ['./tests/components-setup.ts']
   }
 });

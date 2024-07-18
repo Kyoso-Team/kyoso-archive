@@ -26,8 +26,8 @@ export const boolStringSchema = v.transform(
 );
 
 export const urlSlugSchema = v.custom(
-  (input: string) => /^[a-z0-9_]+$/g.test(input),
-  'only contain the following characters: "abcdefghijkmnlopqrstuvwxyz0123456789_"'
+  (input: string) => /^[a-z0-9-]+$/g.test(input),
+  'only contain the following characters: "abcdefghijkmnlopqrstuvwxyz0123456789-"'
 );
 
 export const hexColorSchema = v.custom(
