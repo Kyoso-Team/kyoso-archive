@@ -25,7 +25,7 @@
   }
 
   $: {
-    form.setValue(label, value === undefined || value === null ? null : value.trim());
+    form.setValue(label, value === undefined || value === null || value === '' ? null : value.trim());
   }
 
   $: {
@@ -69,6 +69,7 @@
     <input
       type="text"
       class={`input ${error && hasWritten ? 'input-error' : ''}`}
+      aria-label={`input-${label}`}
       {disabled}
       on:input={onInput}
       bind:value
@@ -80,6 +81,6 @@
     </span>
   {/if}
   {#if error && hasWritten}
-    <span class="block text-sm text-error-600" transition:slide={{ duration: 150 }}>{error}.</span>
+    <span class="block text-sm text-error-600" aria-label={`error-${label}`} transition:slide={{ duration: 150 }}>{error}.</span>
   {/if}
 </label>

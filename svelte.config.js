@@ -21,6 +21,7 @@ const config = {
     typescript: {
       config: (config) => {
         config.include.push('../scripts/**/*.ts');
+        config.include.push('./tests/setup.ts');
         return config;
       }
     }
