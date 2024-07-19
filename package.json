@@ -10,7 +10,7 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "prettier --check . && eslint . && npx tsc --noEmit",
     "format": "prettier --plugin-search-dir . --write .",
-    "review": "pnpm format && pnpm lint && pnpm check",
+    "review": "pnpm format && pnpm lint && pnpm check && pnpm test:all",
     "db:generate": "npx drizzle-kit generate",
     "db:generate-custom": "npx drizzle-kit generate --custom",
     "db:migrate": "npx drizzle-kit migrate",
@@ -20,7 +20,8 @@
     "db:drop": "npx drizzle-kit drop",
     "db:dbml": "tsx scripts/dbml.ts",
     "test": "npx vitest run --config vitest.config.ts",
-    "test:components": "npx vitest run --config vitest-components.config.ts"
+    "test:components": "npx vitest run --config vitest-components.config.ts",
+    "test:all": "pnpm test && pnpm test:components"
   },
   "devDependencies": {
     "@skeletonlabs/skeleton": "^2.9.0",

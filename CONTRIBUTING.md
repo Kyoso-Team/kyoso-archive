@@ -55,7 +55,7 @@ Scripts present in the package.json file. Each script must be prepended with `pn
 
 - `lint`: Lints the code.
 - `fmt`: Fromats the code.
-- `review`: Runs `format`, `lint` and `check`, one after the other.
+- `review`: Runs `format`, `lint`, `check` and `test:all` one after the other.
 
 **Database**
 
@@ -72,6 +72,7 @@ Scripts present in the package.json file. Each script must be prepended with `pn
 
 - `test`: Executes unit and integration tests.
 - `test:components`: Executes component tests.
+- `test:all`: Executes all tests (runs the previous commands).
 
 ## Development Environment Setup
 
@@ -267,5 +268,5 @@ Folder: `tests/components`. These test the behavior of UI components and Svelte 
 
 Make sure you do follow these guidelines when submitting a pull request:
 
-- Run `pnpm review` to first format, then lint the project.
+- Run `pnpm review` to first format, then lint and finally test the project.
 - Any pull request must point to the `dev` branch.
