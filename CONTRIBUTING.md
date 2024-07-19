@@ -23,6 +23,11 @@ If you're interested in making a signficant contribution, it's recommended that 
 - [PostgreSQL](https://www.postgresql.org): The database itself
 - [tRPC](https://trpc.io): Backend / API (in most cases)
 
+**Testing**
+
+- [Vitest](https://vitest.dev): Unit and integrations tests
+- [Testing Library (Svelte)](https://testing-library.com): Component tests
+
 **Hosting**
 
 - [Bunny](https://bunny.net): File storage
@@ -60,6 +65,13 @@ Scripts present in the package.json file. Each script must be prepended with `pn
 - `db:reset`: Resets the database schema (deletes all rows, drops all tables, views, functions, triggers, etc.)
 - `db:seed`: Seeds the database, for which it resets the database and reapplies migrations before doing so. **Currently broken, do not use**.
 - `db:studio`: Opens Drizzle Kit Studio, a UI to explore your database.
+- `db:drop`: Drop a migration you specify.
+- `db:dbml`: Generates a DBML file that you can then use to [visualize the schema](https://dbdiagram.io/home).
+
+**Tests**
+
+- `test`: Executes unit and integration tests.
+- `test:components`: Executes component tests.
 
 ## Development Environment Setup
 
@@ -100,6 +112,7 @@ pnpm dev
 | ENV                  | 'production' \| 'testing' \| 'development' |          | Specify the environment to Kyoso.                                                   |
 | DATABASE_URL         | string                                     |          | URL of the Postgres database you wish to use for development.                       |
 | JWT_SECRET           | string                                     |          | Random string as a secret key used to sign JWT tokens.                              |
+| CRON_SECRET          | string                                     |          | Random string as a secret key used to execute cron jobs                             |
 | OWNER                | number                                     |          | osu! user ID of the user who is the owner of the website. Your ID, for development. |
 | TESTERS              | number[]                                   | ✓        | osu! user IDs of the users who are able to provide feedback and test the site       |
 | PUBLIC_CONTACT_EMAIL | string                                     | ✓        | An email address that users can contact for any inquires.                           |
@@ -228,6 +241,27 @@ Structure to follow when writing Svelte components.
 ### Database Queries
 
 Drizzle ORM has two APIs for querying data: core and RQB. When developing for this project, we only use the core API to avoid having confusion as to when to use which. The RQB is also a high-level abstraction, so it can have its limitations, bugs and performance issues compared to core.
+
+## Writing Tests
+
+**Unit Tests**
+
+Folder: `tests/unit`. These test small pieces of code that can also be run in isolation which means it doesn't depend on mocking a ton of data and doesn't depend on some side-effect.
+
+**Integration Tests**
+
+Folder: `tests/integration`. These test large pieces of code that are put together via multiple utils, helpers, database queries, etc. These can include (but not limited to) tRPC procedures and API endpoints.
+
+**Component Tests**
+
+Folder: `tests/components`. These test the behavior of UI components and Svelte stores, and usually, how one interacts with the other. Visual behavior is usually not tested unless its a core part of whatever is being tested.
+
+**What about end-to-end (e2e) tests?** In the current state of this project, e2e tests are not so helpful and are going to be hard to maintain due to design changes being done frequently as of now. Once the UI becomes more stable, we might consider writing e2e tests.
+
+### Other Notes
+
+- Test names must be as clear as possible as to what's being tested.
+- Try to only assert one value per test.
 
 ## Pull Request Requirements
 
