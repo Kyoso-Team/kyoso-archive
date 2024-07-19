@@ -44,7 +44,7 @@ describe('Form components and store', () => {
         expect(value()).toHaveTextContent('abc');
       });
 
-      it('Types a valid value and doesn\'t display an error', async () => {
+      it("Types a valid value and doesn't display an error", async () => {
         await user.type(input(), 'abc');
         expect(error()).not.toBeInTheDocument();
       });

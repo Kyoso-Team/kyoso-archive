@@ -27,7 +27,7 @@ export function tournamentChecks({
   teamSettings,
   rankRange
 }: {
-  type: typeof Tournament.$inferSelect['type'];
+  type: (typeof Tournament.$inferSelect)['type'];
   teamSettings?: { minTeamSize: number; maxTeamSize: number } | null;
   rankRange?: { lower: number; upper?: number | null } | null;
 }): string | undefined {
@@ -36,7 +36,7 @@ export function tournamentChecks({
   }
 
   if (type === 'solo' && teamSettings) {
-    return 'Team settings can\'t be set for solo tournaments';
+    return "Team settings can't be set for solo tournaments";
   }
 
   if (teamSettings && teamSettings.minTeamSize > teamSettings.maxTeamSize) {
@@ -49,19 +49,25 @@ export function tournamentChecks({
 }
 
 export function tournamentDatesChecks(
-  newDates: Partial<Record<
-    Exclude<keyof typeof TournamentDates.$inferSelect, 'other' | 'tournamentId'>,
-    Date | null
-  >>,
-  setDates: Partial<Record<
-    Exclude<keyof typeof TournamentDates.$inferSelect, 'other' | 'tournamentId'>,
-    Date | null
-  >>
+  newDates: Partial<
+    Record<
+      Exclude<keyof typeof TournamentDates.$inferSelect, 'other' | 'tournamentId'>,
+      Date | null
+    >
+  >,
+  setDates: Partial<
+    Record<
+      Exclude<keyof typeof TournamentDates.$inferSelect, 'other' | 'tournamentId'>,
+      Date | null
+    >
+  >
 ): string | undefined {
   const publishedAtTime = (setDates.publishedAt ?? newDates.publishedAt)?.getTime();
   const concludesAtTime = (setDates.concludesAt ?? newDates.concludesAt)?.getTime();
   const playerRegsOpenAtTime = (setDates.playerRegsOpenAt ?? newDates.playerRegsOpenAt)?.getTime();
-  const playerRegsCloseAtTime = (setDates.playerRegsCloseAt ?? newDates.playerRegsCloseAt)?.getTime();
+  const playerRegsCloseAtTime = (
+    setDates.playerRegsCloseAt ?? newDates.playerRegsCloseAt
+  )?.getTime();
   const staffRegsOpenAtTime = (setDates.staffRegsOpenAt ?? newDates.staffRegsOpenAt)?.getTime();
   const staffRegsCloseAtTime = (setDates.staffRegsCloseAt ?? newDates.staffRegsCloseAt)?.getTime();
   const map = new Map<
@@ -169,7 +175,12 @@ function compareArrays(a: any[], b: any[]) {
   return arraysHaveSameElements(a, b);
 }
 
-function identifyDuplicates<T extends Record<string, any>>(items: T[], current: T, by: keyof T, compareExisting?: boolean) {
+function identifyDuplicates<T extends Record<string, any>>(
+  items: T[],
+  current: T,
+  by: keyof T,
+  compareExisting?: boolean
+) {
   const labels = items.map((item) => item[by]);
   const compare = Array.isArray(current[by]) ? compareArrays : compareValues;
   return compareExisting
@@ -207,7 +218,11 @@ export function tournamentLinksChecks(links: TournamentLink[]) {
   }
 }
 
-export function tournamentLinkChecks(allLinks: TournamentLink[], link: TournamentLink, compareExisting?: boolean) {
+export function tournamentLinkChecks(
+  allLinks: TournamentLink[],
+  link: TournamentLink,
+  compareExisting?: boolean
+) {
   if (identifyDuplicates(allLinks, link, 'label', compareExisting)) {
     return `Link labeled "${link.label}" already exists in this tournament`;
   }
@@ -257,7 +272,11 @@ export function userFormFieldsChecks(fields: UserFormField[]) {
   }
 }
 
-export function userFormFieldChecks(allFields: UserFormField[], field: UserFormField, compareExisting?: boolean) {
+export function userFormFieldChecks(
+  allFields: UserFormField[],
+  field: UserFormField,
+  compareExisting?: boolean
+) {
   const { type } = field;
 
   if (

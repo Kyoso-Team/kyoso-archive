@@ -82,10 +82,10 @@ describe.concurrent('Check functions', async () => {
   });
 
   // TODO: Rewrite tests to match the above
-  
+
   // it('Tests tournamentDatesChecks', () => {
   //   const now = new Date();
-  
+
   //   const concludeBeforePublish1 = tournamentDatesChecks({
   //     concludesAt: pastDate
   //   }, {
@@ -114,7 +114,7 @@ describe.concurrent('Check functions', async () => {
   //     publishedAt: pastDate,
   //     staffRegsCloseAt: futureDate
   //   });
-    
+
   //   expect([concludeBeforePublish1, concludeBeforePublish2, publishAfterConclude1, publishAfterConclude2, valid1, valid2].map(getTypeOf)).toMatchObject(errorArray(4, 2));
   // });
 

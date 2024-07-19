@@ -9,7 +9,8 @@ const serverEnv = {
   PUBLIC_OSU_REDIRECT_URI: process.env.PUBLIC_OSU_REDIRECT_URI,
   PUBLIC_DISCORD_CLIENT_ID: process.env.PUBLIC_DISCORD_CLIENT_ID,
   PUBLIC_DISCORD_MAIN_REDIRECT_URI: process.env.PUBLIC_DISCORD_MAIN_REDIRECT_URI,
-  PUBLIC_DISCORD_CHANGE_ACCOUNT_REDIRECT_URI: process.env.PUBLIC_DISCORD_CHANGE_ACCOUNT_REDIRECT_URI,
+  PUBLIC_DISCORD_CHANGE_ACCOUNT_REDIRECT_URI:
+    process.env.PUBLIC_DISCORD_CHANGE_ACCOUNT_REDIRECT_URI,
   PUBLIC_CONTACT_EMAIL: process.env.PUBLIC_CONTACT_EMAIL || 'example@gmail.com',
   // Vitest sets NODE_ENV to 'test', but this is not supported by SvelteKit, so we'll set it to 'development' instead
   NODE_ENV: process.env.NODE_ENV === 'test' ? 'development' : process.env.NODE_ENV,

@@ -25,7 +25,10 @@
   }
 
   $: {
-    form.setValue(label, value === undefined || value === null || value === '' ? null : value.trim());
+    form.setValue(
+      label,
+      value === undefined || value === null || value === '' ? null : value.trim()
+    );
   }
 
   $: {
@@ -81,6 +84,10 @@
     </span>
   {/if}
   {#if error && hasWritten}
-    <span class="block text-sm text-error-600" aria-label={`error-${label}`} transition:slide={{ duration: 150 }}>{error}.</span>
+    <span
+      class="block text-sm text-error-600"
+      aria-label={`error-${label}`}
+      transition:slide={{ duration: 150 }}>{error}.</span
+    >
   {/if}
 </label>

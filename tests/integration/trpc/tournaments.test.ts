@@ -104,7 +104,7 @@ describe('tRPC router: tournaments', async () => {
 
       it('Creates an open rank solo tournament', async () => {
         const tournament = await trpc.tournaments.createTournament({
-          rankRange:  null,
+          rankRange: null,
           teamSettings: null,
           type: 'solo',
           name: 'Solo Tournament',
@@ -116,7 +116,7 @@ describe('tRPC router: tournaments', async () => {
 
       it('Creates an open rank teams tournament', async () => {
         const tournament = await trpc.tournaments.createTournament({
-          rankRange:  null,
+          rankRange: null,
           teamSettings: {
             maxTeamSize: 2,
             minTeamSize: 1
@@ -131,7 +131,7 @@ describe('tRPC router: tournaments', async () => {
 
       it('Creates a rank restricted draft tournament', async () => {
         const tournament = await trpc.tournaments.createTournament({
-          rankRange:  {
+          rankRange: {
             lower: 10000,
             upper: 100000
           },

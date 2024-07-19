@@ -86,7 +86,12 @@ export const serverEnvSchema = v.object({
     'be equal to "production" or "development"'
   ),
   ENV: v.union(
-    [v.literal('production'), v.literal('testing'), v.literal('automatic_testing'), v.literal('development')],
+    [
+      v.literal('production'),
+      v.literal('testing'),
+      v.literal('automatic_testing'),
+      v.literal('development')
+    ],
     'be equal to "production", "testing", "automatic_testing" or "development"'
   ),
   JWT_SECRET: nonEmptyStringSchema,
@@ -353,11 +358,12 @@ const userFormDateTimeFieldSchema = v.union([
   v.object({
     ...baseUserFormDateTimeFieldSchemas,
     validation: v.union([v.literal('between'), v.literal('not-between')]),
-    min: v.nullable(v.number([
-      v.minValue(oldestDatePossible.getTime()),
-      v.maxValue(maxPossibleDate.getTime())
-    ])),
-    max: v.nullable(v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())]))
+    min: v.nullable(
+      v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())])
+    ),
+    max: v.nullable(
+      v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())])
+    )
   })
 ]);
 
