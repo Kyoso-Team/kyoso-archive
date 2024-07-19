@@ -16,6 +16,7 @@ const serverEnv = {
   NODE_ENV: process.env.NODE_ENV === 'test' ? 'development' : process.env.NODE_ENV,
   ENV: process.env.NODE_ENV === 'test' ? 'automatic_testing' : process.env.ENV,
   JWT_SECRET: process.env.JWT_SECRET,
+  CRON_SECRET: process.env.CRON_SECRET,
   OSU_CLIENT_SECRET: process.env.OSU_CLIENT_SECRET,
   DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
   DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
