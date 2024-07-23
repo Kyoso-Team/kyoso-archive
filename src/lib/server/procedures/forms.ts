@@ -27,7 +27,6 @@ import { checkPublicForm, userFormFieldsChecks } from '$lib/helpers';
 import { difference, intersection, isNil } from 'lodash';
 import type { UserFormField } from '$types';
 import { arraysHaveSameElements } from '$lib/utils';
-import { Play } from 'lucide-svelte';
 
 const formSchema = v.object({
   anonymousResponses: v.boolean(),
