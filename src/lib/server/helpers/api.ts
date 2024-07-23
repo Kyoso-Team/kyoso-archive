@@ -1,3 +1,4 @@
+import env from '../env';
 import * as v from 'valibot';
 import { apiError, pick } from '$lib/server/utils';
 import { error } from '@sveltejs/kit';
@@ -217,4 +218,18 @@ export async function parseRequestBody<T extends v.BaseSchema>(
   }
 
   return body as any;
+}
+
+export function validateCronSecret(request: Request) {
+  const header = request.headers.get('authorization');
+
+  if (!header) {
+    error(401, 'No value was provided for authorization header');
+  }
+
+  const authorization = header.split(' ')[1];
+
+  if (authorization[0] !== 'Cron' || authorization !== env.CRON_SECRET) {
+    error(401, 'Invalid authorization header');
+  }
 }

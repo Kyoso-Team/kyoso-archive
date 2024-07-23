@@ -14,7 +14,8 @@ import {
   ENV,
   IPINFO_ACCESS_TOKEN,
   UPSTASH_REDIS_REST_URL,
-  UPSTASH_REDIS_REST_TOKEN
+  UPSTASH_REDIS_REST_TOKEN,
+  CRON_SECRET
 } from '$env/static/private';
 import { clientEnvSchema, clientEnv, nonEmptyStringSchema, parseEnv } from '../env';
 
@@ -30,6 +31,7 @@ const serverEnvSchema = v.object({
     'be equal to "production", "testing" or "development"'
   ),
   JWT_SECRET: nonEmptyStringSchema,
+  CRON_SECRET: nonEmptyStringSchema,
   OSU_CLIENT_SECRET: nonEmptyStringSchema,
   DISCORD_CLIENT_SECRET: nonEmptyStringSchema,
   DISCORD_BOT_TOKEN: nonEmptyStringSchema,
@@ -49,6 +51,7 @@ const serverEnv = {
   NODE_ENV,
   ENV,
   JWT_SECRET,
+  CRON_SECRET,
   OSU_CLIENT_SECRET,
   DISCORD_CLIENT_SECRET,
   DISCORD_BOT_TOKEN,
