@@ -7,6 +7,7 @@ import {
   pgTable,
   serial,
   timestamp,
+  uniqueIndex,
   varchar
 } from 'drizzle-orm/pg-core';
 import { timestampConfig } from './schema-utils';
@@ -91,6 +92,9 @@ export const FormResponse = pgTable(
     indexFormIdSubmittedAt: index('idx_form_response_form_id_submitted_at').on(
       table.formId,
       table.submittedAt
+    ),
+    uniqueIndexSubmittedByUserId: uniqueIndex('udx_form_response_submitted_by_user_id').on(
+      table.submittedByUserId
     )
   })
 );

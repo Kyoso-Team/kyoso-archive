@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS "udx_form_response_submitted_by_user_id" ON "form_response" USING btree ("submitted_by_user_id");

@@ -169,6 +169,13 @@
       "when": 1720929901565,
       "tag": "0023_jittery_molten_man",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1721757378521,
+      "tag": "0024_supreme_marvel_apes",
+      "breakpoints": true
     }
   ]
 }
