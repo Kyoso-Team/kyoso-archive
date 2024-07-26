@@ -237,16 +237,12 @@ export function userFormFieldChecks(field: UserFormField) {
   }
 }
 
-export function checkPublicForm(data: FormUpdateSchemaData): string[] {
-  const errors: string[] = [];
-
+export function checkPublicForm(data: FormUpdateSchemaData): string | undefined {
   if (data.public === false) {
-    errors.push('Public form cannot be unpublished!');
+    return 'Public form cannot be unpublished';
   }
 
-  if (data.anonymousResponses === false) {
-    errors.push('Public form responses cannot be changed to anonymous!');
+  if (data.anonymousResponses) {
+    return 'Public form responses cannot be changed to anonymous';
   }
-
-  return errors;
 }

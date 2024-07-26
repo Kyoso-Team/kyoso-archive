@@ -230,12 +230,12 @@ const updateForm = t.procedure.input(wrap(formUpdateSchema)).mutation(async ({ c
   }
 
   if (form.public) {
-    const errors = checkPublicForm(data);
+    const error = checkPublicForm(data);
 
-    if (errors.length !== 0) {
+    if (error) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
-        message: errors.join('\n')
+        message: error
       });
     }
   }
