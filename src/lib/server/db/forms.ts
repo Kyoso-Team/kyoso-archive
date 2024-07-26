@@ -94,6 +94,7 @@ export const FormResponse = pgTable(
       table.submittedAt
     ),
     uniqueIndexSubmittedByUserId: uniqueIndex('udx_form_response_submitted_by_user_id').on(
+      table.formId,
       table.submittedByUserId
     )
   })
