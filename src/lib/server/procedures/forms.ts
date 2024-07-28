@@ -361,10 +361,6 @@ const deleteForm = t.procedure
           message: 'Tournament staff registrations are closed, form cannot be deleted'
         });
       }
-    } else {
-      throw new TRPCError({
-        code: 'BAD_REQUEST'
-      });
     }
 
     await db
