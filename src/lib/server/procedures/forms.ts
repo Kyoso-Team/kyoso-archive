@@ -18,7 +18,7 @@ import {
 import { isDatePast, pick, trpcUnknownError } from '$lib/server/utils';
 import { positiveIntSchema, userFormFieldResponseSchema, userFormFieldSchema } from '$lib/schemas';
 import { TRPCError } from '@trpc/server';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { getCount } from '$lib/server/helpers/queries';
 import { nonEmptyStringSchema } from '$lib/env';
 import { maxPossibleDate, oldestDatePossible } from '$lib/constants';
@@ -57,13 +57,12 @@ const formUpdateSchema = v.object({
 
 export type FormUpdateSchemaData = Infer<typeof formUpdateSchema>['data'];
 
-const handleTournamentFormUpdate = async (
+const checkTournamentFormUpdate = async (
   ctx: Context,
   input: Infer<typeof formUpdateSchema>,
-  tournamentForm: typeof TournamentForm.$inferSelect
+  formType: Infer<typeof tournamentFormSchema.entries.type>
 ) => {
-  const { formId, data } = input;
-  const { tournamentId, target } = data;
+  const { data } = input;
   const checks = new TRPCChecks({ action: 'update a tournament form' });
   const session = getSession(ctx.cookies, true);
   const staffMember = await getStaffMember(session, data.tournamentId!, true);
@@ -77,6 +76,13 @@ const handleTournamentFormUpdate = async (
 
   checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
+  if (formType === 'staff_registration' && isDatePast(tournament.staffRegsCloseAt)) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Tournament staff registrations are closed, form cannot be updated'
+    });
+  }
+
   if (data.fields) {
     const checksErr = userFormFieldsChecks(data.fields);
 
@@ -87,23 +93,13 @@ const handleTournamentFormUpdate = async (
       });
     }
   }
-
-  await db.transaction(async (tx) => {
-    await tx
-      .update(TournamentForm)
-      .set({
-        tournamentId,
-        target: tournamentForm.type === 'staff_registration' ? 'public' : target
-      })
-      .where(eq(TournamentForm.formId, formId));
-  });
 };
 
 const checkFieldResponseIds = (
   fieldResponses: Record<string, string>[],
   formFields: typeof Form.$inferSelect.fields
 ) => {
-  const fieldResponsesKeys = fieldResponses.map((response) => Object.keys(response)).flat(99);
+  const fieldResponsesKeys = fieldResponses.map((response) => Object.keys(response)).flat(1);
   const formFieldsIds = formFields
     .map((field) => {
       if (!field.deleted) {
@@ -134,7 +130,9 @@ const createForm = t.procedure
         .values({
           ...input
         })
-        .returning()
+        .returning({
+          id: Form.id
+        })
         .then((rows) => rows[0]);
     } catch (err) {
       throw trpcUnknownError(err, 'Creating a form');
@@ -160,28 +158,35 @@ const createTournamentForm = t.procedure
     checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
     if (type === 'staff_registration') {
-      if (tournament.staffRegsCloseAt || isDatePast(tournament.staffRegsCloseAt)) {
+      if (tournament.staffRegsCloseAt && isDatePast(tournament.staffRegsCloseAt)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Tournament staff registration has been concluded, form cannot be created'
+          message: 'Tournament staff registrations are closed, form cannot be created'
         });
       }
     }
 
-    const formsCount = await getCount(TournamentForm, eq(TournamentForm.type, type));
+    const [generalFormsCount, staffRegistrationFormsCount] = await Promise.all([
+      getCount(TournamentForm, eq(TournamentForm.type, 'general')),
+      getCount(TournamentForm, eq(TournamentForm.type, 'staff_registration'))
+    ]);
 
-    if (formsCount === 5) {
+    if (
+      (type === 'general' && generalFormsCount === 5) ||
+      (type === 'staff_registration' && staffRegistrationFormsCount === 5)
+    ) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
         message: 'Tournament can only have up to 5 general/staff registration forms'
       });
     }
 
-    await db.transaction(async (tx) => {
+    return await db.transaction(async (tx) => {
       const form = await tx
         .insert(Form)
         .values({
-          ...formData
+          ...formData,
+          anonymousResponses: type === 'staff_registration' ? false : formData.anonymousResponses
         })
         .returning(pick(Form, ['id']))
         .then((rows) => rows[0]);
@@ -192,13 +197,14 @@ const createTournamentForm = t.procedure
         type,
         target: type === 'staff_registration' ? 'public' : target
       });
+
+      return form;
     });
   });
 
 const updateForm = t.procedure.input(wrap(formUpdateSchema)).mutation(async ({ ctx, input }) => {
   const { formId, data } = input;
   const checks = new TRPCChecks({ action: 'update a form' });
-  checks.partialHasValues(data);
 
   let form: typeof Form.$inferSelect;
   let tournamentForm: typeof TournamentForm.$inferSelect | null;
@@ -221,13 +227,14 @@ const updateForm = t.procedure.input(wrap(formUpdateSchema)).mutation(async ({ c
     throw trpcUnknownError(err, 'Getting forms');
   }
 
-  if (tournamentForm && data.tournamentId) {
-    handleTournamentFormUpdate(ctx, input, tournamentForm);
-  } else {
+  if (form.deletedAt) {
     throw new TRPCError({
-      code: 'BAD_REQUEST'
+      code: 'BAD_REQUEST',
+      message: 'Form is deleted, new responses cannot be submitted'
     });
   }
+
+  checks.partialHasValues(data);
 
   if (form.public) {
     const error = checkPublicForm(data);
@@ -263,14 +270,31 @@ const updateForm = t.procedure.input(wrap(formUpdateSchema)).mutation(async ({ c
       });
     }
   }
+  await db.transaction(async (tx) => {
+    if (tournamentForm && data.tournamentId) {
+      await checkTournamentFormUpdate(ctx, input, tournamentForm.type).then(async () => {
+        await tx
+          .update(TournamentForm)
+          .set({
+            tournamentId: data.tournamentId,
+            target: tournamentForm.type === 'staff_registration' ? 'public' : data.target
+          })
+          .where(eq(TournamentForm.formId, formId));
+      });
+    }
 
-  await db
-    .update(Form)
-    .set({
-      ...data,
-      fields: updatedFormFields ?? undefined
-    })
-    .where(eq(Form.id, formId));
+    await db
+      .update(Form)
+      .set({
+        ...data,
+        fields: updatedFormFields ?? undefined,
+        anonymousResponses:
+          tournamentForm && tournamentForm.type === 'staff_registration'
+            ? false
+            : form.anonymousResponses
+      })
+      .where(eq(Form.id, formId));
+  });
 });
 
 const deleteForm = t.procedure
@@ -278,25 +302,43 @@ const deleteForm = t.procedure
     wrap(
       v.object({
         formId: positiveIntSchema,
-        deletedAt: v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)]),
         tournamentId: v.optional(positiveIntSchema)
       })
     )
   )
   .mutation(async ({ ctx, input }) => {
-    const { formId, tournamentId, deletedAt } = input;
+    const { formId, tournamentId } = input;
 
-    let tournamentForm: typeof TournamentForm.$inferSelect | null;
+    let form: Pick<typeof Form.$inferSelect, 'deletedAt'>;
+    let tournamentForm: Pick<typeof TournamentForm.$inferSelect, 'formId' | 'type'> | null;
 
     try {
+      form = await db
+        .select({
+          ...pick(Form, ['deletedAt'])
+        })
+        .from(Form)
+        .where(eq(Form.id, formId))
+        .limit(1)
+        .then((rows) => rows[0]);
       tournamentForm = await db
-        .select()
+        .select({
+          ...pick(TournamentForm, ['formId', 'type'])
+        })
         .from(TournamentForm)
         .where(eq(TournamentForm.formId, formId))
+        .innerJoin(Form, eq(TournamentForm.formId, Form.id))
         .limit(1)
         .then((rows) => rows[0]);
     } catch (err) {
       throw trpcUnknownError(err, 'Getting forms');
+    }
+
+    if (form.deletedAt) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Form is already deleted'
+      });
     }
 
     if (tournamentForm && tournamentId) {
@@ -312,6 +354,13 @@ const deleteForm = t.procedure
       );
 
       checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
+
+      if (tournamentForm.type === 'staff_registration' && isDatePast(tournament.staffRegsCloseAt)) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Tournament staff registrations are closed, form cannot be deleted'
+        });
+      }
     } else {
       throw new TRPCError({
         code: 'BAD_REQUEST'
@@ -321,7 +370,7 @@ const deleteForm = t.procedure
     await db
       .update(Form)
       .set({
-        deletedAt
+        deletedAt: sql`now()`
       })
       .where(eq(Form.id, formId));
   });
@@ -340,12 +389,14 @@ const submitFormResponse = t.procedure
     const { cookies } = ctx;
     const session = getSession(cookies, true);
 
-    let form: Pick<typeof Form.$inferSelect, 'fields'>;
+    let form: Pick<typeof Form.$inferSelect, 'fields' | 'fieldsWithResponses' | 'closeAt'>;
     let tournamentForm: typeof TournamentForm.$inferSelect | null;
 
     try {
       form = await db
-        .select()
+        .select({
+          ...pick(Form, ['fields', 'fieldsWithResponses', 'closeAt'])
+        })
         .from(Form)
         .where(eq(Form.id, formId))
         .then((rows) => rows[0]);
@@ -357,6 +408,13 @@ const submitFormResponse = t.procedure
         .then((rows) => rows[0]);
     } catch (err) {
       throw trpcUnknownError(err, 'Getting a forms');
+    }
+
+    if (form.closeAt && isDatePast(form.closeAt)) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Form is closed, cannot submit new responses'
+      });
     }
 
     checkFieldResponseIds(fieldsResponses, form.fields);
@@ -373,7 +431,7 @@ const submitFormResponse = t.procedure
       checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
       if (tournamentForm.type === 'staff_registration') {
-        if (tournament.staffRegsCloseAt || isDatePast(tournament.staffRegsCloseAt)) {
+        if (isDatePast(tournament.staffRegsCloseAt)) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
             message: 'Tournament staff registration has been concluded, form cannot be created'
@@ -459,7 +517,11 @@ const submitFormResponse = t.procedure
     }
 
     await db.transaction(async (tx) => {
-      const fieldResponseIds = fieldsResponses.map((response) => Object.keys(response)).flat(99);
+      const fieldResponseIds = fieldsResponses.map((response) => Object.keys(response)).flat();
+
+      const fieldsWithResponses = Array.from(
+        new Set([...form.fieldsWithResponses, ...fieldResponseIds])
+      );
 
       await tx.insert(FormResponse).values({
         formId,
@@ -470,7 +532,7 @@ const submitFormResponse = t.procedure
       await tx
         .update(Form)
         .set({
-          fieldsWithResponses: fieldResponseIds
+          fieldsWithResponses
         })
         .where(eq(Form.id, formId));
     });
