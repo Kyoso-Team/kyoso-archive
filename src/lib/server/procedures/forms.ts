@@ -230,7 +230,7 @@ const updateForm = t.procedure.input(wrap(formUpdateSchema)).mutation(async ({ c
   if (form.deletedAt) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'Form is deleted, new responses cannot be submitted'
+      message: 'Form is deleted, cannot be updated'
     });
   }
 
@@ -283,7 +283,7 @@ const updateForm = t.procedure.input(wrap(formUpdateSchema)).mutation(async ({ c
       });
     }
 
-    await db
+    await tx
       .update(Form)
       .set({
         ...data,
@@ -427,7 +427,7 @@ const submitFormResponse = t.procedure
       checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
       if (tournamentForm.type === 'staff_registration') {
-        if (isDatePast(tournament.staffRegsCloseAt)) {
+        if (tournament.staffRegsCloseAt && isDatePast(tournament.staffRegsCloseAt)) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
             message: 'Tournament staff registration has been concluded, form cannot be created'

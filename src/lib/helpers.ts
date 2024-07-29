@@ -242,7 +242,7 @@ export function checkPublicForm(data: FormUpdateSchemaData): string | undefined 
     return 'Public form cannot be unpublished';
   }
 
-  if (data.anonymousResponses) {
-    return 'Public form responses cannot be changed to anonymous';
+  if (data.anonymousResponses !== undefined) {
+    return 'Form anonymity cannot be changed';
   }
 }
