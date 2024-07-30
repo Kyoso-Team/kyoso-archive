@@ -276,6 +276,28 @@ const deleteStaffRole = t.procedure
     );
     checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
+    let role: Pick<typeof StaffRole.$inferSelect, 'name'>;
+
+    try {
+      role = await db
+        .select({
+          ...pick(StaffRole, ['name'])
+        })
+        .from(StaffRole)
+        .where(eq(StaffRole.id, staffRoleId))
+        .limit(1)
+        .then((rows) => rows[0]);
+    } catch (e) {
+      throw trpcUnknownError(e, 'Getting staff role');
+    }
+
+    if (DEFAULT_ROLES.includes(role.name)) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Cannot delete default role'
+      });
+    }
+
     await db.transaction(async (tx) => {
       const deletedStaffRole = await tx
         .delete(StaffRole)
