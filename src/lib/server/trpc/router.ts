@@ -13,6 +13,7 @@ import {
   staffRolesRouter
 } from '../procedures';
 import type { SQL } from 'drizzle-orm';
+import { staffMembersRouter } from '$lib/server/procedures/staff-members';
 
 const search = t.procedure.input(wrap(v.string([v.minLength(1)]))).query(async ({ ctx, input }) => {
   getSession(ctx.cookies, true);
@@ -114,7 +115,8 @@ export const router = t.router({
   users: usersRouter,
   tournaments: tournamentsRouter,
   notifications: notificationsRouter,
-  staffRoles: staffRolesRouter
+  staffRoles: staffRolesRouter,
+  staffMembers: staffMembersRouter
 });
 
 export type Router = typeof router;

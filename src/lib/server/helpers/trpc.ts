@@ -1,8 +1,9 @@
-import { trpcUnknownError } from '$lib/server/utils';
+import { pick, trpcUnknownError } from '$lib/server/utils';
 import { baseGetSession, baseGetStaffMember, baseGetTournament } from './base';
 import type { AuthSession } from '$types';
 import type { Cookies } from '@sveltejs/kit';
-import type { Tournament, TournamentDates } from '$db';
+import { Ban, db, type Tournament, type TournamentDates } from '$db';
+import { eq } from 'drizzle-orm';
 
 export async function getStaffMember<T extends boolean>(
   session: AuthSession | undefined,
@@ -45,6 +46,17 @@ export async function getTournament<
     },
     tournamentMustExist
   );
+}
+
+export async function isUserBanned(userId: number) {
+  const { id } = await db
+    .select(pick(Ban, ['id']))
+    .from(Ban)
+    .where(eq(Ban.issuedToUserId, userId))
+    .limit(1)
+    .then((rows) => rows[0]);
+
+  return !!id;
 }
 
 export function getSession<T extends boolean>(

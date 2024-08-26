@@ -12,7 +12,7 @@ import { rateLimitMiddleware } from '$trpc/middleware';
 import { getCount } from '../helpers/queries';
 import { arraysHaveSameElements } from '$lib/utils';
 
-const DEFAULT_ROLES = ['Host', 'Debugger'];
+export const DEFAULT_ROLES = ['Host', 'Debugger'];
 
 const DISALLOWED_PROPERTIES = ['name', 'permissions'];
 
