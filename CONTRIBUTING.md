@@ -8,7 +8,7 @@ If you're interested in making a signficant contribution, it's recommended that 
 
 **General Tools**
 
-- [pnpm](https://pnpm.io): Package manager
+- [Bun](https://bun.sh): Package manager, runtime for CI and test runner.
 - [SvelteKit](https://kit.svelte.dev): Full-stack framework
 - [Valibot](https://valibot.dev): Validation library
 
@@ -37,7 +37,7 @@ If you're interested in making a signficant contribution, it's recommended that 
 
 ## Scripts
 
-Scripts present in the package.json file. Each script must be prepended with `pnpm` or `npm run`.
+Scripts present in the package.json file. Each script must be prepended with `bun run`.
 
 **Basic**
 
@@ -66,13 +66,19 @@ Scripts present in the package.json file. Each script must be prepended with `pn
 ### Requisites
 
 - Node.js v18 or greater installed.
-- PNPM latest version installed.
+- Bun latest version installed.
 - Postgres v14 or greater. You can have it hosted on Neon or installed locally.
 - An osu! account with an OAuth app.
 - A Discord account with an OAuth app.
 - Any storage zone hosted on Bunny. **IMPORTANT:** Do not delete your zone once created. If you've just signed up to Bunny, you have a 14 day trial and when that trial expires, you're still able to read and write to your existing zones but you can no longer create new one's.
 - A Redis database on Upstash.
 - An IPInfo account.
+
+If you prefer, you can use the `docker-compose.yml` file to easily spin up a Postgres, Redis and MinIO (S3 solution) instance. This requires having Docker installed.
+
+```bash
+docker-compose -p kyoso-dev up
+```
 
 ### Setup
 
@@ -82,12 +88,9 @@ git clone https://github.com/Kyoso-Team/kyoso.git
 # Change directory
 cd kyoso
 # Install dependencies
-pnpm install
-# Set your environment variables before proceeding
-# Optionally, seed the database
-pnpm db:seed
+bun install
 # Run dev server
-pnpm dev
+bun dev
 ```
 
 ### Environemt Variables
@@ -233,5 +236,5 @@ Drizzle ORM has two APIs for querying data: core and RQB. When developing for th
 
 Make sure you do follow these guidelines when submitting a pull request:
 
-- Run `pnpm review` to first format, then lint the project.
+- Run `bun review` to first format, then lint the project.
 - Any pull request must point to the `dev` branch.
