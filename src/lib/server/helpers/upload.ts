@@ -115,7 +115,11 @@ export async function deleteFile(
   }
 }
 
-export async function getFile(route: { id: string | null }, _folderName: string, _fileName: string) {
+export async function getFile(
+  route: { id: string | null },
+  _folderName: string,
+  _fileName: string
+) {
   let resp!: Response;
 
   try {
