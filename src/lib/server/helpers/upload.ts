@@ -1,6 +1,5 @@
 import * as v from 'valibot';
 import sharp from 'sharp';
-import env from '$lib/server/env';
 import { apiError } from '$lib/server/utils';
 import { error } from '@sveltejs/kit';
 import type { FileType } from '$types';
@@ -84,16 +83,16 @@ export async function transformFile(config: {
   );
 }
 
-export async function uploadFile(route: { id: string | null }, folderName: string, file: File) {
+export async function uploadFile(route: { id: string | null }, _folderName: string, _file: File) {
   try {
-    await fetch(`https://${env.BUNNY_HOSTNAME}/${env.BUNNY_USERNAME}/${folderName}/${file.name}`, {
-      method: 'PUT',
-      headers: {
-        'AccessKey': env.BUNNY_PASSWORD,
-        'content-type': 'application/octet-stream'
-      },
-      body: file
-    });
+    // await fetch(`https://${env.BUNNY_HOSTNAME}/${env.BUNNY_USERNAME}/${folderName}/${file.name}`, {
+    //   method: 'PUT',
+    //   headers: {
+    //     'AccessKey': env.BUNNY_PASSWORD,
+    //     'content-type': 'application/octet-stream'
+    //   },
+    //   body: file
+    // });
   } catch (err) {
     throw await apiError(err, 'Uploading the file', route);
   }
@@ -101,34 +100,34 @@ export async function uploadFile(route: { id: string | null }, folderName: strin
 
 export async function deleteFile(
   route: { id: string | null },
-  folderName: string,
-  fileName: string
+  _folderName: string,
+  _fileName: string
 ) {
   try {
-    await fetch(`https://${env.BUNNY_HOSTNAME}/${env.BUNNY_USERNAME}/${folderName}/${fileName}`, {
-      method: 'DELETE',
-      headers: {
-        AccessKey: env.BUNNY_PASSWORD
-      }
-    });
+    // await fetch(`https://${env.BUNNY_HOSTNAME}/${env.BUNNY_USERNAME}/${folderName}/${fileName}`, {
+    //   method: 'DELETE',
+    //   headers: {
+    //     AccessKey: env.BUNNY_PASSWORD
+    //   }
+    // });
   } catch (err) {
     throw await apiError(err, 'Deleting the file', route);
   }
 }
 
-export async function getFile(route: { id: string | null }, folderName: string, fileName: string) {
+export async function getFile(route: { id: string | null }, _folderName: string, _fileName: string) {
   let resp!: Response;
 
   try {
-    resp = await fetch(
-      `https://${env.BUNNY_HOSTNAME}/${env.BUNNY_USERNAME}/${folderName}/${fileName}`,
-      {
-        headers: {
-          accept: '*/*',
-          AccessKey: env.BUNNY_PASSWORD
-        }
-      }
-    );
+    // resp = await fetch(
+    //   `https://${env.BUNNY_HOSTNAME}/${env.BUNNY_USERNAME}/${folderName}/${fileName}`,
+    //   {
+    //     headers: {
+    //       accept: '*/*',
+    //       AccessKey: env.BUNNY_PASSWORD
+    //     }
+    //   }
+    // );
   } catch (err) {
     throw await apiError(err, 'Getting the file', route);
   }

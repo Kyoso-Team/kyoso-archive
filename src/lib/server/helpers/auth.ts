@@ -199,7 +199,7 @@ export async function createSession(
   route: { id: string | null }
 ) {
   // Get the public IP address of the local machine, if not done, `ipAddress` will be '::1'
-  if (env.ENV === 'development') {
+  if (env.NODE_ENV === 'development') {
     try {
       const resp = await fetch('https://api64.ipify.org');
       ipAddress = await resp.text();
