@@ -65,6 +65,14 @@ module.exports = {
       {
         drizzleObjectName: 'db'
       }
+    ],
+    'no-restricted-imports': [
+      'error', {
+        patterns: [{
+          group: ['drizzle-orm/mysql-core', 'drizzle-orm/sqlite-core'],
+          message: 'This project only uses Postgres.'
+        }]
+      }
     ]
   }
 };
