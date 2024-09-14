@@ -196,7 +196,7 @@ const mainHandle: Handle = async ({ event, resolve }) => {
   const sessionData = await verifySession(event);
   const session = sessionData?.session;
 
-  if (env.ENV === 'testing') {
+  if (env.TEST_ENV === 'manual') {
     const isTester = session?.admin || env.TESTERS.includes(session?.osu.id || 0);
 
     if (url.pathname !== '/testers-auth' && !url.pathname.includes('/api/auth')) {
