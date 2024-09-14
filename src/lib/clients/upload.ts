@@ -1,4 +1,4 @@
-import { displayError } from './utils';
+import { displayError } from '../utils';
 import type { Asset } from '$types';
 import type { ToastStore } from '@skeletonlabs/skeleton';
 

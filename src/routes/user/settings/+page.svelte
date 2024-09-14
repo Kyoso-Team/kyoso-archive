@@ -5,7 +5,7 @@
   import { SEO, FormHandler } from '$components/general';
   import { Backdrop, Modal } from '$components/layout';
   import { Osu, Discord } from '$components/icons';
-  import { trpc } from '$lib/trpc';
+  import { trpc } from '$lib/clients';
   import { page } from '$app/stores';
   import { createForm, loading } from '$stores';
   import { getToastStore } from '@skeletonlabs/skeleton';

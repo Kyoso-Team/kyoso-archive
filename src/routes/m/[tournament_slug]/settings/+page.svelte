@@ -24,7 +24,7 @@
   } from '$lib/utils';
   import { createForm, createFunctionQueue, loading } from '$stores';
   import { dragHandleZone } from 'svelte-dnd-action';
-  import { trpc } from '$lib/trpc';
+  import { trpc } from '$lib/clients';
   import { Modal, Backdrop } from '$components/layout';
   import { tournamentChecks, tournamentDatesChecks } from '$lib/helpers';
   import { flip } from 'svelte/animate';

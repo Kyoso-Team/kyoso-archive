@@ -4,7 +4,7 @@
   import { page } from '$app/stores';
   import { portal } from 'svelte-portal';
   import { Backdrop, Modal, UploadImgModal } from '$components/layout';
-  import { createUploadClient } from '$lib/upload';
+  import { createUploadClient } from '$lib/clients';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { invalidate } from '$app/navigation';
   import { toastSuccess } from '$lib/utils';

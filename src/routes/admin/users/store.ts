@@ -1,6 +1,6 @@
 import { get, writable } from 'svelte/store';
 import { pushState } from '$app/navigation';
-import { trpc } from '$lib/trpc';
+import { trpc } from '$lib/clients';
 import { page } from '$app/stores';
 import { displayError } from '$lib/utils';
 import { loading } from '$stores';

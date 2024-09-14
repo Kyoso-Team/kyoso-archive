@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as f from '$lib/form-validation';
-  import { trpc } from '$lib/trpc';
+  import { trpc } from '$lib/clients';
   import { page } from '$app/stores';
   import { invalidate } from '$app/navigation';
   import { getToastStore } from '@skeletonlabs/skeleton';

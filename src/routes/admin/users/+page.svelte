@@ -12,7 +12,7 @@
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { onDestroy, onMount } from 'svelte';
   import { loading } from '$stores';
-  import { trpc } from '$lib/trpc';
+  import { trpc } from '$lib/clients';
   import { invalidate } from '$app/navigation';
   import { browser } from '$app/environment';
   import { Search } from 'lucide-svelte';

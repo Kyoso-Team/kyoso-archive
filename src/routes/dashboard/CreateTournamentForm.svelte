@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { trpc } from '$lib/trpc';
+  import { trpc } from '$lib/clients';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { getToastStore } from '@skeletonlabs/skeleton';

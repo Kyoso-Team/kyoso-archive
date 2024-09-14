@@ -10,7 +10,7 @@
   import { displayError, formatDate, formatNumber, toastSuccess, tooltip } from '$lib/utils';
   import { popup } from '$lib/popup';
   import { loading } from '$stores';
-  import { trpc } from '$lib/trpc';
+  import { trpc } from '$lib/clients';
   import { page } from '$app/stores';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { invalidate } from '$app/navigation';
