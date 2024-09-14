@@ -20,7 +20,7 @@ import {
   S3_ACCESS_KEY_ID,
   S3_SECRET_ACCESS_KEY
 } from '$env/static/private';
-import { clientEnvSchema, clientEnv, nonEmptyStringSchema, parseEnv } from '../env';
+import { clientEnvSchema, clientEnv, nonEmptyStringSchema, parseEnv } from './env';
 
 const serverEnvSchema = v.object({
   ...clientEnvSchema.entries,

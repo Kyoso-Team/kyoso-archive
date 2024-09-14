@@ -1,4 +1,4 @@
-import env from '$lib/server/env';
+import env from '$lib/env.server';
 import { buildUrl } from 'osu-web.js';
 import { error, redirect } from '@sveltejs/kit';
 import { getSession } from '$lib/server/helpers/api';

@@ -1,4 +1,4 @@
-import env from '$lib/server/env';
+import env from '$lib/env.server';
 import { StaffMember, StaffMemberRole, StaffRole, Tournament, TournamentDates, db } from '$db';
 import { and, eq } from 'drizzle-orm';
 import { pick, verifyJWT } from '$lib/server/utils';

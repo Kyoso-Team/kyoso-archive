@@ -1,4 +1,4 @@
-import env from '$lib/server/env';
+import env from '$lib/env.server';
 import { Ban, DiscordUser, OsuUser, User, db } from '$db';
 import { and, count, countDistinct, eq, isNull, or, sql } from 'drizzle-orm';
 import { apiError, future, pick } from '$lib/server/utils';

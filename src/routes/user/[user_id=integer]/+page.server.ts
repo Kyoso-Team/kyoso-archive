@@ -1,4 +1,4 @@
-import env from '$lib/server/env';
+import env from '$lib/env.server';
 import { apiError, future, pick } from '$lib/server/utils';
 import { and, desc, eq, isNotNull, isNull, or } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';

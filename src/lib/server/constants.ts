@@ -1,4 +1,4 @@
-import env from '$lib/server/env';
+import env from '$lib/env.server';
 import DiscordOauth2 from 'discord-oauth2';
 import { Auth } from 'osu-web.js';
 

@@ -1,4 +1,4 @@
-import env from '../env';
+import env from '../../env.server';
 import * as v from 'valibot';
 import { apiError, pick } from '$lib/server/utils';
 import { error } from '@sveltejs/kit';

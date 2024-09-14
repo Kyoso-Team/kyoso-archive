@@ -18,15 +18,6 @@ module.exports = {
     es2017: true,
     node: true
   },
-  overrides: [
-    {
-      files: ['*.svelte'],
-      parser: 'svelte-eslint-parser',
-      parserOptions: {
-        parser: '@typescript-eslint/parser'
-      }
-    }
-  ],
   rules: {
     'quotes': [
       'warn',
@@ -74,5 +65,27 @@ module.exports = {
         }]
       }
     ]
-  }
+  },
+  overrides: [
+    {
+      files: ['*.svelte'],
+      parser: 'svelte-eslint-parser',
+      parserOptions: {
+        parser: '@typescript-eslint/parser'
+      }
+    },
+    {
+      files: ['src/lib/*(!(*.server)).ts'],
+      rules: {
+        'no-restricted-imports': [
+          'error', {
+            patterns: [{
+              group: ['*.server'],
+              message: 'This is a server only module.'
+            }]
+          }
+        ]
+      }
+    }
+  ]
 };

@@ -1,4 +1,4 @@
-import env from '$lib/server/env';
+import env from '$lib/env.server';
 import jwt from 'jsonwebtoken';
 import postgres from 'postgres';
 import { error } from '@sveltejs/kit';

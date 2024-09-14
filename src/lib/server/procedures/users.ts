@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import env from '../env';
+import env from '../../env.server';
 import {
   Ban,
   Country,

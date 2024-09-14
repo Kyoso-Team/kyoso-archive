@@ -1,4 +1,4 @@
-import env from '$lib/server/env';
+import env from '$lib/env.server';
 import { getSession } from '$lib/server/helpers/api';
 import { redis } from '$lib/server/redis';
 import type { LayoutServerLoad } from './$types';
