@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
+  import * as f from '$lib/form/validation';
   import { SelectMultiple, Form } from '$components/form';
   import { createForm, loading } from '$stores';
   import { displayError, keys, toastSuccess } from '$lib/utils';

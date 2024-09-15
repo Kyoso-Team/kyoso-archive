@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
+  import * as f from '$lib/form/validation';
   import { Form, Text, Select, DateOnly, DateTime, Section } from '$components/form';
   import { createForm } from '$stores';
   import { keys, sortByKey, toastError } from '$lib/utils';

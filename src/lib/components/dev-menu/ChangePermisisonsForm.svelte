@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
+  import * as f from '$lib/form/validation';
   import { Checkbox, Form } from '$components/form';
   import { createForm, loading } from '$stores';
   import { displayError, toastSuccess } from '$lib/utils';

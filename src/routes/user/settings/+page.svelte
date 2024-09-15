@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
+  import * as f from '$lib/form/validation';
   import Session from './Session.svelte';
   import { Checkbox } from '$components/form';
   import { SEO, FormHandler } from '$components/general';

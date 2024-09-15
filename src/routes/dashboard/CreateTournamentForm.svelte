@@ -11,7 +11,7 @@
     baseTournamentFormSchemas,
     baseTeamSettingsFormSchemas,
     rankRangeFormSchemas
-  } from '$lib/constants';
+  } from '$lib/form/common';
   import { tournamentChecks } from '$lib/helpers';
   import type { TRPCRouterIO } from '$types';
 

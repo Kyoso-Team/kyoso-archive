@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
+  import * as f from '$lib/form/validation';
   import OtherDate from './OtherDate.svelte';
   import Link from './Link.svelte';
   import ModMultiplier from './ModMultiplier.svelte';
@@ -34,7 +34,7 @@
     rankRangeFormSchemas,
     baseTeamSettingsFormSchemas,
     tournamentTypeOptions
-  } from '$lib/constants';
+  } from '$lib/form/common';
   import type { RefereeSettings, TRPCRouterIO } from '$types';
   import type { PageServerData } from './$types';
 

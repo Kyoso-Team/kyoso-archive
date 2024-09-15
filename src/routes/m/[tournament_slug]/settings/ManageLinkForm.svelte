@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
+  import * as f from '$lib/form/validation';
   import { Link } from 'lucide-svelte';
   import { Form, Text, Select } from '$components/form';
   import { createForm } from '$stores';
