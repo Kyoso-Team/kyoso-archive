@@ -3,7 +3,7 @@ import { env } from '$lib/server/env';
 import { error } from '@sveltejs/kit';
 import { getSession, parseRequestBody } from '$lib/server/helpers/api';
 import { positiveIntSchema } from '$lib/schemas';
-import { db } from '$lib/services';
+import { db } from '$lib/server/services';
 import { Ban, DiscordUser, OsuUser, Session, User } from '$db';
 import { and, eq, isNull, or, sql } from 'drizzle-orm';
 import { apiError, future, pick, signJWT } from '$lib/server/utils';

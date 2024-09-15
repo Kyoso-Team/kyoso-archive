@@ -3,7 +3,7 @@ import { apiError, future, pick } from '$lib/server/utils';
 import { and, desc, eq, isNotNull, isNull, or } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import { alias } from 'drizzle-orm/pg-core';
-import { db } from '$lib/services';
+import { db } from '$lib/server/services';
 import { Ban, Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, User } from '$db';
 import { getUserPlayerHistory, getUserStaffHistory } from '$lib/server/helpers/queries';
 import { paginate } from '$lib/utils';

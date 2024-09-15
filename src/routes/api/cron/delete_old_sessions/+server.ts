@@ -1,4 +1,4 @@
-import { db } from '$lib/services';
+import { db } from '$lib/server/services';
 import { Session } from '$db';
 import { validateCronSecret } from '$lib/server/helpers/api';
 import { apiError } from '$lib/server/utils';

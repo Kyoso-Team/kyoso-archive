@@ -3,7 +3,7 @@ import { env } from '$lib/server/env';
 import { error } from '@sveltejs/kit';
 import { getSession, getStaffMember, parseRequestBody } from '$lib/server/helpers/api';
 import { StaffPermission } from '$db';
-import { redis } from '$lib/services';
+import { redis } from '$lib/server/services';
 import { positiveIntSchema } from '$lib/schemas';
 import type { RequestHandler } from './$types';
 

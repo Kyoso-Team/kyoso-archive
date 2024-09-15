@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { discordChangeAccountAuth } from '$lib/services';
+import { discordChangeAccountAuth } from '$lib/server/services';
 import { getSession } from '$lib/server/helpers/api';
 import type { RequestHandler } from './$types';
 

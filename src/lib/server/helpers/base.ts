@@ -4,7 +4,7 @@ import { and, eq } from 'drizzle-orm';
 import { pick, verifyJWT } from '$lib/server/utils';
 import { error } from '@sveltejs/kit';
 import { TRPCError } from '@trpc/server';
-import { redis, db } from '$lib/services';
+import { redis, db } from '$lib/server/services';
 import type { Cookies } from '@sveltejs/kit';
 import type { AuthSession, InferEnum, OnServerError, Simplify } from '$types';
 import type { StaffPermission } from '$db';

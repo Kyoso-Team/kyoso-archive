@@ -1,4 +1,4 @@
-import { db } from '$lib/services';
+import { db } from '$lib/server/services';
 import { StaffMember, Tournament, TournamentDates } from '$db';
 import { and, eq, or, sql, isNull } from 'drizzle-orm';
 import { future, pick } from '$lib/server/utils';

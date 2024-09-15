@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { db } from '$lib/services';
+import { db } from '$lib/server/services';
 import {
   StaffMember,
   StaffMemberRole,

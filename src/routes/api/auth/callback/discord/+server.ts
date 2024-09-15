@@ -1,7 +1,7 @@
 import { env } from '$lib/server/env';
 import { error, redirect } from '@sveltejs/kit';
 import { apiError, pick, signJWT, verifyJWT } from '$lib/server/utils';
-import { db, discordMainAuth, discordMainAuthOptions } from '$lib/services';
+import { db, discordMainAuth, discordMainAuthOptions } from '$lib/server/services';
 import { User } from '$db';
 import { createSession, upsertDiscordUser } from '$lib/server/helpers/auth';
 import { getSession } from '$lib/server/helpers/api';

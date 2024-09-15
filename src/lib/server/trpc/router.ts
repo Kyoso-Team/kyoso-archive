@@ -2,7 +2,7 @@ import * as v from 'valibot';
 import { t } from '$trpc';
 import { wrap } from '@typeschema/valibot';
 import { getSession } from '$lib/server/helpers/trpc';
-import { db } from '$lib/services';
+import { db } from '$lib/server/services';
 import { Ban, OsuUser, Tournament, User } from '$db';
 import { and, asc, eq, isNull, notExists, or, sql } from 'drizzle-orm';
 import { future, pick, trgmSearch, trpcUnknownError } from '$lib/server/utils';

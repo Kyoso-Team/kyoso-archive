@@ -5,7 +5,7 @@ import { getSession, parseRequestBody } from '$lib/server/helpers/api';
 import { User } from '$db';
 import { eq } from 'drizzle-orm';
 import { apiError, signJWT } from '$lib/server/utils';
-import { redis, db } from '$lib/services';
+import { redis, db } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 import type { AuthSession } from '$types';
 

@@ -1,5 +1,5 @@
 import platform from 'platform';
-import { db } from '$lib/services';
+import { db } from '$lib/server/services';
 import { Session, User } from '$db';
 import { apiError, pick } from '$lib/server/utils';
 import { and, desc, eq, not } from 'drizzle-orm';

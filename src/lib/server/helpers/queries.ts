@@ -1,4 +1,4 @@
-import { db } from '$lib/services';
+import { db } from '$lib/server/services';
 import {
   Notification,
   Player,

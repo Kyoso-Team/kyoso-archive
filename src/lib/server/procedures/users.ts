@@ -1,6 +1,6 @@
 import * as v from 'valibot';
 import { env } from '$lib/server/env';
-import { db } from '$lib/services';
+import { db } from '$lib/server/services';
 import {
   Ban,
   Country,

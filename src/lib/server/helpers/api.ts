@@ -3,7 +3,7 @@ import { env } from '$lib/server/env';
 import { apiError, pick } from '$lib/server/utils';
 import { error } from '@sveltejs/kit';
 import { baseGetSession, baseGetStaffMember, baseGetTournament } from './base';
-import { db } from '$lib/services';
+import { db } from '$lib/server/services';
 import {
   Notification,
   OsuUser,

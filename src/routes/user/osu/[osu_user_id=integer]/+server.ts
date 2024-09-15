@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import { pick, apiError } from '$lib/server/utils';
-import { db } from '$lib/services';
+import { db } from '$lib/server/services';
 import { User } from '$db';
 import { eq } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
