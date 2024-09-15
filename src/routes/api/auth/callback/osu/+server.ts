@@ -1,9 +1,8 @@
 import { env } from '$lib/env-server';
 import { error, redirect } from '@sveltejs/kit';
 import { apiError, signJWT, pick, future } from '$lib/server/utils';
-import { discordMainAuth, osuAuth } from '$lib/server/constants';
 import { upsertOsuUser, createSession } from '$lib/server/helpers/auth';
-import { db } from '$lib/services';
+import { db, osuAuth, discordMainAuth } from '$lib/services';
 import { Ban, DiscordUser, OsuUser, User } from '$db';
 import { and, eq, isNull, or, sql } from 'drizzle-orm';
 import { getSession } from '$lib/server/helpers/api';
