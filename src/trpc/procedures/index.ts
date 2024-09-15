@@ -5,7 +5,7 @@ import { getSession } from '$lib/server/helpers/trpc';
 import { Ban, OsuUser, Tournament, User } from '$db';
 import { and, asc, eq, isNull, notExists, or, sql } from 'drizzle-orm';
 import { future, pick, trgmSearch, trpcUnknownError } from '$lib/server/utils';
-import { setSimilarityThreshold } from '$lib/server/helpers/queries';
+import { setSimilarityThreshold } from '$lib/server/queries';
 import type { SQL } from 'drizzle-orm';
 
 export const search = trpc.procedure

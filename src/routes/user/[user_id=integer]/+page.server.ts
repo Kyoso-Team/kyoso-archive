@@ -5,7 +5,7 @@ import { error } from '@sveltejs/kit';
 import { alias } from 'drizzle-orm/pg-core';
 import { db } from '$lib/server/services';
 import { Ban, Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, User } from '$db';
-import { getUserPlayerHistory, getUserStaffHistory } from '$lib/server/helpers/queries';
+import { getUserPlayerHistory, getUserStaffHistory } from '$lib/server/queries';
 import { paginate } from '$lib/utils';
 import type { PageServerLoad } from './$types';
 

@@ -8,6 +8,8 @@ import { Ban, DiscordUser, OsuUser, Session, User } from '$db';
 import { and, eq, isNull, or, sql } from 'drizzle-orm';
 import { apiError, future, pick, signJWT } from '$lib/server/utils';
 import { createSession } from '$lib/server/helpers/auth';
+import { recordExists } from '$lib/server/queries';
+import { catcher } from '$lib/server/error';
 import type { RequestHandler } from './$types';
 import type { AuthSession } from '$types';
 
@@ -30,26 +32,10 @@ export const PUT = (async ({ cookies, route, getClientAddress, request }) => {
     error(400, '"User-Agent" header is undefined');
   }
 
-  let isBanned!: boolean;
-
-  try {
-    isBanned = await db
-      .execute(
-        sql`
-    select exists (
-      select 1 from ${Ban}
-      where ${and(
-        eq(Ban.issuedToUserId, body.userId),
-        and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
-      )}
-      limit 1
-    )
-  `
-      )
-      .then((bans) => !!bans[0]?.exists);
-  } catch (err) {
-    throw await apiError(err, "Verifying the user to impersonate's ban status", route);
-  }
+  const isBanned = await recordExists(Ban, and(
+    eq(Ban.issuedToUserId, body.userId),
+    and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
+  )).catch(catcher('api', 'Verifying the user to impersonate\'s ban status'));
 
   if (isBanned) {
     error(403, 'The user you want to impersonate is banned');
@@ -102,7 +88,7 @@ export const PUT = (async ({ cookies, route, getClientAddress, request }) => {
     throw await apiError(err, 'Getting the user to impersonate', route);
   }
 
-  const newSession = await createSession(body.userId, getClientAddress(), userAgent, route);
+  const newSession = await createSession('api', body.userId, getClientAddress(), userAgent);
 
   const authSession: AuthSession = {
     sessionId: newSession.id,

@@ -10,7 +10,7 @@ import { TRPCError } from '@trpc/server';
 import { getSession, getStaffMember, getTournament } from '$lib/server/helpers/trpc';
 import { TRPCChecks } from '$lib/server/helpers/checks';
 import { rateLimitMiddleware } from '$trpc/middleware';
-import { getCount } from '$lib/server/helpers/queries';
+import { getCount } from '$lib/server/queries';
 import { arraysHaveSameElements } from '$lib/utils';
 
 const DEFAULT_ROLES = ['Host', 'Debugger'];

@@ -11,7 +11,7 @@ import {
   parseFormData,
   transformFile,
   uploadFile
-} from '$lib/server/helpers/upload';
+} from '$lib/server/upload';
 import { getSession, getStaffMember, parseSearchParams } from '$lib/server/helpers/api';
 import { convertBytes, formatDigits, hasPermissions } from '$lib/utils';
 import type { RequestHandler } from './$types';

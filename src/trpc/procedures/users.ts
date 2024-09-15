@@ -33,6 +33,7 @@ import { rateLimitMiddleware } from '$trpc/middleware';
 import { TRPCChecks } from '$lib/server/helpers/checks';
 import { catcher, error } from '$lib/server/error';
 import type { SQL } from 'drizzle-orm';
+import { recordExists } from '$lib/server/queries';
 
 const getUser = trpc.procedure
   .use(rateLimitMiddleware)
@@ -604,34 +605,16 @@ const banUser = trpc.procedure
     const session = getSession(ctx.cookies, true);
     checks.userIsAdmin(session);
 
-    let hasActiveBan!: boolean;
-
-    try {
-      hasActiveBan = await db
-        .execute(
-          sql`
-              select exists (select 1
-                             from ${Ban}
-                             where ${and(
-                               eq(Ban.issuedToUserId, issuedToUserId),
-                               and(
-                                 isNull(Ban.revokedAt),
-                                 or(isNull(Ban.liftAt), future(Ban.liftAt))
-                               )
-                             )}
-                             limit 1)
-          `
-        )
-        .then((bans) => !!bans[0]?.exists);
-    } catch (err) {
-      throw trpcUnknownError(err, "Verifying the user's ban status");
-    }
+    const hasActiveBan = await recordExists(Ban, and(
+      eq(Ban.issuedToUserId, issuedToUserId),
+      and(
+        isNull(Ban.revokedAt),
+        or(isNull(Ban.liftAt), future(Ban.liftAt))
+      )
+    )).catch(catcher('trpc', 'Verifying the user\'s ban status'));
 
     if (hasActiveBan) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'User is already banned'
-      });
+      error('trpc', 'forbidden', 'User is already banned');
     }
 
     let user: Pick<typeof User.$inferSelect, 'admin' | 'osuUserId'> | undefined;
