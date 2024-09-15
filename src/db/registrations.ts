@@ -14,14 +14,7 @@ import {
   uniqueIndex,
   varchar
 } from 'drizzle-orm/pg-core';
-import {
-  InviteReason,
-  InviteStatus,
-  StaffColor,
-  StaffPermission,
-  Tournament,
-  User
-} from '.';
+import { InviteReason, InviteStatus, StaffColor, StaffPermission, Tournament, User } from '.';
 import { timestampConfig, uniqueConstraints } from './constants';
 import { sql } from 'drizzle-orm';
 

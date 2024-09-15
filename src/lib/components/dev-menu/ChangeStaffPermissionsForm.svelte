@@ -4,7 +4,7 @@
   import { createForm, loading } from '$stores';
   import { displayError, keys, toastSuccess } from '$lib/utils';
   import { invalidateAll } from '$app/navigation';
-  import { staffPermissionsOptions } from '$lib/constants';
+  import { staffPermissionsOptions } from '$lib/form/common';
   import type { ToastStore } from '@skeletonlabs/skeleton';
   import type { InferEnum } from '$types';
   import type { StaffPermission } from '$db';

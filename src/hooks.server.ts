@@ -4,7 +4,14 @@ import { createTRPCHandle } from 'trpc-sveltekit';
 import { logError, apiError, verifyJWT, pick, signJWT } from '$lib/server/utils';
 import { redirect, error } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
-import { db, ratelimit, osuAuth, discordMainAuth, discordMainAuthOptions, createTRPCContext } from '$lib/server/services';
+import {
+  db,
+  ratelimit,
+  osuAuth,
+  discordMainAuth,
+  discordMainAuthOptions,
+  createTRPCContext
+} from '$lib/server/services';
 import { Session, DiscordUser, OsuUser, User } from '$db';
 import { and, eq, not, sql } from 'drizzle-orm';
 import { unionAll } from 'drizzle-orm/pg-core';

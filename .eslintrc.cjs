@@ -58,11 +58,14 @@ module.exports = {
       }
     ],
     'no-restricted-imports': [
-      'error', {
-        patterns: [{
-          group: ['drizzle-orm/mysql-core', 'drizzle-orm/sqlite-core'],
-          message: 'This project only uses Postgres.'
-        }]
+      'error',
+      {
+        patterns: [
+          {
+            group: ['drizzle-orm/mysql-core', 'drizzle-orm/sqlite-core'],
+            message: 'This project only uses Postgres.'
+          }
+        ]
       }
     ]
   },
@@ -75,15 +78,23 @@ module.exports = {
       }
     },
     {
-      files: ['src/lib/*.ts', 'src/lib/(actions|clients|components|stores)/*.ts', 'src/**/*.svelte', 'src/routes/**/!(+page.server|+server|+layout.server).ts'],
+      files: [
+        'src/lib/*.ts',
+        'src/lib/(actions|clients|components|stores)/*.ts',
+        'src/**/*.svelte',
+        'src/routes/**/!(+page.server|+server|+layout.server).ts'
+      ],
       rules: {
         '@typescript-eslint/no-restricted-imports': [
-          'error', {
-            patterns: [{
-              group: ['**/server', '**/server/**/*', '$trpc/**/*', '$db/**/*'],
-              message: 'This is a server only module. Type imports are allowed though.',
-              allowTypeImports: true
-            }]
+          'error',
+          {
+            patterns: [
+              {
+                group: ['**/server', '**/server/**/*', '$trpc/**/*', '$db/**/*'],
+                message: 'This is a server only module. Type imports are allowed though.',
+                allowTypeImports: true
+              }
+            ]
           }
         ]
       }

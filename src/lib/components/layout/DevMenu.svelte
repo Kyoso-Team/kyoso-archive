@@ -15,7 +15,7 @@
     setModeCurrent,
     setModeUserPrefers
   } from '@skeletonlabs/skeleton';
-  import { staffPermissionsOptions } from '$lib/constants';
+  import { staffPermissionsOptions } from '$lib/form/common';
   import { toastError } from '$lib/utils';
   import { devMenuCtx } from '$stores';
 
