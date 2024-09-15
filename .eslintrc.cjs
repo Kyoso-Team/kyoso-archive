@@ -75,12 +75,12 @@ module.exports = {
       }
     },
     {
-      files: ['src/lib/*(!(*.server)).ts'],
+      files: ['src/lib/*(!(*.server)).ts', 'src/routes/**/*.svelte', 'src/routes/**/!(+page.server|+server|+layout.server).ts'],
       rules: {
         'no-restricted-imports': [
           'error', {
             patterns: [{
-              group: ['*.server'],
+              group: ['**/env-server', '**/services/**/*', '**/services'],
               message: 'This is a server only module.'
             }]
           }

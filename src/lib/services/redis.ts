@@ -1,4 +1,4 @@
-import env from '$lib/env.server';
+import { env } from '$lib/env-server';
 import { Redis } from '@upstash/redis';
 
 export const redis = new Redis({

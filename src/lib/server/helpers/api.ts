@@ -1,16 +1,16 @@
-import env from '../../env.server';
 import * as v from 'valibot';
+import { env } from '$lib/env-server';
 import { apiError, pick } from '$lib/server/utils';
 import { error } from '@sveltejs/kit';
 import { baseGetSession, baseGetStaffMember, baseGetTournament } from './base';
+import { db } from '$lib/services';
 import {
   Notification,
   OsuUser,
   Tournament,
   TournamentDates,
   User,
-  UserNotification,
-  db
+  UserNotification
 } from '$db';
 import { desc, eq, inArray } from 'drizzle-orm';
 import type { Cookies } from '@sveltejs/kit';

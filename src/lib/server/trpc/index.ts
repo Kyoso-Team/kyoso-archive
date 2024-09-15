@@ -1,5 +1,5 @@
-import env from '$lib/env.server';
 import superjson from 'superjson';
+import { env } from '$lib/env-server';
 import { initTRPC } from '@trpc/server';
 import type { Context } from '$trpc/context';
 

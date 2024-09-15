@@ -1,7 +1,8 @@
 import * as v from 'valibot';
 import { error } from '@sveltejs/kit';
 import { generateFileId, past, pick, apiError, future } from '$lib/server/utils';
-import { Tournament, db, TournamentDates } from '$db';
+import { db } from '$lib/services';
+import { Tournament, TournamentDates } from '$db';
 import { and, eq, isNotNull, isNull, or } from 'drizzle-orm';
 import { boolStringSchema, fileIdSchema, fileSchema, positiveIntSchema } from '$lib/schemas';
 import {

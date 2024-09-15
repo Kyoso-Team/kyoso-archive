@@ -1,3 +1,4 @@
+import { db } from '$lib/services';
 import {
   Notification,
   Player,
@@ -7,8 +8,7 @@ import {
   Team,
   Tournament,
   TournamentDates,
-  UserNotification,
-  db
+  UserNotification
 } from '$db';
 import { and, count, desc, eq, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import { future, past, pick } from '$lib/server/utils';

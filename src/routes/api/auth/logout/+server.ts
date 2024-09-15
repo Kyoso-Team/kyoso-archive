@@ -1,6 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import { apiError } from '$lib/server/utils';
-import { Session, db } from '$db';
+import { db } from '$lib/services';
+import { Session } from '$db';
 import { eq } from 'drizzle-orm';
 import { getSession } from '$lib/server/helpers/api';
 import type { RequestHandler } from './$types';

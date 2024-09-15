@@ -75,5 +75,5 @@ const serverEnv = {
   S3_SECRET_ACCESS_KEY
 };
 
-const env = parseEnv(serverEnvSchema, serverEnv);
-export default env;
+export const env = parseEnv(serverEnvSchema, serverEnv);
+

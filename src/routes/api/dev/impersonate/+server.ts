@@ -1,9 +1,10 @@
 import * as v from 'valibot';
-import env from '$lib/env.server';
+import { env } from '$lib/env-server';
 import { error } from '@sveltejs/kit';
 import { getSession, parseRequestBody } from '$lib/server/helpers/api';
 import { positiveIntSchema } from '$lib/schemas';
-import { Ban, DiscordUser, OsuUser, Session, User, db } from '$db';
+import { db } from '$lib/services';
+import { Ban, DiscordUser, OsuUser, Session, User } from '$db';
 import { and, eq, isNull, or, sql } from 'drizzle-orm';
 import { apiError, future, pick, signJWT } from '$lib/server/utils';
 import { createSession } from '$lib/server/helpers/auth';

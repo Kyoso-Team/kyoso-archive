@@ -1,6 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
 import { apiError, signJWT } from '$lib/server/utils';
-import { User, db } from '$db';
+import { db } from '$lib/services';
+import { User } from '$db';
 import { discordChangeAccountAuth, discordChangeAccountAuthOptions } from '$lib/server/constants';
 import { upsertDiscordUser } from '$lib/server/helpers/auth';
 import { eq } from 'drizzle-orm';

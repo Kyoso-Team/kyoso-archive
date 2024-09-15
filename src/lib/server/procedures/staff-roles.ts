@@ -1,7 +1,8 @@
 import * as v from 'valibot';
 import { t } from '$trpc';
 import { wrap } from '@typeschema/valibot';
-import { db, StaffColor, StaffPermission, StaffRole, uniqueConstraints } from '$db';
+import { db } from '$lib/services';
+import { StaffColor, StaffPermission, StaffRole, uniqueConstraints } from '$db';
 import { and, eq, gt, inArray, sql } from 'drizzle-orm';
 import { catchUniqueConstraintError$, pick, trpcUnknownError } from '$lib/server/utils';
 import { positiveIntSchema } from '$lib/schemas';

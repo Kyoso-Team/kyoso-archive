@@ -1,9 +1,9 @@
 import * as v from 'valibot';
-import env from '$lib/env.server';
+import { env } from '$lib/env-server';
 import { error } from '@sveltejs/kit';
 import { getSession, getStaffMember, parseRequestBody } from '$lib/server/helpers/api';
 import { StaffPermission } from '$db';
-import { redis } from '$lib/server/redis';
+import { redis } from '$lib/services';
 import { positiveIntSchema } from '$lib/schemas';
 import type { RequestHandler } from './$types';
 

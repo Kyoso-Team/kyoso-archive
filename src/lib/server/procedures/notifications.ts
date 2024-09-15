@@ -1,5 +1,6 @@
 import * as v from 'valibot';
-import { db, UserNotification } from '$db';
+import { db } from '$lib/services';
+import { UserNotification } from '$db';
 import { t } from '$trpc';
 import { trpcUnknownError } from '$lib/server/utils';
 import { wrap } from '@typeschema/valibot';

@@ -1,4 +1,5 @@
-import { db, Session } from '$db';
+import { db } from '$lib/services';
+import { Session } from '$db';
 import { validateCronSecret } from '$lib/server/helpers/api';
 import { apiError } from '$lib/server/utils';
 import { and, eq, lte, sql } from 'drizzle-orm';

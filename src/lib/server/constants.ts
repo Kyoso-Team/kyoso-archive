@@ -1,5 +1,5 @@
-import env from '$lib/env.server';
 import DiscordOauth2 from 'discord-oauth2';
+import { env } from '$lib/env-server';
 import { Auth } from 'osu-web.js';
 
 // export const firsBlogPostTimestmap = 1_687_721_464_000;

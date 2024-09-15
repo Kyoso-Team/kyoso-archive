@@ -1,6 +1,6 @@
-import env from '$lib/env.server';
 import jwt from 'jsonwebtoken';
 import postgres from 'postgres';
+import { env } from '$lib/env-server';
 import { error } from '@sveltejs/kit';
 import { isOsuJSError } from 'osu-web.js';
 import { TRPCError } from '@trpc/server';

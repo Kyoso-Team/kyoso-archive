@@ -1,6 +1,6 @@
-import env from '$lib/env.server';
+import { env } from '$lib/env-server';
 import { getSession } from '$lib/server/helpers/api';
-import { redis } from '$lib/server/redis';
+import { redis } from '$lib/services';
 import type { LayoutServerLoad } from './$types';
 
 export const load = (async ({ cookies }) => {

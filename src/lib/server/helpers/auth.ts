@@ -1,5 +1,6 @@
-import env from '$lib/env.server';
-import { Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, Session, db } from '$db';
+import { env } from '$lib/env-server';
+import { db } from '$lib/services';
+import { Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, Session } from '$db';
 import { discordMainAuth } from '../constants';
 import { pick, apiError } from '$lib/server/utils';
 import { Client } from 'osu-web.js';

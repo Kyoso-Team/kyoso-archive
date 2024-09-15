@@ -1,10 +1,10 @@
-import env from '$lib/env.server';
-import { StaffMember, StaffMemberRole, StaffRole, Tournament, TournamentDates, db } from '$db';
+import { env } from '$lib/env-server';
+import { StaffMember, StaffMemberRole, StaffRole, Tournament, TournamentDates } from '$db';
 import { and, eq } from 'drizzle-orm';
 import { pick, verifyJWT } from '$lib/server/utils';
 import { error } from '@sveltejs/kit';
 import { TRPCError } from '@trpc/server';
-import { redis } from '$lib/server/redis';
+import { redis, db } from '$lib/services';
 import type { Cookies } from '@sveltejs/kit';
 import type { AuthSession, InferEnum, OnServerError, Simplify } from '$types';
 import type { StaffPermission } from '$db';

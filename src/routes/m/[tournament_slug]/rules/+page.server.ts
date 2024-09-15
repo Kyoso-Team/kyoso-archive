@@ -1,6 +1,7 @@
 import { hasPermissions } from '$lib/utils';
 import { error } from '@sveltejs/kit';
-import { db, Tournament } from '$db';
+import { db } from '$lib/services';
+import { Tournament } from '$db';
 import { apiError, pick } from '$lib/server/utils';
 import { eq } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';

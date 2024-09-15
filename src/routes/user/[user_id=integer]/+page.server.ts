@@ -1,12 +1,13 @@
-import env from '$lib/env.server';
+import { env } from '$lib/env-server';
 import { apiError, future, pick } from '$lib/server/utils';
 import { and, desc, eq, isNotNull, isNull, or } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import { alias } from 'drizzle-orm/pg-core';
-import { Ban, Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, User, db } from '$db';
-import type { PageServerLoad } from './$types';
+import { db } from '$lib/services';
+import { Ban, Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, User } from '$db';
 import { getUserPlayerHistory, getUserStaffHistory } from '$lib/server/helpers/queries';
 import { paginate } from '$lib/utils';
+import type { PageServerLoad } from './$types';
 
 type UserT = Pick<
   typeof User.$inferSelect,
