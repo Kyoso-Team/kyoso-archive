@@ -9,8 +9,8 @@ import {
   timestamp,
   varchar
 } from 'drizzle-orm/pg-core';
-import { timestampConfig } from './schema-utils';
-import { Tournament, TournamentFormTarget, TournamentFormType, User } from './schema';
+import { timestampConfig } from './constants';
+import { Tournament, TournamentFormTarget, TournamentFormType, User } from '.';
 import { sql } from 'drizzle-orm';
 import type { UserFormField, UserFormFieldResponse } from '$types';
 

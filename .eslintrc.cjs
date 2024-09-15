@@ -80,7 +80,7 @@ module.exports = {
         '@typescript-eslint/no-restricted-imports': [
           'error', {
             patterns: [{
-              group: ['**/server', '**/server/**/*', '$trpc/**/*'],
+              group: ['**/server', '**/server/**/*', '$trpc/**/*', '$db/**/*'],
               message: 'This is a server only module. Type imports are allowed though.',
               allowTypeImports: true
             }]

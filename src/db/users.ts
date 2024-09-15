@@ -15,7 +15,7 @@ import {
   uniqueIndex,
   varchar
 } from 'drizzle-orm/pg-core';
-import { timestampConfig } from './schema-utils';
+import { timestampConfig } from './constants';
 import { sql } from 'drizzle-orm';
 import type { OAuthToken, UserSettings } from '$types';
 

@@ -13,7 +13,7 @@ const config = {
       $types: `${cwd}/src/lib/types`,
       $components: `${cwd}/src/lib/components`,
       $trpc: `${cwd}/src/trpc`,
-      $db: `${cwd}/src/lib/server/db`
+      $db: `${cwd}/src/db`
     }
   }
 };

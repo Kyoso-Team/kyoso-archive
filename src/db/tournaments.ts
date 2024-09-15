@@ -13,8 +13,8 @@ import {
   uniqueIndex,
   varchar
 } from 'drizzle-orm/pg-core';
-import { RoundType, TournamentType } from './schema';
-import { timestampConfig, uniqueConstraints } from './schema-utils';
+import { RoundType, TournamentType } from '.';
+import { timestampConfig, uniqueConstraints } from './constants';
 import { sql } from 'drizzle-orm';
 import type {
   BWSValues,

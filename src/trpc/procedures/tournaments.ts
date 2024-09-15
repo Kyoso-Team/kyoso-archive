@@ -5,9 +5,11 @@ import {
   StaffMemberRole,
   StaffRole,
   Tournament,
-  TournamentDates,
-  uniqueConstraints
+  TournamentDates
 } from '$db';
+import {
+  uniqueConstraints
+} from '$db/constants';
 import { catchUniqueConstraintError$, pick, trpcUnknownError } from '$lib/server/utils';
 import { wrap } from '@typeschema/valibot';
 import { getSession, getStaffMember, getTournament } from '../../lib/server/helpers/trpc';

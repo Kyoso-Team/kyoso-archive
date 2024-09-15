@@ -21,8 +21,8 @@ import {
   StaffPermission,
   Tournament,
   User
-} from './schema';
-import { timestampConfig, uniqueConstraints } from './schema-utils';
+} from '.';
+import { timestampConfig, uniqueConstraints } from './constants';
 import { sql } from 'drizzle-orm';
 
 /* In a tournament, order 1-5 are reserved as follows:
