@@ -1,4 +1,4 @@
-import colors from 'tailwindcss/colors';
+//import colors from 'tailwindcss/colors';
 import { TRPCClientError } from '@trpc/client';
 import { loading } from '$stores';
 import type { ToastStore } from '@skeletonlabs/skeleton';
@@ -8,10 +8,10 @@ import type { StaffPermission } from '$db';
 /**
  * Tailwind's default colors as a record
  */
-export const twColors = colors as unknown as Record<
-  string,
-  Record<string, 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900>
->;
+// export const twColors = colors as unknown as Record<
+//   string,
+//   Record<string, 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900>
+// >;
 
 /**
  * ```plain

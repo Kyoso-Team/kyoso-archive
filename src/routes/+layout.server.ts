@@ -3,7 +3,7 @@ import { getSession } from '$lib/server/helpers/api';
 import { redis } from '$lib/server/services';
 import type { LayoutServerLoad } from './$types';
 
-export const load = (async ({ cookies }) => {
+export const load = (async ({ cookies, route }) => {
   const session = getSession(cookies);
   let isUserOwner = env.OWNER === session?.osu?.id;
 

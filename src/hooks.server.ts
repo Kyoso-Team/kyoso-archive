@@ -1,7 +1,8 @@
+import postgres from 'postgres';
 import { env } from '$lib/server/env';
 import { router } from '$trpc/router';
 import { createTRPCHandle } from 'trpc-sveltekit';
-import { logError, apiError, verifyJWT, pick, signJWT } from '$lib/server/utils';
+import { apiError, verifyJWT, pick, signJWT } from '$lib/server/utils';
 import { redirect, error } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import {
@@ -16,19 +17,64 @@ import { Session, DiscordUser, OsuUser, User } from '$db';
 import { and, eq, not, sql } from 'drizzle-orm';
 import { unionAll } from 'drizzle-orm/pg-core';
 import { upsertDiscordUser, upsertOsuUser } from '$lib/server/helpers/auth';
+import { ServerError } from '$lib/server/error';
+import { TRPCError } from '@trpc/server';
+import { isOsuJSError } from 'osu-web.js';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { Token } from 'osu-web.js';
-import type { Cookies } from '@sveltejs/kit';
-import type { Handle, RequestEvent } from '@sveltejs/kit';
+import type { Cookies, HandleServerError, Handle, RequestEvent } from '@sveltejs/kit';
 import type { AuthSession } from '$types';
+
+async function logError(err: unknown, when: string, from: string | null) {
+  let message = 'Unknown error';
+  let osuJSResp: Response | undefined;
+  let query: string | undefined;
+  let queryParams: any[] | undefined;
+
+  if (isOsuJSError(err)) {
+    message = err.message;
+
+    if (err.type === 'unexpected_response') {
+      osuJSResp = err.response();
+    }
+  } else if (err instanceof postgres.PostgresError) {
+    message = err.message;
+    query = err.query;
+    queryParams = err.parameters;
+  }
+
+  message = `${message}. Error thrown when: ${when}`;
+  console.error(`${new Date().toUTCString()} - ${from} - ${message}`);
+
+  if (message.includes('Unknown error')) {
+    console.log(err);
+  }
+
+  if (osuJSResp) {
+    const data = await osuJSResp.text();
+    console.log(`${osuJSResp.status} response from osu.js: ${data}`);
+  }
+
+  if (query && queryParams) {
+    console.log(`Database query: ${query}`);
+    console.log(`Query parameters: ${JSON.stringify(queryParams)}`);
+  }
+}
 
 const trpcHandle = createTRPCHandle({
   router,
   createContext: createTRPCContext,
   onError: async ({ error, path }) => {
-    if (error.code === 'INTERNAL_SERVER_ERROR') {
-      await logError(error.cause, error.message.split('when: ')[1], `trpc.${path}`);
+    const serverError = error.cause instanceof ServerError ? error.cause : undefined;
+
+    if (!serverError) {
+      console.error('Unhandled error in tRPC procedure');
+      console.error(error);
+      return;
     }
+
+    if (!serverError.cause) return;
+    await logError(serverError.cause, serverError.message.split('when: ')[1], `trpc.${path}`);
   }
 });
 
@@ -239,3 +285,23 @@ const mainHandle: Handle = async ({ event, resolve }) => {
 };
 
 export const handle = sequence(trpcHandle, mainHandle);
+
+export const handleError: HandleServerError = async ({ error, event }) => {
+  if (!(error instanceof ServerError) && !(error instanceof TRPCError)) {
+    console.error(error);
+    return { message: 'Unknown error' };
+  }
+
+  if (error instanceof TRPCError) {
+    if (error.cause) {
+      return { message: error.message };
+    }
+
+    return { message: 'MESSAGE FOR DEVELOPERS: Please use the `error` function to throw expected errors and `catcher` or `unknownServerError` to throw unexpected errors in tRPC procedures.' };
+  }
+
+  const route = event.route.id ?? 'unknown-route';
+  const inside = error.inside === 'api' ? '(inside API route)' : error.inside === 'layout' ? '(during layout load)' : '(during page load)';
+  await logError(error.cause, error.message.split('when: ')[1], `${route} ${inside}`);
+  return { message: error.message };
+};
