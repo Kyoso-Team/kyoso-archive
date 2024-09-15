@@ -1,4 +1,4 @@
-import { env } from '$lib/env-server';
+import { env } from '$lib/server/env';
 import { Auth } from 'osu-web.js';
 
 export const osuAuth = new Auth(

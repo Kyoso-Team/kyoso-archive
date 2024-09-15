@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { env } from '$lib/env-server';
+import { env } from '$lib/server/env';
 import { db } from '$lib/services';
 import {
   Ban,

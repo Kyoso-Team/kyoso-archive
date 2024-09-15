@@ -1,4 +1,4 @@
-import { env } from '$lib/env-server';
+import { env } from '$lib/server/env';
 import { error, redirect } from '@sveltejs/kit';
 import { apiError, pick, signJWT, verifyJWT } from '$lib/server/utils';
 import { db, discordMainAuth, discordMainAuthOptions } from '$lib/services';

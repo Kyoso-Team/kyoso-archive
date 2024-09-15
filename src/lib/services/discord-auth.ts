@@ -1,5 +1,5 @@
 import DiscordOauth2 from 'discord-oauth2';
-import { env } from '$lib/env-server';
+import { env } from '$lib/server/env';
 
 export const discordMainAuthOptions = {
   clientId: env.PUBLIC_DISCORD_CLIENT_ID,

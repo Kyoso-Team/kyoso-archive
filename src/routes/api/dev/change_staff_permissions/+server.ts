@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { env } from '$lib/env-server';
+import { env } from '$lib/server/env';
 import { error } from '@sveltejs/kit';
 import { getSession, getStaffMember, parseRequestBody } from '$lib/server/helpers/api';
 import { StaffPermission } from '$db';

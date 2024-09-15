@@ -1,4 +1,4 @@
-import { env } from '$lib/env-server';
+import { env } from '$lib/server/env';
 import { db, discordMainAuth } from '$lib/services';
 import { Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, Session } from '$db';
 import { pick, apiError } from '$lib/server/utils';

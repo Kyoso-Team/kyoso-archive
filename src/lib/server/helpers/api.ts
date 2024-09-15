@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { env } from '$lib/env-server';
+import { env } from '$lib/server/env';
 import { apiError, pick } from '$lib/server/utils';
 import { error } from '@sveltejs/kit';
 import { baseGetSession, baseGetStaffMember, baseGetTournament } from './base';

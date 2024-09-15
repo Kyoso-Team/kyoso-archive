@@ -1,4 +1,4 @@
-import { env } from '$lib/env-server';
+import { env } from '$lib/server/env';
 import { hasPermissions, isDateFuture } from '$lib/utils';
 import { error } from '@sveltejs/kit';
 import { TRPCError } from '@trpc/server';
