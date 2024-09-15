@@ -77,11 +77,12 @@ module.exports = {
     {
       files: ['src/lib/*.ts', 'src/lib/(actions|clients|components|stores)/*.ts', 'src/**/*.svelte', 'src/routes/**/!(+page.server|+server|+layout.server).ts'],
       rules: {
-        'no-restricted-imports': [
+        '@typescript-eslint/no-restricted-imports': [
           'error', {
             patterns: [{
               group: ['**/server', '**/server/**/*'],
-              message: 'This is a server only module.'
+              message: 'This is a server only module. Type imports are allowed though.',
+              allowTypeImports: true
             }]
           }
         ]
