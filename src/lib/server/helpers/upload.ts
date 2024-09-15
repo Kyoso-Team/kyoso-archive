@@ -1,22 +1,14 @@
 import * as v from 'valibot';
 import sharp from 'sharp';
-import { apiError } from '$lib/server/utils';
-import { error } from '@sveltejs/kit';
-import type { FileType } from '$types';
+import { unexpectedServerError, error, catcher } from '$lib/server/error';
+import type { FileType, UnexpectedErrorInside } from '$types';
 
 export async function parseFormData<T extends Record<string, v.BaseSchema>>(
   request: Request,
-  route: { id: string | null },
+  inside: UnexpectedErrorInside,
   schemas: T
 ): Promise<{ [K in keyof T]: v.Output<T[K]> }> {
-  let fd!: FormData;
-
-  try {
-    fd = await request.formData();
-  } catch (err) {
-    error(400, "Body is malformed or isn't form data");
-  }
-
+  const fd = await request.formData().catch(catcher(inside, "Body is malformed or isn't form data"));
   const data: Record<string, any> = {};
   let currentKey = '';
 
@@ -29,9 +21,9 @@ export async function parseFormData<T extends Record<string, v.BaseSchema>>(
   } catch (err) {
     if (err instanceof v.ValiError) {
       const issue = (v.flatten(err.issues).root || [])[0];
-      error(400, `Invalid input: body.${currentKey} should ${issue}`);
+      error('sveltekit', 'bad_request', `Invalid input: body.${currentKey} should ${issue}`);
     } else {
-      throw await apiError(err, 'Parsing the form data', route);
+      unexpectedServerError(err, inside, 'Parsing the form data');
     }
   }
 
@@ -55,7 +47,7 @@ export async function transformFile(config: {
 
   if (validations?.maxSize && config.file.size > validations.maxSize) {
     const bytes = new Intl.NumberFormat('us-US').format(validations.maxSize);
-    error(413, `File is too large. Size limit is of ${bytes} bytes`);
+    error('sveltekit', 'payload_too_large', `File is too large. Limit is of ${bytes} bytes`);
   }
 
   if (validations?.types) {
@@ -63,7 +55,7 @@ export async function transformFile(config: {
     const extension = splitName[splitName.length - 1];
 
     if (!validations.types.find((type) => type === extension)) {
-      error(400, `You can't upload .${extension} files`);
+      error('sveltekit', 'bad_request', `Can't upload .${extension} files`);
     }
   }
 
@@ -83,7 +75,7 @@ export async function transformFile(config: {
   );
 }
 
-export async function uploadFile(route: { id: string | null }, _folderName: string, _file: File) {
+export async function uploadFile(_route: { id: string | null }, _folderName: string, _file: File) {
   try {
     // await fetch(`https://${env.BUNNY_HOSTNAME}/${env.BUNNY_USERNAME}/${folderName}/${file.name}`, {
     //   method: 'PUT',
@@ -93,13 +85,13 @@ export async function uploadFile(route: { id: string | null }, _folderName: stri
     //   },
     //   body: file
     // });
-  } catch (err) {
-    throw await apiError(err, 'Uploading the file', route);
+  } catch {
+    //throw await apiError(err, 'Uploading the file', route);
   }
 }
 
 export async function deleteFile(
-  route: { id: string | null },
+  _route: { id: string | null },
   _folderName: string,
   _fileName: string
 ) {
@@ -110,41 +102,41 @@ export async function deleteFile(
     //     AccessKey: env.BUNNY_PASSWORD
     //   }
     // });
-  } catch (err) {
-    throw await apiError(err, 'Deleting the file', route);
+  } catch {
+    // throw await apiError(err, 'Deleting the file', route);
   }
 }
 
 export async function getFile(
-  route: { id: string | null },
+  _route: { id: string | null },
   _folderName: string,
   _fileName: string
 ) {
   let resp!: Response;
 
-  try {
-    // resp = await fetch(
-    //   `https://${env.BUNNY_HOSTNAME}/${env.BUNNY_USERNAME}/${folderName}/${fileName}`,
-    //   {
-    //     headers: {
-    //       accept: '*/*',
-    //       AccessKey: env.BUNNY_PASSWORD
-    //     }
-    //   }
-    // );
-  } catch (err) {
-    throw await apiError(err, 'Getting the file', route);
-  }
+  // try {
+  //   resp = await fetch(
+  //     `https://${env.BUNNY_HOSTNAME}/${env.BUNNY_USERNAME}/${folderName}/${fileName}`,
+  //     {
+  //       headers: {
+  //         accept: '*/*',
+  //         AccessKey: env.BUNNY_PASSWORD
+  //       }
+  //     }
+  //   );
+  // } catch (err) {
+  //   throw await apiError(err, 'Getting the file', route);
+  // }
 
-  if (resp.status === 404) {
-    error(404, 'File not found');
-  }
+  // if (resp.status === 404) {
+  //   error(404, 'File not found');
+  // }
 
-  if (!resp.ok) {
-    const baseMsg = 'Unexpected response from Bunny.net';
-    console.log(`${baseMsg}: ${await resp.text()}`);
-    error(resp.status as any, baseMsg);
-  }
+  // if (!resp.ok) {
+  //   const baseMsg = 'Unexpected response from Bunny.net';
+  //   console.log(`${baseMsg}: ${await resp.text()}`);
+  //   error(resp.status as any, baseMsg);
+  // }
 
   return await resp.blob();
 }

@@ -1,12 +1,12 @@
 import jwt from 'jsonwebtoken';
 import postgres from 'postgres';
 import { env } from '$lib/server/env';
-import { error } from '@sveltejs/kit';
-import { isOsuJSError } from 'osu-web.js';
-import { TRPCError } from '@trpc/server';
 import { customAlphabet } from 'nanoid';
 import { SQL, gt, lte, sql } from 'drizzle-orm';
 import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
+import { logError } from './log-error';
+import { error } from '@sveltejs/kit';
+import { TRPCError } from '@trpc/server';
 
 export function signJWT<T>(data: T) {
   return jwt.sign(data as string | object | Buffer, env.JWT_SECRET, {
@@ -137,47 +137,13 @@ export function pick<
   return Object.fromEntries(map) as Pick<T, F>;
 }
 
-export async function logError(err: unknown, when: string, from: string | null) {
-  let message = 'Unknown error';
-  let osuJSResp: Response | undefined;
-  let query: string | undefined;
-  let queryParams: any[] | undefined;
-
-  if (isOsuJSError(err)) {
-    message = err.message;
-
-    if (err.type === 'unexpected_response') {
-      osuJSResp = err.response();
-    }
-  } else if (err instanceof postgres.PostgresError) {
-    message = err.message;
-    query = err.query;
-    queryParams = err.parameters;
-  }
-
-  message = `${message}. Error thrown when: ${when}`;
-  console.error(`${new Date().toUTCString()} - ${from} - ${message}`);
-
-  if (message.includes('Unknown error')) {
-    console.log(err);
-  }
-
-  if (osuJSResp) {
-    const data = await osuJSResp.text();
-    console.log(`${osuJSResp.status} response from osu.js: ${data}`);
-  }
-
-  if (query && queryParams) {
-    console.log(`Database query: ${query}`);
-    console.log(`Query parameters: ${JSON.stringify(queryParams)}`);
-  }
-}
-
+/** @deprecated */
 export async function apiError(err: unknown, when: string, route: { id: string | null }) {
   await logError(err, when, route.id);
   error(500, `Internal server error. Error thrown when: ${when}`);
 }
 
+/** @deprecated */
 export function trpcUnknownError(err: unknown, when: string) {
   return new TRPCError({
     code: 'INTERNAL_SERVER_ERROR',

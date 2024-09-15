@@ -1,27 +1,23 @@
 import { env } from '$lib/server/env';
 import { db, discordMainAuth } from '$lib/server/services';
 import { Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, Session } from '$db';
-import { pick, apiError } from '$lib/server/utils';
+import { pick } from '$lib/server/utils';
 import { Client } from 'osu-web.js';
 import { eq, inArray } from 'drizzle-orm';
+import { catcher } from '$lib/server/error';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { Token } from 'osu-web.js';
+import type { UnexpectedErrorInside } from '$types';
 
 export async function upsertDiscordUser(
+  inside: UnexpectedErrorInside,
   token: DiscordOAuth2.TokenRequestResult,
   tokenIssuedAt: Date,
-  route: { id: string | null },
   update?: {
     discordUserId: string;
   }
 ) {
-  let user!: Awaited<ReturnType<DiscordOAuth2['getUser']>>;
-
-  try {
-    user = await discordMainAuth.getUser(token.access_token);
-  } catch (err) {
-    throw await apiError(err, "Getting the user's Discord data", route);
-  }
+  const user = await discordMainAuth.getUser(token.access_token).catch(catcher(inside, "Getting the user's Discord data"));
 
   const set = {
     username: user.username,
@@ -32,69 +28,54 @@ export async function upsertDiscordUser(
     }
   } satisfies Partial<typeof DiscordUser.$inferInsert>;
 
-  try {
-    if (update?.discordUserId) {
-      await db
-        .update(DiscordUser)
-        .set(set)
-        .where(eq(DiscordUser.discordUserId, update.discordUserId));
-    } else {
-      await db
-        .insert(DiscordUser)
-        .values({
-          ...set,
-          discordUserId: user.id
-        })
-        .onConflictDoUpdate({
-          target: [DiscordUser.discordUserId],
-          set
-        });
-    }
-  } catch (err) {
-    throw await apiError(
-      err,
-      `${update ? 'Updating' : 'Upserting'} the user's Discord data`,
-      route
-    );
+  if (update?.discordUserId) {
+    await db
+      .update(DiscordUser)
+      .set(set)
+      .where(eq(DiscordUser.discordUserId, update.discordUserId))
+      .catch(catcher(inside, 'Updating the user\'s Discord data'));
+  } else {
+    await db
+      .insert(DiscordUser)
+      .values({
+        ...set,
+        discordUserId: user.id
+      })
+      .onConflictDoUpdate({
+        target: [DiscordUser.discordUserId],
+        set
+      })
+      .catch(catcher(inside, 'Upserting the user\'s Discord data'));
   }
 
   return user;
 }
 
 export async function upsertOsuUser(
+  inside: UnexpectedErrorInside,
   token: Token,
   tokenIssuedAt: Date,
-  route: { id: string | null },
   update?: {
     osuUserId: number;
   }
 ) {
   const osu = new Client(token.access_token);
-  let user!: Awaited<ReturnType<Client['users']['getSelf']>>;
+  const user = await osu.users.getSelf({
+    urlParams: {
+      mode: 'osu'
+    }
+  }).catch(catcher(inside, 'Getting the user\'s osu! data'));
 
-  try {
-    user = await osu.users.getSelf({
-      urlParams: {
-        mode: 'osu'
-      }
-    });
-  } catch (err) {
-    throw await apiError(err, "Getting the user's osu! data", route);
-  }
-
-  try {
-    await db
-      .insert(Country)
-      .values({
-        code: user.country.code,
-        name: user.country.name
-      })
-      .onConflictDoNothing({
-        target: [Country.code]
-      });
-  } catch (err) {
-    throw await apiError(err, "Creating the user's country", route);
-  }
+  await db
+    .insert(Country)
+    .values({
+      code: user.country.code,
+      name: user.country.name
+    })
+    .onConflictDoNothing({
+      target: [Country.code]
+    })
+    .catch(catcher(inside, 'Creating the user\'s country'));
 
   const badges: (typeof OsuBadge.$inferInsert)[] = user.badges.map((badge) => ({
     description: badge.description,
@@ -102,23 +83,18 @@ export async function upsertOsuUser(
   }));
 
   if (badges.length > 0) {
-    try {
-      await db
-        .insert(OsuBadge)
-        .values(badges)
-        .onConflictDoNothing({
-          target: [OsuBadge.imgFileName]
-        });
-    } catch (err) {
-      throw await apiError(err, "Creating the user's badges", route);
-    }
+    await db
+      .insert(OsuBadge)
+      .values(badges)
+      .onConflictDoNothing({
+        target: [OsuBadge.imgFileName]
+      })
+      .catch(catcher(inside, 'Creating the user\'s badges'));
   }
 
-  let dbBadges: Pick<typeof OsuBadge.$inferSelect, 'id' | 'imgFileName'>[] = [];
-
-  if (badges.length > 0) {
-    try {
-      dbBadges = await db
+  const dbBadges = badges.length > 0
+    ? (
+       await db
         .select(pick(OsuBadge, ['id', 'imgFileName']))
         .from(OsuBadge)
         .where(
@@ -126,11 +102,10 @@ export async function upsertOsuUser(
             OsuBadge.imgFileName,
             badges.map(({ imgFileName }) => imgFileName)
           )
-        );
-    } catch (err) {
-      throw await apiError(err, "Creating the user's badges", route);
-    }
-  }
+        )
+        .catch(catcher(inside, 'Getting the user\'s badges'))
+    )
+    : [];
 
   const set = {
     countryCode: user.country.code,
@@ -147,23 +122,21 @@ export async function upsertOsuUser(
     }
   } satisfies Partial<typeof OsuUser.$inferInsert>;
 
-  try {
-    if (update?.osuUserId) {
-      await db.update(OsuUser).set(set).where(eq(OsuUser.osuUserId, update.osuUserId));
-    } else {
-      await db
-        .insert(OsuUser)
-        .values({
-          ...set,
-          osuUserId: user.id
-        })
-        .onConflictDoUpdate({
-          target: [OsuUser.osuUserId],
-          set
-        });
-    }
-  } catch (err) {
-    throw await apiError(err, `${update ? 'Updating' : 'Upserting'} the user's osu! data`, route);
+  if (update?.osuUserId) {
+    await db.update(OsuUser).set(set).where(eq(OsuUser.osuUserId, update.osuUserId))
+      .catch(catcher(inside, 'Updating the user\'s osu! data'));
+  } else {
+    await db
+      .insert(OsuUser)
+      .values({
+        ...set,
+        osuUserId: user.id
+      })
+      .onConflictDoUpdate({
+        target: [OsuUser.osuUserId],
+        set
+      })
+      .catch(catcher(inside, 'Upserting the user\'s osu! data'));
   }
 
   // NOTE: If a badge has been removed from the user, this case isn't hadled due to the very high unlikelyhood of this happening
@@ -177,70 +150,56 @@ export async function upsertOsuUser(
   }));
 
   if (awardedBadges.length > 0) {
-    try {
-      await db
-        .insert(OsuUserAwardedBadge)
-        .values(awardedBadges)
-        .onConflictDoNothing({
-          target: [OsuUserAwardedBadge.osuBadgeId, OsuUserAwardedBadge.osuUserId]
-        });
-    } catch (err) {
-      throw await apiError(err, 'Linking the user and their awarded badges', route);
-    }
+    await db
+      .insert(OsuUserAwardedBadge)
+      .values(awardedBadges)
+      .onConflictDoNothing({
+        target: [OsuUserAwardedBadge.osuBadgeId, OsuUserAwardedBadge.osuUserId]
+      }).catch(catcher(inside, 'Linking the user and their awarded badges'));
   }
 
   return user;
 }
 
 export async function createSession(
+  inside: UnexpectedErrorInside,
   userId: number,
   ipAddress: string,
-  userAgent: string,
-  route: { id: string | null }
+  userAgent: string
 ) {
-  // Get the public IP address of the local machine, if not done, `ipAddress` will be '::1'
+  let ipMeta!: { city: string; region: string; country: string; };
+
   if (env.NODE_ENV === 'development') {
-    try {
-      const resp = await fetch('https://api64.ipify.org');
-      ipAddress = await resp.text();
-    } catch (err) {
-      throw await apiError(err, 'Getting your public IP address information', route);
-    }
-  }
-
-  let ipMeta!: {
-    city: string;
-    region: string;
-    country: string;
-  };
-
-  try {
-    const resp = await fetch(`https://ipinfo.io/${ipAddress}?token=${env.IPINFO_ACCESS_TOKEN}`);
-    ipMeta = await resp.json();
-  } catch (err) {
-    throw await apiError(err, "Getting the IP address' information", route);
-  }
-
-  let session!: Pick<typeof Session.$inferSelect, 'id'>;
-
-  try {
-    session = await db
-      .insert(Session)
-      .values({
-        userId,
-        ipAddress,
-        userAgent,
-        ipMetadata: {
-          city: ipMeta.city,
-          region: ipMeta.region,
-          country: ipMeta.country
-        }
+    ipMeta = {
+      city: 'City',
+      region: 'Region',
+      country: 'Country'
+    };
+  } else {
+    ipMeta = await fetch(`https://ipinfo.io/${ipAddress}?token=${env.IPINFO_ACCESS_TOKEN}`)
+      .then(async (resp) => await resp.json() as {
+        city: string;
+        region: string;
+        country: string;
       })
-      .returning(pick(Session, ['id']))
-      .then((session) => session[0]);
-  } catch (err) {
-    throw await apiError(err, 'Creating the session', route);
+      .catch(catcher(inside, 'Getting the IP address\' information'));
   }
+
+  const session = await db
+    .insert(Session)
+    .values({
+      userId,
+      ipAddress,
+      userAgent,
+      ipMetadata: {
+        city: ipMeta.city,
+        region: ipMeta.region,
+        country: ipMeta.country
+      }
+    })
+    .returning(pick(Session, ['id']))
+    .then((session) => session[0])
+    .catch(catcher(inside, 'Creating the session'));
 
   return session;
 }

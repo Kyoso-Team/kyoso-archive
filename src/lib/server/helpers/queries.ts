@@ -16,6 +16,10 @@ import type { AnyPgTable, PgTransaction, PgSelectBase } from 'drizzle-orm/pg-cor
 import type { SQL } from 'drizzle-orm';
 import type { AnyPgNumberColumn, PaginationSettings, Simplify } from '$types';
 
+export async function recordExists(table: AnyPgTable, where?: SQL) {
+  return await db.execute(sql`select 1 as "exists" from ${table} where ${where} limit 1`).then((rows) => !!rows.at(0)?.exists);
+}
+
 export async function getCount(table: AnyPgTable, where?: SQL) {
   return await db
     .select({ count: count().as('count') })

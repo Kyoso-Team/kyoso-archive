@@ -21,6 +21,9 @@ import type { inferAsyncReturnType } from '@trpc/server';
 import type { createTRPCContext } from './server/services';
 import type { router } from '$trpc/router';
 
+export type ExpectedErrorInside = 'trpc' | 'sveltekit';
+export type UnexpectedErrorInside = 'trpc' | 'hook' | 'api' | 'layout' | 'page';
+
 export type TRPCContext = inferAsyncReturnType<typeof createTRPCContext>;
 
 export type TRPCRouter = typeof router;

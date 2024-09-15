@@ -291,7 +291,17 @@ export function toastError(toast: ToastStore, message: string) {
   });
 }
 
-export function displayError(toast: ToastStore, err: unknown) {
+export function catcher(toast: ToastStore) {
+  /**
+   * @throws {Error}
+   */
+  return (err: unknown) => displayError(toast, err);
+}
+
+/**
+ * @throws {Error}
+ */
+export function displayError(toast: ToastStore, err: unknown): never {
   loading.set(false);
 
   if (err instanceof TRPCClientError) {

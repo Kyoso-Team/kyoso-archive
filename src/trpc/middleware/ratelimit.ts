@@ -1,19 +1,16 @@
 import { trpc } from '$lib/server/services';
-import { TRPCError } from '@trpc/server';
 import { ratelimit } from '$lib/server/services';
+import { catcher, error } from '$lib/server/error';
 
 export const rateLimitMiddleware = trpc.middleware(
   async ({ path, next, ctx: { getClientAddress } }) => {
     const ip = getClientAddress();
     const identifier = `${path}-${ip}`;
 
-    const result = await ratelimit.limit(identifier);
+    const result = await ratelimit.limit(identifier).catch(catcher('trpc', 'Rate limiting'));
 
     if (!result.success) {
-      throw new TRPCError({
-        code: 'TOO_MANY_REQUESTS',
-        message: 'Too many requests, please try again later!'
-      });
+      error('trpc', 'too_many_requests', 'Too many requests, please try again later');
     }
 
     return next();

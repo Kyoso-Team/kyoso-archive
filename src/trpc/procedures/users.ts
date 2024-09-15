@@ -26,11 +26,12 @@ import { future, pick, trpcUnknownError } from '$lib/server/utils';
 import { customAlphabet } from 'nanoid';
 import { wrap } from '@typeschema/valibot';
 import { positiveIntSchema, userSettingsSchema } from '$lib/schemas';
-import { getSession } from '../../lib/server/helpers/api';
+import { getSession } from '$lib/server/helpers/api';
 import { TRPCError } from '@trpc/server';
 import { alias, unionAll } from 'drizzle-orm/pg-core';
 import { rateLimitMiddleware } from '$trpc/middleware';
-import { TRPCChecks } from '../../lib/server/helpers/checks';
+import { TRPCChecks } from '$lib/server/helpers/checks';
+import { catcher, error } from '$lib/server/error';
 import type { SQL } from 'drizzle-orm';
 
 const getUser = trpc.procedure
@@ -48,105 +49,74 @@ const getUser = trpc.procedure
     const session = getSession(ctx.cookies, true);
     checks.userIsAdmin(session);
 
-    let user!: Pick<
-      typeof User.$inferSelect,
-      'id' | 'registeredAt' | 'updatedApiDataAt' | 'admin' | 'approvedHost'
-    > & {
-      osu: Pick<
-        typeof OsuUser.$inferSelect,
-        'osuUserId' | 'globalStdRank' | 'restricted' | 'username'
-      >;
-      discord: Pick<typeof DiscordUser.$inferSelect, 'discordUserId' | 'username'>;
-      country: Pick<typeof Country.$inferSelect, 'code' | 'name'>;
-    };
+    const user = await db
+      .select({
+        ...pick(User, ['id', 'registeredAt', 'updatedApiDataAt', 'admin', 'approvedHost']),
+        osu: pick(OsuUser, ['osuUserId', 'globalStdRank', 'restricted', 'username']),
+        discord: pick(DiscordUser, ['discordUserId', 'username']),
+        country: pick(Country, ['code', 'name'])
+      })
+      .from(User)
+      .innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId))
+      .innerJoin(DiscordUser, eq(DiscordUser.discordUserId, User.discordUserId))
+      .innerJoin(Country, eq(Country.code, OsuUser.countryCode))
+      .where(eq(User.id, userId))
+      .limit(1)
+      .then((rows) => rows.at(0))
+      .catch(catcher('trpc', 'Getting the user'));
 
-    try {
-      user = await db
-        .select({
-          ...pick(User, ['id', 'registeredAt', 'updatedApiDataAt', 'admin', 'approvedHost']),
-          osu: pick(OsuUser, ['osuUserId', 'globalStdRank', 'restricted', 'username']),
-          discord: pick(DiscordUser, ['discordUserId', 'username']),
-          country: pick(Country, ['code', 'name'])
-        })
-        .from(User)
-        .innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId))
-        .innerJoin(DiscordUser, eq(DiscordUser.discordUserId, User.discordUserId))
-        .innerJoin(Country, eq(Country.code, OsuUser.countryCode))
-        .where(eq(User.id, userId))
-        .limit(1)
-        .then((rows) => rows[0]);
-    } catch (err) {
-      throw trpcUnknownError(err, 'Getting the user');
+    if (!user) {
+      error('trpc', 'not_found', 'User not found');
     }
 
-    let badges: (Pick<typeof OsuUserAwardedBadge.$inferSelect, 'awardedAt'> &
-      Pick<typeof OsuBadge.$inferSelect, 'imgFileName' | 'description'>)[] = [];
-
-    try {
-      badges = await db
-        .select({
-          ...pick(OsuUserAwardedBadge, ['awardedAt']),
-          ...pick(OsuBadge, ['imgFileName', 'description'])
-        })
-        .from(OsuUserAwardedBadge)
-        .innerJoin(OsuBadge, eq(OsuBadge.id, OsuUserAwardedBadge.osuBadgeId))
-        .where(eq(OsuUserAwardedBadge.osuUserId, user.osu.osuUserId))
-        .orderBy(desc(OsuUserAwardedBadge.awardedAt));
-    } catch (err) {
-      throw trpcUnknownError(err, "Getting the user's badges");
-    }
-
-    let bans: (Pick<
-      typeof Ban.$inferSelect,
-      'id' | 'banReason' | 'issuedAt' | 'liftAt' | 'revokeReason' | 'revokedAt'
-    > & {
-      issuedBy: Pick<typeof User.$inferSelect, 'id'> &
-        Pick<typeof OsuUser.$inferSelect, 'username'>;
-      revokedBy:
-        | (Pick<typeof User.$inferSelect, 'id'> & Pick<typeof OsuUser.$inferSelect, 'username'>)
-        | null;
-    })[] = [];
+    const badges = await db
+      .select({
+        ...pick(OsuUserAwardedBadge, ['awardedAt']),
+        ...pick(OsuBadge, ['imgFileName', 'description'])
+      })
+      .from(OsuUserAwardedBadge)
+      .innerJoin(OsuBadge, eq(OsuBadge.id, OsuUserAwardedBadge.osuBadgeId))
+      .where(eq(OsuUserAwardedBadge.osuUserId, user.osu.osuUserId))
+      .orderBy(desc(OsuUserAwardedBadge.awardedAt))
+      .catch(catcher('trpc', 'Getting the user\'s badges'));
 
     const IssuedBy = alias(User, 'issued_by');
     const IssuedByOsu = alias(OsuUser, 'issued_by_osu');
     const RevokedBy = alias(User, 'revoked_by');
     const RevokedByOsu = alias(OsuUser, 'revoked_by_osu');
 
-    try {
-      bans = await db
-        .select({
-          ...pick(Ban, ['id', 'banReason', 'issuedAt', 'liftAt', 'revokeReason', 'revokedAt']),
-          issuedBy: {
-            ...pick(IssuedBy, ['id']),
-            ...pick(IssuedByOsu, ['username'])
-          },
-          revokedBy: {
-            ...pick(RevokedBy, ['id']),
-            ...pick(RevokedByOsu, ['username'])
-          }
-        })
-        .from(Ban)
-        .innerJoin(IssuedBy, eq(IssuedBy.id, Ban.issuedByUserId))
-        .innerJoin(IssuedByOsu, eq(IssuedByOsu.osuUserId, IssuedBy.osuUserId))
-        .leftJoin(RevokedBy, eq(RevokedBy.id, Ban.revokedByUserId))
-        .leftJoin(RevokedByOsu, eq(RevokedByOsu.osuUserId, RevokedBy.osuUserId))
-        .where(eq(Ban.issuedToUserId, user.id))
-        .orderBy(desc(Ban.issuedAt))
-        .then((bans) => {
-          return bans.map((ban) => ({
-            ...ban,
-            revokedBy:
-              ban.revokedBy.id === null || ban.revokedBy.username === null
-                ? null
-                : {
-                    id: ban.revokedBy.id,
-                    username: ban.revokedBy.username
-                  }
-          }));
-        });
-    } catch (err) {
-      throw trpcUnknownError(err, "Getting the user's bans");
-    }
+    const bans = await db
+      .select({
+        ...pick(Ban, ['id', 'banReason', 'issuedAt', 'liftAt', 'revokeReason', 'revokedAt']),
+        issuedBy: {
+          ...pick(IssuedBy, ['id']),
+          ...pick(IssuedByOsu, ['username'])
+        },
+        revokedBy: {
+          ...pick(RevokedBy, ['id']),
+          ...pick(RevokedByOsu, ['username'])
+        }
+      })
+      .from(Ban)
+      .innerJoin(IssuedBy, eq(IssuedBy.id, Ban.issuedByUserId))
+      .innerJoin(IssuedByOsu, eq(IssuedByOsu.osuUserId, IssuedBy.osuUserId))
+      .leftJoin(RevokedBy, eq(RevokedBy.id, Ban.revokedByUserId))
+      .leftJoin(RevokedByOsu, eq(RevokedByOsu.osuUserId, RevokedBy.osuUserId))
+      .where(eq(Ban.issuedToUserId, user.id))
+      .orderBy(desc(Ban.issuedAt))
+      .then((bans) => {
+        return bans.map((ban) => ({
+          ...ban,
+          revokedBy:
+            ban.revokedBy.id === null || ban.revokedBy.username === null
+              ? null
+              : {
+                  id: ban.revokedBy.id,
+                  username: ban.revokedBy.username
+                }
+        }));
+      })
+      .catch(catcher('trpc', 'Getting the user\'s bans'));
 
     const getActiveSessionsQuery = db
       .select(pick(Session, ['id', 'createdAt', 'lastActiveAt', 'expired']))
@@ -161,21 +131,12 @@ const getUser = trpc.procedure
       .orderBy(desc(Session.lastActiveAt))
       .limit(30);
 
-    let allSessions!: Pick<
-      typeof Session.$inferSelect,
-      'id' | 'createdAt' | 'lastActiveAt' | 'expired'
-    >[];
-
-    try {
-      allSessions = await unionAll(getActiveSessionsQuery, getExpiredSessionsQuery);
-    } catch (err) {
-      throw trpcUnknownError(err, "Getting the user's sessions");
-    }
-
-    const sessions = {
-      active: allSessions.filter(({ expired }) => !expired),
-      expired: allSessions.filter(({ expired }) => expired)
-    };
+    const sessions = await unionAll(getActiveSessionsQuery, getExpiredSessionsQuery)
+      .then((sessions) => ({
+        active: sessions.filter(({ expired }) => !expired),
+        expired: sessions.filter(({ expired }) => expired)
+      }))
+      .catch(catcher('trpc', 'Getting the user\'s sessions'));
 
     return {
       ...user,
@@ -215,19 +176,14 @@ const searchUser = trpc.procedure
       where = eq(OsuUser.username, search);
     }
 
-    let user: Pick<typeof User.$inferSelect, 'id'> | undefined;
-
-    try {
-      user = await db
-        .select(pick(User, ['id']))
-        .from(User)
-        .innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId))
-        .where(where)
-        .limit(1)
-        .then((users) => users[0]);
-    } catch (err) {
-      throw trpcUnknownError(err, 'Searching the user');
-    }
+    const user = await db
+      .select(pick(User, ['id']))
+      .from(User)
+      .innerJoin(OsuUser, eq(OsuUser.osuUserId, User.osuUserId))
+      .where(where)
+      .limit(1)
+      .then((users) => users.at(0))
+      .catch(catcher('trpc', 'Searching the user'));
 
     return user;
   });
@@ -235,19 +191,16 @@ const searchUser = trpc.procedure
 const resetApiKey = trpc.procedure.use(rateLimitMiddleware).mutation(async ({ ctx }) => {
   const session = getSession(ctx.cookies, true);
 
-  try {
-    await db
-      .update(User)
-      .set({
-        apiKey: customAlphabet(
-          '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-          24
-        )()
-      })
-      .where(eq(User.id, session.userId));
-  } catch (err) {
-    throw trpcUnknownError(err, 'Updating the user');
-  }
+  await db
+    .update(User)
+    .set({
+      apiKey: customAlphabet(
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+        24
+      )()
+    })
+    .where(eq(User.id, session.userId))
+    .catch(catcher('trpc', 'Updating the user'));
 });
 
 const updateSelf = trpc.procedure
@@ -265,16 +218,13 @@ const updateSelf = trpc.procedure
     const { settings } = input;
     const session = getSession(ctx.cookies, true);
 
-    try {
-      await db
-        .update(User)
-        .set({
-          settings
-        })
-        .where(eq(User.id, session.userId));
-    } catch (err) {
-      throw trpcUnknownError(err, 'Updating the user');
-    }
+    await db
+      .update(User)
+      .set({
+        settings
+      })
+      .where(eq(User.id, session.userId))
+      .catch(catcher('trpc', 'Updating the user'));
   });
 
 const makeAdmin = trpc.procedure
@@ -292,52 +242,38 @@ const makeAdmin = trpc.procedure
     const session = getSession(ctx.cookies, true);
     checks.userIsOwner(session);
 
-    let user: Pick<typeof User.$inferSelect, 'admin'> | undefined;
-
-    try {
-      user = await db
-        .select(pick(User, ['admin']))
-        .from(User)
-        .where(eq(User.id, userId))
-        .limit(1)
-        .then((users) => users[0]);
-    } catch (err) {
-      throw trpcUnknownError(err, 'Getting the user');
-    }
+    const user = await db
+      .select(pick(User, ['admin']))
+      .from(User)
+      .where(eq(User.id, userId))
+      .limit(1)
+      .then((users) => users.at(0))
+      .catch(catcher('trpc', 'Getting the user'));
 
     if (!user) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'User not found'
-      });
+      error('trpc', 'not_found', 'User not found');
     }
 
     if (user.admin) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'User is already an admin'
-      });
+      error('trpc', 'forbidden', 'User is already an admin');
     }
 
-    try {
-      await db.transaction(async (tx) => {
-        await tx
-          .update(User)
-          .set({
-            admin: true
-          })
-          .where(eq(User.id, userId));
+    await db.transaction(async (tx) => {
+      await tx
+        .update(User)
+        .set({
+          admin: true
+        })
+        .where(eq(User.id, userId));
 
-        await tx
-          .update(Session)
-          .set({
-            updateCookie: true
-          })
-          .where(and(eq(Session.userId, userId), not(Session.expired)));
-      });
-    } catch (err) {
-      throw trpcUnknownError(err, 'Updating the user');
-    }
+      await tx
+        .update(Session)
+        .set({
+          updateCookie: true
+        })
+        .where(and(eq(Session.userId, userId), not(Session.expired)));
+    })
+    .catch(catcher('trpc', 'Updating the user'));
   });
 
 const removeAdmin = trpc.procedure
