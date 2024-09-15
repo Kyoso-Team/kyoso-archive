@@ -13,7 +13,7 @@
     rankRangeFormSchemas
   } from '$lib/constants';
   import { tournamentChecks } from '$lib/helpers';
-  import type { TRPCRouter } from '$types';
+  import type { TRPCRouterIO } from '$types';
 
   export let show: boolean;
   const toast = getToastStore();
@@ -30,7 +30,7 @@
     const { acronym, name, type, urlSlug } = mainForm.getFinalValue($mainForm);
     const teamSettings = isTeamBased ? teamForm.getFinalValue($teamForm) : undefined;
     const rankRange = !isOpenRank ? rankRangeForm.getFinalValue($rankRangeForm) : undefined;
-    let tournament!: TRPCRouter['tournaments']['createTournament'];
+    let tournament!: TRPCRouterIO['tournaments']['createTournament'];
 
     const err = tournamentChecks({ teamSettings, rankRange });
 

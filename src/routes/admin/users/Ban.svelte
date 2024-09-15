@@ -2,9 +2,9 @@
   import { Search } from 'lucide-svelte';
   import { formatDate, formatTime } from '$lib/utils';
   import type createContextStore from './store';
-  import type { TRPCRouter } from '$types';
+  import type { TRPCRouterIO } from '$types';
 
-  export let ban: TRPCRouter['users']['getUser']['bans'][number];
+  export let ban: TRPCRouterIO['users']['getUser']['bans'][number];
   export let active = false;
   export let ctx: ReturnType<typeof createContextStore>;
 </script>

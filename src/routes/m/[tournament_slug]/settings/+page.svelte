@@ -35,7 +35,7 @@
     baseTeamSettingsFormSchemas,
     tournamentTypeOptions
   } from '$lib/constants';
-  import type { RefereeSettings, TRPCRouter } from '$types';
+  import type { RefereeSettings, TRPCRouterIO } from '$types';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
@@ -238,12 +238,12 @@
 
   async function updateTournament<T extends 'updateTournament' | 'updateTournamentDates'>(
     procedure: T,
-    input: TRPCRouter<true>['tournaments'][T]['data'],
+    input: TRPCRouterIO<true>['tournaments'][T]['data'],
     successMsg: string
   ) {
     let tournament!:
-      | TRPCRouter['tournaments']['updateTournament']
-      | TRPCRouter['tournaments']['updateTournamentDates'];
+      | TRPCRouterIO['tournaments']['updateTournament']
+      | TRPCRouterIO['tournaments']['updateTournamentDates'];
     loading.set(true);
 
     try {

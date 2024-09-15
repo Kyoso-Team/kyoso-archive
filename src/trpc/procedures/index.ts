@@ -1,21 +1,14 @@
 import * as v from 'valibot';
-import { t } from '$trpc';
+import { db, trpc } from '$lib/server/services';
 import { wrap } from '@typeschema/valibot';
 import { getSession } from '$lib/server/helpers/trpc';
-import { db } from '$lib/server/services';
 import { Ban, OsuUser, Tournament, User } from '$db';
 import { and, asc, eq, isNull, notExists, or, sql } from 'drizzle-orm';
 import { future, pick, trgmSearch, trpcUnknownError } from '$lib/server/utils';
-import { setSimilarityThreshold } from '../helpers/queries';
-import {
-  notificationsRouter,
-  tournamentsRouter,
-  usersRouter,
-  staffRolesRouter
-} from '../procedures';
+import { setSimilarityThreshold } from '$lib/server/helpers/queries';
 import type { SQL } from 'drizzle-orm';
 
-const search = t.procedure.input(wrap(v.string([v.minLength(1)]))).query(async ({ ctx, input }) => {
+export const search = trpc.procedure.input(wrap(v.string([v.minLength(1)]))).query(async ({ ctx, input }) => {
   getSession(ctx.cookies, true);
 
   try {
@@ -109,13 +102,3 @@ const search = t.procedure.input(wrap(v.string([v.minLength(1)]))).query(async (
     tournaments
   };
 });
-
-export const router = t.router({
-  search,
-  users: usersRouter,
-  tournaments: tournamentsRouter,
-  notifications: notificationsRouter,
-  staffRoles: staffRolesRouter
-});
-
-export type Router = typeof router;

@@ -15,7 +15,7 @@
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { invalidate } from '$app/navigation';
   import type { PageServerData } from './$types';
-  import type { AnyComponent, TRPCRouter } from '$types';
+  import type { AnyComponent, TRPCRouterIO } from '$types';
 
   export let data: PageServerData;
   let showBanUserModal = false;
@@ -24,7 +24,7 @@
   let showRevokeBanForm = false;
   let procedure:
     | keyof Pick<
-        TRPCRouter['users'],
+        TRPCRouterIO['users'],
         'makeAdmin' | 'removeAdmin' | 'makeApprovedHost' | 'removeApprovedHost'
       >
     | undefined;

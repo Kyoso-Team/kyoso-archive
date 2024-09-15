@@ -1,6 +1,6 @@
 import * as v from 'valibot';
 import { env } from '$lib/server/env';
-import { db } from '$lib/server/services';
+import { db, trpc } from '$lib/server/services';
 import {
   Ban,
   Country,
@@ -22,19 +22,18 @@ import {
 } from '$db';
 import { count, inArray, lt } from 'drizzle-orm';
 import { and, desc, eq, isNull, not, or, sql } from 'drizzle-orm';
-import { t } from '$trpc';
 import { future, pick, trpcUnknownError } from '$lib/server/utils';
 import { customAlphabet } from 'nanoid';
 import { wrap } from '@typeschema/valibot';
 import { positiveIntSchema, userSettingsSchema } from '$lib/schemas';
-import { getSession } from '../helpers/api';
+import { getSession } from '../../lib/server/helpers/api';
 import { TRPCError } from '@trpc/server';
 import { alias, unionAll } from 'drizzle-orm/pg-core';
 import { rateLimitMiddleware } from '$trpc/middleware';
-import { TRPCChecks } from '../helpers/checks';
+import { TRPCChecks } from '../../lib/server/helpers/checks';
 import type { SQL } from 'drizzle-orm';
 
-const getUser = t.procedure
+const getUser = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -187,7 +186,7 @@ const getUser = t.procedure
     };
   });
 
-const searchUser = t.procedure
+const searchUser = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -233,7 +232,7 @@ const searchUser = t.procedure
     return user;
   });
 
-const resetApiKey = t.procedure.use(rateLimitMiddleware).mutation(async ({ ctx }) => {
+const resetApiKey = trpc.procedure.use(rateLimitMiddleware).mutation(async ({ ctx }) => {
   const session = getSession(ctx.cookies, true);
 
   try {
@@ -251,7 +250,7 @@ const resetApiKey = t.procedure.use(rateLimitMiddleware).mutation(async ({ ctx }
   }
 });
 
-const updateSelf = t.procedure
+const updateSelf = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -278,7 +277,7 @@ const updateSelf = t.procedure
     }
   });
 
-const makeAdmin = t.procedure
+const makeAdmin = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -341,7 +340,7 @@ const makeAdmin = t.procedure
     }
   });
 
-const removeAdmin = t.procedure
+const removeAdmin = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -446,7 +445,7 @@ const removeAdmin = t.procedure
     }
   });
 
-const makeApprovedHost = t.procedure
+const makeApprovedHost = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -516,7 +515,7 @@ const makeApprovedHost = t.procedure
     }
   });
 
-const removeApprovedHost = t.procedure
+const removeApprovedHost = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -600,7 +599,7 @@ const removeApprovedHost = t.procedure
     }
   });
 
-const updateUser = t.procedure
+const updateUser = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -651,7 +650,7 @@ const updateUser = t.procedure
     }
   });
 
-const banUser = t.procedure
+const banUser = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -930,7 +929,7 @@ const banUser = t.procedure
     }
   });
 
-const revokeBan = t.procedure
+const revokeBan = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -960,7 +959,7 @@ const revokeBan = t.procedure
     }
   });
 
-const expireSession = t.procedure
+const expireSession = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -984,7 +983,7 @@ const expireSession = t.procedure
     }
   });
 
-export const usersRouter = t.router({
+export const usersRouter = trpc.router({
   getUser,
   searchUser,
   updateSelf,

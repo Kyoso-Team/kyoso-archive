@@ -17,7 +17,7 @@
   import { browser } from '$app/environment';
   import { Search } from 'lucide-svelte';
   import type { PageServerData } from './$types';
-  import type { TRPCRouter } from '$types';
+  import type { TRPCRouterIO } from '$types';
 
   export let data: PageServerData;
   let users: Record<'admins' | 'banned' | 'hosts' | 'owners', PageServerData['users']> = {
@@ -117,7 +117,7 @@
   async function onSearch() {
     if (!search) return;
 
-    let user: TRPCRouter['users']['searchUser'];
+    let user: TRPCRouterIO['users']['searchUser'];
     loading.set(true);
 
     try {

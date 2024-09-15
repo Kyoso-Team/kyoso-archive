@@ -1,8 +1,8 @@
 import superjson from 'superjson';
 import { createTRPCClient, type TRPCClientInit } from 'trpc-sveltekit';
-import type { Router } from '$trpc/router';
+import type { TRPCRouter } from '$types';
 
-let browserClient: ReturnType<typeof createTRPCClient<Router>>;
+let browserClient: ReturnType<typeof createTRPCClient<TRPCRouter>>;
 
 export function trpc(init?: TRPCClientInit) {
   const isBrowser = typeof window !== 'undefined';
@@ -11,7 +11,7 @@ export function trpc(init?: TRPCClientInit) {
     return browserClient;
   }
 
-  const client = createTRPCClient<Router>({
+  const client = createTRPCClient<TRPCRouter>({
     init,
     transformer: superjson
   });

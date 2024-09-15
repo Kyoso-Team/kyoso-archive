@@ -1,8 +1,8 @@
-import { t } from '$trpc';
+import { trpc } from '$lib/server/services';
 import { TRPCError } from '@trpc/server';
 import { ratelimit } from '$lib/server/services';
 
-export const rateLimitMiddleware = t.middleware(
+export const rateLimitMiddleware = trpc.middleware(
   async ({ path, next, ctx: { getClientAddress } }) => {
     const ip = getClientAddress();
     const identifier = `${path}-${ip}`;

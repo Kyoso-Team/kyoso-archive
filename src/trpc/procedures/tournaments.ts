@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { db } from '$lib/server/services';
+import { db, trpc } from '$lib/server/services';
 import {
   StaffMember,
   StaffMemberRole,
@@ -8,10 +8,9 @@ import {
   TournamentDates,
   uniqueConstraints
 } from '$db';
-import { t } from '$trpc';
 import { catchUniqueConstraintError$, pick, trpcUnknownError } from '$lib/server/utils';
 import { wrap } from '@typeschema/valibot';
-import { getSession, getStaffMember, getTournament } from '../helpers/trpc';
+import { getSession, getStaffMember, getTournament } from '../../lib/server/helpers/trpc';
 import { TRPCError } from '@trpc/server';
 import { hasPermissions, isDatePast, sortByKey } from '$lib/utils';
 import { eq } from 'drizzle-orm';
@@ -27,7 +26,7 @@ import {
   urlSlugSchema
 } from '$lib/schemas';
 import { rateLimitMiddleware } from '$trpc/middleware';
-import { TRPCChecks } from '../helpers/checks';
+import { TRPCChecks } from '../../lib/server/helpers/checks';
 import {
   tournamentChecks,
   tournamentDatesChecks,
@@ -62,7 +61,7 @@ const mutationSchemas = {
   )
 };
 
-const createTournament = t.procedure
+const createTournament = trpc.procedure
   .use(rateLimitMiddleware)
   .input(wrap(v.object(mutationSchemas)))
   .mutation(async ({ ctx, input }) => {
@@ -150,7 +149,7 @@ const createTournament = t.procedure
     return tournament;
   });
 
-const updateTournament = t.procedure
+const updateTournament = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -250,7 +249,7 @@ const updateTournament = t.procedure
     }
   });
 
-const updateTournamentDates = t.procedure
+const updateTournamentDates = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -419,7 +418,7 @@ const updateTournamentDates = t.procedure
     }
   });
 
-const deleteTournament = t.procedure
+const deleteTournament = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -465,7 +464,7 @@ const deleteTournament = t.procedure
     }
   });
 
-const cancelTournamentDeletion = t.procedure
+const cancelTournamentDeletion = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -503,7 +502,7 @@ const cancelTournamentDeletion = t.procedure
     }
   });
 
-export const tournamentsRouter = t.router({
+export const tournamentsRouter = trpc.router({
   createTournament,
   updateTournament,
   updateTournamentDates,

@@ -1,16 +1,15 @@
 import * as v from 'valibot';
-import { t } from '$trpc';
+import { db, trpc } from '$lib/server/services';
 import { wrap } from '@typeschema/valibot';
-import { db } from '$lib/server/services';
 import { StaffColor, StaffPermission, StaffRole, uniqueConstraints } from '$db';
 import { and, eq, gt, inArray, sql } from 'drizzle-orm';
 import { catchUniqueConstraintError$, pick, trpcUnknownError } from '$lib/server/utils';
 import { positiveIntSchema } from '$lib/schemas';
 import { TRPCError } from '@trpc/server';
 import { getSession, getStaffMember, getTournament } from '$lib/server/helpers/trpc';
-import { TRPCChecks } from '../helpers/checks';
+import { TRPCChecks } from '$lib/server/helpers/checks';
 import { rateLimitMiddleware } from '$trpc/middleware';
-import { getCount } from '../helpers/queries';
+import { getCount } from '$lib/server/helpers/queries';
 import { arraysHaveSameElements } from '$lib/utils';
 
 const DEFAULT_ROLES = ['Host', 'Debugger'];
@@ -24,7 +23,7 @@ const catchUniqueConstraintError = catchUniqueConstraintError$([
   }
 ]);
 
-const createStaffRole = t.procedure
+const createStaffRole = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -81,7 +80,7 @@ const createStaffRole = t.procedure
     }
   });
 
-const updateStaffRole = t.procedure
+const updateStaffRole = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -149,7 +148,7 @@ const updateStaffRole = t.procedure
     }
   });
 
-const swapStaffRoleOrder = t.procedure
+const swapStaffRoleOrder = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -250,7 +249,7 @@ const swapStaffRoleOrder = t.procedure
     });
   });
 
-const deleteStaffRole = t.procedure
+const deleteStaffRole = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
     wrap(
@@ -317,7 +316,7 @@ const deleteStaffRole = t.procedure
     });
   });
 
-export const staffRolesRouter = t.router({
+export const staffRolesRouter = trpc.router({
   createStaffRole,
   updateStaffRole,
   swapStaffRoleOrder,

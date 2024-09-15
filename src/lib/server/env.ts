@@ -24,7 +24,6 @@ import { clientEnvSchema, clientEnv, nonEmptyStringSchema, parseEnv } from '../e
 
 const serverEnvSchema = v.object({
   ...clientEnvSchema.entries,
-  /** Preferrably, use `ENV` instead. This is mainly for Vite, but it does have its use cases */
   NODE_ENV: v.union(
     [v.literal('production'), v.literal('development')],
     'be equal to "production" or "development"'

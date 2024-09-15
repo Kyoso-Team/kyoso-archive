@@ -1,9 +1,7 @@
 import adapter from '@sveltejs/adapter-vercel';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
-function lib(path) {
-  return `${process.cwd()}/src/lib/${path}`;
-}
+const cwd = process.cwd();
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -11,11 +9,11 @@ const config = {
   kit: {
     adapter: adapter(),
     alias: {
-      $stores: lib('stores'),
-      $types: lib('types'),
-      $components: lib('components'),
-      $trpc: lib('server/trpc'),
-      $db: lib('server/db')
+      $stores: `${cwd}/src/lib/stores`,
+      $types: `${cwd}/src/lib/types`,
+      $components: `${cwd}/src/lib/components`,
+      $trpc: `${cwd}/src/trpc`,
+      $db: `${cwd}/src/lib/server/db`
     }
   }
 };

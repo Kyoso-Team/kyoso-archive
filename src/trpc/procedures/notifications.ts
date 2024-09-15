@@ -1,14 +1,13 @@
 import * as v from 'valibot';
-import { db } from '$lib/server/services';
+import { db, trpc } from '$lib/server/services';
 import { UserNotification } from '$db';
-import { t } from '$trpc';
 import { trpcUnknownError } from '$lib/server/utils';
 import { wrap } from '@typeschema/valibot';
-import { getSession } from '../helpers/trpc';
+import { getSession } from '$lib/server/helpers/trpc';
 import { and, eq } from 'drizzle-orm';
 import { positiveIntSchema } from '$lib/schemas';
 
-const markNotificationAsRead = t.procedure
+const markNotificationAsRead = trpc.procedure
   .input(wrap(v.object({ notificationId: positiveIntSchema })))
   .mutation(async ({ ctx, input }) => {
     const { notificationId } = input;
@@ -31,7 +30,7 @@ const markNotificationAsRead = t.procedure
     }
   });
 
-const markAllNotificationsAsRead = t.procedure.mutation(async ({ ctx }) => {
+const markAllNotificationsAsRead = trpc.procedure.mutation(async ({ ctx }) => {
   const session = getSession(ctx.cookies, true);
 
   try {
@@ -46,7 +45,7 @@ const markAllNotificationsAsRead = t.procedure.mutation(async ({ ctx }) => {
   }
 });
 
-export const notificationsRouter = t.router({
+export const notificationsRouter = trpc.router({
   markNotificationAsRead,
   markAllNotificationsAsRead
 });

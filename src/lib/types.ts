@@ -1,5 +1,4 @@
 import type { MaybePromise, Page } from '@sveltejs/kit';
-import type { Router } from '$trpc/router';
 import type { Writable } from 'svelte/store';
 import type { BaseSchema, Output } from 'valibot';
 import type { Tournament, TournamentDates } from '$db';
@@ -18,6 +17,13 @@ import type {
   userSettingsSchema
 } from './schemas';
 import type { PgColumn } from 'drizzle-orm/pg-core';
+import type { inferAsyncReturnType } from '@trpc/server';
+import type { createTRPCContext } from './server/services';
+import type { router } from '$trpc/router';
+
+export type TRPCContext = inferAsyncReturnType<typeof createTRPCContext>;
+
+export type TRPCRouter = typeof router;
 
 export type AnyComponent = any;
 
@@ -89,15 +95,15 @@ export type InferEnum<
 
 export type FileType = 'png' | 'jpg' | 'jpeg' | 'webp' | 'gif' | 'osr' | 'osz';
 
-export type TRPCRouter<Input extends boolean = false> = {
-  [K1 in Exclude<keyof Router, '_def' | 'createCaller' | 'getErrorShape'>]: {
+export type TRPCRouterIO<Input extends boolean = false> = {
+  [K1 in Exclude<keyof TRPCRouter, '_def' | 'createCaller' | 'getErrorShape'>]: {
     [K2 in Exclude<
-      keyof Router[K1],
+      keyof TRPCRouter[K1],
       '_def' | 'createCaller' | 'getErrorShape'
-    >]: Router[K1][K2] extends { _def: { _output_out: any; _input_in: any } }
+    >]: TRPCRouter[K1][K2] extends { _def: { _output_out: any; _input_in: any } }
       ? Input extends true
-        ? Router[K1][K2]['_def']['_input_in']
-        : Router[K1][K2]['_def']['_output_out']
+        ? TRPCRouter[K1][K2]['_def']['_input_in']
+        : TRPCRouter[K1][K2]['_def']['_output_out']
       : never;
   };
 };

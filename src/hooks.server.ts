@@ -1,11 +1,10 @@
 import { env } from '$lib/server/env';
-import { createContext } from '$trpc/context';
 import { router } from '$trpc/router';
 import { createTRPCHandle } from 'trpc-sveltekit';
 import { logError, apiError, verifyJWT, pick, signJWT } from '$lib/server/utils';
 import { redirect, error } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
-import { db, ratelimit, osuAuth, discordMainAuth, discordMainAuthOptions } from '$lib/server/services';
+import { db, ratelimit, osuAuth, discordMainAuth, discordMainAuthOptions, createTRPCContext } from '$lib/server/services';
 import { Session, DiscordUser, OsuUser, User } from '$db';
 import { and, eq, not, sql } from 'drizzle-orm';
 import { unionAll } from 'drizzle-orm/pg-core';
@@ -18,7 +17,7 @@ import type { AuthSession } from '$types';
 
 const trpcHandle = createTRPCHandle({
   router,
-  createContext,
+  createContext: createTRPCContext,
   onError: async ({ error, path }) => {
     if (error.code === 'INTERNAL_SERVER_ERROR') {
       await logError(error.cause, error.message.split('when: ')[1], `trpc.${path}`);

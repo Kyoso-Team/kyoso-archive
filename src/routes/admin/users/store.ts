@@ -6,10 +6,10 @@ import { displayError } from '$lib/utils';
 import { loading } from '$stores';
 import type { ToastStore } from '@skeletonlabs/skeleton';
 import type { Ban, User } from '$db';
-import type { TRPCRouter } from '$types';
+import type { TRPCRouterIO } from '$types';
 
 export interface Context {
-  lookedUpUser?: TRPCRouter['users']['getUser'];
+  lookedUpUser?: TRPCRouterIO['users']['getUser'];
   selectedUser?: Pick<typeof User.$inferSelect, 'id' | 'admin' | 'approvedHost'>;
   issueBanTo?: Pick<typeof User.$inferSelect, 'id'>;
   banToRevoke?: Pick<typeof Ban.$inferSelect, 'id'>;
