@@ -12,10 +12,25 @@ import {
 } from '$db';
 import { db } from '$lib/server/services';
 import { pick } from '$lib/server/utils';
+import { env } from './env';
 import { future, past } from './sql';
 import type { SQL } from 'drizzle-orm';
 import type { AnyPgTable, PgSelectBase, PgTransaction } from 'drizzle-orm/pg-core';
 import type { AnyPgNumberColumn, PaginationSettings, Simplify } from '$lib/types';
+
+export async function resetDatabase() {
+  if (env.NODE_ENV === 'production') {
+    throw new Error('Cannot reset database in production');
+  }
+
+  return await db.execute(sql`
+    drop extension if exists pg_trgm cascade;
+    drop schema if exists public cascade;
+    create schema public;
+    drop schema if exists drizzle cascade;
+    create schema drizzle;
+  `);
+}
 
 export async function recordExists(table: AnyPgTable, where?: SQL) {
   return await db
