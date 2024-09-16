@@ -26,5 +26,5 @@ export const GET = (async ({ url, cookies }) => {
     redirectUri
   );
 
-  redirect(302, osuAuthUrl);
+  redirect(302, `${osuAuthUrl}&prompt=consent`);
 }) satisfies RequestHandler;

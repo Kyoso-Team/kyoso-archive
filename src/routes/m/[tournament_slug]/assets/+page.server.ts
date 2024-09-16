@@ -5,7 +5,12 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ parent, depends }) => {
   depends('reload:manage_assets');
   const { staffMember, tournament } = await parent();
-  checks.page.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament', 'manage_assets']);
+  checks.page.staffHasPermissions(staffMember, [
+    'host',
+    'debug',
+    'manage_tournament',
+    'manage_assets'
+  ]);
 
   const assets = await getTournament(
     'page',

@@ -8,9 +8,48 @@ import {
 import {
   draftTypeSchema,
   hexColorSchema,
+  nonEmptyStringSchema,
   tournamentLinkIconSchema,
   winConditionSchema
 } from './basic';
+
+export const clientEnvSchema = v.object({
+  PUBLIC_OSU_CLIENT_ID: v.number('be a number', [v.integer('be an integer')]),
+  PUBLIC_OSU_REDIRECT_URI: nonEmptyStringSchema,
+  PUBLIC_DISCORD_CLIENT_ID: nonEmptyStringSchema,
+  PUBLIC_DISCORD_MAIN_REDIRECT_URI: nonEmptyStringSchema,
+  PUBLIC_DISCORD_CHANGE_ACCOUNT_REDIRECT_URI: nonEmptyStringSchema,
+  PUBLIC_CONTACT_EMAIL: v.string('be a string', [v.email('be an email')])
+});
+
+export const serverEnvSchema = v.object({
+  ...clientEnvSchema.entries,
+  NODE_ENV: v.union(
+    [v.literal('production'), v.literal('development')],
+    'be equal to "production" or "development"'
+  ),
+  TEST_ENV: v.union(
+    [v.literal('automatic'), v.literal('manual'), v.undefined_()],
+    'be equal to "automatic", "manual" or undefined'
+  ),
+  JWT_SECRET: nonEmptyStringSchema,
+  CRON_SECRET: nonEmptyStringSchema,
+  OSU_CLIENT_SECRET: nonEmptyStringSchema,
+  DISCORD_CLIENT_SECRET: nonEmptyStringSchema,
+  DISCORD_BOT_TOKEN: nonEmptyStringSchema,
+  IPINFO_ACCESS_TOKEN: nonEmptyStringSchema,
+  DATABASE_URL: nonEmptyStringSchema,
+  TEST_DATABASE_URL: nonEmptyStringSchema,
+  OWNER: v.number('be a number', [v.integer('be an integer')]),
+  TESTERS: v.array(v.number('be a number', [v.integer('be an integer')]), 'be an array'),
+  UPSTASH_REDIS_REST_URL: nonEmptyStringSchema,
+  UPSTASH_REDIS_REST_TOKEN: nonEmptyStringSchema,
+  S3_FORCE_PATH_STYLE: v.boolean('be a boolean'),
+  S3_ENDPOINT: nonEmptyStringSchema,
+  S3_REGION: nonEmptyStringSchema,
+  S3_ACCESS_KEY_ID: nonEmptyStringSchema,
+  S3_SECRET_ACCESS_KEY: nonEmptyStringSchema
+});
 
 export const refereeSettingsSchema = v.object({
   timerLength: v.object({
@@ -121,9 +160,9 @@ const baseUserFormFieldSchemas = {
 const baseUserFormShortTextFieldSchemas = {
   ...baseUserFormFieldSchemas,
   type: v.literal('short-text'),
-  validation: v.undefined_(),
-  min: v.number([v.integer(), v.minValue(0)]),
-  max: v.number([v.integer(), v.maxValue(100)])
+  validation: v.null_(),
+  min: v.nullable(v.number([v.integer(), v.minValue(0)])),
+  max: v.nullable(v.number([v.integer(), v.maxValue(100)]))
 };
 
 const userFormShortTextField = v.union([
@@ -142,9 +181,9 @@ const userFormShortTextField = v.union([
 const baseUserFormLongTextFieldSchemas = {
   ...baseUserFormFieldSchemas,
   type: v.literal('long-text'),
-  validation: v.undefined_(),
-  min: v.number([v.integer(), v.minValue(0)]),
-  max: v.number([v.integer(), v.maxValue(10000)])
+  validation: v.null_(),
+  min: v.nullable(v.number([v.integer(), v.minValue(0)])),
+  max: v.nullable(v.number([v.integer(), v.maxValue(10000)]))
 };
 
 const userFormLongTextFieldSchema = v.union([
@@ -159,7 +198,7 @@ const userFormLongTextFieldSchema = v.union([
 const baseUserFormNumberFieldSchema = {
   ...baseUserFormFieldSchemas,
   type: v.literal('number'),
-  validation: v.undefined_(),
+  validation: v.null_(),
   integer: v.boolean()
 };
 
@@ -179,8 +218,8 @@ const userFormNumberFieldSchema = v.union([
   v.object({
     ...baseUserFormNumberFieldSchema,
     validation: v.union([v.literal('between'), v.literal('not-between')]),
-    min: v.number([v.minValue(lower32BitIntLimit), v.maxValue(upper32BitIntLimit)]),
-    max: v.number([v.minValue(lower32BitIntLimit), v.maxValue(upper32BitIntLimit)])
+    min: v.nullable(v.number([v.minValue(lower32BitIntLimit), v.maxValue(upper32BitIntLimit)])),
+    max: v.nullable(v.number([v.minValue(lower32BitIntLimit), v.maxValue(upper32BitIntLimit)]))
   })
 ]);
 
@@ -199,7 +238,7 @@ const userFormCheckboxFieldSchema = v.object({
 const baseUserFormSelectMultipleFieldSchema = {
   ...baseUserFormFieldSchemas,
   type: v.literal('select-multiple'),
-  validation: v.undefined_(),
+  validation: v.null_(),
   options: v.array(v.string([v.minLength(1), v.maxLength(100)]), [v.minLength(2), v.maxLength(100)])
 };
 
@@ -220,8 +259,8 @@ const userFormSelectMultipleFieldSchema = v.union([
   v.object({
     ...baseUserFormSelectMultipleFieldSchema,
     validation: v.union([v.literal('between'), v.literal('not-between')]),
-    min: v.number([v.integer(), v.minValue(0), v.maxValue(100)]),
-    max: v.number([v.integer(), v.minValue(0), v.maxValue(100)])
+    min: v.nullable(v.number([v.integer(), v.minValue(0), v.maxValue(100)])),
+    max: v.nullable(v.number([v.integer(), v.minValue(0), v.maxValue(100)]))
   })
 ]);
 
@@ -238,7 +277,7 @@ const baseUserFormDateTimeFieldSchemas = {
   ...baseUserFormFieldSchemas,
   type: v.literal('datetime'),
   onlyDate: v.boolean(),
-  validation: v.undefined_()
+  validation: v.null_()
 };
 
 const userFormDateTimeFieldSchema = v.union([
@@ -260,11 +299,12 @@ const userFormDateTimeFieldSchema = v.union([
   v.object({
     ...baseUserFormDateTimeFieldSchemas,
     validation: v.union([v.literal('between'), v.literal('not-between')]),
-    min: v.number([
-      v.minValue(oldestDatePossible.getTime()),
-      v.maxValue(maxPossibleDate.getTime())
-    ]),
-    max: v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())])
+    min: v.nullable(
+      v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())])
+    ),
+    max: v.nullable(
+      v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())])
+    )
   })
 ]);
 
@@ -278,8 +318,6 @@ export const userFormFieldSchema = v.union([
   userFormScaleFieldSchema,
   userFormDateTimeFieldSchema
 ]);
-
-v.record(v.string([v.length(8)]), v.string([v.minLength(0), v.maxLength(10000)]));
 
 export const userFormFieldResponseSchema = v.record(
   v.string([v.length(8)]),

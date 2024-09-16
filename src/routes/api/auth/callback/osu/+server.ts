@@ -119,7 +119,8 @@ export const GET = (async ({ url, cookies, getClientAddress, request }) => {
 
   const discordAuthUrl = discordMainAuth.generateAuthUrl({
     scope: ['identify'],
-    state: redirectUri ? decodeURI(redirectUri) : undefined
+    state: redirectUri ? decodeURI(redirectUri) : undefined,
+    prompt: 'consent'
   });
 
   const osuSessionData: AuthSession['osu'] = {

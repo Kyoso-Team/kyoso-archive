@@ -10,7 +10,15 @@ const config = {
     adapter: adapter(),
     alias: {
       $trpc: `${cwd}/src/trpc`,
-      $db: `${cwd}/src/db`
+      $db: `${cwd}/src/db`,
+      $tests: `${cwd}/tests`
+    },
+    typescript: {
+      config: (config) => {
+        config.include.push('../scripts/**/*.ts');
+        config.include.push('../tests/**/*.ts');
+        return config;
+      }
     }
   }
 };
