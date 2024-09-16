@@ -1,5 +1,5 @@
-import * as v from 'valibot';
 import { writable } from 'svelte/store';
+import * as v from 'valibot';
 import { arraysHaveSameElements } from '$lib/utils';
 import type { AnyForm } from '$lib/types';
 

@@ -1,12 +1,12 @@
 <script lang="ts">
+  import { getToastStore } from '@skeletonlabs/skeleton';
+  import { modMultiplierChecks } from '$lib/checks';
+  import { Form, Number, Section, SelectMultiple } from '$lib/components/form';
   import * as f from '$lib/form/validation';
-  import { Form, Number, SelectMultiple, Section } from '$lib/components/form';
   import { createForm } from '$lib/stores';
   import { keys, toastError } from '$lib/utils';
-  import { modMultiplierChecks } from '$lib/checks';
-  import { getToastStore } from '@skeletonlabs/skeleton';
-  import type { ModMultiplier } from '$lib/types';
   import type { Tournament } from '$db';
+  import type { ModMultiplier } from '$lib/types';
 
   export let show: boolean;
   export let modMultipliersHaveUpdated: boolean;

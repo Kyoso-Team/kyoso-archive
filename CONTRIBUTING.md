@@ -123,11 +123,8 @@ Structure to follow when writing Svelte components.
 
 ```svelte
 <script lang="ts">
-  // Default imports
-  import env from '$lib/env';
-  // Destructured imports
+  // Imports
   import { onMount } from 'svelte';
-  // Type imports
   import type { PageServerData } from './$types';
 
   // Type definitions

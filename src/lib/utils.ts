@@ -2,8 +2,8 @@
 import { TRPCClientError } from '@trpc/client';
 import { loading } from '$lib/stores';
 import type { ToastStore } from '@skeletonlabs/skeleton';
-import type { InferEnum, PaginationSettings, PopupSettings } from '$lib/types';
 import type { StaffPermission } from '$db';
+import type { InferEnum, PaginationSettings, PopupSettings } from '$lib/types';
 
 /**
  * Tailwind's default colors as a record

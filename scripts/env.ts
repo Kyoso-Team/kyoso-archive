@@ -1,5 +1,5 @@
-import * as v from 'valibot';
 import { config } from 'dotenv';
+import * as v from 'valibot';
 
 config();
 

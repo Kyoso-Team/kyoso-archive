@@ -1,18 +1,18 @@
 <script lang="ts">
-  import { trpc } from '$lib/clients';
-  import { page } from '$app/stores';
-  import { goto } from '$app/navigation';
   import { getToastStore } from '@skeletonlabs/skeleton';
-  import { Form, Section, Text, Number, Select, Checkbox } from '$lib/components/form';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { tournamentChecks } from '$lib/checks';
+  import { trpc } from '$lib/clients';
+  import { Checkbox, Form, Number, Section, Select, Text } from '$lib/components/form';
+  import {
+    baseTeamSettingsFormSchemas,
+    baseTournamentFormSchemas,
+    rankRangeFormSchemas,
+    tournamentTypeOptions
+  } from '$lib/form/common';
   import { createForm, loading } from '$lib/stores';
   import { displayError, toastError, toastSuccess } from '$lib/utils';
-  import {
-    tournamentTypeOptions,
-    baseTournamentFormSchemas,
-    baseTeamSettingsFormSchemas,
-    rankRangeFormSchemas
-  } from '$lib/form/common';
-  import { tournamentChecks } from '$lib/checks';
   import type { TRPCRouterOutputs } from '$lib/types';
 
   export let show: boolean;

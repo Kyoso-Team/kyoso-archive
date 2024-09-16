@@ -1,10 +1,10 @@
 <script lang="ts">
   import UserMenu from './UserMenu.svelte';
+  import { Menu } from 'lucide-svelte';
   import { AppBar, Avatar, popup } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
   import { page } from '$app/stores';
   import { KyosoHybrid } from '$lib/components/icons';
-  import { Menu } from 'lucide-svelte';
   import type { AuthSession } from '$lib/types';
 
   export let session: AuthSession | undefined;

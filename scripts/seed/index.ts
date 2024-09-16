@@ -1,14 +1,11 @@
-import postgres from 'postgres';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { config } from 'dotenv';
+import { and, inArray, not, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
-import { and, inArray, not, sql } from 'drizzle-orm';
-import { Client as OsuClient, Auth as OsuAuth } from 'osu-web.js';
-import { config } from 'dotenv';
 import { createSpinner } from 'nanospinner';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
-import { tournament5wc2023 } from './tournaments/5wc_2023';
-import { getEnv } from '../env';
-import { r } from './utils';
+import { Auth as OsuAuth, Client as OsuClient } from 'osu-web.js';
+import postgres from 'postgres';
 import {
   Ban,
   Country,
@@ -19,9 +16,12 @@ import {
   Session,
   User
 } from '../../src/lib/server/db/schema';
-import type { OAuthToken } from '../../src/lib/types';
+import { getEnv } from '../env';
+import { tournament5wc2023 } from './tournaments/5wc_2023';
+import { r } from './utils';
 import type { User as DiscordOAuthUser } from 'discord-oauth2';
 import type { UserExtended } from 'osu-web.js';
+import type { OAuthToken } from '../../src/lib/types';
 
 config();
 

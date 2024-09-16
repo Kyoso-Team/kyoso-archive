@@ -1,13 +1,13 @@
 import { userIds } from '../utils';
-import type { SeedTournament } from './type';
 import type {
   BWSValues,
   RankRange,
   RefereeSettings,
   TeamSettings,
-  TournamentOtherDates,
-  TournamentLink
+  TournamentLink,
+  TournamentOtherDates
 } from '../../../src/lib/types';
+import type { SeedTournament } from './type';
 
 export const tournament5wc2023: SeedTournament = {
   data: {

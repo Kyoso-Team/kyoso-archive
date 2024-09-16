@@ -1,21 +1,21 @@
 <script lang="ts">
   import '../app.postcss';
-  import { NavBar, Backdrop } from '$lib/components/layout';
-  import { showNavBar, loading, devMenuCtx } from '$lib/stores';
+  import { Loader2 } from 'lucide-svelte';
+  import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
   import {
+    AppShell,
     initializeStores,
     setInitialClassState,
-    AppShell,
     storePopup,
     Toast
   } from '@skeletonlabs/skeleton';
-  import { Loader2 } from 'lucide-svelte';
-  import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-  import { fly } from 'svelte/transition';
-  import { onMount } from 'svelte';
-  import { page } from '$app/stores';
   import { inject } from '@vercel/analytics';
+  import { onMount } from 'svelte';
+  import { fly } from 'svelte/transition';
   import { dev } from '$app/environment';
+  import { page } from '$app/stores';
+  import { Backdrop, NavBar } from '$lib/components/layout';
+  import { devMenuCtx, loading, showNavBar } from '$lib/stores';
   import type { DevMenu } from '$lib/components/layout';
   import type { LayoutServerData } from './$types';
 

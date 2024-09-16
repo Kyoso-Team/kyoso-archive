@@ -1,16 +1,16 @@
-import { env } from '$lib/server/env';
 import { redirect } from '@sveltejs/kit';
-import { signJWT, pick } from '$lib/server/utils';
-import { future } from '$lib/server/sql';
-import { upsertOsuUser, createSession } from '$lib/server/auth';
-import { db, osuAuth, discordMainAuth } from '$lib/server/services';
-import { Ban, DiscordUser, OsuUser, User } from '$db';
 import { and, eq, isNull, or, sql } from 'drizzle-orm';
+import { Ban, DiscordUser, OsuUser, User } from '$db';
+import { createSession, upsertOsuUser } from '$lib/server/auth';
 import { getSession } from '$lib/server/context';
+import { env } from '$lib/server/env';
 import { catcher, error } from '$lib/server/error';
 import { recordExists } from '$lib/server/queries';
-import type { RequestHandler } from './$types';
+import { db, discordMainAuth, osuAuth } from '$lib/server/services';
+import { future } from '$lib/server/sql';
+import { pick, signJWT } from '$lib/server/utils';
 import type { AuthSession } from '$lib/types';
+import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, cookies, getClientAddress, request }) => {
   const currentSession = getSession('api', cookies);

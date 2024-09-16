@@ -1,8 +1,8 @@
-import { db } from '$lib/server/services';
-import { Session } from '$db';
-import { validateCronSecret } from '$lib/server/request';
 import { and, eq, lte, sql } from 'drizzle-orm';
+import { Session } from '$db';
 import { catcher } from '$lib/server/error';
+import { validateCronSecret } from '$lib/server/request';
+import { db } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 
 export const DELETE = (async ({ request }) => {

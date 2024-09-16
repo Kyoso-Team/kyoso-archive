@@ -1,13 +1,22 @@
+import { TRPCError } from '@trpc/server';
+import { wrap } from '@typeschema/valibot';
+import { eq } from 'drizzle-orm';
 import * as v from 'valibot';
-import { db, trpc } from '$lib/server/services';
 import { StaffMember, StaffMemberRole, StaffRole, Tournament, TournamentDates } from '$db';
 import { uniqueConstraints } from '$db/constants';
-import { catchUniqueConstraintError$, pick, trpcUnknownError } from '$lib/server/utils';
-import { wrap } from '@typeschema/valibot';
+import {
+  tournamentChecks,
+  tournamentDatesChecks,
+  tournamentLinksChecks,
+  tournamentModMultipliersChecks,
+  tournamentOtherDatesChecks
+} from '$lib/checks';
+import { maxPossibleDate, oldestDatePossible } from '$lib/constants';
+import { checks } from '$lib/server/checks';
 import { getSession, getStaffMember, getTournament } from '$lib/server/context';
-import { TRPCError } from '@trpc/server';
+import { db, trpc } from '$lib/server/services';
+import { catchUniqueConstraintError$, pick, trpcUnknownError } from '$lib/server/utils';
 import { hasPermissions, isDatePast, sortByKey } from '$lib/utils';
-import { eq } from 'drizzle-orm';
 import {
   bwsValuesSchema,
   modMultiplierSchema,
@@ -20,15 +29,6 @@ import {
   urlSlugSchema
 } from '$lib/validation';
 import { rateLimitMiddleware } from '$trpc/middleware';
-import { checks } from '$lib/server/checks';
-import {
-  tournamentChecks,
-  tournamentDatesChecks,
-  tournamentLinksChecks,
-  tournamentModMultipliersChecks,
-  tournamentOtherDatesChecks
-} from '$lib/checks';
-import { maxPossibleDate, oldestDatePossible } from '$lib/constants';
 
 const catchUniqueConstraintError = catchUniqueConstraintError$([
   {

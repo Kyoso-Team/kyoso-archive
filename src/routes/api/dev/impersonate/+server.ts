@@ -1,19 +1,19 @@
-import * as v from 'valibot';
-import { env } from '$lib/server/env';
 import { error } from '@sveltejs/kit';
-import { getSession } from '$lib/server/context';
-import { parseRequestBody } from '$lib/server/request';
-import { positiveIntSchema } from '$lib/validation';
-import { db } from '$lib/server/services';
-import { Ban, DiscordUser, OsuUser, Session, User } from '$db';
 import { and, eq, isNull, sql } from 'drizzle-orm';
-import { apiError, pick, signJWT } from '$lib/server/utils';
+import * as v from 'valibot';
+import { Ban, DiscordUser, OsuUser, Session, User } from '$db';
 import { createSession } from '$lib/server/auth';
-import { recordExists } from '$lib/server/queries';
+import { getSession } from '$lib/server/context';
+import { env } from '$lib/server/env';
 import { catcher } from '$lib/server/error';
+import { recordExists } from '$lib/server/queries';
+import { parseRequestBody } from '$lib/server/request';
+import { db } from '$lib/server/services';
 import { isNullOrFuture } from '$lib/server/sql';
-import type { RequestHandler } from './$types';
+import { apiError, pick, signJWT } from '$lib/server/utils';
+import { positiveIntSchema } from '$lib/validation';
 import type { AuthSession } from '$lib/types';
+import type { RequestHandler } from './$types';
 
 export const PUT = (async ({ cookies, route, getClientAddress, request }) => {
   if (env.NODE_ENV !== 'development') {

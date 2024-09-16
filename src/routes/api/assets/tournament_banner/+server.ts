@@ -1,18 +1,18 @@
-import * as v from 'valibot';
 import { error } from '@sveltejs/kit';
-import { generateFileId, pick, apiError } from '$lib/server/utils';
-import { past, future } from '$lib/server/sql';
-import { db } from '$lib/server/services';
-import { Tournament, TournamentDates } from '$db';
 import { and, eq, isNotNull, isNull, or } from 'drizzle-orm';
-import { boolStringSchema, fileIdSchema, fileSchema, positiveIntSchema } from '$lib/validation';
-import { transformFile } from '$lib/server/files';
-import { getSession, getStaffMember } from '$lib/server/context';
-import { parseSearchParams, parseFormData } from '$lib/server/request';
-import { convertBytes, formatDigits } from '$lib/utils';
+import * as v from 'valibot';
+import { Tournament, TournamentDates } from '$db';
 import { checks } from '$lib/server/checks';
-import type { RequestHandler } from './$types';
+import { getSession, getStaffMember } from '$lib/server/context';
+import { transformFile } from '$lib/server/files';
+import { parseFormData, parseSearchParams } from '$lib/server/request';
+import { db } from '$lib/server/services';
+import { future, past } from '$lib/server/sql';
+import { apiError, generateFileId, pick } from '$lib/server/utils';
+import { convertBytes, formatDigits } from '$lib/utils';
+import { boolStringSchema, fileIdSchema, fileSchema, positiveIntSchema } from '$lib/validation';
 import type { Assets } from '$lib/types';
+import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, cookies, route, setHeaders }) => {
   const params = await parseSearchParams('api', url, {

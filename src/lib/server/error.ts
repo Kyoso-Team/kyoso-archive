@@ -1,8 +1,8 @@
-import postgres from 'postgres';
-import { isOsuJSError } from 'osu-web.js';
 import { error as sveltekitError } from '@sveltejs/kit';
 import { TRPCError } from '@trpc/server';
 import { getHTTPStatusCodeFromError } from '@trpc/server/http';
+import { isOsuJSError } from 'osu-web.js';
+import postgres from 'postgres';
 import type { TRPC_ERROR_CODE_KEY } from '@trpc/server/rpc';
 import type { ErrorInside } from '$lib/types';
 

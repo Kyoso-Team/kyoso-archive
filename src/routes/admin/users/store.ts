@@ -1,9 +1,9 @@
 import { get, writable } from 'svelte/store';
 import { pushState } from '$app/navigation';
-import { trpc } from '$lib/clients';
 import { page } from '$app/stores';
-import { displayError } from '$lib/utils';
+import { trpc } from '$lib/clients';
 import { loading } from '$lib/stores';
+import { displayError } from '$lib/utils';
 import type { ToastStore } from '@skeletonlabs/skeleton';
 import type { Ban, User } from '$db';
 import type { TRPCRouterOutputs } from '$lib/types';

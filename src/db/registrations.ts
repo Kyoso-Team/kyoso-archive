@@ -1,4 +1,4 @@
-import type { AnyPgColumn } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import {
   bigint,
   bigserial,
@@ -16,7 +16,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { InviteReason, InviteStatus, StaffColor, StaffPermission, Tournament, User } from '.';
 import { timestampConfig, uniqueConstraints } from './constants';
-import { sql } from 'drizzle-orm';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 /* In a tournament, order 1-5 are reserved as follows:
   1- Debugger

@@ -1,10 +1,10 @@
-import jwt from 'jsonwebtoken';
-import postgres from 'postgres';
-import { env } from '$lib/server/env';
-import { customAlphabet } from 'nanoid';
-import { logError } from './error';
 import { error } from '@sveltejs/kit';
 import { TRPCError } from '@trpc/server';
+import jwt from 'jsonwebtoken';
+import { customAlphabet } from 'nanoid';
+import postgres from 'postgres';
+import { env } from '$lib/server/env';
+import { logError } from './error';
 import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
 
 export function signJWT<T>(data: T) {

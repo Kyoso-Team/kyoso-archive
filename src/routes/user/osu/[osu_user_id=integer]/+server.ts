@@ -1,9 +1,9 @@
 import { redirect } from '@sveltejs/kit';
-import { pick } from '$lib/server/utils';
-import { db } from '$lib/server/services';
-import { User } from '$db';
 import { eq } from 'drizzle-orm';
+import { User } from '$db';
 import { catcher, error } from '$lib/server/error';
+import { db } from '$lib/server/services';
+import { pick } from '$lib/server/utils';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ params }) => {

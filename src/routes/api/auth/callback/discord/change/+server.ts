@@ -1,14 +1,14 @@
 import { error, redirect } from '@sveltejs/kit';
-import { apiError, signJWT } from '$lib/server/utils';
+import { eq } from 'drizzle-orm';
+import { User } from '$db';
+import { upsertDiscordUser } from '$lib/server/auth';
+import { getSession } from '$lib/server/context';
 import {
   db,
   discordChangeAccountAuth,
   discordChangeAccountAuthOptions
 } from '$lib/server/services';
-import { User } from '$db';
-import { upsertDiscordUser } from '$lib/server/auth';
-import { eq } from 'drizzle-orm';
-import { getSession } from '$lib/server/context';
+import { apiError, signJWT } from '$lib/server/utils';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { AuthSession } from '$lib/types';
 import type { RequestHandler } from './$types';

@@ -1,8 +1,8 @@
+import { initTRPC } from '@trpc/server';
 import superjson from 'superjson';
 import { env } from '$lib/server/env';
-import { initTRPC } from '@trpc/server';
-import type { TRPCContext } from '$lib/types';
 import type { RequestEvent } from '@sveltejs/kit';
+import type { TRPCContext } from '$lib/types';
 
 export async function createTRPCContext({
   request,

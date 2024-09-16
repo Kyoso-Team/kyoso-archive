@@ -1,10 +1,10 @@
 <script lang="ts">
-  import * as f from '$lib/form/validation';
+  import { invalidateAll } from '$app/navigation';
+  import { page } from '$app/stores';
   import { Form, Number } from '$lib/components/form';
+  import * as f from '$lib/form/validation';
   import { createForm, loading } from '$lib/stores';
   import { displayError, toastSuccess } from '$lib/utils';
-  import { page } from '$app/stores';
-  import { invalidateAll } from '$app/navigation';
   import type { ToastStore } from '@skeletonlabs/skeleton';
   import type { AuthSession } from '$lib/types';
 

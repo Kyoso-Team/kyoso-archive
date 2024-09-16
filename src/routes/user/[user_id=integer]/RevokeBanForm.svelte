@@ -1,12 +1,12 @@
 <script lang="ts">
-  import * as f from '$lib/form/validation';
-  import { trpc } from '$lib/clients';
-  import { page } from '$app/stores';
   import { getToastStore } from '@skeletonlabs/skeleton';
+  import { invalidate } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { trpc } from '$lib/clients';
   import { Form, Text } from '$lib/components/form';
+  import * as f from '$lib/form/validation';
   import { createForm, loading } from '$lib/stores';
   import { displayError, toastSuccess } from '$lib/utils';
-  import { invalidate } from '$app/navigation';
 
   export let show: boolean;
   export let banId: number;

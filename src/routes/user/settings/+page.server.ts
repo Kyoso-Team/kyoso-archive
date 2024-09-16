@@ -1,10 +1,10 @@
-import platform from 'platform';
-import { db } from '$lib/server/services';
-import { Session, User } from '$db';
-import { pick } from '$lib/server/utils';
 import { and, desc, eq, not } from 'drizzle-orm';
+import platform from 'platform';
+import { Session, User } from '$db';
 import { getSession } from '$lib/server/context';
 import { catcher } from '$lib/server/error';
+import { db } from '$lib/server/services';
+import { pick } from '$lib/server/utils';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ cookies, depends }) => {

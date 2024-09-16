@@ -1,17 +1,17 @@
-import * as v from 'valibot';
-import { db, trpc } from '$lib/server/services';
+import { TRPCError } from '@trpc/server';
 import { wrap } from '@typeschema/valibot';
+import { and, eq, gt, inArray, sql } from 'drizzle-orm';
+import * as v from 'valibot';
 import { StaffColor, StaffPermission, StaffRole } from '$db';
 import { uniqueConstraints } from '$db/constants';
-import { and, eq, gt, inArray, sql } from 'drizzle-orm';
-import { catchUniqueConstraintError$, pick, trpcUnknownError } from '$lib/server/utils';
-import { positiveIntSchema } from '$lib/validation';
-import { TRPCError } from '@trpc/server';
-import { getSession, getStaffMember, getTournament } from '$lib/server/context';
 import { checks } from '$lib/server/checks';
-import { rateLimitMiddleware } from '$trpc/middleware';
+import { getSession, getStaffMember, getTournament } from '$lib/server/context';
 import { getCount } from '$lib/server/queries';
+import { db, trpc } from '$lib/server/services';
+import { catchUniqueConstraintError$, pick, trpcUnknownError } from '$lib/server/utils';
 import { arraysHaveSameElements } from '$lib/utils';
+import { positiveIntSchema } from '$lib/validation';
+import { rateLimitMiddleware } from '$trpc/middleware';
 
 const DEFAULT_ROLES = ['Host', 'Debugger'];
 

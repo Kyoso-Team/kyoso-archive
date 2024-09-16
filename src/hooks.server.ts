@@ -1,24 +1,24 @@
-import { env } from '$lib/server/env';
-import { router } from '$trpc/router';
-import { createTRPCHandle } from 'trpc-sveltekit';
-import { verifyJWT, pick, signJWT } from '$lib/server/utils';
 import { redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
-import { Session, DiscordUser, OsuUser, User } from '$db';
+import { TRPCError } from '@trpc/server';
 import { and, eq, not, sql } from 'drizzle-orm';
 import { unionAll } from 'drizzle-orm/pg-core';
+import { createTRPCHandle } from 'trpc-sveltekit';
+import { DiscordUser, OsuUser, Session, User } from '$db';
 import { upsertDiscordUser, upsertOsuUser } from '$lib/server/auth';
-import { ServerError, catcher, error, logError } from '$lib/server/error';
-import { TRPCError } from '@trpc/server';
+import { env } from '$lib/server/env';
+import { catcher, error, logError, ServerError } from '$lib/server/error';
 import {
+  createTRPCContext,
   db,
-  ratelimit,
-  osuAuth,
   discordMainAuth,
   discordMainAuthOptions,
-  createTRPCContext
+  osuAuth,
+  ratelimit
 } from '$lib/server/services';
-import type { Cookies, HandleServerError, Handle, RequestEvent } from '@sveltejs/kit';
+import { pick, signJWT, verifyJWT } from '$lib/server/utils';
+import { router } from '$trpc/router';
+import type { Cookies, Handle, HandleServerError, RequestEvent } from '@sveltejs/kit';
 import type { AuthSession } from '$lib/types';
 
 const trpcHandle = createTRPCHandle({
