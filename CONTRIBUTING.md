@@ -23,16 +23,17 @@ If you're interested in making a signficant contribution, it's recommended that 
 - [PostgreSQL](https://www.postgresql.org): The database itself
 - [tRPC](https://trpc.io): Backend / API (in most cases)
 
-**Hosting**
+**OAuth Providers**
 
-- [Bunny](https://bunny.net): File storage
-- [Upstash](https://upstash.com): Redis instance (for rate limiting)
-- [Vercel](https://vercel.com): CI/CD and website deployments
+- [osu!](https://osu.ppy.sh/home): Main provider. Required for osu! user data.
+- [Discord](https://discord.com): Required for Discord user data.
+
+**Production Tools**
+
+- [DigitalOcean Spaces](https://www.digitalocean.com/products/spaces): File storage
+- [Upstash](https://upstash.com): Redis instance
+- [Vercel](https://vercel.com): Website deployments
 - [Neon](https://neon.tech): Database deployments
-
-**Other**
-
-- [osu!](https://osu.ppy.sh/home) & [Discord](https://discord.com): OAuth providers.
 - [IPInfo](https://ipinfo.io): Get data from IP addresses.
 
 ## Scripts
@@ -67,18 +68,9 @@ Scripts present in the package.json file. Each script must be prepended with `bu
 
 - Node.js v18 or greater installed.
 - Bun latest version installed.
-- Postgres v14 or greater. You can have it hosted on Neon or installed locally.
+- Docker latest version.
 - An osu! account with an OAuth app.
 - A Discord account with an OAuth app.
-- Any storage zone hosted on Bunny. **IMPORTANT:** Do not delete your zone once created. If you've just signed up to Bunny, you have a 14 day trial and when that trial expires, you're still able to read and write to your existing zones but you can no longer create new one's.
-- A Redis database on Upstash.
-- An IPInfo account.
-
-If you prefer, you can use the `docker-compose.yml` file to easily spin up a Postgres, Redis and MinIO (S3 solution) instance. This requires having Docker installed.
-
-```bash
-docker-compose -p kyoso-dev up
-```
 
 ### Setup
 
@@ -89,72 +81,15 @@ git clone https://github.com/Kyoso-Team/kyoso.git
 cd kyoso
 # Install dependencies
 bun install
+# Run Docker containers
+docker-compose -p kyoso-dev up --detach # You can also use the Docker Desktop GUI
 # Run dev server
 bun dev
 ```
 
 ### Environemt Variables
 
-**General**
-
-| Name                 | Type                                       | optional | Description                                                                         |
-| -------------------- | ------------------------------------------ | -------- | ----------------------------------------------------------------------------------- |
-| NODE_ENV             | 'production' \| 'development'              |          | Specify the environment to the Vite compiler.                                       |
-| ENV                  | 'production' \| 'testing' \| 'development' |          | Specify the environment to Kyoso.                                                   |
-| DATABASE_URL         | string                                     |          | URL of the Postgres database you wish to use for development.                       |
-| JWT_SECRET           | string                                     |          | Random string as a secret key used to sign JWT tokens.                              |
-| OWNER                | number                                     |          | osu! user ID of the user who is the owner of the website. Your ID, for development. |
-| TESTERS              | number[]                                   | ✓        | osu! user IDs of the users who are able to provide feedback and test the site       |
-| PUBLIC_CONTACT_EMAIL | string                                     | ✓        | An email address that users can contact for any inquires.                           |
-
-**osu! OAuth**
-
-Log into your osu! account and [create an OAuth application](https://osu.ppy.sh/home/account/edit). The application callback URL must match `PUBLIC_OSU_REDIRECT_URI` and should point to `/api/auth/callback/osu`.
-
-| Name                    | Type   | optional |
-| ----------------------- | ------ | -------- |
-| PUBLIC_OSU_CLIENT_ID    | number |          |
-| OSU_CLIENT_SECRET       | string |          |
-| PUBLIC_OSU_REDIRECT_URI | string |          |
-
-**Discord OAuth**
-
-Log into your Discord account in a browser and [create an OAuth application](https://discord.com/developers/applications). Under the `OAuth2` menu in the UI, you'll find the first four variables. This app must have two redirect URIs: the first one must match `PUBLIC_DISCORD_MAIN_REDIRECT_URI` and should point to `/api/auth/callback/discord`; the second one must match `PUBLIC_DISCORD_CHANGE_ACCOUNT_REDIRECT_URI` and should point to `/api/auth/callback/discord/change`. For the bot token, go under the `Bot` menu, create a bot for the OAuth app and copy its token (no bot permissions need to be specified).
-
-| Name                                       | Type   | optional |
-| ------------------------------------------ | ------ | -------- |
-| PUBLIC_DISCORD_CLIENT_ID                   | string |          |
-| DISCORD_CLIENT_SECRET                      | string |          |
-| PUBLIC_DISCORD_MAIN_REDIRECT_URI           | string |          |
-| PUBLIC_DISCORD_CHANGE_ACCOUNT_REDIRECT_URI | string |          |
-| DISCORD_BOT_TOKEN                          | string |          |
-
-**Bunny Storage**
-
-Log into your Bunny account and [create a storage zone](https://dash.bunny.net/storage). Once the storage zone is selected, head to `FTP & API Access` and there you'll find everything you need.
-
-| Name           | Type   | optional |
-| -------------- | ------ | -------- |
-| BUNNY_HOSTNAME | string |          |
-| BUNNY_USERNAME | string |          |
-| BUNNY_PASSWORD | string |          |
-
-**IPInfo**
-
-Log into your IPInfo account and go to your [dashboard](https://ipinfo.io/account/home), scroll down and copy the access token.
-
-| Name                    | Type   | optional |
-| ----------------------- | ------ | -------- |
-| IPINFO_API_ACCESS_TOKEN | string |          |
-
-**Upstash**
-
-Log into your Upstash account and [create a Redis database](https://console.upstash.com). In the dashboard for the Redis DB, go to the "REST API" section and copy variables.
-
-| Name                     | Type   | optional |
-| ------------------------ | ------ | -------- |
-| UPSTASH_REDIS_REST_URL   | string |          |
-| UPSTASH_REDIS_REST_TOKEN | string |          |
+View the `.env.example` file to see how to setup the necessary environment variables.
 
 ## Code Quality
 

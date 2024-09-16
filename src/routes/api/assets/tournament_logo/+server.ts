@@ -1,39 +1,33 @@
 import * as v from 'valibot';
 import { error } from '@sveltejs/kit';
-import { generateFileId, past, pick, apiError, future } from '$lib/server/utils';
-import { Tournament, db, TournamentDates } from '$db';
+import { generateFileId, pick, apiError } from '$lib/server/utils';
+import { past, future } from '$lib/server/sql';
+import { db } from '$lib/server/services';
+import { Tournament, TournamentDates } from '$db';
 import { and, eq, isNotNull, isNull, or } from 'drizzle-orm';
-import { boolStringSchema, fileIdSchema, fileSchema, positiveIntSchema } from '$lib/schemas';
-import {
-  deleteFile,
-  getFile,
-  parseFormData,
-  transformFile,
-  uploadFile
-} from '$lib/server/helpers/upload';
-import { getSession, getStaffMember, parseSearchParams } from '$lib/server/helpers/api';
-import { convertBytes, formatDigits, hasPermissions } from '$lib/utils';
+import { boolStringSchema, fileIdSchema, fileSchema, positiveIntSchema } from '$lib/validation';
+import { transformFile } from '$lib/server/files';
+import { getSession, getStaffMember } from '$lib/server/context';
+import { parseSearchParams, parseFormData } from '$lib/server/request';
+import { convertBytes, formatDigits } from '$lib/utils';
+import { checks } from '$lib/server/checks';
 import type { RequestHandler } from './$types';
-import type { Assets } from '$types';
+import type { Assets } from '$lib/types';
 
 export const GET = (async ({ url, cookies, route, setHeaders }) => {
-  const params = await parseSearchParams(
-    url,
-    {
-      tournament_id: positiveIntSchema,
-      file_id: fileIdSchema,
-      public: v.optional(boolStringSchema),
-      size: v.union([v.literal('full'), v.literal('sm')], 'be "full" or "sm"')
-    },
-    route
-  );
+  const params = await parseSearchParams('api', url, {
+    tournament_id: positiveIntSchema,
+    file_id: fileIdSchema,
+    public: v.optional(boolStringSchema),
+    size: v.union([v.literal('full'), v.literal('sm')], 'be "full" or "sm"')
+  });
 
   setHeaders({
     'cache-control': 'max-age=604800'
   });
 
-  const session = getSession(cookies);
-  await getStaffMember(session, params.tournament_id, route, !params.public);
+  const session = getSession('api', cookies, true);
+  await getStaffMember('api', session, params.tournament_id, !params.public);
 
   let fileId: string | undefined;
 
@@ -67,11 +61,11 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
   let file!: Blob;
 
   try {
-    file = await getFile(
-      route,
-      'tournament-logos',
-      `${formatDigits(params.tournament_id, 9)}-${params.size || 'sm'}.jpeg`
-    );
+    // file = await getFile(
+    //   route,
+    //   'tournament-logos',
+    //   `${formatDigits(params.tournament_id, 9)}-${params.size || 'sm'}.jpeg`
+    // );
   } catch (err) {
     throw await apiError(err, 'Getting the file', route);
   }
@@ -80,16 +74,18 @@ export const GET = (async ({ url, cookies, route, setHeaders }) => {
 }) satisfies RequestHandler;
 
 export const PUT = (async ({ cookies, route, request }) => {
-  const session = getSession(cookies, true);
-  const data: Assets['tournamentLogo']['put'] = await parseFormData(request, route, {
+  const session = getSession('api', cookies, true);
+  const data: Assets['tournamentLogo']['put'] = await parseFormData('api', request, {
     file: fileSchema,
     tournamentId: positiveIntSchema
   });
-  const staffMember = await getStaffMember(session, data.tournamentId, route, true);
-
-  if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament', 'manage_assets'])) {
-    error(401, "You do not have the required permissions to upload this tournament's logo");
-  }
+  const staffMember = await getStaffMember('api', session, data.tournamentId, true);
+  checks.api.staffHasPermissions(staffMember, [
+    'host',
+    'debug',
+    'manage_tournament',
+    'manage_assets'
+  ]);
 
   const fileId = generateFileId();
   const names = {
@@ -97,7 +93,8 @@ export const PUT = (async ({ cookies, route, request }) => {
     sm: `${formatDigits(data.tournamentId, 9)}-sm.jpeg`
   };
 
-  const files = await transformFile({
+  const _files = await transformFile({
+    inside: 'api',
     file: data.file,
     validations: {
       maxSize: convertBytes.mb(25),
@@ -120,7 +117,7 @@ export const PUT = (async ({ cookies, route, request }) => {
   });
 
   try {
-    await Promise.all(files.map((file) => uploadFile(route, 'tournament-logos', file)));
+    //await Promise.all(files.map((file) => uploadFile(route, 'tournament-logos', file)));
   } catch (err) {
     throw await apiError(err, 'Uploading the files', route);
   }
@@ -143,17 +140,19 @@ export const PUT = (async ({ cookies, route, request }) => {
 }) satisfies RequestHandler;
 
 export const DELETE = (async ({ cookies, route, request }) => {
-  const session = getSession(cookies, true);
-  const data: Assets['tournamentLogo']['delete'] = await parseFormData(request, route, {
+  const session = getSession('api', cookies, true);
+  const data: Assets['tournamentLogo']['delete'] = await parseFormData('api', request, {
     tournamentId: positiveIntSchema
   });
-  const staffMember = await getStaffMember(session, data.tournamentId, route, true);
+  const staffMember = await getStaffMember('api', session, data.tournamentId, true);
+  checks.api.staffHasPermissions(staffMember, [
+    'host',
+    'debug',
+    'manage_tournament',
+    'manage_assets'
+  ]);
 
-  if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament', 'manage_assets'])) {
-    error(401, "You do not have the required permissions to delete this tournament's logo");
-  }
-
-  const names = {
+  const _names = {
     full: `${formatDigits(data.tournamentId, 9)}-full.jpeg`,
     sm: `${formatDigits(data.tournamentId, 9)}-sm.jpeg`
   };
@@ -170,9 +169,9 @@ export const DELETE = (async ({ cookies, route, request }) => {
   }
 
   try {
-    await Promise.all(
-      Object.values(names).map((fileName) => deleteFile(route, 'tournament-logos', fileName))
-    );
+    // await Promise.all(
+    //   Object.values(names).map((fileName) => deleteFile(route, 'tournament-logos', fileName))
+    // );
   } catch (err) {
     throw await apiError(err, 'Deleting the files', route);
   }

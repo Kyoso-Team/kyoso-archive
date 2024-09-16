@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SEO } from '$components/general';
+  import { SEO } from '$lib/components/general';
   import { page } from '$app/stores';
   import { portal } from 'svelte-portal';
   // import { Backdrop, Modal, UploadImgModal } from '$components/layout';

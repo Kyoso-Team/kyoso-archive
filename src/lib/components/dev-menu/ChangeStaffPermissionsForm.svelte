@@ -1,12 +1,12 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
-  import { SelectMultiple, Form } from '$components/form';
-  import { createForm, loading } from '$stores';
+  import * as f from '$lib/form/validation';
+  import { SelectMultiple, Form } from '$lib/components/form';
+  import { createForm, loading } from '$lib/stores';
   import { displayError, keys, toastSuccess } from '$lib/utils';
   import { invalidateAll } from '$app/navigation';
-  import { staffPermissionsOptions } from '$lib/constants';
+  import { staffPermissionsOptions } from '$lib/form/common';
   import type { ToastStore } from '@skeletonlabs/skeleton';
-  import type { InferEnum } from '$types';
+  import type { InferEnum } from '$lib/types';
   import type { StaffPermission } from '$db';
 
   export let show: boolean;

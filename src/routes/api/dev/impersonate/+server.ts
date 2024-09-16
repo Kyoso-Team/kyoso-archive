@@ -1,54 +1,43 @@
 import * as v from 'valibot';
-import env from '$lib/server/env';
+import { env } from '$lib/server/env';
 import { error } from '@sveltejs/kit';
-import { getSession, parseRequestBody } from '$lib/server/helpers/api';
-import { positiveIntSchema } from '$lib/schemas';
-import { Ban, DiscordUser, OsuUser, Session, User, db } from '$db';
-import { and, eq, isNull, or, sql } from 'drizzle-orm';
-import { apiError, future, pick, signJWT } from '$lib/server/utils';
-import { createSession } from '$lib/server/helpers/auth';
+import { getSession } from '$lib/server/context';
+import { parseRequestBody } from '$lib/server/request';
+import { positiveIntSchema } from '$lib/validation';
+import { db } from '$lib/server/services';
+import { Ban, DiscordUser, OsuUser, Session, User } from '$db';
+import { and, eq, isNull, sql } from 'drizzle-orm';
+import { apiError, pick, signJWT } from '$lib/server/utils';
+import { createSession } from '$lib/server/auth';
+import { recordExists } from '$lib/server/queries';
+import { catcher } from '$lib/server/error';
+import { isNullOrFuture } from '$lib/server/sql';
 import type { RequestHandler } from './$types';
-import type { AuthSession } from '$types';
+import type { AuthSession } from '$lib/types';
 
 export const PUT = (async ({ cookies, route, getClientAddress, request }) => {
   if (env.NODE_ENV !== 'development') {
     throw error(403, 'This endpoint is only for use within a development environment');
   }
 
-  const session = getSession(cookies, true);
+  const session = getSession('api', cookies, true);
   const userAgent = request.headers.get('User-Agent');
   const body = await parseRequestBody(
+    'api',
     request,
     v.object({
       userId: positiveIntSchema
-    }),
-    route
+    })
   );
 
   if (!userAgent) {
     error(400, '"User-Agent" header is undefined');
   }
 
-  let isBanned!: boolean;
-
-  try {
-    isBanned = await db
-      .execute(
-        sql`
-    select exists (
-      select 1 from ${Ban}
-      where ${and(
-        eq(Ban.issuedToUserId, body.userId),
-        and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
-      )}
-      limit 1
-    )
-  `
-      )
-      .then((bans) => !!bans[0]?.exists);
-  } catch (err) {
-    throw await apiError(err, "Verifying the user to impersonate's ban status", route);
-  }
+  const isBanned = await recordExists(
+    Ban,
+    and(eq(Ban.issuedToUserId, body.userId), and(isNull(Ban.revokedAt), isNullOrFuture(Ban.liftAt)))
+  ).catch(catcher('api', "Verifying the user to impersonate's ban status"));
 
   if (isBanned) {
     error(403, 'The user you want to impersonate is banned');
@@ -101,7 +90,7 @@ export const PUT = (async ({ cookies, route, getClientAddress, request }) => {
     throw await apiError(err, 'Getting the user to impersonate', route);
   }
 
-  const newSession = await createSession(body.userId, getClientAddress(), userAgent, route);
+  const newSession = await createSession('api', body.userId, getClientAddress(), userAgent);
 
   const authSession: AuthSession = {
     sessionId: newSession.id,

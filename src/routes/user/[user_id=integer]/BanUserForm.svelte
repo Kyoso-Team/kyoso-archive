@@ -1,11 +1,11 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
-  import { trpc } from '$lib/trpc';
+  import * as f from '$lib/form/validation';
+  import { trpc } from '$lib/clients';
   import { page } from '$app/stores';
   import { invalidate } from '$app/navigation';
   import { getToastStore } from '@skeletonlabs/skeleton';
-  import { Form, Section, Text, Number, Checkbox } from '$components/form';
-  import { createForm, loading } from '$stores';
+  import { Form, Section, Text, Number, Checkbox } from '$lib/components/form';
+  import { createForm, loading } from '$lib/stores';
   import { displayError, toastSuccess } from '$lib/utils';
 
   export let show: boolean;

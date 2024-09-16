@@ -1,17 +1,17 @@
-import colors from 'tailwindcss/colors';
+//import colors from 'tailwindcss/colors';
 import { TRPCClientError } from '@trpc/client';
-import { loading } from '$stores';
+import { loading } from '$lib/stores';
 import type { ToastStore } from '@skeletonlabs/skeleton';
-import type { InferEnum, PaginationSettings, PopupSettings } from '$types';
+import type { InferEnum, PaginationSettings, PopupSettings } from '$lib/types';
 import type { StaffPermission } from '$db';
 
 /**
  * Tailwind's default colors as a record
  */
-export const twColors = colors as unknown as Record<
-  string,
-  Record<string, 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900>
->;
+// export const twColors = colors as unknown as Record<
+//   string,
+//   Record<string, 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900>
+// >;
 
 /**
  * ```plain
@@ -291,7 +291,17 @@ export function toastError(toast: ToastStore, message: string) {
   });
 }
 
-export function displayError(toast: ToastStore, err: unknown) {
+export function catcher(toast: ToastStore) {
+  /**
+   * @throws {Error}
+   */
+  return (err: unknown) => displayError(toast, err);
+}
+
+/**
+ * @throws {Error}
+ */
+export function displayError(toast: ToastStore, err: unknown): never {
   loading.set(false);
 
   if (err instanceof TRPCClientError) {

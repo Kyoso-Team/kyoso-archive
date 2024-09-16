@@ -3,11 +3,11 @@
     ImpersonateUserForm,
     ChangePermisisonsForm,
     ChangeStaffPermissionsForm
-  } from '$components/dev-menu';
+  } from '$lib/components/dev-menu';
   import { browser } from '$app/environment';
-  import { loading } from '$stores';
+  import { loading } from '$lib/stores';
   import { fade } from 'svelte/transition';
-  import { Backdrop } from '$components/layout';
+  import { Backdrop } from '$lib/components/layout';
   import { onDestroy, onMount } from 'svelte';
   import {
     getToastStore,
@@ -15,9 +15,9 @@
     setModeCurrent,
     setModeUserPrefers
   } from '@skeletonlabs/skeleton';
-  import { staffPermissionsOptions } from '$lib/constants';
+  import { staffPermissionsOptions } from '$lib/form/common';
   import { toastError } from '$lib/utils';
-  import { devMenuCtx } from '$stores';
+  import { devMenuCtx } from '$lib/stores';
 
   let show = localStorage.getItem('show_dev_menu') === 'false' ? false : true;
   let showImpersonateUserForm = false;

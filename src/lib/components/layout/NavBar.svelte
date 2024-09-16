@@ -3,9 +3,9 @@
   import { AppBar, Avatar, popup } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
   import { page } from '$app/stores';
-  import { KyosoHybrid } from '$components/icons';
+  import { KyosoHybrid } from '$lib/components/icons';
   import { Menu } from 'lucide-svelte';
-  import type { AuthSession } from '$types';
+  import type { AuthSession } from '$lib/types';
 
   export let session: AuthSession | undefined;
   const navLinks = [
