@@ -18,7 +18,12 @@ import { isDatePast, pick, trpcUnknownError } from '$lib/server/utils';
 import { TRPCError } from '@trpc/server';
 import { and, eq, sql } from 'drizzle-orm';
 import { getCount } from '$lib/server/queries';
-import { nonEmptyStringSchema, positiveIntSchema, userFormFieldResponseSchema, userFormFieldSchema } from '$lib/validation';
+import {
+  nonEmptyStringSchema,
+  positiveIntSchema,
+  userFormFieldResponseSchema,
+  userFormFieldSchema
+} from '$lib/validation';
 import { maxPossibleDate, oldestDatePossible } from '$lib/constants';
 import { checkPublicForm, userFormFieldsChecks } from '$lib/checks';
 import { difference, intersection, isNil } from 'lodash';
@@ -430,7 +435,12 @@ const submitFormResponse = trpc.procedure
       }
 
       if (tournamentForm.target === 'staff') {
-        const staffMember = await getStaffMember('trpc', session, tournamentForm.tournamentId, true);
+        const staffMember = await getStaffMember(
+          'trpc',
+          session,
+          tournamentForm.tournamentId,
+          true
+        );
 
         if (!staffMember) {
           throw new TRPCError({
