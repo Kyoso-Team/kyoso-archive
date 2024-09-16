@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Discord } from '$components/icons';
+  import { Discord } from '$lib/components/icons';
   import { X, Search } from 'lucide-svelte';
   import { buildUrl } from 'osu-web.js';
   import { scale } from 'svelte/transition';

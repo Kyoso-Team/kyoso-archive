@@ -1,5 +1,5 @@
-import { catcher, displayError } from '../utils';
-import type { Asset } from '$types';
+import { catcher, displayError } from '$lib/utils';
+import type { Asset } from '$lib/types';
 import type { ToastStore } from '@skeletonlabs/skeleton';
 
 export function createUploadClient<T extends Asset<any, any>>(toast: ToastStore, endpoint: string) {

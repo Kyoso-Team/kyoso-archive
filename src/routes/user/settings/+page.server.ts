@@ -3,13 +3,13 @@ import { db } from '$lib/server/services';
 import { Session, User } from '$db';
 import { pick } from '$lib/server/utils';
 import { and, desc, eq, not } from 'drizzle-orm';
-import { getSession } from '$lib/server/helpers/api';
+import { getSession } from '$lib/server/context';
 import { catcher } from '$lib/server/error';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ cookies, depends }) => {
   depends('reload:user_settings');
-  const session = getSession(cookies, true);
+  const session = getSession('page', cookies, true);
 
   const user = await db
     .select(pick(User, ['apiKey', 'settings']))

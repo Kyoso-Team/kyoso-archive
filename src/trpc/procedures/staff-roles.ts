@@ -5,10 +5,10 @@ import { StaffColor, StaffPermission, StaffRole } from '$db';
 import { uniqueConstraints } from '$db/constants';
 import { and, eq, gt, inArray, sql } from 'drizzle-orm';
 import { catchUniqueConstraintError$, pick, trpcUnknownError } from '$lib/server/utils';
-import { positiveIntSchema } from '$lib/schemas';
+import { positiveIntSchema } from '$lib/validation';
 import { TRPCError } from '@trpc/server';
-import { getSession, getStaffMember, getTournament } from '$lib/server/helpers/trpc';
-import { TRPCChecks } from '$lib/server/helpers/checks';
+import { getSession, getStaffMember, getTournament } from '$lib/server/context';
+import { checks } from '$lib/server/checks';
 import { rateLimitMiddleware } from '$trpc/middleware';
 import { getCount } from '$lib/server/queries';
 import { arraysHaveSameElements } from '$lib/utils';
@@ -36,12 +36,12 @@ const createStaffRole = trpc.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { name, tournamentId } = input;
-    const checks = new TRPCChecks({ action: 'create a staff role for this tournament' });
-    const session = getSession(ctx.cookies, true);
-    const staffMember = await getStaffMember(session, tournamentId, true);
-    checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
+    const session = getSession('trpc', ctx.cookies, true);
+    const staffMember = await getStaffMember('trpc', session, tournamentId, true);
+    checks.trpc.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
     const tournament = await getTournament(
+      'trpc',
       tournamentId,
       {
         tournament: ['deletedAt'],
@@ -49,7 +49,7 @@ const createStaffRole = trpc.procedure
       },
       true
     );
-    checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
+    checks.trpc.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
     let staffRolesCount!: number;
 
@@ -100,14 +100,14 @@ const updateStaffRole = trpc.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { staffRoleId, tournamentId, data } = input;
-    const checks = new TRPCChecks({ action: 'update this staff role' });
-    checks.partialHasValues(data);
+    checks.trpc.partialHasValues(data);
 
-    const session = getSession(ctx.cookies, true);
-    const staffMember = await getStaffMember(session, tournamentId, true);
-    checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
+    const session = getSession('trpc', ctx.cookies, true);
+    const staffMember = await getStaffMember('trpc', session, tournamentId, true);
+    checks.trpc.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
     const tournament = await getTournament(
+      'trpc',
       tournamentId,
       {
         tournament: ['deletedAt'],
@@ -115,7 +115,7 @@ const updateStaffRole = trpc.procedure
       },
       true
     );
-    checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
+    checks.trpc.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
     let staffRole!: Pick<typeof StaffRole.$inferSelect, 'id' | 'name'>;
 
@@ -167,12 +167,12 @@ const swapStaffRoleOrder = trpc.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { tournamentId, swaps } = input;
-    const checks = new TRPCChecks({ action: 'swap the order of these staff roles' });
-    const session = getSession(ctx.cookies, true);
-    const staffMember = await getStaffMember(session, tournamentId, true);
-    checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
+    const session = getSession('trpc', ctx.cookies, true);
+    const staffMember = await getStaffMember('trpc', session, tournamentId, true);
+    checks.trpc.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
     const tournament = await getTournament(
+      'trpc',
       tournamentId,
       {
         tournament: ['deletedAt'],
@@ -180,7 +180,7 @@ const swapStaffRoleOrder = trpc.procedure
       },
       true
     );
-    checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
+    checks.trpc.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
     const filteredSwaps = swaps.reduce(
       (acc, curr) => {
@@ -262,12 +262,12 @@ const deleteStaffRole = trpc.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { tournamentId, staffRoleId } = input;
-    const checks = new TRPCChecks({ action: 'delete this staff role' });
-    const session = getSession(ctx.cookies, true);
-    const staffMember = await getStaffMember(session, tournamentId, true);
-    checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
+    const session = getSession('trpc', ctx.cookies, true);
+    const staffMember = await getStaffMember('trpc', session, tournamentId, true);
+    checks.trpc.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
     const tournament = await getTournament(
+      'trpc',
       tournamentId,
       {
         tournament: ['deletedAt'],
@@ -275,7 +275,7 @@ const deleteStaffRole = trpc.procedure
       },
       true
     );
-    checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
+    checks.trpc.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
     let role: Pick<typeof StaffRole.$inferSelect, 'name'>;
 

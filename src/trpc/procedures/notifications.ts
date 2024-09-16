@@ -3,15 +3,15 @@ import { db, trpc } from '$lib/server/services';
 import { UserNotification } from '$db';
 import { trpcUnknownError } from '$lib/server/utils';
 import { wrap } from '@typeschema/valibot';
-import { getSession } from '$lib/server/helpers/trpc';
+import { getSession } from '$lib/server/context';
 import { and, eq } from 'drizzle-orm';
-import { positiveIntSchema } from '$lib/schemas';
+import { positiveIntSchema } from '$lib/validation';
 
 const markNotificationAsRead = trpc.procedure
   .input(wrap(v.object({ notificationId: positiveIntSchema })))
   .mutation(async ({ ctx, input }) => {
     const { notificationId } = input;
-    const session = getSession(ctx.cookies, true);
+    const session = getSession('trpc', ctx.cookies, true);
 
     try {
       await db
@@ -31,7 +31,7 @@ const markNotificationAsRead = trpc.procedure
   });
 
 const markAllNotificationsAsRead = trpc.procedure.mutation(async ({ ctx }) => {
-  const session = getSession(ctx.cookies, true);
+  const session = getSession('trpc', ctx.cookies, true);
 
   try {
     await db

@@ -4,7 +4,7 @@ import { StaffMember, StaffMemberRole, StaffRole, Tournament, TournamentDates } 
 import { uniqueConstraints } from '$db/constants';
 import { catchUniqueConstraintError$, pick, trpcUnknownError } from '$lib/server/utils';
 import { wrap } from '@typeschema/valibot';
-import { getSession, getStaffMember, getTournament } from '../../lib/server/helpers/trpc';
+import { getSession, getStaffMember, getTournament } from '$lib/server/context';
 import { TRPCError } from '@trpc/server';
 import { hasPermissions, isDatePast, sortByKey } from '$lib/utils';
 import { eq } from 'drizzle-orm';
@@ -18,16 +18,16 @@ import {
   tournamentLinkSchema,
   tournamentOtherDatesSchema,
   urlSlugSchema
-} from '$lib/schemas';
+} from '$lib/validation';
 import { rateLimitMiddleware } from '$trpc/middleware';
-import { TRPCChecks } from '../../lib/server/helpers/checks';
+import { checks } from '$lib/server/checks';
 import {
   tournamentChecks,
   tournamentDatesChecks,
   tournamentLinksChecks,
   tournamentModMultipliersChecks,
   tournamentOtherDatesChecks
-} from '$lib/helpers';
+} from '$lib/checks';
 import { maxPossibleDate, oldestDatePossible } from '$lib/constants';
 
 const catchUniqueConstraintError = catchUniqueConstraintError$([
@@ -60,9 +60,8 @@ const createTournament = trpc.procedure
   .input(wrap(v.object(mutationSchemas)))
   .mutation(async ({ ctx, input }) => {
     const { teamSettings, rankRange } = input;
-    const checks = new TRPCChecks({ action: 'create a tournament' });
-    const session = getSession(ctx.cookies, true);
-    checks.userIsApprovedHost(session);
+    const session = getSession('trpc', ctx.cookies, true);
+    checks.trpc.userIsApprovedHost(session);
 
     const checksErr = tournamentChecks({ teamSettings, rankRange });
 
@@ -179,8 +178,7 @@ const updateTournament = trpc.procedure
       links,
       modMultipliers
     } = data;
-    const checks = new TRPCChecks({ action: 'update this tournament' });
-    checks.partialHasValues(data);
+    checks.trpc.partialHasValues(data);
 
     let checksErr = tournamentChecks({ teamSettings, rankRange });
 
@@ -199,9 +197,9 @@ const updateTournament = trpc.procedure
       });
     }
 
-    const session = getSession(ctx.cookies, true);
-    const staffMember = await getStaffMember(session, tournamentId, true);
-    checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
+    const session = getSession('trpc', ctx.cookies, true);
+    const staffMember = await getStaffMember('trpc', session, tournamentId, true);
+    checks.trpc.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
     // Only the host can update these properties
     if (
@@ -216,6 +214,7 @@ const updateTournament = trpc.procedure
     }
 
     const info = await getTournament(
+      'trpc',
       tournamentId,
       {
         tournament: ['deletedAt'],
@@ -223,7 +222,7 @@ const updateTournament = trpc.procedure
       },
       true
     );
-    checks.tournamentNotDeleted(info).tournamentNotConcluded(info);
+    checks.trpc.tournamentNotDeleted(info).tournamentNotConcluded(info);
 
     // Only update if the player registrations haven't opened yet
     if (isDatePast(info.playerRegsOpenAt) && (type || teamSettings || rankRange || bwsValues)) {
@@ -277,8 +276,7 @@ const updateTournamentDates = trpc.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { data, tournamentId } = input;
-    const checks = new TRPCChecks({ action: "update this tournament's dates" });
-    checks.partialHasValues(data);
+    checks.trpc.partialHasValues(data);
 
     const txt: Record<keyof typeof newDates, string> = {
       concludesAt: 'conclusion',
@@ -327,9 +325,9 @@ const updateTournamentDates = trpc.procedure
       }
     }
 
-    const session = getSession(ctx.cookies, true);
-    const staffMember = await getStaffMember(session, tournamentId, true);
-    checks.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
+    const session = getSession('trpc', ctx.cookies, true);
+    const staffMember = await getStaffMember('trpc', session, tournamentId, true);
+    checks.trpc.staffHasPermissions(staffMember, ['host', 'debug', 'manage_tournament']);
 
     if (
       !hasPermissions(staffMember, ['host']) &&
@@ -348,6 +346,7 @@ const updateTournamentDates = trpc.procedure
     }
 
     const tournament = await getTournament(
+      'trpc',
       tournamentId,
       {
         tournament: ['deletedAt'],
@@ -362,7 +361,7 @@ const updateTournamentDates = trpc.procedure
       },
       true
     );
-    checks.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
+    checks.trpc.tournamentNotDeleted(tournament).tournamentNotConcluded(tournament);
 
     for (const key_ of Object.keys(newDates)) {
       const key = key_ as keyof typeof newDates;
@@ -423,12 +422,12 @@ const deleteTournament = trpc.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { tournamentId } = input;
-    const checks = new TRPCChecks({ action: 'delete this tournament' });
-    const session = getSession(ctx.cookies, true);
-    const staffMember = await getStaffMember(session, tournamentId, true);
-    checks.staffHasPermissions(staffMember, ['host']);
+    const session = getSession('trpc', ctx.cookies, true);
+    const staffMember = await getStaffMember('trpc', session, tournamentId, true);
+    checks.trpc.staffHasPermissions(staffMember, ['host']);
 
     const tournament = await getTournament(
+      'trpc',
       tournamentId,
       {
         tournament: ['deletedAt'],
@@ -436,7 +435,7 @@ const deleteTournament = trpc.procedure
       },
       true
     );
-    checks.tournamentNotConcluded(tournament);
+    checks.trpc.tournamentNotConcluded(tournament);
 
     if (tournament.deletedAt) {
       throw new TRPCError({
@@ -469,12 +468,12 @@ const cancelTournamentDeletion = trpc.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { tournamentId } = input;
-    const checks = new TRPCChecks({ action: 'cancel the deletion of this tournament' });
-    const session = getSession(ctx.cookies, true);
-    const staffMember = await getStaffMember(session, tournamentId, true);
-    checks.staffHasPermissions(staffMember, ['host']);
+    const session = getSession('trpc', ctx.cookies, true);
+    const staffMember = await getStaffMember('trpc', session, tournamentId, true);
+    checks.trpc.staffHasPermissions(staffMember, ['host']);
 
     const tournament = await getTournament(
+      'trpc',
       tournamentId,
       {
         tournament: ['deletedAt'],
@@ -482,7 +481,7 @@ const cancelTournamentDeletion = trpc.procedure
       },
       true
     );
-    checks.tournamentNotConcluded(tournament).tournamentNotDeleted(tournament);
+    checks.trpc.tournamentNotConcluded(tournament).tournamentNotDeleted(tournament);
 
     try {
       await db

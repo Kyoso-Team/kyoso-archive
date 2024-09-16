@@ -20,7 +20,7 @@ export const load = (async ({ parent, depends }) => {
     .where(eq(Tournament.id, tournament.id))
     .limit(1)
     .then((tournaments) => tournaments[0])
-    .catch(catcher('page', 'Getting the tournament\'s rules'));
+    .catch(catcher('page', "Getting the tournament's rules"));
 
   return {
     tournament: {

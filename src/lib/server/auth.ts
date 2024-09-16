@@ -7,7 +7,7 @@ import { eq, inArray } from 'drizzle-orm';
 import { catcher } from '$lib/server/error';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { Token } from 'osu-web.js';
-import type { ErrorInside } from '$types';
+import type { ErrorInside } from '$lib/types';
 
 export async function upsertDiscordUser(
   inside: ErrorInside,
@@ -17,7 +17,9 @@ export async function upsertDiscordUser(
     discordUserId: string;
   }
 ) {
-  const user = await discordMainAuth.getUser(token.access_token).catch(catcher(inside, "Getting the user's Discord data"));
+  const user = await discordMainAuth
+    .getUser(token.access_token)
+    .catch(catcher(inside, "Getting the user's Discord data"));
 
   const set = {
     username: user.username,
@@ -33,7 +35,7 @@ export async function upsertDiscordUser(
       .update(DiscordUser)
       .set(set)
       .where(eq(DiscordUser.discordUserId, update.discordUserId))
-      .catch(catcher(inside, 'Updating the user\'s Discord data'));
+      .catch(catcher(inside, "Updating the user's Discord data"));
   } else {
     await db
       .insert(DiscordUser)
@@ -45,7 +47,7 @@ export async function upsertDiscordUser(
         target: [DiscordUser.discordUserId],
         set
       })
-      .catch(catcher(inside, 'Upserting the user\'s Discord data'));
+      .catch(catcher(inside, "Upserting the user's Discord data"));
   }
 
   return user;
@@ -60,11 +62,13 @@ export async function upsertOsuUser(
   }
 ) {
   const osu = new Client(token.access_token);
-  const user = await osu.users.getSelf({
-    urlParams: {
-      mode: 'osu'
-    }
-  }).catch(catcher(inside, 'Getting the user\'s osu! data'));
+  const user = await osu.users
+    .getSelf({
+      urlParams: {
+        mode: 'osu'
+      }
+    })
+    .catch(catcher(inside, "Getting the user's osu! data"));
 
   await db
     .insert(Country)
@@ -75,7 +79,7 @@ export async function upsertOsuUser(
     .onConflictDoNothing({
       target: [Country.code]
     })
-    .catch(catcher(inside, 'Creating the user\'s country'));
+    .catch(catcher(inside, "Creating the user's country"));
 
   const badges: (typeof OsuBadge.$inferInsert)[] = user.badges.map((badge) => ({
     description: badge.description,
@@ -89,23 +93,22 @@ export async function upsertOsuUser(
       .onConflictDoNothing({
         target: [OsuBadge.imgFileName]
       })
-      .catch(catcher(inside, 'Creating the user\'s badges'));
+      .catch(catcher(inside, "Creating the user's badges"));
   }
 
-  const dbBadges = badges.length > 0
-    ? (
-       await db
-        .select(pick(OsuBadge, ['id', 'imgFileName']))
-        .from(OsuBadge)
-        .where(
-          inArray(
-            OsuBadge.imgFileName,
-            badges.map(({ imgFileName }) => imgFileName)
+  const dbBadges =
+    badges.length > 0
+      ? await db
+          .select(pick(OsuBadge, ['id', 'imgFileName']))
+          .from(OsuBadge)
+          .where(
+            inArray(
+              OsuBadge.imgFileName,
+              badges.map(({ imgFileName }) => imgFileName)
+            )
           )
-        )
-        .catch(catcher(inside, 'Getting the user\'s badges'))
-    )
-    : [];
+          .catch(catcher(inside, "Getting the user's badges"))
+      : [];
 
   const set = {
     countryCode: user.country.code,
@@ -123,8 +126,11 @@ export async function upsertOsuUser(
   } satisfies Partial<typeof OsuUser.$inferInsert>;
 
   if (update?.osuUserId) {
-    await db.update(OsuUser).set(set).where(eq(OsuUser.osuUserId, update.osuUserId))
-      .catch(catcher(inside, 'Updating the user\'s osu! data'));
+    await db
+      .update(OsuUser)
+      .set(set)
+      .where(eq(OsuUser.osuUserId, update.osuUserId))
+      .catch(catcher(inside, "Updating the user's osu! data"));
   } else {
     await db
       .insert(OsuUser)
@@ -136,7 +142,7 @@ export async function upsertOsuUser(
         target: [OsuUser.osuUserId],
         set
       })
-      .catch(catcher(inside, 'Upserting the user\'s osu! data'));
+      .catch(catcher(inside, "Upserting the user's osu! data"));
   }
 
   // NOTE: If a badge has been removed from the user, this case isn't hadled due to the very high unlikelyhood of this happening
@@ -155,7 +161,8 @@ export async function upsertOsuUser(
       .values(awardedBadges)
       .onConflictDoNothing({
         target: [OsuUserAwardedBadge.osuBadgeId, OsuUserAwardedBadge.osuUserId]
-      }).catch(catcher(inside, 'Linking the user and their awarded badges'));
+      })
+      .catch(catcher(inside, 'Linking the user and their awarded badges'));
   }
 
   return user;
@@ -167,7 +174,7 @@ export async function createSession(
   ipAddress: string,
   userAgent: string
 ) {
-  let ipMeta!: { city: string; region: string; country: string; };
+  let ipMeta!: { city: string; region: string; country: string };
 
   if (env.NODE_ENV === 'development') {
     ipMeta = {
@@ -177,12 +184,15 @@ export async function createSession(
     };
   } else {
     ipMeta = await fetch(`https://ipinfo.io/${ipAddress}?token=${env.IPINFO_ACCESS_TOKEN}`)
-      .then(async (resp) => await resp.json() as {
-        city: string;
-        region: string;
-        country: string;
-      })
-      .catch(catcher(inside, 'Getting the IP address\' information'));
+      .then(
+        async (resp) =>
+          (await resp.json()) as {
+            city: string;
+            region: string;
+            country: string;
+          }
+      )
+      .catch(catcher(inside, "Getting the IP address' information"));
   }
 
   const session = await db

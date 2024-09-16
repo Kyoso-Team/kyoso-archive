@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Upload, Trash, Loader2 } from 'lucide-svelte';
-  import { NoFile } from '$components/general';
+  import { NoFile } from '$lib/components/general';
   import { onMount } from 'svelte';
 
   export let label: string;

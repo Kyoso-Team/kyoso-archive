@@ -9,9 +9,6 @@ const config = {
   kit: {
     adapter: adapter(),
     alias: {
-      $stores: `${cwd}/src/lib/stores`,
-      $types: `${cwd}/src/lib/types`,
-      $components: `${cwd}/src/lib/components`,
       $trpc: `${cwd}/src/trpc`,
       $db: `${cwd}/src/db`
     }

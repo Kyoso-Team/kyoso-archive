@@ -6,15 +6,15 @@ import {
   discordChangeAccountAuthOptions
 } from '$lib/server/services';
 import { User } from '$db';
-import { upsertDiscordUser } from '$lib/server/helpers/auth';
+import { upsertDiscordUser } from '$lib/server/auth';
 import { eq } from 'drizzle-orm';
-import { getSession } from '$lib/server/helpers/api';
+import { getSession } from '$lib/server/context';
 import type DiscordOAuth2 from 'discord-oauth2';
-import type { AuthSession } from '$types';
+import type { AuthSession } from '$lib/types';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, route, cookies }) => {
-  const session = getSession(cookies, true);
+  const session = getSession('api', cookies, true);
   const redirectUri = url.searchParams.get('state');
   const code = url.searchParams.get('code');
 
@@ -36,7 +36,7 @@ export const GET = (async ({ url, route, cookies }) => {
   }
 
   const tokenIssuedAt = new Date();
-  const discordUser = await upsertDiscordUser(token, tokenIssuedAt, route);
+  const discordUser = await upsertDiscordUser('api', token, tokenIssuedAt);
 
   try {
     await db

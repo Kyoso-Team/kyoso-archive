@@ -3,7 +3,7 @@ import { db } from '$lib/server/services';
 import { Notification, OsuUser, Tournament, User, UserNotification } from '$db';
 import { desc, eq, inArray } from 'drizzle-orm';
 import { catcher } from './error';
-import type { ErrorInside } from '$types';
+import type { ErrorInside } from '$lib/types';
 
 export async function getNotifications(
   inside: ErrorInside,

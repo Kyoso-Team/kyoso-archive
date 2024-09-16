@@ -1,11 +1,11 @@
 import { redirect } from '@sveltejs/kit';
 import { discordChangeAccountAuth } from '$lib/server/services';
-import { getSession } from '$lib/server/helpers/api';
+import { getSession } from '$lib/server/context';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, cookies }) => {
   const redirectUri = url.searchParams.get('redirect_uri');
-  getSession(cookies, true);
+  getSession('api', cookies, true);
 
   const discordAuthUrl = discordChangeAccountAuth.generateAuthUrl({
     scope: ['identify'],

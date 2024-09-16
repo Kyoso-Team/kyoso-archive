@@ -1,7 +1,7 @@
 <script lang="ts">
   import { portal } from 'svelte-portal';
-  import { Tooltip } from '$components/general';
-  import { UserMenu } from '$components/layout';
+  import { Tooltip } from '$lib/components/general';
+  import { UserMenu } from '$lib/components/layout';
   import {
     Settings,
     Home,
@@ -20,13 +20,13 @@
   import { Avatar } from '@skeletonlabs/skeleton';
   import { onDestroy, onMount } from 'svelte';
   import { popup } from '$lib/popup';
-  import { devMenuCtx, showNavBar } from '$stores';
+  import { devMenuCtx, showNavBar } from '$lib/stores';
   import { buildUrl } from 'osu-web.js';
   import { fade, fly } from 'svelte/transition';
   import { browser, dev } from '$app/environment';
   import { disableTabbing } from '$lib/actions';
+  import type { SvelteComponent } from 'svelte';
   import type { LayoutServerData } from './$types';
-  import type { AnyComponent } from '$types';
 
   export let data: LayoutServerData;
   let showResponsiveMenu = false;
@@ -35,7 +35,7 @@
     tip: string;
     tipName: string;
     href: string;
-    icon: AnyComponent;
+    icon: typeof SvelteComponent<any>;
     class?: string;
   }[] = [];
   const tooltips = {

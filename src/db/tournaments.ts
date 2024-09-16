@@ -26,7 +26,7 @@ import type {
   TournamentLink,
   TournamentOtherDates,
   TournamentTheme
-} from '$types';
+} from '$lib/types';
 
 export const Tournament = pgTable(
   'tournament',

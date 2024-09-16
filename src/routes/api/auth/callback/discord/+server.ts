@@ -3,14 +3,14 @@ import { error, redirect } from '@sveltejs/kit';
 import { apiError, pick, signJWT, verifyJWT } from '$lib/server/utils';
 import { db, discordMainAuth, discordMainAuthOptions } from '$lib/server/services';
 import { User } from '$db';
-import { createSession, upsertDiscordUser } from '$lib/server/helpers/auth';
-import { getSession } from '$lib/server/helpers/api';
+import { createSession, upsertDiscordUser } from '$lib/server/auth';
+import { getSession } from '$lib/server/context';
 import type DiscordOAuth2 from 'discord-oauth2';
-import type { AuthSession } from '$types';
+import type { AuthSession } from '$lib/types';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, route, cookies, getClientAddress, request }) => {
-  const currentSession = getSession(cookies);
+  const currentSession = getSession('api', cookies);
   const redirectUri = url.searchParams.get('state');
   const code = url.searchParams.get('code');
   const osuProfileCookie = cookies.get('temp_osu_profile');
@@ -55,7 +55,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
   }
 
   const tokenIssuedAt = new Date();
-  const discordUser = await upsertDiscordUser(token, tokenIssuedAt, route);
+  const discordUser = await upsertDiscordUser('api', token, tokenIssuedAt);
 
   let user!: Pick<typeof User.$inferSelect, 'id' | 'updatedApiDataAt' | 'admin' | 'approvedHost'>;
 
@@ -74,7 +74,7 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
     throw await apiError(err, 'Creating the user', route);
   }
 
-  const session = await createSession(user.id, getClientAddress(), userAgent, route);
+  const session = await createSession('api', user.id, getClientAddress(), userAgent);
 
   const authSession: AuthSession = {
     sessionId: session.id,

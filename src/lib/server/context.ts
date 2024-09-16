@@ -5,7 +5,7 @@ import { pick, verifyJWT } from '$lib/server/utils';
 import { redis, db } from '$lib/server/services';
 import { catcher, error } from '$lib/server/error';
 import type { Cookies } from '@sveltejs/kit';
-import type { AuthSession, InferEnum, Simplify, ErrorInside } from '$types';
+import type { AuthSession, InferEnum, Simplify, ErrorInside } from '$lib/types';
 import type { StaffPermission } from '$db';
 
 export function getSession<T extends boolean>(
@@ -43,9 +43,7 @@ export async function getStaffMember<T extends boolean>(
     .from(StaffMemberRole)
     .innerJoin(StaffMember, eq(StaffMember.id, StaffMemberRole.staffMemberId))
     .innerJoin(StaffRole, eq(StaffRole.id, StaffMemberRole.staffRoleId))
-    .where(
-      and(eq(StaffMember.userId, session.userId), eq(StaffRole.tournamentId, tournamentId))
-    )
+    .where(and(eq(StaffMember.userId, session.userId), eq(StaffRole.tournamentId, tournamentId)))
     .then((rows) => ({
       id: rows[0].id,
       permissions: Array.from(new Set(rows.map(({ permissions }) => permissions).flat()))
@@ -59,7 +57,7 @@ export async function getStaffMember<T extends boolean>(
   if (env.NODE_ENV === 'development' && staffMember) {
     const permissions = await redis.get<InferEnum<typeof StaffPermission>[]>(
       `staff_permissions:${staffMember.id}`
-    ).catch(catcher(inside, 'Getting staff permissions value'));
+    );
     staffMember.permissions = permissions !== null ? permissions : staffMember.permissions;
   }
 

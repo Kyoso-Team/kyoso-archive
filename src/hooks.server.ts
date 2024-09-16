@@ -8,9 +8,8 @@ import { Session, DiscordUser, OsuUser, User } from '$db';
 import { and, eq, not, sql } from 'drizzle-orm';
 import { unionAll } from 'drizzle-orm/pg-core';
 import { upsertDiscordUser, upsertOsuUser } from '$lib/server/auth';
-import { ServerError, catcher, error } from '$lib/server/error';
+import { ServerError, catcher, error, logError } from '$lib/server/error';
 import { TRPCError } from '@trpc/server';
-import { logError } from '$lib/server/log-error';
 import {
   db,
   ratelimit,
@@ -20,7 +19,7 @@ import {
   createTRPCContext
 } from '$lib/server/services';
 import type { Cookies, HandleServerError, Handle, RequestEvent } from '@sveltejs/kit';
-import type { AuthSession } from '$types';
+import type { AuthSession } from '$lib/types';
 
 const trpcHandle = createTRPCHandle({
   router,
@@ -106,14 +105,18 @@ async function updateUser(session: AuthSession, cookies: Cookies) {
     }))
     .catch(catcher('hook', 'Getting the osu! and Discord refresh tokens'));
 
-  const osuToken = await osuAuth.refreshToken(refreshTokens.osu).catch(catcher('hook', 'Getting the osu! access token'));
+  const osuToken = await osuAuth
+    .refreshToken(refreshTokens.osu)
+    .catch(catcher('hook', 'Getting the osu! access token'));
   const osuTokenIssuedAt = new Date();
-  const discordToken = await discordMainAuth.tokenRequest({
-    ...discordMainAuthOptions,
-    grantType: 'refresh_token',
-    scope: ['identify'],
-    refreshToken: refreshTokens.discord
-  }).catch(catcher('hook', 'Getting the Discord access token'));
+  const discordToken = await discordMainAuth
+    .tokenRequest({
+      ...discordMainAuthOptions,
+      grantType: 'refresh_token',
+      scope: ['identify'],
+      refreshToken: refreshTokens.discord
+    })
+    .catch(catcher('hook', 'Getting the Discord access token'));
   const discordTokenIssuedAt = new Date();
   const osuUser = await upsertOsuUser('hook', osuToken, osuTokenIssuedAt, {
     osuUserId: session.osu.id
@@ -213,17 +216,21 @@ export const handleError: HandleServerError = async ({ error, event }) => {
       return { message: error.message };
     }
 
-    return { message: 'MESSAGE FOR DEVELOPERS: Please use the `error` function to throw expected errors and `catcher` or `unexpectedServerError` to throw unexpected errors in tRPC procedures.' };
+    return {
+      message:
+        'MESSAGE FOR DEVELOPERS: Please use the `error` function to throw expected errors and `catcher` or `unexpectedServerError` to throw unexpected errors in tRPC procedures.'
+    };
   }
 
   const route = event.route.id ?? 'unknown-route';
-  const inside = error.inside === 'api'
-    ? '(inside API route)' :
-    error.inside === 'layout'
-    ? '(during layout load)'
-    : error.inside === 'page'
-    ? '(during page load)'
-    : '(inside server hook)';
+  const inside =
+    error.inside === 'api'
+      ? '(inside API route)'
+      : error.inside === 'layout'
+        ? '(during layout load)'
+        : error.inside === 'page'
+          ? '(during page load)'
+          : '(inside server hook)';
   await logError(error.cause, error.message.split('when: ')[1], `${route} ${inside}`);
   return { message: error.message };
 };

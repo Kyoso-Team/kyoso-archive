@@ -6,7 +6,7 @@ export type TRPCContext = inferAsyncReturnType<typeof createTRPCContext>;
 
 export type TRPCRouter = typeof router;
 
-export type TRPCRouterIO<Input extends boolean = false> = {
+type TRPCRouterIO<Input extends boolean> = {
   [K1 in Exclude<keyof TRPCRouter, '_def' | 'createCaller' | 'getErrorShape'>]: {
     [K2 in Exclude<
       keyof TRPCRouter[K1],
@@ -18,3 +18,6 @@ export type TRPCRouterIO<Input extends boolean = false> = {
       : never;
   };
 };
+
+export type TRPCRouterInputs = TRPCRouterIO<true>;
+export type TRPCRouterOutputs = TRPCRouterIO<false>;

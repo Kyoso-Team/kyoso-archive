@@ -1,6 +1,6 @@
-import type { TournamentDates } from '$db';
-import type { ModMultiplier, TournamentLink, UserFormField } from '$types';
 import { arraysHaveSameElements } from './utils';
+import type { TournamentDates } from '$db';
+import type { ModMultiplier, TournamentLink, UserFormField } from '$lib/types';
 
 export function tournamentChecks({
   teamSettings,

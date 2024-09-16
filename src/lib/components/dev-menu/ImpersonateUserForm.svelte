@@ -1,12 +1,12 @@
 <script lang="ts">
   import * as f from '$lib/form/validation';
-  import { Form, Number } from '$components/form';
-  import { createForm, loading } from '$stores';
+  import { Form, Number } from '$lib/components/form';
+  import { createForm, loading } from '$lib/stores';
   import { displayError, toastSuccess } from '$lib/utils';
   import { page } from '$app/stores';
   import { invalidateAll } from '$app/navigation';
   import type { ToastStore } from '@skeletonlabs/skeleton';
-  import type { AuthSession } from '$types';
+  import type { AuthSession } from '$lib/types';
 
   export let show: boolean;
   export let session: AuthSession;

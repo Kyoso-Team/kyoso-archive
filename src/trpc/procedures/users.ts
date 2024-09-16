@@ -22,18 +22,19 @@ import {
 } from '$db';
 import { count, inArray, lt } from 'drizzle-orm';
 import { and, desc, eq, isNull, not, or, sql } from 'drizzle-orm';
-import { future, pick, trpcUnknownError } from '$lib/server/utils';
+import { pick, trpcUnknownError } from '$lib/server/utils';
+import { future } from '$lib/server/sql';
 import { customAlphabet } from 'nanoid';
 import { wrap } from '@typeschema/valibot';
-import { positiveIntSchema, userSettingsSchema } from '$lib/schemas';
-import { getSession } from '$lib/server/helpers/api';
+import { positiveIntSchema, userSettingsSchema } from '$lib/validation';
+import { getSession } from '$lib/server/context';
 import { TRPCError } from '@trpc/server';
 import { alias, unionAll } from 'drizzle-orm/pg-core';
 import { rateLimitMiddleware } from '$trpc/middleware';
-import { TRPCChecks } from '$lib/server/helpers/checks';
+import { checks } from '$lib/server/checks';
 import { catcher, error } from '$lib/server/error';
-import type { SQL } from 'drizzle-orm';
 import { recordExists } from '$lib/server/queries';
+import type { SQL } from 'drizzle-orm';
 
 const getUser = trpc.procedure
   .use(rateLimitMiddleware)
@@ -46,9 +47,8 @@ const getUser = trpc.procedure
   )
   .query(async ({ ctx, input }) => {
     const { userId } = input;
-    const checks = new TRPCChecks({ action: 'get this user' });
-    const session = getSession(ctx.cookies, true);
-    checks.userIsAdmin(session);
+    const session = getSession('trpc', ctx.cookies, true);
+    checks.trpc.userIsAdmin(session);
 
     const user = await db
       .select({
@@ -79,7 +79,7 @@ const getUser = trpc.procedure
       .innerJoin(OsuBadge, eq(OsuBadge.id, OsuUserAwardedBadge.osuBadgeId))
       .where(eq(OsuUserAwardedBadge.osuUserId, user.osu.osuUserId))
       .orderBy(desc(OsuUserAwardedBadge.awardedAt))
-      .catch(catcher('trpc', 'Getting the user\'s badges'));
+      .catch(catcher('trpc', "Getting the user's badges"));
 
     const IssuedBy = alias(User, 'issued_by');
     const IssuedByOsu = alias(OsuUser, 'issued_by_osu');
@@ -117,7 +117,7 @@ const getUser = trpc.procedure
                 }
         }));
       })
-      .catch(catcher('trpc', 'Getting the user\'s bans'));
+      .catch(catcher('trpc', "Getting the user's bans"));
 
     const getActiveSessionsQuery = db
       .select(pick(Session, ['id', 'createdAt', 'lastActiveAt', 'expired']))
@@ -137,7 +137,7 @@ const getUser = trpc.procedure
         active: sessions.filter(({ expired }) => !expired),
         expired: sessions.filter(({ expired }) => expired)
       }))
-      .catch(catcher('trpc', 'Getting the user\'s sessions'));
+      .catch(catcher('trpc', "Getting the user's sessions"));
 
     return {
       ...user,
@@ -160,9 +160,8 @@ const searchUser = trpc.procedure
   )
   .query(async ({ ctx, input }) => {
     const { search, searchBy } = input;
-    const checks = new TRPCChecks({ action: 'search this user' });
-    const session = getSession(ctx.cookies, true);
-    checks.userIsAdmin(session);
+    const session = getSession('trpc', ctx.cookies, true);
+    checks.trpc.userIsAdmin(session);
 
     const searchNum = isNaN(Number(search)) ? 0 : Number(search);
     let where!: SQL;
@@ -190,15 +189,12 @@ const searchUser = trpc.procedure
   });
 
 const resetApiKey = trpc.procedure.use(rateLimitMiddleware).mutation(async ({ ctx }) => {
-  const session = getSession(ctx.cookies, true);
+  const session = getSession('trpc', ctx.cookies, true);
 
   await db
     .update(User)
     .set({
-      apiKey: customAlphabet(
-        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-        24
-      )()
+      apiKey: customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 24)()
     })
     .where(eq(User.id, session.userId))
     .catch(catcher('trpc', 'Updating the user'));
@@ -217,7 +213,7 @@ const updateSelf = trpc.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { settings } = input;
-    const session = getSession(ctx.cookies, true);
+    const session = getSession('trpc', ctx.cookies, true);
 
     await db
       .update(User)
@@ -239,9 +235,8 @@ const makeAdmin = trpc.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { userId } = input;
-    const checks = new TRPCChecks({ action: 'make this user an admin' });
-    const session = getSession(ctx.cookies, true);
-    checks.userIsOwner(session);
+    const session = getSession('trpc', ctx.cookies, true);
+    checks.trpc.userIsOwner(session);
 
     const user = await db
       .select(pick(User, ['admin']))
@@ -259,22 +254,23 @@ const makeAdmin = trpc.procedure
       error('trpc', 'forbidden', 'User is already an admin');
     }
 
-    await db.transaction(async (tx) => {
-      await tx
-        .update(User)
-        .set({
-          admin: true
-        })
-        .where(eq(User.id, userId));
+    await db
+      .transaction(async (tx) => {
+        await tx
+          .update(User)
+          .set({
+            admin: true
+          })
+          .where(eq(User.id, userId));
 
-      await tx
-        .update(Session)
-        .set({
-          updateCookie: true
-        })
-        .where(and(eq(Session.userId, userId), not(Session.expired)));
-    })
-    .catch(catcher('trpc', 'Updating the user'));
+        await tx
+          .update(Session)
+          .set({
+            updateCookie: true
+          })
+          .where(and(eq(Session.userId, userId), not(Session.expired)));
+      })
+      .catch(catcher('trpc', 'Updating the user'));
   });
 
 const removeAdmin = trpc.procedure
@@ -288,9 +284,8 @@ const removeAdmin = trpc.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { userId } = input;
-    const checks = new TRPCChecks({ action: "remove this user's admin status" });
-    const session = getSession(ctx.cookies, true);
-    checks.userIsOwner(session);
+    const session = getSession('trpc', ctx.cookies, true);
+    checks.trpc.userIsOwner(session);
 
     let user: Pick<typeof User.$inferSelect, 'admin'> | undefined;
 
@@ -393,9 +388,8 @@ const makeApprovedHost = trpc.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { userId } = input;
-    const checks = new TRPCChecks({ action: 'make this user an approved host' });
-    const session = getSession(ctx.cookies, true);
-    checks.userIsAdmin(session);
+    const session = getSession('trpc', ctx.cookies, true);
+    checks.trpc.userIsAdmin(session);
 
     let user: Pick<typeof User.$inferSelect, 'approvedHost' | 'osuUserId'> | undefined;
 
@@ -463,9 +457,8 @@ const removeApprovedHost = trpc.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { userId } = input;
-    const checks = new TRPCChecks({ action: "remove this user's approved host status" });
-    const session = getSession(ctx.cookies, true);
-    checks.userIsAdmin(session);
+    const session = getSession('trpc', ctx.cookies, true);
+    checks.trpc.userIsAdmin(session);
 
     let user: Pick<typeof User.$inferSelect, 'approvedHost' | 'osuUserId'> | undefined;
 
@@ -554,9 +547,8 @@ const updateUser = trpc.procedure
   .mutation(async ({ ctx, input }) => {
     const { data, userId } = input;
     const { admin, approvedHost } = data;
-    const checks = new TRPCChecks({ action: 'update this user' });
-    const session = getSession(ctx.cookies, true);
-    checks.userIsAdmin(session).partialHasValues(data);
+    const session = getSession('trpc', ctx.cookies, true);
+    checks.trpc.userIsAdmin(session).partialHasValues(data);
 
     if (admin !== undefined && session.osu.id !== env.OWNER) {
       throw new TRPCError({
@@ -601,17 +593,16 @@ const banUser = trpc.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { banReason, banTime, issuedToUserId } = input;
-    const checks = new TRPCChecks({ action: 'ban this user' });
-    const session = getSession(ctx.cookies, true);
-    checks.userIsAdmin(session);
+    const session = getSession('trpc', ctx.cookies, true);
+    checks.trpc.userIsAdmin(session);
 
-    const hasActiveBan = await recordExists(Ban, and(
-      eq(Ban.issuedToUserId, issuedToUserId),
+    const hasActiveBan = await recordExists(
+      Ban,
       and(
-        isNull(Ban.revokedAt),
-        or(isNull(Ban.liftAt), future(Ban.liftAt))
+        eq(Ban.issuedToUserId, issuedToUserId),
+        and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
       )
-    )).catch(catcher('trpc', 'Verifying the user\'s ban status'));
+    ).catch(catcher('trpc', "Verifying the user's ban status"));
 
     if (hasActiveBan) {
       error('trpc', 'forbidden', 'User is already banned');
@@ -860,9 +851,8 @@ const revokeBan = trpc.procedure
   )
   .mutation(async ({ ctx, input }) => {
     const { banId, revokeReason } = input;
-    const checks = new TRPCChecks({ action: 'revoke this ban' });
-    const session = getSession(ctx.cookies, true);
-    checks.userIsAdmin(session);
+    const session = getSession('trpc', ctx.cookies, true);
+    checks.trpc.userIsAdmin(session);
 
     try {
       await db
@@ -888,7 +878,7 @@ const expireSession = trpc.procedure
     )
   )
   .mutation(async ({ ctx, input }) => {
-    getSession(ctx.cookies, true);
+    getSession('trpc', ctx.cookies, true);
 
     try {
       await db

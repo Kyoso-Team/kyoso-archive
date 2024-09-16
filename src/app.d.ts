@@ -1,4 +1,4 @@
-import type { TRPCRouterIO } from '$types';
+import type { TRPCRouterOutputs } from '$lib/types';
 
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
@@ -6,7 +6,7 @@ declare global {
   namespace App {
     interface PageState {
       adminUsersPage?: {
-        lookedUpUser?: TRPCRouterIO['users']['getUser'];
+        lookedUpUser?: TRPCRouterOutputs['users']['getUser'];
       };
     }
   }

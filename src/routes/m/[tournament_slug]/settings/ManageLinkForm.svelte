@@ -1,13 +1,13 @@
 <script lang="ts">
   import * as f from '$lib/form/validation';
   import { Link } from 'lucide-svelte';
-  import { Form, Text, Select } from '$components/form';
-  import { createForm } from '$stores';
+  import { Form, Text, Select } from '$lib/components/form';
+  import { createForm } from '$lib/stores';
   import { keys, toastError } from '$lib/utils';
-  import { tournamentLinkChecks } from '$lib/helpers';
+  import { tournamentLinkChecks } from '$lib/checks';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import type { Tournament } from '$db';
-  import type { TournamentLink } from '$types';
+  import type { TournamentLink } from '$lib/types';
 
   export let show: boolean;
   export let linksHaveUpdated: boolean;

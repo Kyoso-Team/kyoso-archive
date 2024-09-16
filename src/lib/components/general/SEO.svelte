@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { PageStore } from '$types/general';
+  import type { Page } from '@sveltejs/kit';
 
   export let title: string;
-  export let page: PageStore;
+  export let page: Page;
   export let description: string | undefined = undefined;
   export let noIndex: boolean = false;
   export let image:

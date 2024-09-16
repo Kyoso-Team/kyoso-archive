@@ -4,8 +4,8 @@
   import { page } from '$app/stores';
   import { invalidate } from '$app/navigation';
   import { getToastStore } from '@skeletonlabs/skeleton';
-  import { Form, Section, Text, Number, Checkbox } from '$components/form';
-  import { createForm, loading } from '$stores';
+  import { Form, Section, Text, Number, Checkbox } from '$lib/components/form';
+  import { createForm, loading } from '$lib/stores';
   import { displayError, toastSuccess } from '$lib/utils';
   import type createContextStore from './store';
 

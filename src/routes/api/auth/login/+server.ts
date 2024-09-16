@@ -1,11 +1,11 @@
 import { env } from '$lib/server/env';
 import { buildUrl } from 'osu-web.js';
 import { error, redirect } from '@sveltejs/kit';
-import { getSession } from '$lib/server/helpers/api';
+import { getSession } from '$lib/server/context';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, cookies }) => {
-  const session = getSession(cookies);
+  const session = getSession('api', cookies);
   const redirectUri = url.searchParams.get('redirect_uri') || undefined;
   const dontAskConsent = url.searchParams.get('dont_ask_consent') === 'true';
 

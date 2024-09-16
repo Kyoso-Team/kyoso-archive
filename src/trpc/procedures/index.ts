@@ -1,17 +1,18 @@
 import * as v from 'valibot';
 import { db, trpc } from '$lib/server/services';
 import { wrap } from '@typeschema/valibot';
-import { getSession } from '$lib/server/helpers/trpc';
+import { getSession } from '$lib/server/context';
 import { Ban, OsuUser, Tournament, User } from '$db';
 import { and, asc, eq, isNull, notExists, or, sql } from 'drizzle-orm';
-import { future, pick, trgmSearch, trpcUnknownError } from '$lib/server/utils';
+import { pick, trpcUnknownError } from '$lib/server/utils';
 import { setSimilarityThreshold } from '$lib/server/queries';
+import { isNullOrFuture, trgmSearch } from '$lib/server/sql';
 import type { SQL } from 'drizzle-orm';
 
 export const search = trpc.procedure
   .input(wrap(v.string([v.minLength(1)])))
   .query(async ({ ctx, input }) => {
-    getSession(ctx.cookies, true);
+    getSession('trpc', ctx.cookies, true);
 
     try {
       await setSimilarityThreshold();
@@ -34,7 +35,7 @@ export const search = trpc.procedure
             from ${Ban}
             where ${and(
               eq(Ban.issuedToUserId, +input),
-              and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
+              and(isNull(Ban.revokedAt), isNullOrFuture(Ban.liftAt))
             )}
             limit 1
         `
@@ -87,12 +88,7 @@ export const search = trpc.procedure
           ...pick(Tournament, ['name', 'urlSlug', 'acronym', 'logoMetadata', 'bannerMetadata'])
         })
         .from(Tournament)
-        .where(
-          and(
-            or(isNull(Tournament.deletedAt), future(Tournament.deletedAt)),
-            or(...tournamentWhereCondition)
-          )
-        )
+        .where(and(isNullOrFuture(Tournament.deletedAt), or(...tournamentWhereCondition)))
         .orderBy(asc(Tournament.name))
         .limit(10);
     } catch (err) {

@@ -3,13 +3,13 @@ import { pushState } from '$app/navigation';
 import { trpc } from '$lib/clients';
 import { page } from '$app/stores';
 import { displayError } from '$lib/utils';
-import { loading } from '$stores';
+import { loading } from '$lib/stores';
 import type { ToastStore } from '@skeletonlabs/skeleton';
 import type { Ban, User } from '$db';
-import type { TRPCRouterIO } from '$types';
+import type { TRPCRouterOutputs } from '$lib/types';
 
 export interface Context {
-  lookedUpUser?: TRPCRouterIO['users']['getUser'];
+  lookedUpUser?: TRPCRouterOutputs['users']['getUser'];
   selectedUser?: Pick<typeof User.$inferSelect, 'id' | 'admin' | 'approvedHost'>;
   issueBanTo?: Pick<typeof User.$inferSelect, 'id'>;
   banToRevoke?: Pick<typeof Ban.$inferSelect, 'id'>;

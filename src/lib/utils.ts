@@ -1,8 +1,8 @@
 //import colors from 'tailwindcss/colors';
 import { TRPCClientError } from '@trpc/client';
-import { loading } from '$stores';
+import { loading } from '$lib/stores';
 import type { ToastStore } from '@skeletonlabs/skeleton';
-import type { InferEnum, PaginationSettings, PopupSettings } from '$types';
+import type { InferEnum, PaginationSettings, PopupSettings } from '$lib/types';
 import type { StaffPermission } from '$db';
 
 /**

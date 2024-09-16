@@ -1,7 +1,7 @@
 import * as f from '$lib/form/validation';
 import { keys } from '$lib/utils';
 import type { StaffPermission, TournamentType } from '$db';
-import type { InferEnum } from '$types';
+import type { InferEnum } from '$lib/types';
 
 export const tournamentTypeOptions: Record<InferEnum<typeof TournamentType>, string> = {
   draft: 'Draft',

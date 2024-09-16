@@ -3,8 +3,8 @@
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { getToastStore } from '@skeletonlabs/skeleton';
-  import { Form, Section, Text, Number, Select, Checkbox } from '$components/form';
-  import { createForm, loading } from '$stores';
+  import { Form, Section, Text, Number, Select, Checkbox } from '$lib/components/form';
+  import { createForm, loading } from '$lib/stores';
   import { displayError, toastError, toastSuccess } from '$lib/utils';
   import {
     tournamentTypeOptions,
@@ -12,8 +12,8 @@
     baseTeamSettingsFormSchemas,
     rankRangeFormSchemas
   } from '$lib/form/common';
-  import { tournamentChecks } from '$lib/helpers';
-  import type { TRPCRouterIO } from '$types';
+  import { tournamentChecks } from '$lib/checks';
+  import type { TRPCRouterOutputs } from '$lib/types';
 
   export let show: boolean;
   const toast = getToastStore();
@@ -30,7 +30,7 @@
     const { acronym, name, type, urlSlug } = mainForm.getFinalValue($mainForm);
     const teamSettings = isTeamBased ? teamForm.getFinalValue($teamForm) : undefined;
     const rankRange = !isOpenRank ? rankRangeForm.getFinalValue($rankRangeForm) : undefined;
-    let tournament!: TRPCRouterIO['tournaments']['createTournament'];
+    let tournament!: TRPCRouterOutputs['tournaments']['createTournament'];
 
     const err = tournamentChecks({ teamSettings, rankRange });
 

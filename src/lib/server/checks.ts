@@ -1,10 +1,10 @@
 import { env } from '$lib/server/env';
 import { hasPermissions, isDateFuture } from '$lib/utils';
-import { error } from './error';
-import type { AuthSession, ErrorInside, InferEnum } from '$types';
+import { error } from '$lib/server/error';
+import type { AuthSession, ErrorInside, InferEnum } from '$lib/types';
 import type { StaffPermission } from '$db';
 
-export class Checks {
+class Checks {
   constructor(protected inside: ErrorInside) {}
 
   /**
@@ -63,3 +63,7 @@ export class Checks {
     error(this.inside, 'forbidden', 'Tournament has concluded');
   }
 }
+
+export const checks: Record<ErrorInside, Checks> = new Proxy({} as any, {
+  get: (_, inside: ErrorInside) => new Checks(inside)
+});

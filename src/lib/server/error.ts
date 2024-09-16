@@ -4,7 +4,7 @@ import { error as sveltekitError } from '@sveltejs/kit';
 import { TRPCError } from '@trpc/server';
 import { getHTTPStatusCodeFromError } from '@trpc/server/http';
 import type { TRPC_ERROR_CODE_KEY } from '@trpc/server/rpc';
-import type { ErrorInside } from '$types';
+import type { ErrorInside } from '$lib/types';
 
 export class ServerError extends Error {
   public inside: ErrorInside;
@@ -21,7 +21,11 @@ export class ServerError extends Error {
  * Throw an expected error
  * @throws {TRPCError | HttpError | Error}
  */
-export function error(inside: ErrorInside, status: Lowercase<TRPC_ERROR_CODE_KEY>, message: string): never {
+export function error(
+  inside: ErrorInside,
+  status: Lowercase<TRPC_ERROR_CODE_KEY>,
+  message: string
+): never {
   const statusNumber = getHTTPStatusCodeFromError({ code: status } as any);
 
   if (inside === 'trpc') {
@@ -39,7 +43,11 @@ export function error(inside: ErrorInside, status: Lowercase<TRPC_ERROR_CODE_KEY
  * Throw an unexpected error
  * @throws {ServerError}
  */
-export function unexpectedServerError(error: unknown, inside: ErrorInside, errorOcurredWhen: string) {
+export function unexpectedServerError(
+  error: unknown,
+  inside: ErrorInside,
+  errorOcurredWhen: string
+) {
   throw new ServerError(error, inside, errorOcurredWhen);
 }
 

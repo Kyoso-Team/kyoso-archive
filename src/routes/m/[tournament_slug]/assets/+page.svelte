@@ -1,15 +1,15 @@
 <script lang="ts">
   import Asset from './Asset.svelte';
-  import { SEO } from '$components/general';
+  import { SEO } from '$lib/components/general';
   import { page } from '$app/stores';
   import { portal } from 'svelte-portal';
-  import { Backdrop, Modal, UploadImgModal } from '$components/layout';
+  import { Backdrop, Modal, UploadImgModal } from '$lib/components/layout';
   import { createUploadClient } from '$lib/clients';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { invalidate } from '$app/navigation';
   import { toastSuccess } from '$lib/utils';
-  import { loading } from '$stores';
-  import type { Assets } from '$types';
+  import { loading } from '$lib/stores';
+  import type { Assets } from '$lib/types';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;

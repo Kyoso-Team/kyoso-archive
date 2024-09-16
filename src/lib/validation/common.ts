@@ -5,7 +5,12 @@ import {
   oldestDatePossible,
   upper32BitIntLimit
 } from '$lib/constants';
-import { draftTypeSchema, hexColorSchema, tournamentLinkIconSchema, winConditionSchema } from './basic';
+import {
+  draftTypeSchema,
+  hexColorSchema,
+  tournamentLinkIconSchema,
+  winConditionSchema
+} from './basic';
 
 export const refereeSettingsSchema = v.object({
   timerLength: v.object({

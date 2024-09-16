@@ -12,7 +12,7 @@ import {
 import { timestampConfig } from './constants';
 import { Tournament, TournamentFormTarget, TournamentFormType, User } from '.';
 import { sql } from 'drizzle-orm';
-import type { UserFormField, UserFormFieldResponse } from '$types';
+import type { UserFormField, UserFormFieldResponse } from '$lib/types';
 
 export const Form = pgTable(
   'form',

@@ -1,10 +1,10 @@
 import { env } from '$lib/server/env';
-import { getSession } from '$lib/server/helpers/api';
+import { getSession } from '$lib/server/context';
 import { redis } from '$lib/server/services';
 import type { LayoutServerLoad } from './$types';
 
-export const load = (async ({ cookies, route }) => {
-  const session = getSession(cookies);
+export const load = (async ({ cookies }) => {
+  const session = getSession('layout', cookies);
   let isUserOwner = env.OWNER === session?.osu?.id;
 
   if (env.NODE_ENV === 'development' && session) {

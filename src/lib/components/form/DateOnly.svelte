@@ -3,7 +3,7 @@
   import NotAllowed from './NotAllowed.svelte';
   import { slide } from 'svelte/transition';
   import { dateToHtmlInput } from '$lib/utils';
-  import type { FormStore } from '$types/general';
+  import type { FormStore } from '$lib/types';
 
   export let form: FormStore;
   export let label: string;

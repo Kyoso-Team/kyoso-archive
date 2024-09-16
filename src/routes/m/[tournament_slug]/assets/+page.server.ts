@@ -1,9 +1,9 @@
 import { hasPermissions } from '$lib/utils';
 import { error } from '@sveltejs/kit';
-import { getTournament } from '$lib/server/helpers/api';
+import { getTournament } from '$lib/server/context';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ parent, route, depends }) => {
+export const load = (async ({ parent, depends }) => {
   depends('reload:manage_assets');
   const { staffMember, tournament } = await parent();
 
@@ -12,11 +12,11 @@ export const load = (async ({ parent, route, depends }) => {
   }
 
   const assets = await getTournament(
+    'page',
     tournament.id,
     {
       tournament: ['logoMetadata', 'bannerMetadata']
     },
-    route,
     true
   );
 

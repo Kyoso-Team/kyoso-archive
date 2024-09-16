@@ -1,12 +1,13 @@
 import { db } from '$lib/server/services';
 import { StaffMember, Tournament, TournamentDates } from '$db';
 import { and, eq, or, sql, isNull } from 'drizzle-orm';
-import { future, pick } from '$lib/server/utils';
-import { getSession } from '$lib/server/helpers/api';
+import { pick } from '$lib/server/utils';
+import { future } from '$lib/server/sql';
+import { getSession } from '$lib/server/context';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ cookies }) => {
-  const session = getSession(cookies, true);
+  const session = getSession('page', cookies, true);
 
   const tournaments = await db
     .select({

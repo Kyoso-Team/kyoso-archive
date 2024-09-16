@@ -1,18 +1,19 @@
 import { env } from '$lib/server/env';
 import { redirect } from '@sveltejs/kit';
-import { signJWT, pick, future } from '$lib/server/utils';
-import { upsertOsuUser, createSession } from '$lib/server/helpers/auth';
+import { signJWT, pick } from '$lib/server/utils';
+import { future } from '$lib/server/sql';
+import { upsertOsuUser, createSession } from '$lib/server/auth';
 import { db, osuAuth, discordMainAuth } from '$lib/server/services';
 import { Ban, DiscordUser, OsuUser, User } from '$db';
 import { and, eq, isNull, or, sql } from 'drizzle-orm';
-import { getSession } from '$lib/server/helpers/api';
+import { getSession } from '$lib/server/context';
 import { catcher, error } from '$lib/server/error';
 import { recordExists } from '$lib/server/queries';
 import type { RequestHandler } from './$types';
-import type { AuthSession } from '$types';
+import type { AuthSession } from '$lib/types';
 
 export const GET = (async ({ url, cookies, getClientAddress, request }) => {
-  const currentSession = getSession(cookies);
+  const currentSession = getSession('api', cookies);
   const redirectUri = url.searchParams.get('state');
   const code = url.searchParams.get('code');
   const userAgent = request.headers.get('User-Agent');
@@ -29,7 +30,9 @@ export const GET = (async ({ url, cookies, getClientAddress, request }) => {
     error('api', 'bad_request', 'URL search parameter "code" is undefined');
   }
 
-  const token = await osuAuth.requestToken(code).catch(catcher('api', 'Getting the osu! OAuth token'));
+  const token = await osuAuth
+    .requestToken(code)
+    .catch(catcher('api', 'Getting the osu! OAuth token'));
   // Get the osu! user ID from the token
   const accessToken = token.access_token;
   const payloadString = accessToken.substring(
@@ -67,10 +70,13 @@ export const GET = (async ({ url, cookies, getClientAddress, request }) => {
       .then((user) => user[0])
       .catch(catcher('api', 'Getting the user'));
 
-    const isBanned = await recordExists(Ban, and(
-      eq(Ban.issuedToUserId, user.id),
-      and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
-    )).catch(catcher('api', 'Verifying the user\'s ban status'));
+    const isBanned = await recordExists(
+      Ban,
+      and(
+        eq(Ban.issuedToUserId, user.id),
+        and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
+      )
+    ).catch(catcher('api', "Verifying the user's ban status"));
 
     if (isBanned) {
       error(

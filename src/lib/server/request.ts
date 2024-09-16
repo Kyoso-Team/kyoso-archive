@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 import { env } from '$lib/server/env';
 import { catcher, error } from '$lib/server/error';
-import type { ErrorInside } from '$types';
+import type { ErrorInside } from '$lib/types';
 
 export async function parseSearchParams<T extends Record<string, v.BaseSchema>>(
   inside: ErrorInside,
@@ -30,17 +30,19 @@ export async function parseRequestBody<T extends v.BaseSchema>(
   request: Request,
   schema: T
 ): Promise<v.Output<T>> {
-  const body: Record<string, any> = await request.json().catch(catcher(inside, "Body is malformed or isn't JSON"));
+  const body: Record<string, any> = await request
+    .json()
+    .catch(catcher(inside, "Body is malformed or isn't JSON"));
   const parsed = v.safeParse(schema, body);
 
   if (!parsed.success) {
     let str = 'Invalid input:\n';
     const issues = v.flatten(parsed.issues).nested;
-    
+
     for (const key in issues) {
       str += `- body.${key} should ${issues[key]}\n`;
     }
-  
+
     str = str.trimEnd();
     error(inside, 'bad_request', str);
   }
@@ -49,11 +51,13 @@ export async function parseRequestBody<T extends v.BaseSchema>(
 }
 
 export async function parseFormData<T extends Record<string, v.BaseSchema>>(
-  request: Request,
   inside: ErrorInside,
+  request: Request,
   schemas: T
 ): Promise<{ [K in keyof T]: v.Output<T[K]> }> {
-  const fd = await request.formData().catch(catcher(inside, "Body is malformed or isn't form data"));
+  const fd = await request
+    .formData()
+    .catch(catcher(inside, "Body is malformed or isn't form data"));
   const data: Record<string, any> = {};
 
   for (const key in schemas) {

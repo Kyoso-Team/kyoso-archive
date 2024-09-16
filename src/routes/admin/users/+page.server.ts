@@ -2,7 +2,8 @@ import { env } from '$lib/server/env';
 import { db } from '$lib/server/services';
 import { Ban, DiscordUser, OsuUser, User } from '$db';
 import { and, count, countDistinct, eq, isNull, or, sql } from 'drizzle-orm';
-import { apiError, future, pick } from '$lib/server/utils';
+import { apiError, pick } from '$lib/server/utils';
+import { future } from '$lib/server/sql';
 import { union, unionAll } from 'drizzle-orm/pg-core';
 import type { PageServerLoad } from './$types';
 

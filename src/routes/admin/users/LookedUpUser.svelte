@@ -1,7 +1,7 @@
 <script lang="ts">
   import Ban from './Ban.svelte';
   import Session from './Session.svelte';
-  import { Osu, Discord } from '$components/icons';
+  import { Osu, Discord } from '$lib/components/icons';
   import { Loader2, X } from 'lucide-svelte';
   import { fly } from 'svelte/transition';
   import { buildUrl } from 'osu-web.js';
