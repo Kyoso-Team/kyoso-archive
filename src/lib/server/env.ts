@@ -1,26 +1,7 @@
+import 'dotenv/config';
 import * as v from 'valibot';
-import {
-  NODE_ENV,
-  JWT_SECRET,
-  OSU_CLIENT_SECRET,
-  DISCORD_CLIENT_SECRET,
-  DISCORD_BOT_TOKEN,
-  OWNER,
-  DATABASE_URL,
-  TEST_DATABASE_URL,
-  TESTERS,
-  TEST_ENV,
-  IPINFO_ACCESS_TOKEN,
-  UPSTASH_REDIS_REST_URL,
-  UPSTASH_REDIS_REST_TOKEN,
-  CRON_SECRET,
-  S3_FORCE_PATH_STYLE,
-  S3_ENDPOINT,
-  S3_REGION,
-  S3_ACCESS_KEY_ID,
-  S3_SECRET_ACCESS_KEY
-} from '$env/static/private';
-import { clientEnvSchema, clientEnv, nonEmptyStringSchema, parseEnv } from '../env';
+import { clientEnvSchema, clientEnv, parseEnv } from '$lib/env';
+import { nonEmptyStringSchema } from '$lib/validation';
 
 const serverEnvSchema = v.object({
   ...clientEnvSchema.entries,
@@ -53,25 +34,25 @@ const serverEnvSchema = v.object({
 
 const serverEnv = {
   ...clientEnv,
-  NODE_ENV,
-  TEST_ENV: TEST_ENV === 'undefined' ? undefined : TEST_ENV,
-  JWT_SECRET,
-  CRON_SECRET,
-  OSU_CLIENT_SECRET,
-  DISCORD_CLIENT_SECRET,
-  DISCORD_BOT_TOKEN,
-  IPINFO_ACCESS_TOKEN,
-  DATABASE_URL,
-  TEST_DATABASE_URL,
-  OWNER: Number(OWNER),
-  TESTERS: (JSON.parse(TESTERS || '[]') as string[]).map((id) => Number(id)),
-  UPSTASH_REDIS_REST_URL,
-  UPSTASH_REDIS_REST_TOKEN,
-  S3_FORCE_PATH_STYLE: S3_FORCE_PATH_STYLE === 'true',
-  S3_ENDPOINT,
-  S3_REGION,
-  S3_ACCESS_KEY_ID,
-  S3_SECRET_ACCESS_KEY
+  NODE_ENV: process.env.NODE_ENV,
+  TEST_ENV: process.env.TEST_ENV === 'undefined' ? undefined : process.env.TEST_ENV,
+  JWT_SECRET: process.env.JWT_SECRET,
+  CRON_SECRET: process.env.CRON_SECRET,
+  OSU_CLIENT_SECRET: process.env.OSU_CLIENT_SECRET,
+  DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
+  DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
+  IPINFO_ACCESS_TOKEN: process.env.IPINFO_ACCESS_TOKEN,
+  DATABASE_URL: process.env.DATABASE_URL,
+  TEST_DATABASE_URL: process.env.TEST_DATABASE_URL,
+  OWNER: Number(process.env.OWNER),
+  TESTERS: (JSON.parse(process.env.TESTERS || '[]') as string[]).map((id) => Number(id)),
+  UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+  UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+  S3_FORCE_PATH_STYLE: process.env.S3_FORCE_PATH_STYLE === 'true',
+  S3_ENDPOINT: process.env.S3_ENDPOINT,
+  S3_REGION: process.env.S3_REGION,
+  S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
+  S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY
 };
 
 export const env = parseEnv(serverEnvSchema, serverEnv);

@@ -22,7 +22,7 @@ export function maxArrayLength<T extends any[], R extends number>(requirement: R
   return v.maxLength<T, R>(requirement, `Select ${requirement.toString()} or less options`);
 }
 
-export function string(pipe: Parameters<typeof v.string>[1]) {
+export function string(pipe?: Parameters<typeof v.string>[1]) {
   return v.string(required, pipe);
 }
 
@@ -51,7 +51,7 @@ export function slug() {
   );
 }
 
-export function number(pipe: Parameters<typeof v.number>[1]) {
+export function number(pipe?: Parameters<typeof v.number>[1]) {
   return v.number(required, pipe);
 }
 
