@@ -5,7 +5,7 @@ export const load = (async ({ parent }) => {
   const { session, isUserOwner } = await parent();
 
   if (!session?.admin) {
-    error('sveltekit', 'unauthorized', 'You must be an admin');
+    error('layout', 'unauthorized', 'You must be an admin');
   }
 
   return {

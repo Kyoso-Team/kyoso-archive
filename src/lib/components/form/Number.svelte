@@ -2,7 +2,7 @@
   import Warning from './Warning.svelte';
   import NotAllowed from './NotAllowed.svelte';
   import { slide } from 'svelte/transition';
-  import type { FormStore } from '$types';
+  import type { FormStore } from '$types/general';
 
   export let form: FormStore;
   export let label: string;

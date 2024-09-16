@@ -18,15 +18,15 @@ export const GET = (async ({ url, cookies, getClientAddress, request }) => {
   const userAgent = request.headers.get('User-Agent');
 
   if (currentSession) {
-    error('sveltekit', 'forbidden', 'Already logged in');
+    error('api', 'forbidden', 'Already logged in');
   }
 
   if (!userAgent) {
-    error('sveltekit', 'bad_request', '"User-Agent" header is undefined');
+    error('api', 'bad_request', '"User-Agent" header is undefined');
   }
 
   if (!code) {
-    error('sveltekit', 'bad_request', 'URL search parameter "code" is undefined');
+    error('api', 'bad_request', 'URL search parameter "code" is undefined');
   }
 
   const token = await osuAuth.requestToken(code).catch(catcher('api', 'Getting the osu! OAuth token'));
@@ -74,7 +74,7 @@ export const GET = (async ({ url, cookies, getClientAddress, request }) => {
 
     if (isBanned) {
       error(
-        'sveltekit',
+        'api',
         'forbidden',
         `You are banned from Kyoso. If you think this is a mistake, try logging in again or contact us at ${env.PUBLIC_CONTACT_EMAIL}`
       );

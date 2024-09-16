@@ -11,7 +11,7 @@ export const load = (async ({ parent, depends }) => {
   const { staffMember, tournament } = await parent();
 
   if (!hasPermissions(staffMember, ['host', 'debug', 'manage_tournament'])) {
-    error('sveltekit', 'unauthorized', "You don't have the necessary permissions to access this page");
+    error('page', 'unauthorized', "You don't have the necessary permissions to access this page");
   }
 
   const rules = await db

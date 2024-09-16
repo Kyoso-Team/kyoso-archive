@@ -7,7 +7,7 @@ import { db } from '$lib/server/services';
 import { Ban, DiscordUser, OsuUser, Session, User } from '$db';
 import { and, eq, isNull, or, sql } from 'drizzle-orm';
 import { apiError, future, pick, signJWT } from '$lib/server/utils';
-import { createSession } from '$lib/server/helpers/auth';
+import { createSession } from '$lib/server/auth';
 import { recordExists } from '$lib/server/queries';
 import { catcher } from '$lib/server/error';
 import type { RequestHandler } from './$types';

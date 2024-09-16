@@ -17,7 +17,7 @@ export const GET = (async ({ params }) => {
     .catch(catcher('api', 'Getting the user'));
 
   if (!user) {
-    error('sveltekit', 'not_found', 'User not found');
+    error('api', 'not_found', 'User not found');
   }
 
   redirect(302, `/user/${user.id}`);

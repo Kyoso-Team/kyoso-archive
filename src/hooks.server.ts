@@ -7,7 +7,7 @@ import { sequence } from '@sveltejs/kit/hooks';
 import { Session, DiscordUser, OsuUser, User } from '$db';
 import { and, eq, not, sql } from 'drizzle-orm';
 import { unionAll } from 'drizzle-orm/pg-core';
-import { upsertDiscordUser, upsertOsuUser } from '$lib/server/helpers/auth';
+import { upsertDiscordUser, upsertOsuUser } from '$lib/server/auth';
 import { ServerError, catcher, error } from '$lib/server/error';
 import { TRPCError } from '@trpc/server';
 import { logError } from '$lib/server/log-error';
@@ -160,7 +160,7 @@ const mainHandle: Handle = async ({ event, resolve }) => {
   const rateLimitAttempt = await ratelimit.limit(ip);
 
   if (!rateLimitAttempt.success) {
-    error('sveltekit', 'too_many_requests', 'Too many requests. Please try again later');
+    error('hook', 'too_many_requests', 'Too many requests. Please try again later');
   }
 
   const sessionData = await verifySession(event);
@@ -173,7 +173,7 @@ const mainHandle: Handle = async ({ event, resolve }) => {
       if (!session) {
         redirect(302, '/testers-auth');
       } else if (!isTester) {
-        error('sveltekit', 'forbidden', 'Not a Kyoso tester');
+        error('hook', 'forbidden', 'Not a Kyoso tester');
       }
     } else if (url.pathname === '/testers-auth' && isTester) {
       redirect(302, '/');

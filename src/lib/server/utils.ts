@@ -2,11 +2,10 @@ import jwt from 'jsonwebtoken';
 import postgres from 'postgres';
 import { env } from '$lib/server/env';
 import { customAlphabet } from 'nanoid';
-import { SQL, gt, lte, sql } from 'drizzle-orm';
-import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
-import { logError } from './log-error';
+import { logError } from './error';
 import { error } from '@sveltejs/kit';
 import { TRPCError } from '@trpc/server';
+import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
 
 export function signJWT<T>(data: T) {
   return jwt.sign(data as string | object | Buffer, env.JWT_SECRET, {
@@ -35,32 +34,6 @@ export function generateFileId() {
   const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
   return customAlphabet(alphabet, 8)();
 }
-
-// function mapUrlParams(params: URLSearchParams, prefix: string, allStrings?: boolean) {
-//   let obj: Record<string, unknown> = {};
-
-//   params.forEach((value, key) => {
-//     if (!key.startsWith(prefix)) return;
-//     let k = key.startsWith(prefix) ? key.replace(prefix, '') : key;
-
-//     if (allStrings) {
-//       obj[k] = value;
-//       return;
-//     }
-
-//     if (!isNaN(Number(value)) && value !== '') {
-//       obj[k] = Number(value);
-//     } else if (value === 'true') {
-//       obj[k] = true;
-//     } else if (value === 'false') {
-//       obj[k] = false;
-//     } else if (value !== '') {
-//       obj[k] = value;
-//     }
-//   });
-
-//   return obj;
-// }
 
 /**
  * Parses the URL's search parameters for searching and filtering purposes based on the provided Zod schemas
@@ -170,14 +143,6 @@ export function catchUniqueConstraintError$(
   };
 }
 
-export function future(column: AnyPgColumn | SQL) {
-  return gt(column as any, sql`now()`);
-}
-
-export function past(column: AnyPgColumn | SQL) {
-  return lte(column as any, sql`now()`);
-}
-
 export function isDatePast(date: Date | number | null) {
   if (!date) return false;
   return new Date(date).getTime() <= new Date().getTime();
@@ -186,15 +151,4 @@ export function isDatePast(date: Date | number | null) {
 export function isDateFuture(date: Date | number | null) {
   if (!date) return false;
   return new Date(date).getTime() > new Date().getTime();
-}
-
-export function trgmSearch(searchStr: string, columns: [AnyPgColumn, ...AnyPgColumn[]]) {
-  const q = sql`${searchStr} % (lower(${columns[0]})`;
-
-  for (const col in columns.slice(1)) {
-    q.append(sql` || ' ' || lower(${col})`);
-  }
-
-  q.append(sql`)`);
-  return q;
 }

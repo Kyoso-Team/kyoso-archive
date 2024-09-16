@@ -7,10 +7,10 @@ import { eq, inArray } from 'drizzle-orm';
 import { catcher } from '$lib/server/error';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { Token } from 'osu-web.js';
-import type { UnexpectedErrorInside } from '$types';
+import type { ErrorInside } from '$types';
 
 export async function upsertDiscordUser(
-  inside: UnexpectedErrorInside,
+  inside: ErrorInside,
   token: DiscordOAuth2.TokenRequestResult,
   tokenIssuedAt: Date,
   update?: {
@@ -52,7 +52,7 @@ export async function upsertDiscordUser(
 }
 
 export async function upsertOsuUser(
-  inside: UnexpectedErrorInside,
+  inside: ErrorInside,
   token: Token,
   tokenIssuedAt: Date,
   update?: {
@@ -162,7 +162,7 @@ export async function upsertOsuUser(
 }
 
 export async function createSession(
-  inside: UnexpectedErrorInside,
+  inside: ErrorInside,
   userId: number,
   ipAddress: string,
   userAgent: string

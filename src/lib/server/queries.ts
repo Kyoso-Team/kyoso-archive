@@ -11,7 +11,8 @@ import {
   UserNotification
 } from '$db';
 import { and, count, desc, eq, isNotNull, isNull, or, sql } from 'drizzle-orm';
-import { future, past, pick } from '$lib/server/utils';
+import { pick } from '$lib/server/utils';
+import { past, future } from './sql';
 import type { AnyPgTable, PgTransaction, PgSelectBase } from 'drizzle-orm/pg-core';
 import type { SQL } from 'drizzle-orm';
 import type { AnyPgNumberColumn, PaginationSettings, Simplify } from '$types';

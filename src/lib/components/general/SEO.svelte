@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { PageStore } from '$types';
+  import type { PageStore } from '$types/general';
 
   export let title: string;
   export let page: PageStore;
