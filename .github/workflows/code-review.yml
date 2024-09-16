@@ -36,21 +36,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          version: 8
-      - name: Install Node JS
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          registry-url: https://registry.npmjs.org
-          cache: 'pnpm'
+          bun-version: latest
       - name: Install Dependencies
-        run: pnpm install
-      - name: Build
-        run: pnpm build
-      - name: Lint
-        run: pnpm lint
+        run: bun install --frozen-lockfile
       - name: Svelte Check
-        run: pnpm check
+        run: bun check
+      - name: Lint
+        run: bun lint
