@@ -3,19 +3,20 @@
   import KyosoBadges from './KyosoBadges.svelte';
   import BanUserForm from './BanUserForm.svelte';
   import RevokeBanForm from './RevokeBanForm.svelte';
-  import { Discord, OsuCatch, OsuMania, OsuStandard, OsuTaiko } from '$components/icons';
-  import { Tooltip, SEO } from '$components/general';
-  import { Backdrop, Modal } from '$components/layout';
+  import { Discord, OsuCatch, OsuMania, OsuStandard, OsuTaiko } from '$lib/components/icons';
+  import { Tooltip, SEO } from '$lib/components/general';
+  import { Backdrop, Modal } from '$lib/components/layout';
   import { buildUrl } from 'osu-web.js';
   import { displayError, formatDate, formatNumber, toastSuccess, tooltip } from '$lib/utils';
   import { popup } from '$lib/popup';
-  import { loading } from '$stores';
-  import { trpc } from '$lib/trpc';
+  import { loading } from '$lib/stores';
+  import { trpc } from '$lib/clients';
   import { page } from '$app/stores';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { invalidate } from '$app/navigation';
+  import type { SvelteComponent } from 'svelte';
+  import type { TRPCRouterOutputs } from '$lib/types';
   import type { PageServerData } from './$types';
-  import type { AnyComponent, TRPCRouter } from '$types';
 
   export let data: PageServerData;
   let showBanUserModal = false;
@@ -24,7 +25,7 @@
   let showRevokeBanForm = false;
   let procedure:
     | keyof Pick<
-        TRPCRouter['users'],
+        TRPCRouterOutputs['users'],
         'makeAdmin' | 'removeAdmin' | 'makeApprovedHost' | 'removeApprovedHost'
       >
     | undefined;
@@ -39,7 +40,7 @@
     label: string;
     tooltipName: string;
     rank: number | null;
-    icon: AnyComponent;
+    icon: typeof SvelteComponent<any>;
   }[] = [];
   const toast = getToastStore();
 

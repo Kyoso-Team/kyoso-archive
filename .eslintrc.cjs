@@ -18,15 +18,6 @@ module.exports = {
     es2017: true,
     node: true
   },
-  overrides: [
-    {
-      files: ['*.svelte'],
-      parser: 'svelte-eslint-parser',
-      parserOptions: {
-        parser: '@typescript-eslint/parser'
-      }
-    }
-  ],
   rules: {
     'quotes': [
       'warn',
@@ -65,6 +56,48 @@ module.exports = {
       {
         drizzleObjectName: 'db'
       }
+    ],
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          {
+            group: ['drizzle-orm/mysql-core', 'drizzle-orm/sqlite-core'],
+            message: 'This project only uses Postgres.'
+          }
+        ]
+      }
     ]
-  }
+  },
+  overrides: [
+    {
+      files: ['*.svelte'],
+      parser: 'svelte-eslint-parser',
+      parserOptions: {
+        parser: '@typescript-eslint/parser'
+      }
+    },
+    {
+      files: [
+        'src/lib/*.ts',
+        'src/lib/(actions|clients|components|stores)/*.ts',
+        'src/**/*.svelte',
+        'src/routes/**/!(+page.server|+server|+layout.server).ts'
+      ],
+      rules: {
+        '@typescript-eslint/no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              {
+                group: ['**/server', '**/server/**/*', '$trpc/**/*', '$db/**/*'],
+                message: 'This is a server only module. Type imports are allowed though.',
+                allowTypeImports: true
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 };

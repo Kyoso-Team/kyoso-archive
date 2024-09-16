@@ -1,28 +1,29 @@
 import * as v from 'valibot';
-import env from '$lib/server/env';
+import { env } from '$lib/server/env';
 import { error } from '@sveltejs/kit';
-import { getSession, parseRequestBody } from '$lib/server/helpers/api';
-import { User, db } from '$db';
+import { getSession } from '$lib/server/context';
+import { parseRequestBody } from '$lib/server/request';
+import { User } from '$db';
 import { eq } from 'drizzle-orm';
 import { apiError, signJWT } from '$lib/server/utils';
-import { redis } from '$lib/server/redis';
+import { redis, db } from '$lib/server/services';
 import type { RequestHandler } from './$types';
-import type { AuthSession } from '$types';
+import type { AuthSession } from '$lib/types';
 
 export const PATCH = (async ({ cookies, route, request }) => {
   if (env.NODE_ENV !== 'development') {
     throw error(403, 'This endpoint is only for use within a development environment');
   }
 
-  const session = getSession(cookies, true);
+  const session = getSession('api', cookies, true);
   const { owner, admin, approvedHost } = await parseRequestBody(
+    'api',
     request,
     v.object({
       owner: v.boolean(),
       admin: v.boolean(),
       approvedHost: v.boolean()
-    }),
-    route
+    })
   );
 
   if (owner !== undefined) {

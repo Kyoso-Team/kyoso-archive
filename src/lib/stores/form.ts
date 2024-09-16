@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 import { writable } from 'svelte/store';
 import { arraysHaveSameElements } from '$lib/utils';
-import type { AnyForm } from '$types';
+import type { AnyForm } from '$lib/types';
 
 function setTrueOrDeleteKey(obj: Record<string, any>, key: string, condition: boolean) {
   if (condition) {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
+  import * as f from '$lib/form/validation';
   import OtherDate from './OtherDate.svelte';
   import Link from './Link.svelte';
   import ModMultiplier from './ModMultiplier.svelte';
@@ -8,8 +8,8 @@
   import ManageModMultiplierForm from './ManageModMultiplierForm.svelte';
   import { page } from '$app/stores';
   import { portal } from 'svelte-portal';
-  import { SEO, FormHandler } from '$components/general';
-  import { Checkbox, Number, Select, Text, DateTime } from '$components/form';
+  import { SEO, FormHandler } from '$lib/components/general';
+  import { Checkbox, Number, Select, Text, DateTime } from '$lib/components/form';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { goto, invalidate } from '$app/navigation';
   import {
@@ -22,11 +22,11 @@
     toastError,
     toastSuccess
   } from '$lib/utils';
-  import { createForm, createFunctionQueue, loading } from '$stores';
+  import { createForm, createFunctionQueue, loading } from '$lib/stores';
   import { dragHandleZone } from 'svelte-dnd-action';
-  import { trpc } from '$lib/trpc';
-  import { Modal, Backdrop } from '$components/layout';
-  import { tournamentChecks, tournamentDatesChecks } from '$lib/helpers';
+  import { trpc } from '$lib/clients';
+  import { Modal, Backdrop } from '$lib/components/layout';
+  import { tournamentChecks, tournamentDatesChecks } from '$lib/checks';
   import { flip } from 'svelte/animate';
   import { slide } from 'svelte/transition';
   import {
@@ -34,8 +34,8 @@
     rankRangeFormSchemas,
     baseTeamSettingsFormSchemas,
     tournamentTypeOptions
-  } from '$lib/constants';
-  import type { RefereeSettings, TRPCRouter } from '$types';
+  } from '$lib/form/common';
+  import type { RefereeSettings, TRPCRouterOutputs, TRPCRouterInputs } from '$lib/types';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
@@ -238,12 +238,12 @@
 
   async function updateTournament<T extends 'updateTournament' | 'updateTournamentDates'>(
     procedure: T,
-    input: TRPCRouter<true>['tournaments'][T]['data'],
+    input: TRPCRouterInputs['tournaments'][T]['data'],
     successMsg: string
   ) {
     let tournament!:
-      | TRPCRouter['tournaments']['updateTournament']
-      | TRPCRouter['tournaments']['updateTournamentDates'];
+      | TRPCRouterOutputs['tournaments']['updateTournament']
+      | TRPCRouterOutputs['tournaments']['updateTournamentDates'];
     loading.set(true);
 
     try {

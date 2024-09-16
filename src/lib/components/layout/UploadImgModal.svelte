@@ -1,6 +1,6 @@
 <script lang="ts">
   import { fly } from 'svelte/transition';
-  import { NoFile } from '$components/general';
+  import { NoFile } from '$lib/components/general';
   import { FileButton } from '@skeletonlabs/skeleton';
   import type { MaybePromise } from '@sveltejs/kit';
 

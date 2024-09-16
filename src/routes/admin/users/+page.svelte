@@ -5,19 +5,19 @@
   import RevokeBanForm from './RevokeBanForm.svelte';
   import LookedUpUser from './LookedUpUser.svelte';
   import createContextStore from './store';
-  import { SEO } from '$components/general';
-  import { Backdrop, Modal } from '$components/layout';
+  import { SEO } from '$lib/components/general';
+  import { Backdrop, Modal } from '$lib/components/layout';
   import { page } from '$app/stores';
   import { displayError, formatNumber, toastError, toastSuccess } from '$lib/utils';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { onDestroy, onMount } from 'svelte';
-  import { loading } from '$stores';
-  import { trpc } from '$lib/trpc';
+  import { loading } from '$lib/stores';
+  import { trpc } from '$lib/clients';
   import { invalidate } from '$app/navigation';
   import { browser } from '$app/environment';
   import { Search } from 'lucide-svelte';
   import type { PageServerData } from './$types';
-  import type { TRPCRouter } from '$types';
+  import type { TRPCRouterOutputs } from '$lib/types';
 
   export let data: PageServerData;
   let users: Record<'admins' | 'banned' | 'hosts' | 'owners', PageServerData['users']> = {
@@ -117,7 +117,7 @@
   async function onSearch() {
     if (!search) return;
 
-    let user: TRPCRouter['users']['searchUser'];
+    let user: TRPCRouterOutputs['users']['searchUser'];
     loading.set(true);
 
     try {

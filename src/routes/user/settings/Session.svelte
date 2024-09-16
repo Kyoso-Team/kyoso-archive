@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Backdrop, Modal } from '$components/layout';
+  import { Backdrop, Modal } from '$lib/components/layout';
   import { Info, X } from 'lucide-svelte';
   import { formatDate, formatTime } from '$lib/utils';
   import type { Session } from '$db';

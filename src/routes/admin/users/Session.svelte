@@ -1,8 +1,8 @@
 <script lang="ts">
   import { formatDate, formatTime } from '$lib/utils';
-  import type { TRPCRouter } from '$types';
+  import type { TRPCRouterOutputs } from '$lib/types';
 
-  export let session: TRPCRouter['users']['getUser']['sessions']['active'][number];
+  export let session: TRPCRouterOutputs['users']['getUser']['sessions']['active'][number];
 </script>
 
 <div class="card bg-surface-200-700-token p-4 flex flex-col gap-2 sm:gap-0">
