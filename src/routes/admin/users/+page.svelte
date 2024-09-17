@@ -13,8 +13,10 @@
   import { trpc } from '$lib/clients';
   import { SEO } from '$lib/components/general';
   import { Backdrop, Modal } from '$lib/components/layout';
+  import { formatNumber } from '$lib/format';
   import { loading } from '$lib/stores';
-  import { displayError, formatNumber, toastError, toastSuccess } from '$lib/utils';
+  import { displayError } from '$lib/ui';
+  import { toastError, toastSuccess } from '$lib/utils';
   import createContextStore from './store';
   import type { TRPCRouterOutputs } from '$lib/types';
   import type { PageServerData } from './$types';

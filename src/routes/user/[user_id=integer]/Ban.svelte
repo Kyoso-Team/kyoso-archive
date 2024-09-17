@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatDate, formatTime } from '$lib/utils';
+  import { formatDate, formatTime } from '$lib/format';
   import type { PageServerData } from './$types';
 
   export let ban: NonNullable<PageServerData['user']['activeBan']>;

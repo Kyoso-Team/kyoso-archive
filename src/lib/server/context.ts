@@ -54,7 +54,7 @@ export async function getStaffMember<T extends boolean>(
     error(inside, 'unauthorized', 'Not a staff member');
   }
 
-  if (env.NODE_ENV === 'development' && staffMember) {
+  if (env.NODE_ENV !== 'production' && staffMember) {
     const permissions = await redis.get<InferEnum<typeof StaffPermission>[]>(
       `staff_permissions:${staffMember.id}`
     );

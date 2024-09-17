@@ -3,7 +3,7 @@ import { pushState } from '$app/navigation';
 import { page } from '$app/stores';
 import { trpc } from '$lib/clients';
 import { loading } from '$lib/stores';
-import { displayError } from '$lib/utils';
+import { displayError } from '$lib/ui';
 import type { ToastStore } from '@skeletonlabs/skeleton';
 import type { Ban, User } from '$db';
 import type { TRPCRouterOutputs } from '$lib/types';

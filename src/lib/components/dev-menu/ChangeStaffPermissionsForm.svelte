@@ -4,7 +4,8 @@
   import { staffPermissionsOptions } from '$lib/form/common';
   import * as f from '$lib/form/validation';
   import { createForm, loading } from '$lib/stores';
-  import { displayError, keys, toastSuccess } from '$lib/utils';
+  import { displayError } from '$lib/ui';
+  import { keys, toastSuccess } from '$lib/utils';
   import type { ToastStore } from '@skeletonlabs/skeleton';
   import type { StaffPermission } from '$db';
   import type { InferEnum } from '$lib/types';

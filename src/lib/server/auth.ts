@@ -176,13 +176,7 @@ export async function createSession(
 ) {
   let ipMeta!: { city: string; region: string; country: string };
 
-  if (env.NODE_ENV === 'development') {
-    ipMeta = {
-      city: 'City',
-      region: 'Region',
-      country: 'Country'
-    };
-  } else {
+  if (env.NODE_ENV === 'production') {
     ipMeta = await fetch(`https://ipinfo.io/${ipAddress}?token=${env.IPINFO_ACCESS_TOKEN}`)
       .then(
         async (resp) =>
@@ -193,6 +187,12 @@ export async function createSession(
           }
       )
       .catch(catcher(inside, "Getting the IP address' information"));
+  } else {
+    ipMeta = {
+      city: 'City',
+      region: 'Region',
+      country: 'Country'
+    };
   }
 
   const session = await db

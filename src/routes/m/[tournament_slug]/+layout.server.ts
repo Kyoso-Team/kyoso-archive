@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { getStaffMember, getTournament } from '$lib/server/context';
-import { isDatePast } from '$lib/server/utils';
+import { isDatePast } from '$lib/utils';
 import type { LayoutServerLoad } from './$types';
 
 export const load = (async ({ params, parent }) => {

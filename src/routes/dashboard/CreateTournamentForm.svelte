@@ -12,7 +12,8 @@
     tournamentTypeOptions
   } from '$lib/form/common';
   import { createForm, loading } from '$lib/stores';
-  import { displayError, toastError, toastSuccess } from '$lib/utils';
+  import { displayError } from '$lib/ui';
+  import { toastError, toastSuccess } from '$lib/utils';
   import type { TRPCRouterOutputs } from '$lib/types';
 
   export let show: boolean;

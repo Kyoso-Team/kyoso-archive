@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Search } from 'lucide-svelte';
-  import { formatDate, formatTime } from '$lib/utils';
+  import { formatDate, formatTime } from '$lib/format';
   import type { TRPCRouterOutputs } from '$lib/types';
   import type createContextStore from './store';
 

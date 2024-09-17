@@ -12,7 +12,8 @@
   import { Backdrop, Modal } from '$lib/components/layout';
   import * as f from '$lib/form/validation';
   import { createForm, loading } from '$lib/stores';
-  import { displayError, toastSuccess } from '$lib/utils';
+  import { displayError } from '$lib/ui';
+  import { toastSuccess } from '$lib/utils';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;

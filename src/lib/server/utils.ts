@@ -68,16 +68,6 @@ export function generateFileId() {
 // }
 
 /**
- * Paginate data in database queries
- */
-export function paginate(page: number, elementsPerPage: number = 30) {
-  return {
-    offset: elementsPerPage * (page - 1),
-    limit: elementsPerPage
-  };
-}
-
-/**
  * Maps the table's columns in a select clause to avoid writing verbose objects.
  * Example:
  *
@@ -141,14 +131,4 @@ export function catchUniqueConstraintError$(
       }
     }
   };
-}
-
-export function isDatePast(date: Date | number | null) {
-  if (!date) return false;
-  return new Date(date).getTime() <= new Date().getTime();
-}
-
-export function isDateFuture(date: Date | number | null) {
-  if (!date) return false;
-  return new Date(date).getTime() > new Date().getTime();
 }

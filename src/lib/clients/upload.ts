@@ -1,4 +1,4 @@
-import { catcher, displayError } from '$lib/utils';
+import { catcher, displayError } from '$lib/ui';
 import type { ToastStore } from '@skeletonlabs/skeleton';
 import type { Asset } from '$lib/types';
 

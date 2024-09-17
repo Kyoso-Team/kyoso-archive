@@ -11,9 +11,11 @@
   import { SEO, Tooltip } from '$lib/components/general';
   import { Discord, OsuCatch, OsuMania, OsuStandard, OsuTaiko } from '$lib/components/icons';
   import { Backdrop, Modal } from '$lib/components/layout';
+  import { formatDate, formatNumber } from '$lib/format';
   import { popup } from '$lib/popup';
   import { loading } from '$lib/stores';
-  import { displayError, formatDate, formatNumber, toastSuccess, tooltip } from '$lib/utils';
+  import { displayError } from '$lib/ui';
+  import { toastSuccess, tooltip } from '$lib/utils';
   import type { SvelteComponent } from 'svelte';
   import type { TRPCRouterOutputs } from '$lib/types';
   import type { PageServerData } from './$types';

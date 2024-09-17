@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatDate, formatTime } from '$lib/utils';
+  import { formatDate, formatTime } from '$lib/format';
   import type { TRPCRouterOutputs } from '$lib/types';
 
   export let session: TRPCRouterOutputs['users']['getUser']['sessions']['active'][number];

@@ -2,7 +2,7 @@
   import NotAllowed from './NotAllowed.svelte';
   import Warning from './Warning.svelte';
   import { slide } from 'svelte/transition';
-  import { dateToHtmlInput } from '$lib/utils';
+  import { dateToHtmlInput } from '$lib/format';
   import type { FormStore } from '$lib/types';
 
   export let form: FormStore;

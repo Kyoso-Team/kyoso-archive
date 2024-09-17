@@ -6,7 +6,7 @@
   import { fly } from 'svelte/transition';
   import { page } from '$app/stores';
   import { Discord, Osu } from '$lib/components/icons';
-  import { formatDate, formatNumber, formatTime } from '$lib/utils';
+  import { formatDate, formatNumber, formatTime } from '$lib/format';
   import type createContextStore from './store';
   import type { Context } from './store';
 

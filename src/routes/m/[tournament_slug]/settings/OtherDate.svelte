@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Pencil, X } from 'lucide-svelte';
-  import { formatDate, formatTime } from '$lib/utils';
+  import { formatDate, formatTime } from '$lib/format';
   import type { TournamentDates } from '$db';
 
   export let date: (typeof TournamentDates.$inferSelect)['other'][number];

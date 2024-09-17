@@ -24,17 +24,10 @@
     tournamentTypeOptions
   } from '$lib/form/common';
   import * as f from '$lib/form/validation';
+  import { formatDate, formatTime } from '$lib/format';
   import { createForm, createFunctionQueue, loading } from '$lib/stores';
-  import {
-    displayError,
-    formatDate,
-    formatTime,
-    isDateFuture,
-    isDatePast,
-    keys,
-    toastError,
-    toastSuccess
-  } from '$lib/utils';
+  import { displayError } from '$lib/ui';
+  import { isDateFuture, isDatePast, keys, toastError, toastSuccess } from '$lib/utils';
   import type { RefereeSettings, TRPCRouterInputs, TRPCRouterOutputs } from '$lib/types';
   import type { PageServerData } from './$types';
 

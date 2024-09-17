@@ -3,7 +3,8 @@
   import { Checkbox, Form } from '$lib/components/form';
   import * as f from '$lib/form/validation';
   import { createForm, loading } from '$lib/stores';
-  import { displayError, toastSuccess } from '$lib/utils';
+  import { displayError } from '$lib/ui';
+  import { toastSuccess } from '$lib/utils';
   import type { ToastStore } from '@skeletonlabs/skeleton';
   import type { AuthSession } from '$lib/types';
 
