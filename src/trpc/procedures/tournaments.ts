@@ -72,7 +72,7 @@ const createTournament = trpc.procedure
       });
     }
 
-    let tournament!: Pick<typeof Tournament.$inferSelect, 'urlSlug'>;
+    let tournament!: Pick<typeof Tournament.$inferSelect, 'id' | 'urlSlug'>;
 
     try {
       tournament = await db.transaction(async (tx) => {
@@ -129,9 +129,7 @@ const createTournament = trpc.procedure
           staffRoleId: hostRole.id
         });
 
-        return {
-          urlSlug: tournament.urlSlug
-        };
+        return tournament;
       });
     } catch (err) {
       const uqErr = catchUniqueConstraintError(err);

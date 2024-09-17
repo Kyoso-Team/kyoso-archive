@@ -39,7 +39,7 @@ services:
   redis:
     image: redis:7
     container_name: kyoso-dev-redis
-    command: redis-server --requirepass kyoso --appendonly yes --maxmemory 128mb --databases 2
+    command: redis-server --appendonly yes --maxmemory 128mb --databases 2
     ports:
       - '3013:6379'
     volumes:

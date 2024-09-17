@@ -1,14 +1,8 @@
 import { Country } from '$db';
-import { recordExists, resetDatabase, truncateTables } from '$lib/server/queries';
+import { recordExists, truncateTables } from '$lib/server/queries';
 import { db } from '$lib/server/services';
-import { describe, beforeAll, expect, test, beforeEach } from 'bun:test';
+import { describe, expect, test, beforeEach } from 'bun:test';
 import { eq } from 'drizzle-orm';
-import { migrate } from 'drizzle-orm/postgres-js/migrator';
-
-beforeAll(async () => {
-  await resetDatabase();
-  await migrate(db, { migrationsFolder: `${process.cwd()}/migrations` });
-});
 
 describe('Abstracted SQL/Drizzle queries', () => {
   describe('recordExists', () => {
