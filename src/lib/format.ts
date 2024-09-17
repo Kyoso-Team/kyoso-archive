@@ -3,8 +3,10 @@
  * Example: 1000 => '1,000'
  * ```
  */
-export function formatNumber(n: number) {
-  return new Intl.NumberFormat('us-US').format(n);
+export function formatNumber(n: number, maximumFractionDigits?: number) {
+  return new Intl.NumberFormat('us-US', {
+    maximumFractionDigits
+  }).format(n);
 }
 
 /**

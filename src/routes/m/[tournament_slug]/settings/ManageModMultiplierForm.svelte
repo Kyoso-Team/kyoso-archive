@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getToastStore } from '@skeletonlabs/skeleton';
-  import { modMultiplierChecks } from '$lib/checks';
+  import { tournamentModMultiplierChecks } from '$lib/checks';
   import { Form, Number, Section, SelectMultiple } from '$lib/components/form';
   import * as f from '$lib/form/validation';
   import { createForm } from '$lib/stores';
@@ -76,7 +76,7 @@
     }
 
     newModMultiplier.mods = newModMultiplier.mods.sort((a, b) => a.localeCompare(b));
-    const err = modMultiplierChecks(modMultipliers, newModMultiplier);
+    const err = tournamentModMultiplierChecks(modMultipliers, newModMultiplier);
 
     if (err) {
       toastError(toast, err);

@@ -32,6 +32,14 @@ export async function resetDatabase() {
   `);
 }
 
+export async function truncateTables(...tables: AnyPgTable[]) {
+  if (env.NODE_ENV === 'production') {
+    throw new Error('Cannot truncate tables in production');
+  }
+
+  await db.execute(sql`truncate ${sql.join(tables, sql.raw(', '))} restart identity cascade`);
+}
+
 export async function recordExists(table: AnyPgTable, where?: SQL) {
   return await db
     .execute(sql`select 1 as "exists" from ${table} where ${where} limit 1`)
