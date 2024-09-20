@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Warning from './Warning.svelte';
   import NotAllowed from './NotAllowed.svelte';
+  import Warning from './Warning.svelte';
   import type { FormStore } from '$lib/types';
 
   export let form: FormStore;

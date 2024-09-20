@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ImageOff, FileMinus2 } from 'lucide-svelte';
+  import { FileMinus2, ImageOff } from 'lucide-svelte';
 
   export let img = false;
 </script>

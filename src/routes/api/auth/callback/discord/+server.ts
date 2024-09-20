@@ -1,10 +1,10 @@
-import { env } from '$lib/server/env';
 import { error, redirect } from '@sveltejs/kit';
-import { apiError, pick, signJWT, verifyJWT } from '$lib/server/utils';
-import { db, discordMainAuth, discordMainAuthOptions } from '$lib/server/services';
 import { User } from '$db';
 import { createSession, upsertDiscordUser } from '$lib/server/auth';
 import { getSession } from '$lib/server/context';
+import { env } from '$lib/server/env';
+import { db, discordMainAuth, discordMainAuthOptions } from '$lib/server/services';
+import { apiError, pick, signJWT, verifyJWT } from '$lib/server/utils';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { AuthSession } from '$lib/types';
 import type { RequestHandler } from './$types';

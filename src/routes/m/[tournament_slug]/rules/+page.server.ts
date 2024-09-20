@@ -1,9 +1,9 @@
-import { db } from '$lib/server/services';
-import { Tournament } from '$db';
-import { pick } from '$lib/server/utils';
 import { eq } from 'drizzle-orm';
-import { catcher } from '$lib/server/error';
+import { Tournament } from '$db';
 import { checks } from '$lib/server/checks';
+import { catcher } from '$lib/server/error';
+import { db } from '$lib/server/services';
+import { pick } from '$lib/server/utils';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ parent, depends }) => {

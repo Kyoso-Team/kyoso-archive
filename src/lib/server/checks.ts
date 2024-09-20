@@ -1,8 +1,8 @@
 import { env } from '$lib/server/env';
-import { hasPermissions, isDateFuture } from '$lib/utils';
 import { error } from '$lib/server/error';
-import type { AuthSession, ErrorInside, InferEnum } from '$lib/types';
+import { hasPermissions, isDateFuture } from '$lib/utils';
 import type { StaffPermission } from '$db';
+import type { AuthSession, ErrorInside, InferEnum } from '$lib/types';
 
 class Checks {
   constructor(protected inside: ErrorInside) {}

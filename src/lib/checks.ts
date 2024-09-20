@@ -176,12 +176,12 @@ export function tournamentLinkChecks(allLinks: TournamentLink[], link: Tournamen
 
 export function tournamentModMultipliersChecks(modMultipliers: ModMultiplier[]) {
   for (let i = 0; i < modMultipliers.length; i++) {
-    const err = modMultiplierChecks(modMultipliers, modMultipliers[i]);
+    const err = tournamentModMultiplierChecks(modMultipliers, modMultipliers[i]);
     if (err) return `${err} (at index ${i})`;
   }
 }
 
-export function modMultiplierChecks(
+export function tournamentModMultiplierChecks(
   allModMultipliers: ModMultiplier[],
   modMultiplier: ModMultiplier
 ) {

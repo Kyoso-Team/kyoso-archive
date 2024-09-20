@@ -1,6 +1,9 @@
+import { TRPCError } from '@trpc/server';
+import { wrap } from '@typeschema/valibot';
+import { and, count, desc, eq, inArray, isNull, lt, not, or, sql } from 'drizzle-orm';
+import { alias, unionAll } from 'drizzle-orm/pg-core';
+import { customAlphabet } from 'nanoid';
 import * as v from 'valibot';
-import { env } from '$lib/server/env';
-import { db, trpc } from '$lib/server/services';
 import {
   Ban,
   Country,
@@ -20,20 +23,16 @@ import {
   TournamentDates,
   User
 } from '$db';
-import { count, inArray, lt } from 'drizzle-orm';
-import { and, desc, eq, isNull, not, or, sql } from 'drizzle-orm';
-import { pick, trpcUnknownError } from '$lib/server/utils';
-import { future } from '$lib/server/sql';
-import { customAlphabet } from 'nanoid';
-import { wrap } from '@typeschema/valibot';
-import { positiveIntSchema, userSettingsSchema } from '$lib/validation';
-import { getSession } from '$lib/server/context';
-import { TRPCError } from '@trpc/server';
-import { alias, unionAll } from 'drizzle-orm/pg-core';
-import { rateLimitMiddleware } from '$trpc/middleware';
 import { checks } from '$lib/server/checks';
+import { getSession } from '$lib/server/context';
+import { env } from '$lib/server/env';
 import { catcher, error } from '$lib/server/error';
 import { recordExists } from '$lib/server/queries';
+import { db, trpc } from '$lib/server/services';
+import { future } from '$lib/server/sql';
+import { pick, trpcUnknownError } from '$lib/server/utils';
+import { positiveIntSchema, userSettingsSchema } from '$lib/validation';
+import { rateLimitMiddleware } from '$trpc/middleware';
 import type { SQL } from 'drizzle-orm';
 
 const getUser = trpc.procedure

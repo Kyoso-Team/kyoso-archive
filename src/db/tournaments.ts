@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
   boolean,
   index,
@@ -15,7 +16,6 @@ import {
 } from 'drizzle-orm/pg-core';
 import { RoundType, TournamentType } from '.';
 import { timestampConfig, uniqueConstraints } from './constants';
-import { sql } from 'drizzle-orm';
 import type {
   BWSValues,
   ModMultiplier,

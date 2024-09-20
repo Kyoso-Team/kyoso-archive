@@ -1,12 +1,12 @@
-import { env } from '$lib/server/env';
-import { StaffMember, StaffMemberRole, StaffRole, Tournament, TournamentDates } from '$db';
 import { and, eq } from 'drizzle-orm';
-import { pick, verifyJWT } from '$lib/server/utils';
-import { redis, db } from '$lib/server/services';
+import { StaffMember, StaffMemberRole, StaffRole, Tournament, TournamentDates } from '$db';
+import { env } from '$lib/server/env';
 import { catcher, error } from '$lib/server/error';
+import { db, redis } from '$lib/server/services';
+import { pick, verifyJWT } from '$lib/server/utils';
 import type { Cookies } from '@sveltejs/kit';
-import type { AuthSession, InferEnum, Simplify, ErrorInside } from '$lib/types';
 import type { StaffPermission } from '$db';
+import type { AuthSession, ErrorInside, InferEnum, Simplify } from '$lib/types';
 
 export function getSession<T extends boolean>(
   inside: ErrorInside,
@@ -54,7 +54,7 @@ export async function getStaffMember<T extends boolean>(
     error(inside, 'unauthorized', 'Not a staff member');
   }
 
-  if (env.NODE_ENV === 'development' && staffMember) {
+  if (env.NODE_ENV !== 'production' && staffMember) {
     const permissions = await redis.get<InferEnum<typeof StaffPermission>[]>(
       `staff_permissions:${staffMember.id}`
     );

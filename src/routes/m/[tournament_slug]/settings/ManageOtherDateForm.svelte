@@ -1,11 +1,11 @@
 <script lang="ts">
+  import { getToastStore } from '@skeletonlabs/skeleton';
+  import { tournamentOtherDateChecks } from '$lib/checks';
+  import { DateOnly, DateTime, Form, Section, Select, Text } from '$lib/components/form';
+  import { maxPossibleDate, oldestDatePossible } from '$lib/constants';
   import * as f from '$lib/form/validation';
-  import { Form, Text, Select, DateOnly, DateTime, Section } from '$lib/components/form';
   import { createForm } from '$lib/stores';
   import { keys, sortByKey, toastError } from '$lib/utils';
-  import { maxPossibleDate, oldestDatePossible } from '$lib/constants';
-  import { tournamentOtherDateChecks } from '$lib/checks';
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import type { TournamentDates } from '$db';
 
   export let show: boolean;

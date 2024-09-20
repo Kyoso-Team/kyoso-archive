@@ -1,11 +1,11 @@
 <script lang="ts">
-  import * as f from '$lib/form/validation';
   import { Link } from 'lucide-svelte';
-  import { Form, Text, Select } from '$lib/components/form';
+  import { getToastStore } from '@skeletonlabs/skeleton';
+  import { tournamentLinkChecks } from '$lib/checks';
+  import { Form, Select, Text } from '$lib/components/form';
+  import * as f from '$lib/form/validation';
   import { createForm } from '$lib/stores';
   import { keys, toastError } from '$lib/utils';
-  import { tournamentLinkChecks } from '$lib/checks';
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import type { Tournament } from '$db';
   import type { TournamentLink } from '$lib/types';
 

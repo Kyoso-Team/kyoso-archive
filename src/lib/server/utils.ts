@@ -1,10 +1,10 @@
-import jwt from 'jsonwebtoken';
-import postgres from 'postgres';
-import { env } from '$lib/server/env';
-import { customAlphabet } from 'nanoid';
-import { logError } from './error';
 import { error } from '@sveltejs/kit';
 import { TRPCError } from '@trpc/server';
+import jwt from 'jsonwebtoken';
+import { customAlphabet } from 'nanoid';
+import postgres from 'postgres';
+import { env } from '$lib/server/env';
+import { logError } from './error';
 import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
 
 export function signJWT<T>(data: T) {
@@ -66,16 +66,6 @@ export function generateFileId() {
 //       sort: mapUrlParams(params, 's.', true)
 //     });
 // }
-
-/**
- * Paginate data in database queries
- */
-export function paginate(page: number, elementsPerPage: number = 30) {
-  return {
-    offset: elementsPerPage * (page - 1),
-    limit: elementsPerPage
-  };
-}
 
 /**
  * Maps the table's columns in a select clause to avoid writing verbose objects.
@@ -141,14 +131,4 @@ export function catchUniqueConstraintError$(
       }
     }
   };
-}
-
-export function isDatePast(date: Date | number | null) {
-  if (!date) return false;
-  return new Date(date).getTime() <= new Date().getTime();
-}
-
-export function isDateFuture(date: Date | number | null) {
-  if (!date) return false;
-  return new Date(date).getTime() > new Date().getTime();
 }

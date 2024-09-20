@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
   boolean,
   char,
@@ -9,9 +10,8 @@ import {
   timestamp,
   varchar
 } from 'drizzle-orm/pg-core';
-import { timestampConfig } from './constants';
 import { Tournament, TournamentFormTarget, TournamentFormType, User } from '.';
-import { sql } from 'drizzle-orm';
+import { timestampConfig } from './constants';
 import type { UserFormField, UserFormFieldResponse } from '$lib/types';
 
 export const Form = pgTable(

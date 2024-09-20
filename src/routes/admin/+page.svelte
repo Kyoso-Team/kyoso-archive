@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { SEO } from '$lib/components/general';
+  import { Trophy, User } from 'lucide-svelte';
   import { page } from '$app/stores';
-  import { User, Trophy } from 'lucide-svelte';
+  import { SEO } from '$lib/components/general';
   import type { SvelteComponent } from 'svelte';
 
   const links: {

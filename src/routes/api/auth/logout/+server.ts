@@ -1,9 +1,9 @@
 import { redirect } from '@sveltejs/kit';
-import { db } from '$lib/server/services';
-import { Session } from '$db';
 import { eq } from 'drizzle-orm';
+import { Session } from '$db';
 import { getSession } from '$lib/server/context';
 import { catcher } from '$lib/server/error';
+import { db } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, cookies }) => {

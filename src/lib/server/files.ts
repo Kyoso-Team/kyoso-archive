@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 import { error } from '$lib/server/error';
-import type { FileType, ErrorInside } from '$lib/types';
+import type { ErrorInside, FileType } from '$lib/types';
 
 export async function transformFile(config: {
   inside: ErrorInside;

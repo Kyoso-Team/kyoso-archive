@@ -3,7 +3,18 @@
   "singleQuote": true,
   "trailingComma": "none",
   "printWidth": 100,
-  "plugins": ["prettier-plugin-svelte"],
+  "plugins": ["prettier-plugin-svelte", "@ianvs/prettier-plugin-sort-imports"],
   "quoteProps": "consistent",
-  "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }]
+  "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }],
+  "importOrder": [
+    ".css$",
+    ".svelte$",
+    "<BUILTIN_MODULES>",
+    "<THIRD_PARTY_MODULES>",
+    "^[$]",
+    "^[.]",
+    "<TYPES>",
+    "<TYPES>^[$]",
+    "<TYPES>^[.]"
+  ]
 }

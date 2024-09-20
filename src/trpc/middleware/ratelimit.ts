@@ -1,6 +1,5 @@
-import { trpc } from '$lib/server/services';
-import { ratelimit } from '$lib/server/services';
 import { catcher, error } from '$lib/server/error';
+import { ratelimit, trpc } from '$lib/server/services';
 
 export const rateLimitMiddleware = trpc.middleware(
   async ({ path, next, ctx: { getClientAddress } }) => {

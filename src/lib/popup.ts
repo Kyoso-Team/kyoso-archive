@@ -1,6 +1,6 @@
 // Source: https://github.com/skeletonlabs/skeleton/blob/master/packages/skeleton/src/lib/utilities/Popup/popup.ts
-import { get } from 'svelte/store';
 import { storePopup } from '@skeletonlabs/skeleton';
+import { get } from 'svelte/store';
 import type { PopupSettings } from '$lib/types';
 
 export function popup(triggerNode: HTMLElement, args: PopupSettings) {

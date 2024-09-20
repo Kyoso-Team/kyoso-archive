@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Backdrop, Modal } from '$lib/components/layout';
   import { Info, X } from 'lucide-svelte';
-  import { formatDate, formatTime } from '$lib/utils';
+  import { Backdrop, Modal } from '$lib/components/layout';
+  import { formatDate, formatTime } from '$lib/format';
   import type { Session } from '$db';
 
   export let session: Pick<

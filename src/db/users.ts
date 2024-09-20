@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
   bigint,
   bigserial,
@@ -16,7 +17,6 @@ import {
   varchar
 } from 'drizzle-orm/pg-core';
 import { timestampConfig } from './constants';
-import { sql } from 'drizzle-orm';
 import type { OAuthToken, UserSettings } from '$lib/types';
 
 export const User = pgTable(

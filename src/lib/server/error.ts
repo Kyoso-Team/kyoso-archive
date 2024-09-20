@@ -1,8 +1,9 @@
-import postgres from 'postgres';
-import { isOsuJSError } from 'osu-web.js';
 import { error as sveltekitError } from '@sveltejs/kit';
 import { TRPCError } from '@trpc/server';
 import { getHTTPStatusCodeFromError } from '@trpc/server/http';
+import { isOsuJSError } from 'osu-web.js';
+import postgres from 'postgres';
+import { env } from './env';
 import type { TRPC_ERROR_CODE_KEY } from '@trpc/server/rpc';
 import type { ErrorInside } from '$lib/types';
 
@@ -11,6 +12,12 @@ export class ServerError extends Error {
 
   constructor(cause: unknown, inside: ErrorInside, message: string) {
     super(`Internal server error. Error thrown when: ${message}`);
+
+    // Log eror here during tests since it doesn't pass through the SvelteKit error handler hook
+    if (env.TEST_ENV === 'automatic' && cause !== undefined) {
+      console.log(cause);
+    }
+
     this.name = 'ServerError';
     this.cause = cause;
     this.inside = inside;

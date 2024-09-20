@@ -1,5 +1,5 @@
-import { getTournament } from '$lib/server/context';
 import { checks } from '$lib/server/checks';
+import { getTournament } from '$lib/server/context';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ parent, depends }) => {

@@ -1,14 +1,14 @@
-import * as v from 'valibot';
-import { env } from '$lib/server/env';
 import { error } from '@sveltejs/kit';
-import { getSession } from '$lib/server/context';
-import { parseRequestBody } from '$lib/server/request';
-import { User } from '$db';
 import { eq } from 'drizzle-orm';
+import * as v from 'valibot';
+import { User } from '$db';
+import { getSession } from '$lib/server/context';
+import { env } from '$lib/server/env';
+import { parseRequestBody } from '$lib/server/request';
+import { db, redis } from '$lib/server/services';
 import { apiError, signJWT } from '$lib/server/utils';
-import { redis, db } from '$lib/server/services';
-import type { RequestHandler } from './$types';
 import type { AuthSession } from '$lib/types';
+import type { RequestHandler } from './$types';
 
 export const PATCH = (async ({ cookies, route, request }) => {
   if (env.NODE_ENV !== 'development') {

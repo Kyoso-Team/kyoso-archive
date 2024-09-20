@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { page } from '$app/stores';
   import { LightSwitch } from '@skeletonlabs/skeleton';
+  import { page } from '$app/stores';
   import { Discord } from '$lib/components/icons';
   import type { AuthSession } from '$lib/types';
 

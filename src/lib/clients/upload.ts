@@ -1,6 +1,6 @@
-import { catcher, displayError } from '$lib/utils';
-import type { Asset } from '$lib/types';
+import { catcher, displayError } from '$lib/ui';
 import type { ToastStore } from '@skeletonlabs/skeleton';
+import type { Asset } from '$lib/types';
 
 export function createUploadClient<T extends Asset<any, any>>(toast: ToastStore, endpoint: string) {
   async function put(body: T['put']) {

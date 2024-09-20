@@ -1,10 +1,10 @@
-import * as v from 'valibot';
-import { db, trpc } from '$lib/server/services';
-import { UserNotification } from '$db';
-import { trpcUnknownError } from '$lib/server/utils';
 import { wrap } from '@typeschema/valibot';
-import { getSession } from '$lib/server/context';
 import { and, eq } from 'drizzle-orm';
+import * as v from 'valibot';
+import { UserNotification } from '$db';
+import { getSession } from '$lib/server/context';
+import { db, trpc } from '$lib/server/services';
+import { trpcUnknownError } from '$lib/server/utils';
 import { positiveIntSchema } from '$lib/validation';
 
 const markNotificationAsRead = trpc.procedure

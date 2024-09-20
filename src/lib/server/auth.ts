@@ -1,10 +1,10 @@
-import { env } from '$lib/server/env';
-import { db, discordMainAuth } from '$lib/server/services';
-import { Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, Session } from '$db';
-import { pick } from '$lib/server/utils';
-import { Client } from 'osu-web.js';
 import { eq, inArray } from 'drizzle-orm';
+import { Client } from 'osu-web.js';
+import { Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, Session } from '$db';
+import { env } from '$lib/server/env';
 import { catcher } from '$lib/server/error';
+import { db, discordMainAuth } from '$lib/server/services';
+import { pick } from '$lib/server/utils';
 import type DiscordOAuth2 from 'discord-oauth2';
 import type { Token } from 'osu-web.js';
 import type { ErrorInside } from '$lib/types';
@@ -176,13 +176,7 @@ export async function createSession(
 ) {
   let ipMeta!: { city: string; region: string; country: string };
 
-  if (env.NODE_ENV === 'development') {
-    ipMeta = {
-      city: 'City',
-      region: 'Region',
-      country: 'Country'
-    };
-  } else {
+  if (env.NODE_ENV === 'production') {
     ipMeta = await fetch(`https://ipinfo.io/${ipAddress}?token=${env.IPINFO_ACCESS_TOKEN}`)
       .then(
         async (resp) =>
@@ -193,6 +187,12 @@ export async function createSession(
           }
       )
       .catch(catcher(inside, "Getting the IP address' information"));
+  } else {
+    ipMeta = {
+      city: 'City',
+      region: 'Region',
+      country: 'Country'
+    };
   }
 
   const session = await db
