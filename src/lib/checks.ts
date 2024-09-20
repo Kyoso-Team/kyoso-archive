@@ -1,5 +1,6 @@
 import { arraysHaveSameElements } from './utils';
 import type { TournamentDates } from '$db';
+import type { FormUpdateSchemaData } from '$trpc/procedures';
 import type { ModMultiplier, TournamentLink, UserFormField } from '$lib/types';
 
 export function tournamentChecks({
@@ -232,5 +233,15 @@ export function userFormFieldChecks(field: UserFormField) {
     if (field.min && field.max && field.min > field.max) {
       return 'The minimum must be less than or equal to the maximum';
     }
+  }
+}
+
+export function checkPublicForm(data: FormUpdateSchemaData): string | undefined {
+  if (data.public === false) {
+    return 'Public form cannot be unpublished';
+  }
+
+  if (data.anonymousResponses !== undefined) {
+    return 'Form anonymity cannot be changed';
   }
 }

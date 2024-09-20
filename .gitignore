@@ -13,3 +13,4 @@ vite.config.ts.timestamp-*
 .seed-cache
 test-results
 playwright-report
+.idea
