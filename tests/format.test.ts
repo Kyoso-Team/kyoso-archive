@@ -1,5 +1,5 @@
+import { describe, expect, test } from 'bun:test';
 import { formatNumber } from '$lib/format';
-import { describe, test, expect } from 'bun:test';
 
 describe('Formatting functions', () => {
   test('formatNumber', () => {
@@ -22,11 +22,7 @@ describe('Formatting functions', () => {
     // TODO
   });
 
-  test.skip('fillDateDigits', () => {
+  test.skip('fillDateDigits', () => {});
 
-  });
-
-  test.skip('dateToHtmlInput', () => {
-
-  });
+  test.skip('dateToHtmlInput', () => {});
 });

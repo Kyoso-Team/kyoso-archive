@@ -11,7 +11,7 @@ class MockCookies {
       return signJWT(this.session);
     }
 
-    throw Error('This key hasn\'t been mocked');
+    throw Error("This key hasn't been mocked");
   }
 
   public async setSessionCookie(user?: Parameters<typeof createTestUser>[0]) {

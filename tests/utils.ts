@@ -1,7 +1,7 @@
+import { count } from 'drizzle-orm';
 import { Country, DiscordUser, OsuBadge, OsuUser, OsuUserAwardedBadge, Session, User } from '$db';
 import { db } from '$lib/server/services';
 import { pick } from '$lib/server/utils';
-import { count } from 'drizzle-orm';
 import type { AuthSession } from '$lib/types';
 
 export async function createTestUser(user?: {

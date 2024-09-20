@@ -1,4 +1,5 @@
 import { and, count, desc, eq, isNotNull, isNull, or, sql } from 'drizzle-orm';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import {
   Country,
   DiscordUser,
@@ -21,7 +22,6 @@ import { db } from '$lib/server/services';
 import { pick } from '$lib/server/utils';
 import { env } from './env';
 import { future, past } from './sql';
-import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import type { SQL } from 'drizzle-orm';
 import type { AnyPgTable, PgSelectBase, PgTransaction } from 'drizzle-orm/pg-core';
 import type { AnyPgNumberColumn, PaginationSettings, Simplify } from '$lib/types';
@@ -43,16 +43,29 @@ export async function resetDatabase() {
 /**
  * `user_tables` is an alias for including the following tables: `User`, `Session`, `DiscordUser`, `OsuUser`, `Country`, `OsuBadge` and `OsuUserAwardedBadge`
  */
-export async function truncateTables(userTables: 'user_tables', ...tables: AnyPgTable[]): Promise<void>;
+export async function truncateTables(
+  userTables: 'user_tables',
+  ...tables: AnyPgTable[]
+): Promise<void>;
 export async function truncateTables(...tables: AnyPgTable[]): Promise<void>;
 export async function truncateTables(...tables: ('user_tables' | AnyPgTable)[]) {
   if (env.NODE_ENV === 'production') {
     throw new Error('Cannot truncate tables in production');
   }
 
-  const allTables = tables[0] === 'user_tables'
-    ? [User, Session, DiscordUser, OsuUser, Country, OsuBadge, OsuUserAwardedBadge, ...tables.slice(1)]
-    : tables;
+  const allTables =
+    tables[0] === 'user_tables'
+      ? [
+          User,
+          Session,
+          DiscordUser,
+          OsuUser,
+          Country,
+          OsuBadge,
+          OsuUserAwardedBadge,
+          ...tables.slice(1)
+        ]
+      : tables;
   await db.execute(sql`truncate ${sql.join(allTables, sql.raw(', '))} restart identity cascade`);
 }
 

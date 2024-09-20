@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
-import { truncateTables } from '$lib/server/queries';
-import { trpc, cookies } from '$tests/trpc/client';
 import { Tournament } from '$db';
+import { truncateTables } from '$lib/server/queries';
+import { cookies, trpc } from '$tests/trpc/client';
 import type { TRPCRouterInputs } from '$lib/types';
 
 async function setCorrectPermissions() {
@@ -28,7 +28,7 @@ describe('trpc.tournaments.createTournament', () => {
       approvedHost: false,
       admin: true
     });
-    
+
     const promise = trpc.tournaments.createTournament(dummyTournament);
     expect(promise).rejects.toThrowTRPCError('UNAUTHORIZED');
   });
@@ -98,7 +98,7 @@ describe('trpc.tournaments.createTournament', () => {
 
   test('Success: Creates rank restricted draft tournament', async () => {
     await setCorrectPermissions();
-    
+
     const tournament = await trpc.tournaments.createTournament({
       rankRange: {
         lower: 1,
