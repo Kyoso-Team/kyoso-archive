@@ -5,7 +5,7 @@ import { serverEnvSchema } from '$lib/validation';
 const serverEnv = {
   ...clientEnv,
   NODE_ENV: process.env.NODE_ENV === 'test' ? 'development' : 'production',
-  TEST_ENV: process.env.NODE_ENV === 'test' ? 'automatic' : process.env.TEST_ENV,
+  TEST_ENV: process.env.NODE_ENV === 'test' ? 'automatic' : process.env.TEST_ENV === 'undefined' ? undefined : 'manual',
   JWT_SECRET: process.env.JWT_SECRET,
   CRON_SECRET: process.env.CRON_SECRET,
   OSU_CLIENT_SECRET: process.env.OSU_CLIENT_SECRET,
