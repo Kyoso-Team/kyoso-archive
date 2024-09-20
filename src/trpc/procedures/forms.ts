@@ -1,9 +1,8 @@
-import * as v from 'valibot';
-import { trpc, db } from '$lib/server/services';
-import { rateLimitMiddleware } from '$trpc/middleware';
+import { TRPCError } from '@trpc/server';
 import { wrap } from '@typeschema/valibot';
-import { checks } from '$lib/server/checks';
-import { getSession, getStaffMember, getTournament } from '$lib/server/context';
+import { and, eq, sql } from 'drizzle-orm';
+import { difference, intersection, isNil } from 'lodash';
+import * as v from 'valibot';
 import {
   Form,
   FormResponse,
@@ -14,20 +13,21 @@ import {
   TournamentFormTarget,
   TournamentFormType
 } from '$db';
-import { isDatePast, pick, trpcUnknownError } from '$lib/server/utils';
-import { TRPCError } from '@trpc/server';
-import { and, eq, sql } from 'drizzle-orm';
+import { checkPublicForm, userFormFieldsChecks } from '$lib/checks';
+import { maxPossibleDate, oldestDatePossible } from '$lib/constants';
+import { checks } from '$lib/server/checks';
+import { getSession, getStaffMember, getTournament } from '$lib/server/context';
 import { getCount } from '$lib/server/queries';
+import { db, trpc } from '$lib/server/services';
+import { isDatePast, pick, trpcUnknownError } from '$lib/server/utils';
+import { arraysHaveSameElements } from '$lib/utils';
 import {
   nonEmptyStringSchema,
   positiveIntSchema,
   userFormFieldResponseSchema,
   userFormFieldSchema
 } from '$lib/validation';
-import { maxPossibleDate, oldestDatePossible } from '$lib/constants';
-import { checkPublicForm, userFormFieldsChecks } from '$lib/checks';
-import { difference, intersection, isNil } from 'lodash';
-import { arraysHaveSameElements } from '$lib/utils';
+import { rateLimitMiddleware } from '$trpc/middleware';
 import type { Infer } from '@typeschema/valibot';
 import type { TRPCContext, UserFormField } from '$lib/types';
 

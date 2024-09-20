@@ -1,7 +1,7 @@
 import { arraysHaveSameElements } from './utils';
 import type { TournamentDates } from '$db';
-import type { FormUpdateSchemaData } from '$trpc/procedures';
 import type { ModMultiplier, TournamentLink, UserFormField } from '$lib/types';
+import type { FormUpdateSchemaData } from '$trpc/procedures';
 
 export function tournamentChecks({
   teamSettings,
