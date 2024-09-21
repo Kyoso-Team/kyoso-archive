@@ -7,7 +7,11 @@ CREATE TABLE IF NOT EXISTS "scheduled_notification" (
 ALTER TABLE "user_notification" DROP CONSTRAINT "user_notification_notification_id_notification_id_fk";
 --> statement-breakpoint
 DROP INDEX IF EXISTS "idx_round_tournament_id_order";--> statement-breakpoint
+DROP INDEX IF EXISTS "idx_session_id_expired";--> statement-breakpoint
 DROP INDEX IF EXISTS "idx_user_notification_user_id_read_notified_at";--> statement-breakpoint
+ALTER TABLE "form" ALTER COLUMN "fields_with_responses" SET DEFAULT '{}';--> statement-breakpoint
+ALTER TABLE "player" ALTER COLUMN "availability" SET DEFAULT '{0,0,0,0}';--> statement-breakpoint
+ALTER TABLE "staff_role" ALTER COLUMN "permissions" SET DEFAULT '{}';--> statement-breakpoint
 ALTER TABLE "round" ALTER COLUMN "target_star_rating" DROP NOT NULL;--> statement-breakpoint
 ALTER TABLE "round" ADD COLUMN "deleted_at" timestamp (3) with time zone;--> statement-breakpoint
 ALTER TABLE "notification" ADD COLUMN "notified_at" timestamp (3) with time zone DEFAULT now();--> statement-breakpoint
@@ -28,8 +32,11 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "udx_form_response_submitted_by_user_id" ON "form_response" USING btree ("form_id","submitted_by_user_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_round_tournament_id_deleted_at_order" ON "round" USING btree ("tournament_id","deleted_at","order");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_notification_notified_at" ON "notification" USING btree ("notified_at" DESC NULLS LAST);--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_session_created_at" ON "session" USING btree ("created_at" DESC NULLS LAST);--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_session_last_active_at" ON "session" USING btree ("last_active_at" DESC NULLS LAST);--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_user_notification_user_id_read" ON "user_notification" USING btree ("user_id","read");--> statement-breakpoint
 ALTER TABLE "user_notification" DROP COLUMN IF EXISTS "notified_at";
 --> statement-breakpoint
@@ -83,36 +90,4 @@ DO $$ BEGIN
 	FOR EACH ROW EXECUTE FUNCTION notify_new_notification();
 EXCEPTION
  WHEN duplicate_object THEN null;
-END $$;
-
-
-
-DO $$
-DECLARE
-notification JSONB := jsonb_build_object(
-	'notification_id', 1,
-	'important', false,
-	'message', '{user:74} has revoked your website admin status',
-	'link_to', null
-);
-user_ids INTEGER[];
-offset_value INTEGER := 0;
--- Notify 1000 users at a time
-limit_value INTEGER := 1000;
-BEGIN
-	LOOP
-		SELECT ARRAY(
-			SELECT "user_notification"."user_id"
-			FROM "user_notification"
-			WHERE "user_notification"."notification_id" = NEW."id"
-			LIMIT limit_value
-			OFFSET offset_value
-		) INTO user_ids;
-		EXIT WHEN array_length(user_ids, 1) = 0;
-		PERFORM pg_notify(
-			'new_notification',
-			notification::TEXT
-		);
-		offset_value := offset_value + limit_value;
-	END LOOP;
 END $$;

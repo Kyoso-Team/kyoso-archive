@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD
-  "id": "7314e87e-122c-46e7-a6f0-8025e727ba5e",
-=======
-  "id": "6e7f726a-d17a-4a0f-963d-92c5891c7c87",
->>>>>>> origin/dev
+  "id": "0f46487f-3be1-44c9-af68-eaf2d2415bda",
   "prevId": "ae7ce16b-c874-42eb-ae84-20df5fa2bbfe",
   "version": "7",
   "dialect": "postgresql",
@@ -80,7 +76,7 @@
           "type": "char(8)[]",
           "primaryKey": false,
           "notNull": true,
-          "default": []
+          "default": "'{}'"
         },
         "fields": {
           "name": "fields",
@@ -193,6 +189,27 @@
             }
           ],
           "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "udx_form_response_submitted_by_user_id": {
+          "name": "udx_form_response_submitted_by_user_id",
+          "columns": [
+            {
+              "expression": "form_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "submitted_by_user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -590,12 +607,7 @@
           "type": "integer[4]",
           "primaryKey": false,
           "notNull": true,
-          "default": [
-            0,
-            0,
-            0,
-            0
-          ]
+          "default": "'{0,0,0,0}'"
         },
         "user_id": {
           "name": "user_id",
@@ -928,7 +940,7 @@
           "type": "staff_permission[]",
           "primaryKey": false,
           "notNull": true,
-          "default": []
+          "default": "'{}'"
         },
         "tournament_id": {
           "name": "tournament_id",
@@ -1173,8 +1185,7 @@
           "name": "target_star_rating",
           "type": "real",
           "primaryKey": false,
-          "notNull": false,
-          "notNull": true
+          "notNull": false
         },
         "playtesting_pool": {
           "name": "playtesting_pool",
@@ -1215,13 +1226,8 @@
         }
       },
       "indexes": {
-<<<<<<< HEAD
         "idx_round_tournament_id_deleted_at_order": {
           "name": "idx_round_tournament_id_deleted_at_order",
-=======
-        "idx_round_tournament_id_order": {
-          "name": "idx_round_tournament_id_order",
->>>>>>> origin/dev
           "columns": [
             {
               "expression": "tournament_id",
@@ -1230,15 +1236,12 @@
               "nulls": "last"
             },
             {
-<<<<<<< HEAD
               "expression": "deleted_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
             },
             {
-=======
->>>>>>> origin/dev
               "expression": "order",
               "isExpression": false,
               "asc": true,
@@ -1788,7 +1791,6 @@
           "primaryKey": true,
           "notNull": true
         },
-<<<<<<< HEAD
         "notified_at": {
           "name": "notified_at",
           "type": "timestamp (3) with time zone",
@@ -1814,8 +1816,6 @@
           "primaryKey": false,
           "notNull": true
         },
-=======
->>>>>>> origin/dev
         "message": {
           "name": "message",
           "type": "text",
@@ -1823,7 +1823,6 @@
           "notNull": true
         }
       },
-<<<<<<< HEAD
       "indexes": {
         "idx_notification_notified_at": {
           "name": "idx_notification_notified_at",
@@ -1841,9 +1840,6 @@
           "with": {}
         }
       },
-=======
-      "indexes": {},
->>>>>>> origin/dev
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
@@ -2073,7 +2069,6 @@
       },
       "uniqueConstraints": {}
     },
-<<<<<<< HEAD
     "public.scheduled_notification": {
       "name": "scheduled_notification",
       "schema": "",
@@ -2147,8 +2142,6 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-=======
->>>>>>> origin/dev
     "public.session": {
       "name": "session",
       "schema": "",
@@ -2213,19 +2206,11 @@
         }
       },
       "indexes": {
-<<<<<<< HEAD
-        "idx_session_id_expired": {
-          "name": "idx_session_id_expired",
-          "columns": [
-            {
-              "expression": "id",
-=======
         "idx_session_user_id_expired": {
           "name": "idx_session_user_id_expired",
           "columns": [
             {
               "expression": "user_id",
->>>>>>> origin/dev
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2242,21 +2227,6 @@
           "method": "btree",
           "with": {}
         },
-<<<<<<< HEAD
-        "idx_session_user_id_expired": {
-          "name": "idx_session_user_id_expired",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "expired",
-              "isExpression": false,
-              "asc": true,
-=======
         "idx_session_created_at": {
           "name": "idx_session_created_at",
           "columns": [
@@ -2279,7 +2249,6 @@
               "expression": "last_active_at",
               "isExpression": false,
               "asc": false,
->>>>>>> origin/dev
               "nulls": "last"
             }
           ],
@@ -2501,16 +2470,6 @@
           "primaryKey": false,
           "notNull": true
         },
-<<<<<<< HEAD
-=======
-        "notified_at": {
-          "name": "notified_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
->>>>>>> origin/dev
         "read": {
           "name": "read",
           "type": "boolean",
@@ -2535,13 +2494,8 @@
           "method": "btree",
           "with": {}
         },
-<<<<<<< HEAD
         "idx_user_notification_user_id_read": {
           "name": "idx_user_notification_user_id_read",
-=======
-        "idx_user_notification_user_id_read_notified_at": {
-          "name": "idx_user_notification_user_id_read_notified_at",
->>>>>>> origin/dev
           "columns": [
             {
               "expression": "user_id",
@@ -2554,15 +2508,6 @@
               "isExpression": false,
               "asc": true,
               "nulls": "last"
-<<<<<<< HEAD
-=======
-            },
-            {
-              "expression": "notified_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
->>>>>>> origin/dev
             }
           ],
           "isUnique": false,
@@ -2595,11 +2540,7 @@
           "columnsTo": [
             "id"
           ],
-<<<<<<< HEAD
           "onDelete": "cascade",
-=======
-          "onDelete": "no action",
->>>>>>> origin/dev
           "onUpdate": "no action"
         }
       },
@@ -2724,6 +2665,7 @@
     }
   },
   "schemas": {},
+  "sequences": {},
   "_meta": {
     "columns": {},
     "schemas": {},
