@@ -3,6 +3,10 @@ import type { PgColumn } from 'drizzle-orm/pg-core';
 export type AnyPgNumberColumn = PgColumn<
   {
     name: any;
+    isPrimaryKey: any;
+    isAutoincrement: any;
+    hasRuntimeDefault: any;
+    generated: any;
     tableName: any;
     dataType: 'number';
     columnType: any;

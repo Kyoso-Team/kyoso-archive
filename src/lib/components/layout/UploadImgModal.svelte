@@ -2,7 +2,7 @@
   import { FileButton } from '@skeletonlabs/skeleton';
   import { fly } from 'svelte/transition';
   import { NoFile } from '$lib/components/general';
-  import type { MaybePromise } from '@sveltejs/kit';
+  import type { MaybePromise } from '$lib/types';
 
   export let onUpload: (file: File) => MaybePromise<void>;
   export let onCancel: () => MaybePromise<void>;

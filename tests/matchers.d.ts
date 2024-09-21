@@ -6,5 +6,5 @@ interface CustomMatchers {
 
 declare module 'bun:test' {
   interface Matchers extends CustomMatchers {}
-  interface AsymmetricMatchers {}
+  // interface AsymmetricMatchers {}
 }

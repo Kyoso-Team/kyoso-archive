@@ -165,7 +165,11 @@ export function popup(triggerNode: HTMLElement, args: PopupSettings) {
 
   // Event Handlers
   function toggle(): void {
-    popupState.open === false ? open() : close();
+    if (!popupState.open) {
+      open();
+    } else {
+      close();
+    }
   }
   function onWindowClick(event: any): void {
     // Return if the popup is not yet open

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { fly } from 'svelte/transition';
-  import type { MaybePromise } from '@sveltejs/kit';
+  import type { MaybePromise } from '$lib/types';
 
   export let submit: () => MaybePromise<void>;
 

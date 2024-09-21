@@ -9,3 +9,5 @@ export type InferEnum<
 > = T['enumValues'][number];
 
 export type ParseInt<T> = T extends `${infer N extends number}` ? N : never;
+
+export type MaybePromise<T> = T | Promise<T>;

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { AlertTriangle } from 'lucide-svelte';
   import { fade } from 'svelte/transition';
-  import type { MaybePromise } from '@sveltejs/kit';
+  import type { MaybePromise } from '$lib/types';
 
   export let hasUpdated: boolean;
   export let onUpdate: () => MaybePromise<void>;

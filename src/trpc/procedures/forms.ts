@@ -19,8 +19,8 @@ import { checks } from '$lib/server/checks';
 import { getSession, getStaffMember, getTournament } from '$lib/server/context';
 import { getCount } from '$lib/server/queries';
 import { db, trpc } from '$lib/server/services';
-import { isDatePast, pick, trpcUnknownError } from '$lib/server/utils';
-import { arraysHaveSameElements } from '$lib/utils';
+import { pick, trpcUnknownError } from '$lib/server/utils';
+import { arraysHaveSameElements, isDatePast } from '$lib/utils';
 import {
   nonEmptyStringSchema,
   positiveIntSchema,
