@@ -1,11 +1,11 @@
-import { error } from '@sveltejs/kit';
+import { error } from '$lib/server/error';
 import type { LayoutServerLoad } from './$types';
 
 export const load = (async ({ parent }) => {
   const { session, isUserOwner } = await parent();
 
   if (!session?.admin) {
-    throw error(401, 'You must be an admin');
+    error('layout', 'unauthorized', 'You must be an admin');
   }
 
   return {

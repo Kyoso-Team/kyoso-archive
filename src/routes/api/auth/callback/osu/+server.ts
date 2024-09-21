@@ -1,41 +1,38 @@
-import env from '$lib/server/env';
-import { error, redirect } from '@sveltejs/kit';
-import { apiError, signJWT, pick, future } from '$lib/server/utils';
-import { discordMainAuth, osuAuth } from '$lib/server/constants';
-import { upsertOsuUser, createSession } from '$lib/server/helpers/auth';
-import { Ban, DiscordUser, OsuUser, User, db } from '$db';
+import { redirect } from '@sveltejs/kit';
 import { and, eq, isNull, or, sql } from 'drizzle-orm';
-import { getSession } from '$lib/server/helpers/api';
-import type { Token } from 'osu-web.js';
+import { Ban, DiscordUser, OsuUser, User } from '$db';
+import { createSession, upsertOsuUser } from '$lib/server/auth';
+import { getSession } from '$lib/server/context';
+import { env } from '$lib/server/env';
+import { catcher, error } from '$lib/server/error';
+import { recordExists } from '$lib/server/queries';
+import { db, discordMainAuth, osuAuth } from '$lib/server/services';
+import { future } from '$lib/server/sql';
+import { pick, signJWT } from '$lib/server/utils';
+import type { AuthSession } from '$lib/types';
 import type { RequestHandler } from './$types';
-import type { AuthSession } from '$types';
 
-export const GET = (async ({ url, route, cookies, getClientAddress, request }) => {
-  const currentSession = getSession(cookies);
+export const GET = (async ({ url, cookies, getClientAddress, request }) => {
+  const currentSession = getSession('api', cookies);
   const redirectUri = url.searchParams.get('state');
   const code = url.searchParams.get('code');
   const userAgent = request.headers.get('User-Agent');
 
   if (currentSession) {
-    error(403, "You're already logged in");
+    error('api', 'forbidden', 'Already logged in');
   }
 
   if (!userAgent) {
-    error(400, '"User-Agent" header is undefined');
+    error('api', 'bad_request', '"User-Agent" header is undefined');
   }
 
   if (!code) {
-    error(400, 'URL search parameter "code" is undefined');
+    error('api', 'bad_request', 'URL search parameter "code" is undefined');
   }
 
-  let token!: Token;
-
-  try {
-    token = await osuAuth.requestToken(code);
-  } catch (err) {
-    throw await apiError(err, 'Getting the osu! OAuth token', route);
-  }
-
+  const token = await osuAuth
+    .requestToken(code)
+    .catch(catcher('api', 'Getting the osu! OAuth token'));
   // Get the osu! user ID from the token
   const accessToken = token.access_token;
   const payloadString = accessToken.substring(
@@ -45,80 +42,51 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
   const payloadBuffer = Buffer.from(payloadString, 'base64').toString('ascii');
   const payload: { sub: string } = JSON.parse(payloadBuffer);
   const osuUserId = Number(payload.sub);
-
-  let userExists!: boolean;
-
-  try {
-    userExists = await db
-      .update(User)
-      .set({
-        admin: env.OWNER === osuUserId,
-        approvedHost: env.ENV !== 'production' || env.OWNER === osuUserId
-      })
-      .where(eq(User.osuUserId, osuUserId))
-      .returning({
-        exists: sql`1`.as('exists')
-      })
-      .then((user) => !!user[0]?.exists);
-  } catch (err) {
-    throw await apiError(err, 'Updating the user', route);
-  }
+  const userExists = await db
+    .update(User)
+    .set({
+      admin: env.OWNER === osuUserId,
+      approvedHost: env.NODE_ENV !== 'production' || env.OWNER === osuUserId
+    })
+    .where(eq(User.osuUserId, osuUserId))
+    .returning({
+      exists: sql`1`.as('exists')
+    })
+    .then((user) => !!user[0]?.exists)
+    .catch(catcher('api', 'Updating the user'));
 
   if (userExists) {
-    let user: Pick<
-      typeof User.$inferSelect,
-      'id' | 'updatedApiDataAt' | 'admin' | 'approvedHost'
-    > & {
-      discord: Pick<typeof DiscordUser.$inferSelect, 'discordUserId' | 'username'>;
-      osu: Pick<typeof OsuUser.$inferSelect, 'osuUserId' | 'username'>;
-    };
+    const user = await db
+      .select({
+        ...pick(User, ['id', 'updatedApiDataAt', 'admin', 'approvedHost']),
+        discord: pick(DiscordUser, ['discordUserId', 'username']),
+        osu: pick(OsuUser, ['osuUserId', 'username'])
+      })
+      .from(User)
+      .innerJoin(DiscordUser, eq(User.discordUserId, DiscordUser.discordUserId))
+      .innerJoin(OsuUser, eq(User.osuUserId, OsuUser.osuUserId))
+      .where(eq(User.osuUserId, osuUserId))
+      .limit(1)
+      .then((user) => user[0])
+      .catch(catcher('api', 'Getting the user'));
 
-    try {
-      user = await db
-        .select({
-          ...pick(User, ['id', 'updatedApiDataAt', 'admin', 'approvedHost']),
-          discord: pick(DiscordUser, ['discordUserId', 'username']),
-          osu: pick(OsuUser, ['osuUserId', 'username'])
-        })
-        .from(User)
-        .innerJoin(DiscordUser, eq(User.discordUserId, DiscordUser.discordUserId))
-        .innerJoin(OsuUser, eq(User.osuUserId, OsuUser.osuUserId))
-        .where(eq(User.osuUserId, osuUserId))
-        .limit(1)
-        .then((user) => user[0]);
-    } catch (err) {
-      throw await apiError(err, 'Getting the user', route);
-    }
-
-    let isBanned!: boolean;
-
-    try {
-      isBanned = await db
-        .execute(
-          sql`
-      select exists (
-        select 1 from ${Ban}
-        where ${and(
-          eq(Ban.issuedToUserId, user.id),
-          and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
-        )}
-        limit 1
+    const isBanned = await recordExists(
+      Ban,
+      and(
+        eq(Ban.issuedToUserId, user.id),
+        and(isNull(Ban.revokedAt), or(isNull(Ban.liftAt), future(Ban.liftAt)))
       )
-    `
-        )
-        .then((bans) => !!bans[0]?.exists);
-    } catch (err) {
-      throw await apiError(err, "Verifying the user's ban status", route);
-    }
+    ).catch(catcher('api', "Verifying the user's ban status"));
 
     if (isBanned) {
       error(
-        403,
+        'api',
+        'forbidden',
         `You are banned from Kyoso. If you think this is a mistake, try logging in again or contact us at ${env.PUBLIC_CONTACT_EMAIL}`
       );
     }
 
-    const session = await createSession(user.id, getClientAddress(), userAgent, route);
+    const session = await createSession('api', user.id, getClientAddress(), userAgent);
 
     const authSession: AuthSession = {
       sessionId: session.id,
@@ -147,11 +115,12 @@ export const GET = (async ({ url, route, cookies, getClientAddress, request }) =
     redirect(302, '/');
   }
 
-  const osuUser = await upsertOsuUser(token, new Date(), route);
+  const osuUser = await upsertOsuUser('api', token, new Date());
 
   const discordAuthUrl = discordMainAuth.generateAuthUrl({
     scope: ['identify'],
-    state: redirectUri ? decodeURI(redirectUri) : undefined
+    state: redirectUri ? decodeURI(redirectUri) : undefined,
+    prompt: 'consent'
   });
 
   const osuSessionData: AuthSession['osu'] = {

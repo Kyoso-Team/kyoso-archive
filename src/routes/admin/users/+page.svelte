@@ -1,23 +1,25 @@
 <script lang="ts">
   // NOTE: Page needs to be slightly reworked after this PR gets merged: https://github.com/sveltejs/kit/pull/11810
-  import User from './User.svelte';
   import BanUserForm from './BanUserForm.svelte';
-  import RevokeBanForm from './RevokeBanForm.svelte';
   import LookedUpUser from './LookedUpUser.svelte';
-  import createContextStore from './store';
-  import { SEO } from '$components/general';
-  import { Backdrop, Modal } from '$components/layout';
-  import { page } from '$app/stores';
-  import { displayError, formatNumber, toastError, toastSuccess } from '$lib/utils';
+  import RevokeBanForm from './RevokeBanForm.svelte';
+  import User from './User.svelte';
+  import { Search } from 'lucide-svelte';
   import { getToastStore } from '@skeletonlabs/skeleton';
   import { onDestroy, onMount } from 'svelte';
-  import { loading } from '$stores';
-  import { trpc } from '$lib/trpc';
-  import { invalidate } from '$app/navigation';
   import { browser } from '$app/environment';
-  import { Search } from 'lucide-svelte';
+  import { invalidate } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { trpc } from '$lib/clients';
+  import { SEO } from '$lib/components/general';
+  import { Backdrop, Modal } from '$lib/components/layout';
+  import { formatNumber } from '$lib/format';
+  import { loading } from '$lib/stores';
+  import { displayError } from '$lib/ui';
+  import { toastError, toastSuccess } from '$lib/utils';
+  import createContextStore from './store';
+  import type { TRPCRouterOutputs } from '$lib/types';
   import type { PageServerData } from './$types';
-  import type { TRPCRouter } from '$types';
 
   export let data: PageServerData;
   let users: Record<'admins' | 'banned' | 'hosts' | 'owners', PageServerData['users']> = {
@@ -117,7 +119,7 @@
   async function onSearch() {
     if (!search) return;
 
-    let user: TRPCRouter['users']['searchUser'];
+    let user: TRPCRouterOutputs['users']['searchUser'];
     loading.set(true);
 
     try {

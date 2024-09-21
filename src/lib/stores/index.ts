@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
-import type { AuthSession, InferEnum } from '$types';
 import type { StaffPermission } from '$db';
+import type { AuthSession, InferEnum } from '$lib/types';
 
 export const showNavBar = writable(true);
 export const loading = writable(false);

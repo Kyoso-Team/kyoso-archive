@@ -1,18 +1,19 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
-  import { trpc } from '$lib/trpc';
-  import { page } from '$app/stores';
   import { getToastStore } from '@skeletonlabs/skeleton';
-  import { Form, Text } from '$components/form';
-  import { createForm, loading } from '$stores';
-  import { displayError, toastSuccess } from '$lib/utils';
   import { invalidate } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { trpc } from '$lib/clients';
+  import { Form, Text } from '$lib/components/form';
+  import * as f from '$lib/form/validation';
+  import { createForm, loading } from '$lib/stores';
+  import { displayError } from '$lib/ui';
+  import { toastSuccess } from '$lib/utils';
 
   export let show: boolean;
   export let banId: number;
   const toast = getToastStore();
   const form = createForm({
-    revokeReason: f.string([f.minStrLength(1)])
+    revokeReason: f.pipe(f.string(), f.minStrLength(1))
   });
   const labels = form.labels;
 

@@ -1,23 +1,24 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
-  import { trpc } from '$lib/trpc';
-  import { page } from '$app/stores';
-  import { invalidate } from '$app/navigation';
   import { getToastStore } from '@skeletonlabs/skeleton';
-  import { Form, Section, Text, Number, Checkbox } from '$components/form';
-  import { createForm, loading } from '$stores';
-  import { displayError, toastSuccess } from '$lib/utils';
+  import { invalidate } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { trpc } from '$lib/clients';
+  import { Checkbox, Form, Number, Section, Text } from '$lib/components/form';
+  import * as f from '$lib/form/validation';
+  import { createForm, loading } from '$lib/stores';
+  import { displayError } from '$lib/ui';
+  import { toastSuccess } from '$lib/utils';
   import type createContextStore from './store';
 
   export let ctx: ReturnType<typeof createContextStore>;
 
   const toast = getToastStore();
   const mainForm = createForm({
-    banReason: f.string([f.minStrLength(1)]),
+    banReason: f.pipe(f.string(), f.minStrLength(1)),
     permanent: f.boolean()
   });
   const timeForm = createForm({
-    timeAmount: f.number([f.minValue(1), f.maxIntLimit()])
+    timeAmount: f.pipe(f.number(), f.minValue(1), f.maxIntLimit())
   });
   const labels = {
     ...mainForm.labels,

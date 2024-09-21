@@ -1,36 +1,37 @@
 <script lang="ts">
   import '../app.postcss';
-  import { NavBar, Backdrop } from '$components/layout';
-  import { showNavBar, loading, devMenuCtx } from '$stores';
+  import { Loader2 } from 'lucide-svelte';
+  import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
   import {
+    AppShell,
+    getToastStore,
     initializeStores,
     setInitialClassState,
-    AppShell,
     storePopup,
-    Toast,
-    getToastStore
+    Toast
   } from '@skeletonlabs/skeleton';
-  import { Loader2 } from 'lucide-svelte';
-  import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-  import { fly } from 'svelte/transition';
-  import { onDestroy, onMount } from 'svelte';
-  import { page } from '$app/stores';
   import { inject } from '@vercel/analytics';
+  import { onDestroy, onMount } from 'svelte';
+  import { fly } from 'svelte/transition';
   import { dev } from '$app/environment';
+  import { page } from '$app/stores';
+  import { Backdrop, NavBar } from '$lib/components/layout';
   import { createSSEListener } from '$lib/sse';
+  import { devMenuCtx, loading, showNavBar } from '$lib/stores';
   import { toastError, toastNotify } from '$lib/utils';
+  import type { DevMenu } from '$lib/components/layout';
+  import type { SSEConnectionData, SSEConnections } from '$lib/types';
   import type { LayoutServerData } from './$types';
-  import type { AnyComponent, SSEConnectionData, SSEConnections } from '$types';
 
   storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
   initializeStores();
   inject({ mode: dev ? 'development' : 'production' });
 
   export let data: LayoutServerData;
-  let devMenuComponent: AnyComponent;
   let unmountNotificationListener: (() => void) | undefined;
   let unreadNotificationCount: number | undefined;
   const toast = getToastStore();
+  let devMenuComponent: typeof DevMenu;
 
   onMount(async () => {
     unmountNotificationListener = createSSEListener<SSEConnections['notifications']>(
@@ -49,7 +50,9 @@
     unmountNotificationListener?.();
   });
 
-  function onNewNotification(notification: SSEConnectionData<SSEConnections['notifications'], 'new_notification'>) {
+  function onNewNotification(
+    notification: SSEConnectionData<SSEConnections['notifications'], 'new_notification'>
+  ) {
     if (unreadNotificationCount !== undefined) {
       unreadNotificationCount++;
     }
@@ -57,14 +60,16 @@
     toastNotify(toast, notification.message);
   }
 
-  function onNotificationCount(count: SSEConnectionData<SSEConnections['notifications'], 'notification_count'>) {
+  function onNotificationCount(
+    count: SSEConnectionData<SSEConnections['notifications'], 'notification_count'>
+  ) {
     unreadNotificationCount = count;
   }
 
   async function mountDevMenu() {
     if (!dev) return;
 
-    devMenuComponent = (await import('$components/layout/DevMenu.svelte')).default;
+    devMenuComponent = (await import('$lib/components/layout/DevMenu.svelte')).default;
 
     if (!$page.url.pathname.includes('/m/')) {
       devMenuCtx.set({

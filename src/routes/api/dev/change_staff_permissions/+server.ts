@@ -1,27 +1,28 @@
-import * as v from 'valibot';
-import env from '$lib/server/env';
 import { error } from '@sveltejs/kit';
-import { getSession, getStaffMember, parseRequestBody } from '$lib/server/helpers/api';
+import * as v from 'valibot';
 import { StaffPermission } from '$db';
-import { redis } from '$lib/server/redis';
-import { positiveIntSchema } from '$lib/schemas';
+import { getSession, getStaffMember } from '$lib/server/context';
+import { env } from '$lib/server/env';
+import { parseRequestBody } from '$lib/server/request';
+import { redis } from '$lib/server/services';
+import { positiveIntSchema } from '$lib/validation';
 import type { RequestHandler } from './$types';
 
-export const PATCH = (async ({ cookies, route, request }) => {
+export const PATCH = (async ({ cookies, request }) => {
   if (env.NODE_ENV !== 'development') {
     throw error(403, 'This endpoint is only for use within a development environment');
   }
 
-  const session = getSession(cookies, true);
+  const session = getSession('api', cookies, true);
   const { tournamentId, permissions } = await parseRequestBody(
+    'api',
     request,
     v.object({
       tournamentId: positiveIntSchema,
       permissions: v.array(v.picklist(StaffPermission.enumValues))
-    }),
-    route
+    })
   );
-  const staffMember = await getStaffMember(session, tournamentId, route, true);
+  const staffMember = await getStaffMember('api', session, tournamentId, true);
 
   const p = redis.pipeline();
   p.set(`staff_permissions:${staffMember.id}`, JSON.stringify(permissions));

@@ -1,11 +1,11 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
-  import { Form, Text, Select, DateOnly, DateTime, Section } from '$components/form';
-  import { createForm } from '$stores';
-  import { keys, sortByKey, toastError } from '$lib/utils';
-  import { maxPossibleDate, oldestDatePossible } from '$lib/constants';
-  import { tournamentOtherDateChecks } from '$lib/helpers';
   import { getToastStore } from '@skeletonlabs/skeleton';
+  import { tournamentOtherDateChecks } from '$lib/checks';
+  import { DateOnly, DateTime, Form, Section, Select, Text } from '$lib/components/form';
+  import { maxPossibleDate, oldestDatePossible } from '$lib/constants';
+  import * as f from '$lib/form/validation';
+  import { createForm } from '$lib/stores';
+  import { keys, sortByKey, toastError } from '$lib/utils';
   import type { TournamentDates } from '$db';
 
   export let show: boolean;
@@ -24,11 +24,13 @@
   };
   const mainForm = createForm(
     {
-      label: f.string([f.minStrLength(2), f.maxStrLength(35)]),
+      label: f.pipe(f.string(), f.minStrLength(2), f.maxStrLength(35)),
       type: f.union(keys(typeOptions)),
       display: f.union(keys(displayOptions)),
-      fromDate: f.date([f.minDate(oldestDatePossible), f.maxDate(maxPossibleDate)]),
-      toDate: f.optional(f.date([f.minDate(oldestDatePossible), f.maxDate(maxPossibleDate)]))
+      fromDate: f.pipe(f.date(), f.minDate(oldestDatePossible), f.maxDate(maxPossibleDate)),
+      toDate: f.optional(
+        f.pipe(f.date(), f.minDate(oldestDatePossible), f.maxDate(maxPossibleDate))
+      )
     },
     updating && {
       display: updating.onlyDate ? 'date' : 'datetime',

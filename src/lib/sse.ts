@@ -1,4 +1,4 @@
-import type { SSEConnection } from '$types';
+import type { SSEConnection } from '$lib/types';
 
 export function createSSEListener<T extends SSEConnection>(
   endpoint: string,

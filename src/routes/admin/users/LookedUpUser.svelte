@@ -1,12 +1,12 @@
 <script lang="ts">
   import Ban from './Ban.svelte';
   import Session from './Session.svelte';
-  import { Osu, Discord } from '$components/icons';
   import { Loader2, X } from 'lucide-svelte';
-  import { fly } from 'svelte/transition';
   import { buildUrl } from 'osu-web.js';
-  import { formatDate, formatNumber, formatTime } from '$lib/utils';
+  import { fly } from 'svelte/transition';
   import { page } from '$app/stores';
+  import { Discord, Osu } from '$lib/components/icons';
+  import { formatDate, formatNumber, formatTime } from '$lib/format';
   import type createContextStore from './store';
   import type { Context } from './store';
 

@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { SEO } from '$components/general';
+  import { Trophy, User } from 'lucide-svelte';
   import { page } from '$app/stores';
-  import { User, Trophy } from 'lucide-svelte';
-  import type { AnyComponent } from '$types';
+  import { SEO } from '$lib/components/general';
+  import type { SvelteComponent } from 'svelte';
 
   const links: {
     label: string;
     href: string;
-    icon: AnyComponent;
+    icon: typeof SvelteComponent<any>;
   }[] = [
     {
       label: 'Manage Users',

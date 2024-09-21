@@ -168,6 +168,15 @@
       "version": "7",
       "when": 1720628627028,
       "tag": "0023_sour_carnage",
+      "when": 1720929901565,
+      "tag": "0023_jittery_molten_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1722027938431,
+      "tag": "0024_numerous_bullseye",
       "breakpoints": true
     }
   ]

@@ -1,12 +1,11 @@
 <script lang="ts">
   import UserMenu from './UserMenu.svelte';
-  import { Bell } from 'lucide-svelte';
+  import { Bell, Menu } from 'lucide-svelte';
   import { AppBar, Avatar, popup } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
   import { page } from '$app/stores';
-  import { KyosoHybrid } from '$components/icons';
-  import { Menu } from 'lucide-svelte';
-  import type { AuthSession } from '$types';
+  import { KyosoHybrid } from '$lib/components/icons';
+  import type { AuthSession } from '$lib/types';
 
   export let session: AuthSession | undefined;
   export let unreadNotificationCount: number | undefined;
@@ -73,7 +72,9 @@
       {#if session}
         <button class="relative btn-icon hover:variant-soft-primary">
           {#if unreadNotificationCount}
-            <span class="badge absolute top-1 left-[50%] z-[2] variant-filled-primary rounded-full px-[6px] min-w-[18px] h-[18px] text-[10px] font-medium">
+            <span
+              class="badge absolute top-1 left-[50%] z-[2] variant-filled-primary rounded-full px-[6px] min-w-[18px] h-[18px] text-[10px] font-medium"
+            >
               {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
             </span>
           {/if}

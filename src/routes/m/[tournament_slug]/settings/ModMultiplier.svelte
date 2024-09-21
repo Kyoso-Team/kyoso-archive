@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Pencil, X } from 'lucide-svelte';
-  import type { ModMultiplier } from '$types';
+  import type { ModMultiplier } from '$lib/types';
 
   export let modMultiplier: ModMultiplier;
   export let onUpdate: () => void;

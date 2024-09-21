@@ -1,13 +1,14 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
-  import { SelectMultiple, Form } from '$components/form';
-  import { createForm, loading } from '$stores';
-  import { displayError, keys, toastSuccess } from '$lib/utils';
   import { invalidateAll } from '$app/navigation';
-  import { staffPermissionsOptions } from '$lib/constants';
+  import { Form, SelectMultiple } from '$lib/components/form';
+  import { staffPermissionsOptions } from '$lib/form/common';
+  import * as f from '$lib/form/validation';
+  import { createForm, loading } from '$lib/stores';
+  import { displayError } from '$lib/ui';
+  import { keys, toastSuccess } from '$lib/utils';
   import type { ToastStore } from '@skeletonlabs/skeleton';
-  import type { InferEnum } from '$types';
   import type { StaffPermission } from '$db';
+  import type { InferEnum } from '$lib/types';
 
   export let show: boolean;
   export let tournament: { id: number };
@@ -15,10 +16,11 @@
   export let toast: ToastStore;
   const mainForm = createForm(
     {
-      permissions: f.array(f.union(keys(staffPermissionsOptions)), [
+      permissions: f.pipe(
+        f.array(f.union(keys(staffPermissionsOptions))),
         f.minArrayLength(0),
         f.maxArrayLength(Object.keys(staffPermissionsOptions).length)
-      ])
+      )
     },
     {
       permissions: staffMember.permissions

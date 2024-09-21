@@ -1,21 +1,24 @@
 <script lang="ts">
   import Ban from './Ban.svelte';
-  import KyosoBadges from './KyosoBadges.svelte';
   import BanUserForm from './BanUserForm.svelte';
+  import KyosoBadges from './KyosoBadges.svelte';
   import RevokeBanForm from './RevokeBanForm.svelte';
-  import { Discord, OsuCatch, OsuMania, OsuStandard, OsuTaiko } from '$components/icons';
-  import { Tooltip, SEO } from '$components/general';
-  import { Backdrop, Modal } from '$components/layout';
-  import { buildUrl } from 'osu-web.js';
-  import { displayError, formatDate, formatNumber, toastSuccess, tooltip } from '$lib/utils';
-  import { popup } from '$lib/popup';
-  import { loading } from '$stores';
-  import { trpc } from '$lib/trpc';
-  import { page } from '$app/stores';
   import { getToastStore } from '@skeletonlabs/skeleton';
+  import { buildUrl } from 'osu-web.js';
   import { invalidate } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { trpc } from '$lib/clients';
+  import { SEO, Tooltip } from '$lib/components/general';
+  import { Discord, OsuCatch, OsuMania, OsuStandard, OsuTaiko } from '$lib/components/icons';
+  import { Backdrop, Modal } from '$lib/components/layout';
+  import { formatDate, formatNumber } from '$lib/format';
+  import { popup } from '$lib/popup';
+  import { loading } from '$lib/stores';
+  import { displayError } from '$lib/ui';
+  import { toastSuccess, tooltip } from '$lib/utils';
+  import type { SvelteComponent } from 'svelte';
+  import type { TRPCRouterOutputs } from '$lib/types';
   import type { PageServerData } from './$types';
-  import type { AnyComponent, TRPCRouter } from '$types';
 
   export let data: PageServerData;
   let showBanUserModal = false;
@@ -24,7 +27,7 @@
   let showRevokeBanForm = false;
   let procedure:
     | keyof Pick<
-        TRPCRouter['users'],
+        TRPCRouterOutputs['users'],
         'makeAdmin' | 'removeAdmin' | 'makeApprovedHost' | 'removeApprovedHost'
       >
     | undefined;
@@ -39,7 +42,7 @@
     label: string;
     tooltipName: string;
     rank: number | null;
-    icon: AnyComponent;
+    icon: typeof SvelteComponent<any>;
   }[] = [];
   const toast = getToastStore();
 

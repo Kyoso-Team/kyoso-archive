@@ -1,15 +1,15 @@
 import { get, writable } from 'svelte/store';
 import { pushState } from '$app/navigation';
-import { trpc } from '$lib/trpc';
 import { page } from '$app/stores';
-import { displayError } from '$lib/utils';
-import { loading } from '$stores';
+import { trpc } from '$lib/clients';
+import { loading } from '$lib/stores';
+import { displayError } from '$lib/ui';
 import type { ToastStore } from '@skeletonlabs/skeleton';
 import type { Ban, User } from '$db';
-import type { TRPCRouter } from '$types';
+import type { TRPCRouterOutputs } from '$lib/types';
 
 export interface Context {
-  lookedUpUser?: TRPCRouter['users']['getUser'];
+  lookedUpUser?: TRPCRouterOutputs['users']['getUser'];
   selectedUser?: Pick<typeof User.$inferSelect, 'id' | 'admin' | 'approvedHost'>;
   issueBanTo?: Pick<typeof User.$inferSelect, 'id'>;
   banToRevoke?: Pick<typeof Ban.$inferSelect, 'id'>;

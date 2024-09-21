@@ -1,7 +1,7 @@
-import * as v from 'valibot';
 import { writable } from 'svelte/store';
+import * as v from 'valibot';
 import { arraysHaveSameElements } from '$lib/utils';
-import type { AnyForm } from '$types';
+import type { AnyForm } from '$lib/types';
 
 function setTrueOrDeleteKey(obj: Record<string, any>, key: string, condition: boolean) {
   if (condition) {
@@ -26,12 +26,12 @@ function isEqual(a: any, b: any) {
   );
 }
 
-function isSchemaType(schema: v.BaseSchema, type: string) {
-  return schema.type === type || (schema as v.OptionalSchema<any>)?.wrapped?.type === type;
+function isSchemaType(schema: v.GenericSchema, type: string) {
+  return schema.type === type || (schema as v.OptionalSchema<any, any>)?.wrapped?.type === type;
 }
 
 function formInit(
-  formSchema: Record<string, v.BaseSchema>,
+  formSchema: Record<string, v.GenericSchema>,
   defaultValue: Record<string, any> | undefined | null
 ) {
   const labels: Record<string, string> = {};
@@ -62,7 +62,7 @@ function formInit(
 }
 
 function canSubmit(
-  formSchema: Record<string, v.BaseSchema>,
+  formSchema: Record<string, v.GenericSchema>,
   form: Pick<AnyForm, 'value' | 'errors'>
 ) {
   const { value, errors } = form;
@@ -76,14 +76,17 @@ function hasUpdated(form: Pick<AnyForm, 'updated'>) {
 }
 
 export function createForm<
-  TSchema extends Record<string, v.BaseSchema>,
-  TFinalValue = { [K in keyof TSchema]: v.Output<TSchema[K]> },
+  TSchema extends Record<string, v.GenericSchema>,
+  TFinalValue = { [K in keyof TSchema]: v.InferOutput<TSchema[K]> },
   TLiveValue = {
     [K in keyof TFinalValue]: TFinalValue[K] extends boolean | any[]
       ? TFinalValue[K]
       : TFinalValue[K] | null;
   }
->(formSchema: TSchema, defaults?: { [K in keyof TSchema]?: v.Output<TSchema[K]> | null } | null) {
+>(
+  formSchema: TSchema,
+  defaults?: { [K in keyof TSchema]?: v.InferOutput<TSchema[K]> | null } | null
+) {
   const { labels, value } = formInit(formSchema, defaults);
   const form = writable<{
     value: TLiveValue;

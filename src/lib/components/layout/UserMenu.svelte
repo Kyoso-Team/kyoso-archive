@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { page } from '$app/stores';
   import { LightSwitch } from '@skeletonlabs/skeleton';
-  import { Discord } from '$components/icons';
-  import type { AuthSession } from '$types';
+  import { page } from '$app/stores';
+  import { Discord } from '$lib/components/icons';
+  import type { AuthSession } from '$lib/types';
 
   export let session: AuthSession;
   export let popupName: string;

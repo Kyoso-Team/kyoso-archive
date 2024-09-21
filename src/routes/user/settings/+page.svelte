@@ -1,18 +1,19 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
   import Session from './Session.svelte';
-  import { Checkbox } from '$components/form';
-  import { SEO, FormHandler } from '$components/general';
-  import { Backdrop, Modal } from '$components/layout';
-  import { Osu, Discord } from '$components/icons';
-  import { trpc } from '$lib/trpc';
-  import { page } from '$app/stores';
-  import { createForm, loading } from '$stores';
+  import { Copy, Eye, EyeOff, Pencil, RotateCcw } from 'lucide-svelte';
   import { getToastStore } from '@skeletonlabs/skeleton';
-  import { Copy, Eye, EyeOff, RotateCcw, Pencil } from 'lucide-svelte';
-  import { displayError, toastSuccess } from '$lib/utils';
   import { slide } from 'svelte/transition';
   import { invalidate } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { trpc } from '$lib/clients';
+  import { Checkbox } from '$lib/components/form';
+  import { FormHandler, SEO } from '$lib/components/general';
+  import { Discord, Osu } from '$lib/components/icons';
+  import { Backdrop, Modal } from '$lib/components/layout';
+  import * as f from '$lib/form/validation';
+  import { createForm, loading } from '$lib/stores';
+  import { displayError } from '$lib/ui';
+  import { toastSuccess } from '$lib/utils';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;

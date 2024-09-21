@@ -1,13 +1,12 @@
 <script lang="ts">
   import CreateTournamentForm from './CreateTournamentForm.svelte';
   import Tournament from './Tournament.svelte';
-  import { Tooltip } from '$components/general';
-  import { page } from '$app/stores';
-  import { SEO } from '$components/general';
-  import { Backdrop } from '$components/layout';
   import { portal } from 'svelte-portal';
-  import { tooltip } from '$lib/utils';
+  import { page } from '$app/stores';
+  import { SEO, Tooltip } from '$lib/components/general';
+  import { Backdrop } from '$lib/components/layout';
   import { popup } from '$lib/popup';
+  import { tooltip } from '$lib/utils';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;

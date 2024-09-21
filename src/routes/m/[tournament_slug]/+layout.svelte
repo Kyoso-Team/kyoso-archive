@@ -1,9 +1,5 @@
 <script lang="ts">
-  import { portal } from 'svelte-portal';
-  import { Tooltip } from '$components/general';
-  import { UserMenu } from '$components/layout';
   import {
-    Settings,
     Home,
     Image,
     // Network,
@@ -14,19 +10,23 @@
     // Table,
     // Gamepad2,
     Layout,
-    Menu
+    Menu,
+    Settings
   } from 'lucide-svelte';
-  import { hasPermissions, isDatePast, tooltip } from '$lib/utils';
   import { Avatar } from '@skeletonlabs/skeleton';
-  import { onDestroy, onMount } from 'svelte';
-  import { popup } from '$lib/popup';
-  import { devMenuCtx, showNavBar } from '$stores';
   import { buildUrl } from 'osu-web.js';
+  import { onDestroy, onMount } from 'svelte';
+  import { portal } from 'svelte-portal';
   import { fade, fly } from 'svelte/transition';
   import { browser, dev } from '$app/environment';
   import { disableTabbing } from '$lib/actions';
+  import { Tooltip } from '$lib/components/general';
+  import { UserMenu } from '$lib/components/layout';
+  import { popup } from '$lib/popup';
+  import { devMenuCtx, showNavBar } from '$lib/stores';
+  import { hasPermissions, isDatePast, tooltip } from '$lib/utils';
+  import type { SvelteComponent } from 'svelte';
   import type { LayoutServerData } from './$types';
-  import type { AnyComponent } from '$types';
 
   export let data: LayoutServerData;
   let showResponsiveMenu = false;
@@ -35,7 +35,7 @@
     tip: string;
     tipName: string;
     href: string;
-    icon: AnyComponent;
+    icon: typeof SvelteComponent<any>;
     class?: string;
   }[] = [];
   const tooltips = {

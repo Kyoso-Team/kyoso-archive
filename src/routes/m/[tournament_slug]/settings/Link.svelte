@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Link, GripVertical, Pencil, X } from 'lucide-svelte';
+  import { GripVertical, Link, Pencil, X } from 'lucide-svelte';
   import { dragHandle } from 'svelte-dnd-action';
-  import type { TournamentLink } from '$types';
+  import type { TournamentLink } from '$lib/types';
 
   export let link: TournamentLink;
   export let onUpdate: () => void;
