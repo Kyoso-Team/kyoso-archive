@@ -1,5 +1,4 @@
 import { TRPCError } from '@trpc/server';
-import { wrap } from '@typeschema/valibot';
 import { and, count, desc, eq, inArray, isNull, lt, not, or, sql } from 'drizzle-orm';
 import { alias, unionAll } from 'drizzle-orm/pg-core';
 import { customAlphabet } from 'nanoid';
@@ -38,7 +37,7 @@ import type { SQL } from 'drizzle-orm';
 const getUser = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
         userId: positiveIntSchema
       })
@@ -150,10 +149,10 @@ const getUser = trpc.procedure
 const searchUser = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
-        search: v.string([v.minLength(1)]),
-        searchBy: v.string([v.minLength(1)])
+        search: v.pipe(v.string(), v.minLength(1)),
+        searchBy: v.pipe(v.string(), v.minLength(1))
       })
     )
   )
@@ -202,7 +201,7 @@ const resetApiKey = trpc.procedure.use(rateLimitMiddleware).mutation(async ({ ct
 const updateSelf = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.partial(
         v.object({
           settings: userSettingsSchema
@@ -226,7 +225,7 @@ const updateSelf = trpc.procedure
 const makeAdmin = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
         userId: positiveIntSchema
       })
@@ -275,7 +274,7 @@ const makeAdmin = trpc.procedure
 const removeAdmin = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
         userId: positiveIntSchema
       })
@@ -379,7 +378,7 @@ const removeAdmin = trpc.procedure
 const makeApprovedHost = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
         userId: positiveIntSchema
       })
@@ -448,7 +447,7 @@ const makeApprovedHost = trpc.procedure
 const removeApprovedHost = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
         userId: positiveIntSchema
       })
@@ -531,7 +530,7 @@ const removeApprovedHost = trpc.procedure
 const updateUser = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
         userId: positiveIntSchema,
         data: v.partial(
@@ -581,9 +580,9 @@ const updateUser = trpc.procedure
 const banUser = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
-        banReason: v.string([v.minLength(1)]),
+        banReason: v.pipe(v.string(), v.minLength(1)),
         issuedToUserId: positiveIntSchema,
         /** In milliseconds. If undefined, the ban is permanent */
         banTime: v.optional(positiveIntSchema)
@@ -841,10 +840,10 @@ const banUser = trpc.procedure
 const revokeBan = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
         banId: positiveIntSchema,
-        revokeReason: v.string([v.minLength(1)])
+        revokeReason: v.pipe(v.string(), v.minLength(1))
       })
     )
   )
@@ -870,7 +869,7 @@ const revokeBan = trpc.procedure
 const expireSession = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
         sessionId: positiveIntSchema
       })

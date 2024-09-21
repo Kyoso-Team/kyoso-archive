@@ -1,5 +1,4 @@
 import { TRPCError } from '@trpc/server';
-import { wrap } from '@typeschema/valibot';
 import { and, eq, sql } from 'drizzle-orm';
 import { difference, intersection, isNil } from 'lodash';
 import * as v from 'valibot';
@@ -28,12 +27,11 @@ import {
   userFormFieldSchema
 } from '$lib/validation';
 import { rateLimitMiddleware } from '$trpc/middleware';
-import type { Infer } from '@typeschema/valibot';
 import type { TRPCContext, UserFormField } from '$lib/types';
 
 const formSchema = v.object({
   anonymousResponses: v.boolean(),
-  title: v.string([v.minLength(1), v.maxLength(100)])
+  title: v.pipe(v.string(), v.minLength(1), v.maxLength(100))
 });
 
 const tournamentFormSchema = v.object({
@@ -50,7 +48,9 @@ const formUpdateSchema = v.object({
       ...v.omit(tournamentFormSchema, ['type']).entries,
       description: nonEmptyStringSchema,
       public: v.boolean(),
-      closeAt: v.nullable(v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])),
+      closeAt: v.nullable(
+        v.pipe(v.date(), v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate))
+      ),
       thanksMessage: nonEmptyStringSchema,
       closedMessage: nonEmptyStringSchema,
       fields: v.array(userFormFieldSchema)
@@ -58,12 +58,12 @@ const formUpdateSchema = v.object({
   )
 });
 
-export type FormUpdateSchemaData = Infer<typeof formUpdateSchema>['data'];
+export type FormUpdateSchemaData = v.InferOutput<typeof formUpdateSchema>['data'];
 
 const checkTournamentFormUpdate = async (
   ctx: TRPCContext,
-  input: Infer<typeof formUpdateSchema>,
-  formType: Infer<typeof tournamentFormSchema.entries.type>
+  input: v.InferOutput<typeof formUpdateSchema>,
+  formType: v.InferOutput<typeof tournamentFormSchema.entries.type>
 ) => {
   const { data } = input;
   const session = getSession('trpc', ctx.cookies, true);
@@ -121,7 +121,7 @@ const checkFieldResponseIds = (
 
 const createForm = trpc.procedure
   .use(rateLimitMiddleware)
-  .input(wrap(formSchema))
+  .input(v.parser(formSchema))
   .mutation(async ({ ctx, input }) => {
     const session = getSession('trpc', ctx.cookies, true);
     checks.trpc.userIsAdmin(session);
@@ -143,7 +143,7 @@ const createForm = trpc.procedure
 
 const createTournamentForm = trpc.procedure
   .use(rateLimitMiddleware)
-  .input(wrap(tournamentFormSchema))
+  .input(v.parser(tournamentFormSchema))
   .mutation(async ({ ctx, input }) => {
     const { tournamentId, type, target, ...formData } = input;
     const session = getSession('trpc', ctx.cookies, true);
@@ -204,103 +204,105 @@ const createTournamentForm = trpc.procedure
     });
   });
 
-const updateForm = trpc.procedure.input(wrap(formUpdateSchema)).mutation(async ({ ctx, input }) => {
-  const { formId, data } = input;
+const updateForm = trpc.procedure
+  .input(v.parser(formUpdateSchema))
+  .mutation(async ({ ctx, input }) => {
+    const { formId, data } = input;
 
-  let form: typeof Form.$inferSelect;
-  let tournamentForm: typeof TournamentForm.$inferSelect | null;
+    let form: typeof Form.$inferSelect;
+    let tournamentForm: typeof TournamentForm.$inferSelect | null;
 
-  try {
-    form = await db
-      .select()
-      .from(Form)
-      .where(eq(Form.id, formId))
-      .limit(1)
-      .then((rows) => rows[0]);
+    try {
+      form = await db
+        .select()
+        .from(Form)
+        .where(eq(Form.id, formId))
+        .limit(1)
+        .then((rows) => rows[0]);
 
-    tournamentForm = await db
-      .select()
-      .from(TournamentForm)
-      .where(eq(TournamentForm.formId, formId))
-      .limit(1)
-      .then((rows) => rows[0]);
-  } catch (err) {
-    throw trpcUnknownError(err, 'Getting forms');
-  }
+      tournamentForm = await db
+        .select()
+        .from(TournamentForm)
+        .where(eq(TournamentForm.formId, formId))
+        .limit(1)
+        .then((rows) => rows[0]);
+    } catch (err) {
+      throw trpcUnknownError(err, 'Getting forms');
+    }
 
-  if (form.deletedAt) {
-    throw new TRPCError({
-      code: 'BAD_REQUEST',
-      message: 'Form is deleted, cannot be updated'
-    });
-  }
-
-  checks.trpc.partialHasValues(data);
-
-  if (form.public) {
-    const error = checkPublicForm(data);
-
-    if (error) {
+    if (form.deletedAt) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
-        message: error
-      });
-    }
-  }
-
-  let updatedFormFields: UserFormField[] | undefined;
-
-  if (data.fields) {
-    const errors = userFormFieldsChecks(data.fields);
-
-    if (errors) {
-      throw new TRPCError({
-        message: errors,
-        code: 'BAD_REQUEST'
+        message: 'Form is deleted, cannot be updated'
       });
     }
 
-    const deletedFieldIds = difference(form.fields, data.fields).map((field) => field.id);
+    checks.trpc.partialHasValues(data);
 
-    if (intersection(form.fieldsWithResponses, deletedFieldIds).length !== 0) {
-      updatedFormFields = form.fields.map((field) => {
-        if (deletedFieldIds.includes(field.id)) {
-          field.deleted = true;
-        }
-        return field;
-      });
-    }
-  }
-  await db.transaction(async (tx) => {
-    if (tournamentForm && data.tournamentId) {
-      await checkTournamentFormUpdate(ctx, input, tournamentForm.type).then(async () => {
-        await tx
-          .update(TournamentForm)
-          .set({
-            tournamentId: data.tournamentId,
-            target: tournamentForm.type === 'staff_registration' ? 'public' : data.target
-          })
-          .where(eq(TournamentForm.formId, formId));
-      });
+    if (form.public) {
+      const error = checkPublicForm(data);
+
+      if (error) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: error
+        });
+      }
     }
 
-    await tx
-      .update(Form)
-      .set({
-        ...data,
-        fields: updatedFormFields ?? undefined,
-        anonymousResponses:
-          tournamentForm && tournamentForm.type === 'staff_registration'
-            ? false
-            : form.anonymousResponses
-      })
-      .where(eq(Form.id, formId));
+    let updatedFormFields: UserFormField[] | undefined;
+
+    if (data.fields) {
+      const errors = userFormFieldsChecks(data.fields);
+
+      if (errors) {
+        throw new TRPCError({
+          message: errors,
+          code: 'BAD_REQUEST'
+        });
+      }
+
+      const deletedFieldIds = difference(form.fields, data.fields).map((field) => field.id);
+
+      if (intersection(form.fieldsWithResponses, deletedFieldIds).length !== 0) {
+        updatedFormFields = form.fields.map((field) => {
+          if (deletedFieldIds.includes(field.id)) {
+            field.deleted = true;
+          }
+          return field;
+        });
+      }
+    }
+    await db.transaction(async (tx) => {
+      if (tournamentForm && data.tournamentId) {
+        await checkTournamentFormUpdate(ctx, input, tournamentForm.type).then(async () => {
+          await tx
+            .update(TournamentForm)
+            .set({
+              tournamentId: data.tournamentId,
+              target: tournamentForm.type === 'staff_registration' ? 'public' : data.target
+            })
+            .where(eq(TournamentForm.formId, formId));
+        });
+      }
+
+      await tx
+        .update(Form)
+        .set({
+          ...data,
+          fields: updatedFormFields ?? undefined,
+          anonymousResponses:
+            tournamentForm && tournamentForm.type === 'staff_registration'
+              ? false
+              : form.anonymousResponses
+        })
+        .where(eq(Form.id, formId));
+    });
   });
-});
 
 const deleteForm = trpc.procedure
   .input(
-    wrap(
+    v.parser(
       v.object({
         formId: positiveIntSchema,
         tournamentId: v.optional(positiveIntSchema)
@@ -374,7 +376,7 @@ const deleteForm = trpc.procedure
 
 const submitFormResponse = trpc.procedure
   .input(
-    wrap(
+    v.parser(
       v.object({
         formId: positiveIntSchema,
         fieldsResponses: v.array(userFormFieldResponseSchema)

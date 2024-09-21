@@ -26,8 +26,8 @@
   };
   const mainForm = createForm(
     {
-      mods: f.array(f.union(keys(modsOptions)), [f.minArrayLength(1), f.maxArrayLength(5)]),
-      multiplier: f.number([f.minValue(-5), f.maxValue(5)])
+      mods: f.pipe(f.array(f.union(keys(modsOptions))), f.minArrayLength(1), f.maxArrayLength(5)),
+      multiplier: f.pipe(f.number(), f.minValue(-5), f.maxValue(5))
     },
     updating && {
       mods: updating.mods,
@@ -39,7 +39,7 @@
   );
   const failModForm = createForm(
     {
-      ifFailed: f.number([f.minValue(-5), f.maxValue(5)])
+      ifFailed: f.pipe(f.number(), f.minValue(-5), f.maxValue(5))
     },
     updating && typeof updating.multiplier !== 'number'
       ? {

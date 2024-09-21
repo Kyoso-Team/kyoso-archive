@@ -5,30 +5,32 @@ import * as v from 'valibot';
 // Example: "Invalid input: body.tournamentId should be a number"
 // (The messages will not appear in tRPC procedures)
 
-export const nonEmptyStringSchema = v.string('be a string', [
+export const nonEmptyStringSchema = v.pipe(
+  v.string('be a string'),
   v.minLength(1, 'have 1 character or more')
-]);
+);
 
-export const positiveIntSchema = v.number('be a number', [
+export const positiveIntSchema = v.pipe(
+  v.number('be a number'),
   v.integer('be an integer'),
   v.minValue(1, 'be greater or equal to 1')
-]);
+);
 
-export const fileIdSchema = v.string('be a string', [v.length(8, 'have 8 characters')]);
+export const fileIdSchema = v.pipe(v.string('be a string'), v.length(8, 'have 8 characters'));
 
 export const fileSchema = v.instance(File, 'be a file');
 
-export const boolStringSchema = v.transform(
+export const boolStringSchema = v.pipe(
   v.union([v.literal('true'), v.literal('false')], 'be a boolean'),
-  (input) => input === 'true'
+  v.transform((input) => input === 'true')
 );
 
-export const urlSlugSchema = v.custom(
+export const urlSlugSchema = v.check(
   (input: string) => /^[a-z0-9-]+$/g.test(input),
   'only contain the following characters: "abcdefghijkmnlopqrstuvwxyz0123456789-"'
 );
 
-export const hexColorSchema = v.custom(
+export const hexColorSchema = v.check(
   (input: string) => /^[0-9a-fA-F]{6}$/i.test(input),
   'be a color in hexadecimal format'
 );

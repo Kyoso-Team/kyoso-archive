@@ -13,7 +13,7 @@
   export let session: AuthSession;
   export let toast: ToastStore;
   const mainForm = createForm({
-    userId: f.number([f.integer(), f.minValue(0), f.maxIntLimit()])
+    userId: f.pipe(f.number(), f.integer(), f.minValue(0), f.maxIntLimit())
   });
   const labels = mainForm.labels;
 

@@ -3,11 +3,11 @@ import { env } from '$lib/server/env';
 import { catcher, error } from '$lib/server/error';
 import type { ErrorInside } from '$lib/types';
 
-export async function parseSearchParams<T extends Record<string, v.BaseSchema>>(
+export async function parseSearchParams<T extends Record<string, v.GenericSchema>>(
   inside: ErrorInside,
   url: URL,
   schemas: T
-): Promise<{ [K in keyof T]: v.Output<T[K]> }> {
+): Promise<{ [K in keyof T]: v.InferOutput<T[K]> }> {
   const data: Record<string, any> = {};
 
   for (const key in schemas) {
@@ -25,11 +25,11 @@ export async function parseSearchParams<T extends Record<string, v.BaseSchema>>(
   return data as any;
 }
 
-export async function parseRequestBody<T extends v.BaseSchema>(
+export async function parseRequestBody<T extends v.GenericSchema>(
   inside: ErrorInside,
   request: Request,
   schema: T
-): Promise<v.Output<T>> {
+): Promise<v.InferOutput<T>> {
   const body: Record<string, any> = await request
     .json()
     .catch(catcher(inside, "Body is malformed or isn't JSON"));
@@ -50,11 +50,11 @@ export async function parseRequestBody<T extends v.BaseSchema>(
   return parsed.output as any;
 }
 
-export async function parseFormData<T extends Record<string, v.BaseSchema>>(
+export async function parseFormData<T extends Record<string, v.GenericSchema>>(
   inside: ErrorInside,
   request: Request,
   schemas: T
-): Promise<{ [K in keyof T]: v.Output<T[K]> }> {
+): Promise<{ [K in keyof T]: v.InferOutput<T[K]> }> {
   const fd = await request
     .formData()
     .catch(catcher(inside, "Body is malformed or isn't form data"));

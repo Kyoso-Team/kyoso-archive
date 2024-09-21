@@ -1,5 +1,4 @@
 import { TRPCError } from '@trpc/server';
-import { wrap } from '@typeschema/valibot';
 import { eq } from 'drizzle-orm';
 import * as v from 'valibot';
 import { StaffMember, StaffMemberRole, StaffRole, Tournament, TournamentDates } from '$db';
@@ -42,9 +41,9 @@ const catchUniqueConstraintError = catchUniqueConstraintError$([
 ]);
 
 const mutationSchemas = {
-  name: v.string([v.minLength(2), v.maxLength(50)]),
-  urlSlug: v.string([v.minLength(2), v.maxLength(16), urlSlugSchema]),
-  acronym: v.string([v.minLength(2), v.maxLength(8)]),
+  name: v.pipe(v.string(), v.minLength(2), v.maxLength(50)),
+  urlSlug: v.pipe(v.string(), v.minLength(2), v.maxLength(16), urlSlugSchema),
+  acronym: v.pipe(v.string(), v.minLength(2), v.maxLength(8)),
   type: v.union([v.literal('teams'), v.literal('draft'), v.literal('solo')]),
   rankRange: v.nullish(rankRangeSchema),
   teamSettings: v.nullish(
@@ -57,7 +56,7 @@ const mutationSchemas = {
 
 const createTournament = trpc.procedure
   .use(rateLimitMiddleware)
-  .input(wrap(v.object(mutationSchemas)))
+  .input(v.parser(v.object(mutationSchemas)))
   .mutation(async ({ ctx, input }) => {
     const { teamSettings, rankRange } = input;
     const session = getSession('trpc', ctx.cookies, true);
@@ -143,20 +142,20 @@ const createTournament = trpc.procedure
 const updateTournament = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
         tournamentId: positiveIntSchema,
         data: v.partial(
           v.object({
             ...mutationSchemas,
-            description: v.nullable(v.string([v.minLength(0), v.maxLength(150)])),
+            description: v.nullable(v.pipe(v.string(), v.minLength(0), v.maxLength(150))),
             rankRange: v.nullable(rankRangeSchema),
             teamSettings: v.nullable(teamSettingsSchema),
             bwsValues: v.nullable(bwsValuesSchema),
-            links: v.array(tournamentLinkSchema, [v.maxLength(20)]),
+            links: v.pipe(v.array(tournamentLinkSchema), v.maxLength(20)),
             refereeSettings: refereeSettingsSchema,
             rules: v.nullable(v.string()),
-            modMultipliers: v.array(modMultiplierSchema, [v.maxLength(5)])
+            modMultipliers: v.pipe(v.array(modMultiplierSchema), v.maxLength(5))
           })
         )
       })
@@ -243,30 +242,30 @@ const updateTournament = trpc.procedure
 const updateTournamentDates = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
         tournamentId: positiveIntSchema,
         data: v.partial(
           v.object({
             publishedAt: v.nullable(
-              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+              v.pipe(v.date(), v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate))
             ),
             concludesAt: v.nullable(
-              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+              v.pipe(v.date(), v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate))
             ),
             playerRegsOpenAt: v.nullable(
-              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+              v.pipe(v.date(), v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate))
             ),
             playerRegsCloseAt: v.nullable(
-              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+              v.pipe(v.date(), v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate))
             ),
             staffRegsOpenAt: v.nullable(
-              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+              v.pipe(v.date(), v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate))
             ),
             staffRegsCloseAt: v.nullable(
-              v.date([v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate)])
+              v.pipe(v.date(), v.minValue(oldestDatePossible), v.maxValue(maxPossibleDate))
             ),
-            other: v.array(tournamentOtherDatesSchema, [v.maxLength(20)])
+            other: v.pipe(v.array(tournamentOtherDatesSchema), v.maxLength(20))
           })
         )
       })
@@ -412,7 +411,7 @@ const updateTournamentDates = trpc.procedure
 const deleteTournament = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
         tournamentId: positiveIntSchema
       })
@@ -458,7 +457,7 @@ const deleteTournament = trpc.procedure
 const cancelTournamentDeletion = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
         tournamentId: positiveIntSchema
       })

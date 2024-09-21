@@ -1,4 +1,3 @@
-import { wrap } from '@typeschema/valibot';
 import { and, asc, eq, isNull, notExists, or, sql } from 'drizzle-orm';
 import * as v from 'valibot';
 import { Ban, OsuUser, Tournament, User } from '$db';
@@ -10,7 +9,7 @@ import { pick, trpcUnknownError } from '$lib/server/utils';
 import type { SQL } from 'drizzle-orm';
 
 const search = trpc.procedure
-  .input(wrap(v.string([v.minLength(1)])))
+  .input(v.parser(v.pipe(v.string(), v.minLength(1))))
   .query(async ({ ctx, input }) => {
     getSession('trpc', ctx.cookies, true);
 

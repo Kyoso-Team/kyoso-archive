@@ -13,7 +13,7 @@
   export let ctx: ReturnType<typeof createContextStore>;
   const toast = getToastStore();
   const form = createForm({
-    revokeReason: f.string([f.minStrLength(1)])
+    revokeReason: f.pipe(f.string(), f.minStrLength(1))
   });
   const labels = form.labels;
 

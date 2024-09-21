@@ -16,10 +16,11 @@
   export let toast: ToastStore;
   const mainForm = createForm(
     {
-      permissions: f.array(f.union(keys(staffPermissionsOptions)), [
+      permissions: f.pipe(
+        f.array(f.union(keys(staffPermissionsOptions))),
         f.minArrayLength(0),
         f.maxArrayLength(Object.keys(staffPermissionsOptions).length)
-      ])
+      )
     },
     {
       permissions: staffMember.permissions

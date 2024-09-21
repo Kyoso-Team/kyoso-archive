@@ -1,5 +1,4 @@
 import { TRPCError } from '@trpc/server';
-import { wrap } from '@typeschema/valibot';
 import { and, eq, gt, inArray, sql } from 'drizzle-orm';
 import * as v from 'valibot';
 import { StaffColor, StaffPermission, StaffRole } from '$db';
@@ -27,9 +26,9 @@ const catchUniqueConstraintError = catchUniqueConstraintError$([
 const createStaffRole = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
-        name: v.string([v.minLength(2), v.maxLength(50)]),
+        name: v.pipe(v.string(), v.minLength(2), v.maxLength(50)),
         tournamentId: positiveIntSchema
       })
     )
@@ -84,13 +83,13 @@ const createStaffRole = trpc.procedure
 const updateStaffRole = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
         tournamentId: positiveIntSchema,
         staffRoleId: positiveIntSchema,
         data: v.partial(
           v.object({
-            name: v.string([v.minLength(2), v.maxLength(50)]),
+            name: v.pipe(v.string(), v.minLength(2), v.maxLength(50)),
             color: v.picklist(StaffColor.enumValues),
             permissions: v.array(v.picklist(StaffPermission.enumValues))
           })
@@ -152,15 +151,17 @@ const updateStaffRole = trpc.procedure
 const swapStaffRoleOrder = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
         tournamentId: positiveIntSchema,
-        swaps: v.array(
-          v.object({
-            source: positiveIntSchema,
-            target: positiveIntSchema
-          }),
-          [v.maxLength(25)]
+        swaps: v.pipe(
+          v.array(
+            v.object({
+              source: positiveIntSchema,
+              target: positiveIntSchema
+            })
+          ),
+          v.maxLength(25)
         )
       })
     )
@@ -253,7 +254,7 @@ const swapStaffRoleOrder = trpc.procedure
 const deleteStaffRole = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
         tournamentId: positiveIntSchema,
         staffRoleId: positiveIntSchema

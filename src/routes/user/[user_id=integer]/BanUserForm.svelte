@@ -13,11 +13,11 @@
   export let issuedToUserId: number;
   const toast = getToastStore();
   const mainForm = createForm({
-    banReason: f.string([f.minStrLength(1)]),
+    banReason: f.pipe(f.string(), f.minStrLength(1)),
     permanent: f.boolean()
   });
   const timeForm = createForm({
-    timeAmount: f.number([f.minValue(1), f.maxIntLimit()])
+    timeAmount: f.pipe(f.number(), f.minValue(1), f.maxIntLimit())
   });
   const labels = {
     ...mainForm.labels,

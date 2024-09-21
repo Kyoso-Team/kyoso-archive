@@ -14,12 +14,12 @@ import {
 } from './basic';
 
 export const clientEnvSchema = v.object({
-  PUBLIC_OSU_CLIENT_ID: v.number('be a number', [v.integer('be an integer')]),
+  PUBLIC_OSU_CLIENT_ID: v.pipe(v.number('be a number'), v.integer('be an integer')),
   PUBLIC_OSU_REDIRECT_URI: nonEmptyStringSchema,
   PUBLIC_DISCORD_CLIENT_ID: nonEmptyStringSchema,
   PUBLIC_DISCORD_MAIN_REDIRECT_URI: nonEmptyStringSchema,
   PUBLIC_DISCORD_CHANGE_ACCOUNT_REDIRECT_URI: nonEmptyStringSchema,
-  PUBLIC_CONTACT_EMAIL: v.string('be a string', [v.email('be an email')])
+  PUBLIC_CONTACT_EMAIL: v.pipe(v.string('be a string'), v.email('be an email'))
 });
 
 export const serverEnvSchema = v.object({
@@ -40,8 +40,8 @@ export const serverEnvSchema = v.object({
   IPINFO_ACCESS_TOKEN: nonEmptyStringSchema,
   DATABASE_URL: nonEmptyStringSchema,
   TEST_DATABASE_URL: nonEmptyStringSchema,
-  OWNER: v.number('be a number', [v.integer('be an integer')]),
-  TESTERS: v.array(v.number('be a number', [v.integer('be an integer')]), 'be an array'),
+  OWNER: v.pipe(v.number('be a number'), v.integer('be an integer')),
+  TESTERS: v.array(v.pipe(v.number('be a number'), v.integer('be an integer')), 'be an array'),
   UPSTASH_REDIS_REST_URL: nonEmptyStringSchema,
   UPSTASH_REDIS_REST_TOKEN: nonEmptyStringSchema,
   S3_FORCE_PATH_STYLE: v.boolean('be a boolean'),
@@ -53,11 +53,11 @@ export const serverEnvSchema = v.object({
 
 export const refereeSettingsSchema = v.object({
   timerLength: v.object({
-    pick: v.number([v.integer(), v.minValue(1), v.maxValue(600)]),
-    ban: v.number([v.integer(), v.minValue(1), v.maxValue(600)]),
-    protect: v.number([v.integer(), v.minValue(1), v.maxValue(600)]),
-    ready: v.number([v.integer(), v.minValue(1), v.maxValue(600)]),
-    start: v.number([v.integer(), v.minValue(1), v.maxValue(600)])
+    pick: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(600)),
+    ban: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(600)),
+    protect: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(600)),
+    ready: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(600)),
+    start: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(600))
   }),
   allow: v.object({
     doublePick: v.boolean(),
@@ -75,84 +75,97 @@ export const refereeSettingsSchema = v.object({
 });
 
 export const tournamentLinkSchema = v.object({
-  label: v.string([v.minLength(2), v.maxLength(30)]),
-  url: v.string([v.url()]),
+  label: v.pipe(v.string(), v.minLength(2), v.maxLength(30)),
+  url: v.pipe(v.string(), v.url()),
   icon: tournamentLinkIconSchema
 });
 
 export const bwsValuesSchema = v.object({
-  x: v.number([v.notValue(0), v.minValue(-10), v.maxValue(10)]),
-  y: v.number([v.notValue(0), v.minValue(-10), v.maxValue(10)]),
-  z: v.number([v.notValue(0), v.minValue(-10), v.maxValue(10)])
+  x: v.pipe(v.number(), v.notValue(0), v.minValue(-10), v.maxValue(10)),
+  y: v.pipe(v.number(), v.notValue(0), v.minValue(-10), v.maxValue(10)),
+  z: v.pipe(v.number(), v.notValue(0), v.minValue(-10), v.maxValue(10))
 });
 
 export const teamSettingsSchema = v.object({
-  minTeamSize: v.number([v.integer(), v.minValue(1), v.maxValue(16)]),
-  maxTeamSize: v.number([v.integer(), v.minValue(1), v.maxValue(16)]),
+  minTeamSize: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(16)),
+  maxTeamSize: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(16)),
   useTeamBanners: v.boolean()
 });
 
 export const tournamentOtherDatesSchema = v.object({
-  label: v.string([v.minLength(2), v.maxLength(35)]),
+  label: v.pipe(v.string(), v.minLength(2), v.maxLength(35)),
   onlyDate: v.boolean(),
-  fromDate: v.number([
+  fromDate: v.pipe(
+    v.number(),
     v.minValue(oldestDatePossible.getTime()),
     v.maxValue(maxPossibleDate.getTime())
-  ]),
+  ),
   toDate: v.nullable(
-    v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())])
+    v.pipe(
+      v.number(),
+      v.minValue(oldestDatePossible.getTime()),
+      v.maxValue(maxPossibleDate.getTime())
+    )
   )
 });
 
 export const rankRangeSchema = v.object({
-  lower: v.number([v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER)]),
-  upper: v.nullable(v.number([v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER)]))
+  lower: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER)),
+  upper: v.nullable(
+    v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER))
+  )
 });
 
 export const modMultiplierSchema = v.union([
   v.object({
     /** Easy, Hidden, Hard Rock, Flashlight, Blinds */
-    mods: v.array(
-      v.union([
-        v.literal('ez'),
-        v.literal('hd'),
-        v.literal('hr'),
-        v.literal('fl'),
-        v.literal('bl')
-      ]),
-      [v.minLength(1), v.maxLength(5)]
+    mods: v.pipe(
+      v.array(
+        v.union([
+          v.literal('ez'),
+          v.literal('hd'),
+          v.literal('hr'),
+          v.literal('fl'),
+          v.literal('bl')
+        ])
+      ),
+      v.minLength(1),
+      v.maxLength(5)
     ),
-    multiplier: v.number([v.minValue(-5), v.maxValue(5)])
+    multiplier: v.pipe(v.number(), v.minValue(-5), v.maxValue(5))
   }),
   v.object({
     /** Sudden Death, Perfect */
-    mods: v.array(
-      v.union([
-        // Same as above
-        v.literal('ez'),
-        v.literal('hd'),
-        v.literal('hr'),
-        v.literal('fl'),
-        v.literal('bl'),
-        // -------------
-        v.literal('sd'),
-        v.literal('pf')
-      ]),
-      [v.minLength(1), v.maxLength(5)]
+    mods: v.pipe(
+      v.array(
+        v.union([
+          // Same as above
+          v.literal('ez'),
+          v.literal('hd'),
+          v.literal('hr'),
+          v.literal('fl'),
+          v.literal('bl'),
+          // -------------
+          v.literal('sd'),
+          v.literal('pf')
+        ])
+      ),
+      v.minLength(1),
+      v.maxLength(5)
     ),
     multiplier: v.object({
-      ifSuccessful: v.number([v.minValue(-5), v.maxValue(5)]),
-      ifFailed: v.number([v.minValue(-5), v.maxValue(5)])
+      ifSuccessful: v.pipe(v.number(), v.minValue(-5), v.maxValue(5)),
+      ifFailed: v.pipe(v.number(), v.minValue(-5), v.maxValue(5))
     })
   })
 ]);
 
 const baseUserFormFieldSchemas = {
   /** Nanoid (must be unique within the form itself, not across the entire database) */
-  id: v.string([v.length(8)]),
-  title: v.string([v.minLength(2), v.maxLength(200)]),
+  id: v.pipe(v.string(), v.length(8)),
+  title: v.pipe(v.string(), v.minLength(2), v.maxLength(200)),
   /** Written as markdown */
-  description: v.nullable(v.string([v.maxLength(300)])),
+  description: v.nullable(v.pipe(v.string(), v.maxLength(300))),
   optional: v.boolean(),
   deleted: v.boolean()
 };
@@ -161,8 +174,8 @@ const baseUserFormShortTextFieldSchemas = {
   ...baseUserFormFieldSchemas,
   type: v.literal('short-text'),
   validation: v.null_(),
-  min: v.nullable(v.number([v.integer(), v.minValue(0)])),
-  max: v.nullable(v.number([v.integer(), v.maxValue(100)]))
+  min: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(0))),
+  max: v.nullable(v.pipe(v.number(), v.integer(), v.maxValue(100)))
 };
 
 const userFormShortTextField = v.union([
@@ -174,7 +187,7 @@ const userFormShortTextField = v.union([
   v.object({
     ...baseUserFormShortTextFieldSchemas,
     validation: v.union([v.literal('regex'), v.literal('contains'), v.literal('not-contains')]),
-    value: v.string([v.minLength(1), v.maxLength(100)])
+    value: v.pipe(v.string(), v.minLength(1), v.maxLength(100))
   })
 ]);
 
@@ -182,8 +195,8 @@ const baseUserFormLongTextFieldSchemas = {
   ...baseUserFormFieldSchemas,
   type: v.literal('long-text'),
   validation: v.null_(),
-  min: v.nullable(v.number([v.integer(), v.minValue(0)])),
-  max: v.nullable(v.number([v.integer(), v.maxValue(10000)]))
+  min: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(0))),
+  max: v.nullable(v.pipe(v.number(), v.integer(), v.maxValue(10000)))
 };
 
 const userFormLongTextFieldSchema = v.union([
@@ -191,7 +204,7 @@ const userFormLongTextFieldSchema = v.union([
   v.object({
     ...baseUserFormLongTextFieldSchemas,
     validation: v.literal('regex'),
-    value: v.string([v.minLength(1), v.maxLength(100)])
+    value: v.pipe(v.string(), v.minLength(1), v.maxLength(100))
   })
 ]);
 
@@ -213,20 +226,28 @@ const userFormNumberFieldSchema = v.union([
       v.literal('lte'),
       v.literal('not-eq')
     ]),
-    value: v.number([v.minValue(lower32BitIntLimit), v.maxValue(upper32BitIntLimit)])
+    value: v.pipe(v.number(), v.minValue(lower32BitIntLimit), v.maxValue(upper32BitIntLimit))
   }),
   v.object({
     ...baseUserFormNumberFieldSchema,
     validation: v.union([v.literal('between'), v.literal('not-between')]),
-    min: v.nullable(v.number([v.minValue(lower32BitIntLimit), v.maxValue(upper32BitIntLimit)])),
-    max: v.nullable(v.number([v.minValue(lower32BitIntLimit), v.maxValue(upper32BitIntLimit)]))
+    min: v.nullable(
+      v.pipe(v.number(), v.minValue(lower32BitIntLimit), v.maxValue(upper32BitIntLimit))
+    ),
+    max: v.nullable(
+      v.pipe(v.number(), v.minValue(lower32BitIntLimit), v.maxValue(upper32BitIntLimit))
+    )
   })
 ]);
 
 const userFormSelectFieldSchema = v.object({
   ...baseUserFormFieldSchemas,
   type: v.literal('select'),
-  options: v.array(v.string([v.minLength(1), v.maxLength(100)]), [v.minLength(2), v.maxLength(100)])
+  options: v.pipe(
+    v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(100))),
+    v.minLength(2),
+    v.maxLength(100)
+  )
 });
 
 const userFormCheckboxFieldSchema = v.object({
@@ -239,7 +260,11 @@ const baseUserFormSelectMultipleFieldSchema = {
   ...baseUserFormFieldSchemas,
   type: v.literal('select-multiple'),
   validation: v.null_(),
-  options: v.array(v.string([v.minLength(1), v.maxLength(100)]), [v.minLength(2), v.maxLength(100)])
+  options: v.pipe(
+    v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(100))),
+    v.minLength(2),
+    v.maxLength(100)
+  )
 };
 
 const userFormSelectMultipleFieldSchema = v.union([
@@ -254,23 +279,23 @@ const userFormSelectMultipleFieldSchema = v.union([
       v.literal('eq'),
       v.literal('not-eq')
     ]),
-    value: v.number([v.integer(), v.minValue(0), v.maxValue(100)])
+    value: v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(100))
   }),
   v.object({
     ...baseUserFormSelectMultipleFieldSchema,
     validation: v.union([v.literal('between'), v.literal('not-between')]),
-    min: v.nullable(v.number([v.integer(), v.minValue(0), v.maxValue(100)])),
-    max: v.nullable(v.number([v.integer(), v.minValue(0), v.maxValue(100)]))
+    min: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(100))),
+    max: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(100)))
   })
 ]);
 
 const userFormScaleFieldSchema = v.object({
   ...baseUserFormFieldSchemas,
   type: v.literal('scale'),
-  from: v.number([v.integer(), v.minValue(0), v.maxValue(1)]),
-  fromLabel: v.string([v.minLength(1), v.maxLength(100)]),
-  to: v.number([v.integer(), v.minValue(2), v.maxValue(10)]),
-  toLabel: v.string([v.minLength(1), v.maxLength(100)])
+  from: v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(1)),
+  fromLabel: v.pipe(v.string(), v.minLength(1), v.maxLength(100)),
+  to: v.pipe(v.number(), v.integer(), v.minValue(2), v.maxValue(10)),
+  toLabel: v.pipe(v.string(), v.minLength(1), v.maxLength(100))
 });
 
 const baseUserFormDateTimeFieldSchemas = {
@@ -291,19 +316,28 @@ const userFormDateTimeFieldSchema = v.union([
       v.literal('lte'),
       v.literal('not-eq')
     ]),
-    value: v.number([
+    value: v.pipe(
+      v.number(),
       v.minValue(oldestDatePossible.getTime()),
       v.maxValue(maxPossibleDate.getTime())
-    ])
+    )
   }),
   v.object({
     ...baseUserFormDateTimeFieldSchemas,
     validation: v.union([v.literal('between'), v.literal('not-between')]),
     min: v.nullable(
-      v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())])
+      v.pipe(
+        v.number(),
+        v.minValue(oldestDatePossible.getTime()),
+        v.maxValue(maxPossibleDate.getTime())
+      )
     ),
     max: v.nullable(
-      v.number([v.minValue(oldestDatePossible.getTime()), v.maxValue(maxPossibleDate.getTime())])
+      v.pipe(
+        v.number(),
+        v.minValue(oldestDatePossible.getTime()),
+        v.maxValue(maxPossibleDate.getTime())
+      )
     )
   })
 ]);
@@ -320,8 +354,8 @@ export const userFormFieldSchema = v.union([
 ]);
 
 export const userFormFieldResponseSchema = v.record(
-  v.string([v.length(8)]),
-  v.string([v.minLength(0), v.maxLength(10000)])
+  v.pipe(v.string(), v.length(8)),
+  v.pipe(v.string(), v.minLength(0), v.maxLength(10000))
 );
 
 export const colorShadesSchema = v.union([
@@ -340,8 +374,8 @@ export const colorShadesSchema = v.union([
 export const tournamentThemeSchema = v.object({
   use: v.boolean(),
   colors: v.object({
-    surface: v.record(colorShadesSchema, v.string([hexColorSchema])),
-    primary: v.record(colorShadesSchema, v.string([hexColorSchema]))
+    surface: v.record(colorShadesSchema, v.pipe(v.string(), hexColorSchema)),
+    primary: v.record(colorShadesSchema, v.pipe(v.string(), hexColorSchema))
   }),
   fontFamilies: v.object({
     base: v.string(),

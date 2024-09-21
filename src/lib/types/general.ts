@@ -1,4 +1,4 @@
-import type { Output } from 'valibot';
+import type * as v from 'valibot';
 import type { Tournament, TournamentDates } from '$db';
 import type {
   bwsValuesSchema,
@@ -85,15 +85,15 @@ export interface AuthSession {
 }
 
 /** Linear: ABAB. Snake: ABBA */
-export type DraftType = Output<typeof draftTypeSchema>;
-export type RefereeSettings = Output<typeof refereeSettingsSchema>;
-export type TournamentLink = Output<typeof tournamentLinkSchema>;
-export type BWSValues = Output<typeof bwsValuesSchema>;
-export type TeamSettings = Output<typeof teamSettingsSchema>;
-export type TournamentOtherDates = Output<typeof tournamentOtherDatesSchema>;
-export type RankRange = Output<typeof rankRangeSchema>;
-export type ModMultiplier = Output<typeof modMultiplierSchema>;
-export type UserFormField = Output<typeof userFormFieldSchema>;
-export type UserFormFieldResponse = Output<typeof userFormFieldResponseSchema>;
-export type TournamentTheme = Output<typeof tournamentThemeSchema>;
-export type UserSettings = Output<typeof userSettingsSchema>;
+export type DraftType = v.InferOutput<typeof draftTypeSchema>;
+export type RefereeSettings = v.InferOutput<typeof refereeSettingsSchema>;
+export type TournamentLink = v.InferOutput<typeof tournamentLinkSchema>;
+export type BWSValues = v.InferOutput<typeof bwsValuesSchema>;
+export type TeamSettings = v.InferOutput<typeof teamSettingsSchema>;
+export type TournamentOtherDates = v.InferOutput<typeof tournamentOtherDatesSchema>;
+export type RankRange = v.InferOutput<typeof rankRangeSchema>;
+export type ModMultiplier = v.InferOutput<typeof modMultiplierSchema>;
+export type UserFormField = v.InferOutput<typeof userFormFieldSchema>;
+export type UserFormFieldResponse = v.InferOutput<typeof userFormFieldResponseSchema>;
+export type TournamentTheme = v.InferOutput<typeof tournamentThemeSchema>;
+export type UserSettings = v.InferOutput<typeof userSettingsSchema>;

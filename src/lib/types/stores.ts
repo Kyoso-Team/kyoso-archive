@@ -1,5 +1,5 @@
 import type { Writable } from 'svelte/store';
-import type { BaseSchema } from 'valibot';
+import type { GenericSchema } from 'valibot';
 
 export type AnyForm = {
   value: Record<string, any>;
@@ -24,6 +24,6 @@ export type FormStore = Writable<AnyForm> & {
   ) => UpdatedOnly extends true ? Partial<Record<string, any>> : Record<string, any>;
   overrideInitialValues: (newDefaults: Record<string, any>) => void;
   setOverwrittenState: (key: string, state: boolean) => void;
-  schemas: Record<string, BaseSchema>;
+  schemas: Record<string, GenericSchema>;
   labels: Record<string, string>;
 };

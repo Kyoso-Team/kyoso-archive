@@ -24,11 +24,13 @@
   };
   const mainForm = createForm(
     {
-      label: f.string([f.minStrLength(2), f.maxStrLength(35)]),
+      label: f.pipe(f.string(), f.minStrLength(2), f.maxStrLength(35)),
       type: f.union(keys(typeOptions)),
       display: f.union(keys(displayOptions)),
-      fromDate: f.date([f.minDate(oldestDatePossible), f.maxDate(maxPossibleDate)]),
-      toDate: f.optional(f.date([f.minDate(oldestDatePossible), f.maxDate(maxPossibleDate)]))
+      fromDate: f.pipe(f.date(), f.minDate(oldestDatePossible), f.maxDate(maxPossibleDate)),
+      toDate: f.optional(
+        f.pipe(f.date(), f.minDate(oldestDatePossible), f.maxDate(maxPossibleDate))
+      )
     },
     updating && {
       display: updating.onlyDate ? 'date' : 'datetime',

@@ -86,19 +86,19 @@
   const rankRangeForm = createForm(rankRangeFormSchemas, rankRangeInitialValues());
   const bwsForm = createForm(
     {
-      x: f.number([f.notValue(0), f.minValue(-10), f.maxValue(10)]),
-      y: f.number([f.notValue(0), f.minValue(-10), f.maxValue(10)]),
-      z: f.number([f.notValue(0), f.minValue(-10), f.maxValue(10)])
+      x: f.pipe(f.number(), f.notValue(0), f.minValue(-10), f.maxValue(10)),
+      y: f.pipe(f.number(), f.notValue(0), f.minValue(-10), f.maxValue(10)),
+      z: f.pipe(f.number(), f.notValue(0), f.minValue(-10), f.maxValue(10))
     },
     bwsInitialValues()
   );
   const refereeSettingsForm = createForm(
     {
-      pickTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
-      banTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
-      protectTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
-      readyTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
-      startTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
+      pickTimerLength: f.pipe(f.number(), f.integer(), f.minValue(1), f.maxValue(600)),
+      banTimerLength: f.pipe(f.number(), f.integer(), f.minValue(1), f.maxValue(600)),
+      protectTimerLength: f.pipe(f.number(), f.integer(), f.minValue(1), f.maxValue(600)),
+      readyTimerLength: f.pipe(f.number(), f.integer(), f.minValue(1), f.maxValue(600)),
+      startTimerLength: f.pipe(f.number(), f.integer(), f.minValue(1), f.maxValue(600)),
       allowDoubleBan: f.boolean(),
       allowDoublePick: f.boolean(),
       allowDoubleProtect: f.boolean(),
@@ -113,19 +113,23 @@
   );
   const datesForm = createForm(
     {
-      publishedAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])),
-      concludesAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])),
+      publishedAt: f.optional(
+        f.pipe(f.date(), f.minDate(new Date(now)), f.maxDate(new Date(now + aYear)))
+      ),
+      concludesAt: f.optional(
+        f.pipe(f.date(), f.minDate(new Date(now)), f.maxDate(new Date(now + aYear)))
+      ),
       playerRegsOpenAt: f.optional(
-        f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])
+        f.pipe(f.date(), f.minDate(new Date(now)), f.maxDate(new Date(now + aYear)))
       ),
       playerRegsCloseAt: f.optional(
-        f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])
+        f.pipe(f.date(), f.minDate(new Date(now)), f.maxDate(new Date(now + aYear)))
       ),
       staffRegsOpenAt: f.optional(
-        f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])
+        f.pipe(f.date(), f.minDate(new Date(now)), f.maxDate(new Date(now + aYear)))
       ),
       staffRegsCloseAt: f.optional(
-        f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])
+        f.pipe(f.date(), f.minDate(new Date(now)), f.maxDate(new Date(now + aYear)))
       )
     },
     datesInitialValues()

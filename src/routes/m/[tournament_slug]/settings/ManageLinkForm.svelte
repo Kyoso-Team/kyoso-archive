@@ -31,8 +31,8 @@
   };
   const mainForm = createForm(
     {
-      label: f.string([f.minStrLength(2), f.maxStrLength(30)]),
-      url: f.string([f.url()]),
+      label: f.pipe(f.string(), f.minStrLength(2), f.maxStrLength(30)),
+      url: f.pipe(f.string(), f.url()),
       icon: f.union(keys(iconOptions))
     },
     updating

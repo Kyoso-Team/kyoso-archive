@@ -10,21 +10,21 @@ export const tournamentTypeOptions: Record<InferEnum<typeof TournamentType>, str
 };
 
 export const baseTournamentFormSchemas = {
-  name: f.string([f.minStrLength(2), f.maxStrLength(50)]),
-  acronym: f.string([f.minStrLength(2), f.maxStrLength(8)]),
-  urlSlug: f.string([f.minStrLength(2), f.maxStrLength(16), f.slug()]),
+  name: f.pipe(f.string(), f.minStrLength(2), f.maxStrLength(50)),
+  acronym: f.pipe(f.string(), f.minStrLength(2), f.maxStrLength(8)),
+  urlSlug: f.pipe(f.string(), f.minStrLength(2), f.maxStrLength(16), f.slug()),
   type: f.union(keys(tournamentTypeOptions)),
   openRank: f.boolean()
 };
 
 export const baseTeamSettingsFormSchemas = {
-  minTeamSize: f.number([f.integer(), f.minValue(1), f.maxValue(16)]),
-  maxTeamSize: f.number([f.integer(), f.minValue(1), f.maxValue(16)])
+  minTeamSize: f.pipe(f.number(), f.integer(), f.minValue(1), f.maxValue(16)),
+  maxTeamSize: f.pipe(f.number(), f.integer(), f.minValue(1), f.maxValue(16))
 };
 
 export const rankRangeFormSchemas = {
-  lower: f.number([f.integer(), f.minValue(1), f.maxIntLimit()]),
-  upper: f.optional(f.number([f.integer(), f.minValue(1), f.maxIntLimit()]))
+  lower: f.pipe(f.number(), f.integer(), f.minValue(1), f.maxIntLimit()),
+  upper: f.optional(f.pipe(f.number(), f.integer(), f.minValue(1), f.maxIntLimit()))
 };
 
 export const staffPermissionsOptions: Record<InferEnum<typeof StaffPermission>, string> = {

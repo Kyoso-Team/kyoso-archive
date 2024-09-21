@@ -1,4 +1,3 @@
-import { wrap } from '@typeschema/valibot';
 import { and, eq } from 'drizzle-orm';
 import * as v from 'valibot';
 import { UserNotification } from '$db';
@@ -8,7 +7,7 @@ import { trpcUnknownError } from '$lib/server/utils';
 import { positiveIntSchema } from '$lib/validation';
 
 const markNotificationAsRead = trpc.procedure
-  .input(wrap(v.object({ notificationId: positiveIntSchema })))
+  .input(v.parser(v.object({ notificationId: positiveIntSchema })))
   .mutation(async ({ ctx, input }) => {
     const { notificationId } = input;
     const session = getSession('trpc', ctx.cookies, true);
