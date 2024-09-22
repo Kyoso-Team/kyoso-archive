@@ -33,7 +33,7 @@ export function error(
   status: Lowercase<TRPC_ERROR_CODE_KEY>,
   message: string
 ): never {
-  const statusNumber = getHTTPStatusCodeFromError({ code: status } as any);
+  const statusNumber = getHTTPStatusCodeFromError({ code: status.toUpperCase() } as any);
 
   if (inside === 'trpc') {
     throw new TRPCError({

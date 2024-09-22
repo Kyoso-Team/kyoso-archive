@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { and, eq, sql } from 'drizzle-orm';
-import { difference, intersection, isNil } from 'lodash';
+import _ from 'lodash';
 import * as v from 'valibot';
 import {
   Form,
@@ -109,7 +109,7 @@ const checkFieldResponseIds = (
         return field.id;
       }
     })
-    .filter((val) => !isNil(val));
+    .filter((val) => !_.isNil(val));
 
   if (!arraysHaveSameElements(fieldResponsesKeys, formFieldsIds)) {
     throw new TRPCError({
@@ -262,9 +262,9 @@ const updateForm = trpc.procedure
         });
       }
 
-      const deletedFieldIds = difference(form.fields, data.fields).map((field) => field.id);
+      const deletedFieldIds = _.difference(form.fields, data.fields).map((field) => field.id);
 
-      if (intersection(form.fieldsWithResponses, deletedFieldIds).length !== 0) {
+      if (_.intersection(form.fieldsWithResponses, deletedFieldIds).length !== 0) {
         updatedFormFields = form.fields.map((field) => {
           if (deletedFieldIds.includes(field.id)) {
             field.deleted = true;
