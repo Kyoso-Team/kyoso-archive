@@ -84,6 +84,12 @@ export interface AuthSession {
   };
 }
 
+export interface ToastItem {
+  message: string;
+  type: 'success' | 'error' | 'important' | 'notification';
+  linkTo?: string;
+}
+
 /** Linear: ABAB. Snake: ABBA */
 export type DraftType = v.InferOutput<typeof draftTypeSchema>;
 export type RefereeSettings = v.InferOutput<typeof refereeSettingsSchema>;

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Backdrop from './Backdrop.svelte';
   import {
     getToastStore,
     modeCurrent,
@@ -13,7 +14,6 @@
     ChangeStaffPermissionsForm,
     ImpersonateUserForm
   } from '$lib/components/dev-menu';
-  import { Backdrop } from '$lib/components/layout';
   import { staffPermissionsOptions } from '$lib/form/common';
   import { devMenuCtx, loading } from '$lib/stores';
   import { toastError } from '$lib/utils';
