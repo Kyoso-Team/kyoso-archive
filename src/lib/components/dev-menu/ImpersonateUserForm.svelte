@@ -3,15 +3,11 @@
   import { page } from '$app/stores';
   import { Form, Number } from '$lib/components/form';
   import * as f from '$lib/form/validation';
-  import { createForm, loading } from '$lib/stores';
-  import { displayError } from '$lib/ui';
-  import { toastSuccess } from '$lib/utils';
-  import type { ToastStore } from '@skeletonlabs/skeleton';
+  import { createForm, loading, toast } from '$lib/stores';
   import type { AuthSession } from '$lib/types';
 
   export let show: boolean;
   export let session: AuthSession;
-  export let toast: ToastStore;
   const mainForm = createForm({
     userId: f.pipe(f.number(), f.integer(), f.minValue(0), f.maxIntLimit())
   });
@@ -20,26 +16,20 @@
   async function submit() {
     const value = mainForm.getFinalValue($mainForm);
 
-    let resp!: Response;
     loading.set(true);
-
-    try {
-      resp = await fetch('/api/dev/impersonate', {
-        method: 'PUT',
-        body: JSON.stringify(value)
-      });
-    } catch (err) {
-      displayError(toast, err);
-    }
+    const resp = await fetch('/api/dev/impersonate', {
+      method: 'PUT',
+      body: JSON.stringify(value)
+    }).catch(toast.errorCatcher);
 
     if (!resp.ok) {
-      displayError(toast, await resp.json());
+      toast.error(await resp.text());
     }
 
     await invalidateAll();
     show = false;
     loading.set(false);
-    toastSuccess(toast, 'Impersonated user successfully');
+    toast.success('Impersonated user successfully');
   }
 
   function cancel() {

@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import { loading } from '.';
 import type { ToastItem } from '$lib/types';
 
 export function createToast() {
@@ -97,6 +98,16 @@ export function createToast() {
     add({ message, type: 'error' });
   }
 
+  /**
+   * @throws {Error}
+   */
+  function errorCatcher(err: unknown): never {
+    loading.set(false);
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    add({ message, type: 'error' });
+    throw err;
+  }
+
   function important(message: string, linkTo?: string) {
     add({ message, linkTo, type: 'important' });
   }
@@ -109,6 +120,7 @@ export function createToast() {
     ...toast,
     success,
     error,
+    errorCatcher,
     important,
     notification,
     pause,

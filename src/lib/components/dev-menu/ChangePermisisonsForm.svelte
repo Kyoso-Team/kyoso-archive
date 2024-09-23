@@ -2,16 +2,12 @@
   import { invalidateAll } from '$app/navigation';
   import { Checkbox, Form } from '$lib/components/form';
   import * as f from '$lib/form/validation';
-  import { createForm, loading } from '$lib/stores';
-  import { displayError } from '$lib/ui';
-  import { toastSuccess } from '$lib/utils';
-  import type { ToastStore } from '@skeletonlabs/skeleton';
+  import { createForm, loading, toast } from '$lib/stores';
   import type { AuthSession } from '$lib/types';
 
   export let show: boolean;
   export let session: AuthSession;
   export let isUserOwner: boolean;
-  export let toast: ToastStore;
   const mainForm = createForm(
     {
       owner: f.boolean(),
@@ -29,26 +25,20 @@
   async function submit() {
     const value = mainForm.getFinalValue($mainForm);
 
-    let resp!: Response;
     loading.set(true);
-
-    try {
-      resp = await fetch('/api/dev/change_permissions', {
-        method: 'PATCH',
-        body: JSON.stringify(value)
-      });
-    } catch (err) {
-      displayError(toast, err);
-    }
+    const resp = await fetch('/api/dev/change_permissions', {
+      method: 'PATCH',
+      body: JSON.stringify(value)
+    }).catch(toast.errorCatcher);
 
     if (!resp.ok) {
-      displayError(toast, await resp.json());
+      toast.error(await resp.text());
     }
 
     await invalidateAll();
     show = false;
     loading.set(false);
-    toastSuccess(toast, 'Changed user permissions succcessfully');
+    toast.success('Changed user permissions succcessfully');
   }
 
   function cancel() {

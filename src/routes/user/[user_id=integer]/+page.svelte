@@ -3,7 +3,6 @@
   import BanUserForm from './BanUserForm.svelte';
   import KyosoBadges from './KyosoBadges.svelte';
   import RevokeBanForm from './RevokeBanForm.svelte';
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
   import { invalidate } from '$app/navigation';
   import { page } from '$app/stores';
@@ -13,9 +12,8 @@
   import { Backdrop, Modal } from '$lib/components/layout';
   import { formatDate, formatNumber } from '$lib/format';
   import { popup } from '$lib/popup';
-  import { loading } from '$lib/stores';
-  import { displayError } from '$lib/ui';
-  import { toastSuccess, tooltip } from '$lib/utils';
+  import { loading, toast } from '$lib/stores';
+  import { tooltip } from '$lib/utils';
   import type { SvelteComponent } from 'svelte';
   import type { TRPCRouterOutputs } from '$lib/types';
   import type { PageServerData } from './$types';
@@ -44,7 +42,6 @@
     rank: number | null;
     icon: typeof SvelteComponent<any>;
   }[] = [];
-  const toast = getToastStore();
 
   function viewAsAdmin(
     user: typeof data.user
@@ -68,18 +65,16 @@
     if (!procedure) return;
     loading.set(true);
 
-    try {
-      await trpc($page).users[procedure].mutate({
+    await trpc($page)
+      .users[procedure].mutate({
         userId: data.user.id
-      });
-    } catch (err) {
-      displayError(toast, err);
-    }
+      })
+      .catch(toast.errorCatcher);
 
     await invalidate('reload:user');
     procedure = undefined;
     loading.set(false);
-    toastSuccess(toast, 'Updated user successfully');
+    toast.success('Updated user successfully');
   }
 
   function makeUserAdmin() {

@@ -1,11 +1,6 @@
 <script lang="ts">
   import Backdrop from './Backdrop.svelte';
-  import {
-    getToastStore,
-    modeCurrent,
-    setModeCurrent,
-    setModeUserPrefers
-  } from '@skeletonlabs/skeleton';
+  import { modeCurrent, setModeCurrent, setModeUserPrefers } from '@skeletonlabs/skeleton';
   import { onDestroy, onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import { browser } from '$app/environment';
@@ -15,14 +10,12 @@
     ImpersonateUserForm
   } from '$lib/components/dev-menu';
   import { staffPermissionsOptions } from '$lib/form/common';
-  import { devMenuCtx, loading } from '$lib/stores';
-  import { toastError } from '$lib/utils';
+  import { devMenuCtx, loading, toast } from '$lib/stores';
 
   let show = localStorage.getItem('show_dev_menu') === 'false' ? false : true;
   let showImpersonateUserForm = false;
   let showChangePermissionsForm = false;
   let showChangeStaffPermissionsForm = false;
-  const toast = getToastStore();
   const generalCommands: Record<string, string> = {
     '1': 'Toggle this menu',
     '2': 'Toggle between dark and light theme',
@@ -74,7 +67,7 @@
     if ($loading || showChangePermissionsForm || showChangeStaffPermissionsForm) return;
 
     if (!$devMenuCtx?.session) {
-      toastError(toast, 'Log in to execute this command');
+      toast.error('Log in to execute this command');
       return;
     }
 
@@ -85,7 +78,7 @@
     if ($loading || showImpersonateUserForm || showChangeStaffPermissionsForm) return;
 
     if (!$devMenuCtx?.session) {
-      toastError(toast, 'Log in to execute this command');
+      toast.error('Log in to execute this command');
       return;
     }
 
@@ -96,8 +89,7 @@
     if ($loading || showImpersonateUserForm || showChangePermissionsForm) return;
 
     if (!$devMenuCtx?.staffMember) {
-      toastError(
-        toast,
+      toast.error(
         'Execute this command in /m/ pages while being a staff member for that tournament'
       );
       return;
@@ -116,17 +108,12 @@
 {#if $devMenuCtx}
   {#if showImpersonateUserForm && $devMenuCtx.session}
     <Backdrop zIndex="z-[98]">
-      <ImpersonateUserForm
-        {toast}
-        session={$devMenuCtx.session}
-        bind:show={showImpersonateUserForm}
-      />
+      <ImpersonateUserForm session={$devMenuCtx.session} bind:show={showImpersonateUserForm} />
     </Backdrop>
   {/if}
   {#if showChangePermissionsForm && $devMenuCtx.session}
     <Backdrop zIndex="z-[98]">
       <ChangePermisisonsForm
-        {toast}
         session={$devMenuCtx.session}
         isUserOwner={$devMenuCtx.isUserOwner}
         bind:show={showChangePermissionsForm}
@@ -136,7 +123,6 @@
   {#if showChangeStaffPermissionsForm && $devMenuCtx.tournament && $devMenuCtx.staffMember}
     <Backdrop zIndex="z-[98]">
       <ChangeStaffPermissionsForm
-        {toast}
         tournament={$devMenuCtx.tournament}
         staffMember={$devMenuCtx.staffMember}
         bind:show={showChangeStaffPermissionsForm}

@@ -5,7 +5,6 @@
   import ManageOtherDateForm from './ManageOtherDateForm.svelte';
   import ModMultiplier from './ModMultiplier.svelte';
   import OtherDate from './OtherDate.svelte';
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import { dragHandleZone } from 'svelte-dnd-action';
   import { portal } from 'svelte-portal';
   import { flip } from 'svelte/animate';
@@ -25,9 +24,8 @@
   } from '$lib/form/common';
   import * as f from '$lib/form/validation';
   import { formatDate, formatTime } from '$lib/format';
-  import { createForm, createFunctionQueue, loading } from '$lib/stores';
-  import { displayError } from '$lib/ui';
-  import { isDateFuture, isDatePast, keys, toastError, toastSuccess } from '$lib/utils';
+  import { createForm, createFunctionQueue, loading, toast } from '$lib/stores';
+  import { isDateFuture, isDatePast, keys } from '$lib/utils';
   import type { RefereeSettings, TRPCRouterInputs, TRPCRouterOutputs } from '$lib/types';
   import type { PageServerData } from './$types';
 
@@ -54,7 +52,6 @@
   let updatingModMultiplierIndex: number | undefined;
   const now = new Date().getTime();
   const aYear = 31_556_952_000; // A year in MS
-  const toast = getToastStore();
   const fnQueue = createFunctionQueue();
   const orderTypeOptions: Record<'linear' | 'snake', string> = {
     linear: 'Linear (ABABAB)',
@@ -243,25 +240,25 @@
       | TRPCRouterOutputs['tournaments']['updateTournamentDates'];
     loading.set(true);
 
-    try {
-      if (procedure === 'updateTournament') {
-        tournament = await trpc($page).tournaments.updateTournament.mutate({
+    if (procedure === 'updateTournament') {
+      tournament = await trpc($page)
+        .tournaments.updateTournament.mutate({
           tournamentId: data.tournament.id,
           data: input
-        });
-      } else {
-        tournament = await trpc($page).tournaments.updateTournamentDates.mutate({
+        })
+        .catch(toast.errorCatcher);
+    } else {
+      tournament = await trpc($page)
+        .tournaments.updateTournamentDates.mutate({
           tournamentId: data.tournament.id,
           data: input
-        });
-      }
-    } catch (err) {
-      displayError(toast, err);
+        })
+        .catch(toast.errorCatcher);
     }
 
     if (typeof tournament === 'string') {
       loading.set(false);
-      toastError(toast, tournament);
+      toast.error(tournament);
       return;
     }
 
@@ -274,7 +271,7 @@
     t = data.tournament;
     overrideInitialValues();
     loading.set(false);
-    toastSuccess(toast, successMsg);
+    toast.success(successMsg);
   }
 
   function resetGeneralSettings() {
@@ -315,7 +312,7 @@
     const err = tournamentChecks({ teamSettings, rankRange });
 
     if (err) {
-      toastError(toast, err);
+      toast.error(err);
       return;
     }
 
@@ -416,7 +413,7 @@
     const err = tournamentDatesChecks(dates, dates);
 
     if (err) {
-      toastError(toast, err);
+      toast.error(err);
       return;
     }
 

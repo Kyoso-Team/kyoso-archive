@@ -6,15 +6,14 @@
     AppShell,
     initializeStores,
     setInitialClassState,
-    storePopup,
-    Toast
+    storePopup
   } from '@skeletonlabs/skeleton';
   import { inject } from '@vercel/analytics';
   import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import { dev } from '$app/environment';
   import { page } from '$app/stores';
-  import { Backdrop, NavBar } from '$lib/components/layout';
+  import { Backdrop, NavBar, Toast } from '$lib/components/layout';
   import { devMenuCtx, loading, showNavBar } from '$lib/stores';
   import type { DevMenu } from '$lib/components/layout';
   import type { LayoutServerData } from './$types';
@@ -53,7 +52,7 @@
     </div>
   </Backdrop>
 {/if}
-<Toast position="bl" />
+<Toast />
 <AppShell slotPageHeader="sticky top-0 z-[11]" slotSidebarLeft="z-[9]">
   <svelte:fragment slot="header">
     {#if $showNavBar}

@@ -1,17 +1,13 @@
 <script lang="ts">
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import { invalidate } from '$app/navigation';
   import { page } from '$app/stores';
   import { trpc } from '$lib/clients';
   import { Form, Text } from '$lib/components/form';
   import * as f from '$lib/form/validation';
-  import { createForm, loading } from '$lib/stores';
-  import { displayError } from '$lib/ui';
-  import { toastSuccess } from '$lib/utils';
+  import { createForm, loading, toast } from '$lib/stores';
   import type createContextStore from './store';
 
   export let ctx: ReturnType<typeof createContextStore>;
-  const toast = getToastStore();
   const form = createForm({
     revokeReason: f.pipe(f.string(), f.minStrLength(1))
   });
@@ -25,20 +21,17 @@
     }
 
     loading.set(true);
-
-    try {
-      await trpc($page).users.revokeBan.mutate({
+    await trpc($page)
+      .users.revokeBan.mutate({
         banId: $ctx.banToRevoke.id,
         revokeReason
-      });
-    } catch (err) {
-      displayError(toast, err);
-    }
+      })
+      .catch(toast.errorCatcher);
 
     ctx.toggleShowRevokeBanForm();
     loading.set(false);
 
-    toastSuccess(toast, 'Ban revoked succcessfully');
+    toast.success('Ban revoked succcessfully');
     await invalidate($page.url.pathname);
   }
 

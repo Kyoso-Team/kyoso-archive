@@ -3,17 +3,14 @@
   import { Form, SelectMultiple } from '$lib/components/form';
   import { staffPermissionsOptions } from '$lib/form/common';
   import * as f from '$lib/form/validation';
-  import { createForm, loading } from '$lib/stores';
-  import { displayError } from '$lib/ui';
-  import { keys, toastSuccess } from '$lib/utils';
-  import type { ToastStore } from '@skeletonlabs/skeleton';
+  import { createForm, loading, toast } from '$lib/stores';
+  import { keys } from '$lib/utils';
   import type { StaffPermission } from '$db';
   import type { InferEnum } from '$lib/types';
 
   export let show: boolean;
   export let tournament: { id: number };
   export let staffMember: { permissions: InferEnum<typeof StaffPermission>[] };
-  export let toast: ToastStore;
   const mainForm = createForm(
     {
       permissions: f.pipe(
@@ -31,29 +28,23 @@
   async function submit() {
     const { permissions } = mainForm.getFinalValue($mainForm);
 
-    let resp!: Response;
     loading.set(true);
-
-    try {
-      resp = await fetch('/api/dev/change_staff_permissions', {
-        method: 'PATCH',
-        body: JSON.stringify({
-          permissions,
-          tournamentId: tournament.id
-        })
-      });
-    } catch (err) {
-      displayError(toast, err);
-    }
+    const resp = await fetch('/api/dev/change_staff_permissions', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        permissions,
+        tournamentId: tournament.id
+      })
+    }).catch(toast.errorCatcher);
 
     if (!resp.ok) {
-      displayError(toast, await resp.json());
+      toast.error(await resp.text());
     }
 
     await invalidateAll();
     show = false;
     loading.set(false);
-    toastSuccess(toast, 'Changed staff permissions succcessfully');
+    toast.success('Changed staff permissions succcessfully');
   }
 
   function cancel() {

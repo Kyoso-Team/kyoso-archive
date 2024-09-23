@@ -1,8 +1,7 @@
-import { catcher, displayError } from '$lib/ui';
-import type { ToastStore } from '@skeletonlabs/skeleton';
+import { toast } from '$lib/stores';
 import type { Asset } from '$lib/types';
 
-export function createUploadClient<T extends Asset<any, any>>(toast: ToastStore, endpoint: string) {
+export function createUploadClient<T extends Asset<any, any>>(endpoint: string) {
   async function put(body: T['put']) {
     const fd = new FormData();
 
@@ -13,10 +12,10 @@ export function createUploadClient<T extends Asset<any, any>>(toast: ToastStore,
     const resp = await fetch(endpoint, {
       method: 'PUT',
       body: fd
-    }).catch(catcher(toast));
+    }).catch(toast.errorCatcher);
 
     if (!resp.ok) {
-      displayError(toast, await resp.json());
+      toast.error(await resp.text());
     }
   }
 
@@ -30,10 +29,10 @@ export function createUploadClient<T extends Asset<any, any>>(toast: ToastStore,
     const resp = await fetch(endpoint, {
       method: 'DELETE',
       body: fd
-    }).catch(catcher(toast));
+    }).catch(toast.errorCatcher);
 
     if (!resp.ok) {
-      displayError(toast, await resp.json());
+      toast.error(await resp.text());
     }
   }
 

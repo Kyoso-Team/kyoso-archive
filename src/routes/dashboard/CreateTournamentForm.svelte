@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { tournamentChecks } from '$lib/checks';
@@ -11,13 +10,9 @@
     rankRangeFormSchemas,
     tournamentTypeOptions
   } from '$lib/form/common';
-  import { createForm, loading } from '$lib/stores';
-  import { displayError } from '$lib/ui';
-  import { toastError, toastSuccess } from '$lib/utils';
-  import type { TRPCRouterOutputs } from '$lib/types';
+  import { createForm, loading, toast } from '$lib/stores';
 
   export let show: boolean;
-  const toast = getToastStore();
   const mainForm = createForm(baseTournamentFormSchemas);
   const teamForm = createForm(baseTeamSettingsFormSchemas);
   const rankRangeForm = createForm(rankRangeFormSchemas);
@@ -31,19 +26,16 @@
     const { acronym, name, type, urlSlug } = mainForm.getFinalValue($mainForm);
     const teamSettings = isTeamBased ? teamForm.getFinalValue($teamForm) : undefined;
     const rankRange = !isOpenRank ? rankRangeForm.getFinalValue($rankRangeForm) : undefined;
-    let tournament!: TRPCRouterOutputs['tournaments']['createTournament'];
-
     const err = tournamentChecks({ teamSettings, rankRange });
 
     if (err) {
-      toastError(toast, err);
+      toast.error(err);
       return;
     }
 
     loading.set(true);
-
-    try {
-      tournament = await trpc($page).tournaments.createTournament.mutate({
+    const tournament = await trpc($page)
+      .tournaments.createTournament.mutate({
         acronym,
         name,
         type,
@@ -60,21 +52,19 @@
               upper: rankRange.upper
             }
           : undefined
-      });
-    } catch (err) {
-      displayError(toast, err);
-    }
+      })
+      .catch(toast.errorCatcher);
 
     if (typeof tournament === 'string') {
       loading.set(false);
-      toastError(toast, tournament);
+      toast.error(tournament);
       return;
     }
 
     await goto(`/m/${tournament.urlSlug}`);
     show = false;
     loading.set(false);
-    toastSuccess(toast, 'Created tournament succcessfully');
+    toast.success('Created tournament succcessfully');
   }
 
   function cancel() {

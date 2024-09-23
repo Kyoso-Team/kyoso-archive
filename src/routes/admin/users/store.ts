@@ -2,9 +2,7 @@ import { get, writable } from 'svelte/store';
 import { pushState } from '$app/navigation';
 import { page } from '$app/stores';
 import { trpc } from '$lib/clients';
-import { loading } from '$lib/stores';
-import { displayError } from '$lib/ui';
-import type { ToastStore } from '@skeletonlabs/skeleton';
+import { loading, toast } from '$lib/stores';
 import type { Ban, User } from '$db';
 import type { TRPCRouterOutputs } from '$lib/types';
 
@@ -23,11 +21,7 @@ export interface Context {
   showRevokeBanForm: boolean;
 }
 
-export default function createContextStore(
-  toast: ToastStore,
-  ownerId: number,
-  isCurrentUserTheOwner: boolean
-) {
+export default function createContextStore(ownerId: number, isCurrentUserTheOwner: boolean) {
   const { subscribe, update } = writable<Context>({
     ctrl: false,
     showLookedUpUser: false,
@@ -43,21 +37,21 @@ export default function createContextStore(
     setShowLookedUpUser(true);
     loading.set(true);
 
-    try {
-      const lookedUpUser = await trpc(get(page)).users.getUser.query({
+    const lookedUpUser = await trpc(get(page))
+      .users.getUser.query({
         userId
+      })
+      .catch((err) => {
+        setShowLookedUpUser(false);
+        history.back();
+        return toast.errorCatcher(err);
       });
 
-      pushState(`/admin/user/${userId}`, {
-        adminUsersPage: {
-          lookedUpUser
-        }
-      });
-    } catch (err) {
-      setShowLookedUpUser(false);
-      history.back();
-      displayError(toast, err);
-    }
+    pushState(`/admin/user/${userId}`, {
+      adminUsersPage: {
+        lookedUpUser
+      }
+    });
 
     loading.set(false);
   }

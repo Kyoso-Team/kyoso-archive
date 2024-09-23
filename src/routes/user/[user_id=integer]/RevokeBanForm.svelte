@@ -1,17 +1,13 @@
 <script lang="ts">
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import { invalidate } from '$app/navigation';
   import { page } from '$app/stores';
   import { trpc } from '$lib/clients';
   import { Form, Text } from '$lib/components/form';
   import * as f from '$lib/form/validation';
-  import { createForm, loading } from '$lib/stores';
-  import { displayError } from '$lib/ui';
-  import { toastSuccess } from '$lib/utils';
+  import { createForm, loading, toast } from '$lib/stores';
 
   export let show: boolean;
   export let banId: number;
-  const toast = getToastStore();
   const form = createForm({
     revokeReason: f.pipe(f.string(), f.minStrLength(1))
   });
@@ -21,18 +17,16 @@
     const { revokeReason } = form.getFinalValue($form);
 
     loading.set(true);
-    try {
-      await trpc($page).users.revokeBan.mutate({
+    await trpc($page)
+      .users.revokeBan.mutate({
         banId,
         revokeReason
-      });
-    } catch (err) {
-      displayError(toast, err);
-    }
+      })
+      .catch(toast.errorCatcher);
 
     show = false;
     loading.set(false);
-    toastSuccess(toast, 'Revoked ban succcessfully');
+    toast.success('Revoked ban succcessfully');
     await invalidate('reload:user');
   }
 
