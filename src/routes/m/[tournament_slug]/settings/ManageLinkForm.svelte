@@ -1,11 +1,10 @@
 <script lang="ts">
   import { Link } from 'lucide-svelte';
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import { tournamentLinkChecks } from '$lib/checks';
   import { Form, Select, Text } from '$lib/components/form';
   import * as f from '$lib/form/validation';
-  import { createForm } from '$lib/stores';
-  import { keys, toastError } from '$lib/utils';
+  import { createForm, toast } from '$lib/stores';
+  import { keys } from '$lib/utils';
   import type { Tournament } from '$db';
   import type { TournamentLink } from '$lib/types';
 
@@ -13,7 +12,6 @@
   export let linksHaveUpdated: boolean;
   export let links: ((typeof Tournament.$inferSelect)['links'][number] & { id: string })[];
   export let editIndex: number | undefined = undefined;
-  const toast = getToastStore();
   const updating = editIndex !== undefined ? links[editIndex] : undefined;
   const iconOptions: Record<TournamentLink['icon'], string> = {
     challonge: 'Challonge',
@@ -53,7 +51,7 @@
     const err = tournamentLinkChecks(links, newLink);
 
     if (err) {
-      toastError(toast, err);
+      toast.error(err);
       return;
     }
 

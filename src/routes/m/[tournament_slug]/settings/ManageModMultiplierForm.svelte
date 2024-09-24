@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import { tournamentModMultiplierChecks } from '$lib/checks';
   import { Form, Number, Section, SelectMultiple } from '$lib/components/form';
   import * as f from '$lib/form/validation';
-  import { createForm } from '$lib/stores';
-  import { keys, toastError } from '$lib/utils';
+  import { createForm, toast } from '$lib/stores';
+  import { keys } from '$lib/utils';
   import type { Tournament } from '$db';
   import type { ModMultiplier } from '$lib/types';
 
@@ -13,7 +12,6 @@
   export let modMultipliers: (typeof Tournament.$inferSelect)['modMultipliers'];
   export let editIndex: number | undefined = undefined;
   let disabledMods: Partial<Record<ModMultiplier['mods'][number], boolean>> = {};
-  const toast = getToastStore();
   const updating = editIndex !== undefined ? modMultipliers[editIndex] : undefined;
   const modsOptions: Record<ModMultiplier['mods'][number], string> = {
     bl: 'Blinds (BL)',
@@ -79,7 +77,7 @@
     const err = tournamentModMultiplierChecks(modMultipliers, newModMultiplier);
 
     if (err) {
-      toastError(toast, err);
+      toast.error(err);
       return;
     }
 

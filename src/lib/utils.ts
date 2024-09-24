@@ -1,4 +1,3 @@
-import type { ToastStore } from '@skeletonlabs/skeleton';
 import type { StaffPermission } from '$db';
 import type { InferEnum, PaginationSettings, PopupSettings } from '$lib/types';
 
@@ -125,29 +124,6 @@ export function arraysHaveSameElements<T>(arr1: T[], arr2: T[]) {
 
 //   return color[value];
 // }
-
-export function toastSuccess(toast: ToastStore, message: string) {
-  toast.trigger({
-    message,
-    background: 'bg-success-500/10',
-    classes:
-      'relative border-l-4 border-success-500 text-white before:bg-surface-900 before:w-full before:h-full before:absolute before:inset-0 before:-z-[1] before:rounded-md',
-    hideDismiss: true,
-    timeout: 3000
-  });
-}
-
-export function toastError(toast: ToastStore, message: string) {
-  toast.trigger({
-    message,
-    background: 'bg-error-500/10',
-    classes:
-      'relative border-l-4 border-error-500 text-white before:bg-surface-900 before:w-full before:h-full before:absolute before:inset-0 before:-z-[1] before:rounded-md',
-    hideDismiss: true,
-    hoverable: true,
-    timeout: 3000
-  });
-}
 
 export function isDatePast(date: Date | number | null) {
   if (!date) return false;
