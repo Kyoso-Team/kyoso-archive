@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
-import { eq } from 'drizzle-orm';
-import { Country } from '$db';
-import { recordExists, truncateTables } from '$lib/server/queries';
+import { eq, sql } from 'drizzle-orm';
+import { Country, OsuUser } from '$db';
+import { getCount, recordExists, setSimilarityThreshold, truncateTables } from '$lib/server/queries';
 import { db } from '$lib/server/services';
+import { afterAll } from 'bun:test';
 
 describe('Abstracted SQL/Drizzle queries', () => {
   describe('recordExists', () => {
@@ -26,12 +27,73 @@ describe('Abstracted SQL/Drizzle queries', () => {
     });
   });
 
-  describe.skip('getCount', () => {
-    // TODO
+  describe('getCount', () => {
+    beforeEach(async () => {
+      await truncateTables(OsuUser, Country);
+
+      await db.insert(Country).values({
+        code: 'US',
+        name: 'United States'
+      });
+
+      const token = {
+        accesstoken: '',
+        refreshToken: '',
+        tokenIssuedAt: 0
+      };
+
+      await db.insert(OsuUser).values([
+        {
+          countryCode: 'US',
+          username: 'user 1',
+          osuUserId: 1,
+          restricted: false,
+          token
+        },
+        {
+          countryCode: 'US',
+          username: 'user 2',
+          osuUserId: 2,
+          restricted: true,
+          token
+        },
+        {
+          countryCode: 'US',
+          username: 'user 3',
+          osuUserId: 3,
+          restricted: false,
+          token
+        }
+      ]);
+    });
+
+    test('Basic count', async () => {
+      const count = await getCount(OsuUser);
+      expect(count).toBe(3);
+    });
+
+    test('Count with filter', async () => {
+      const count = await getCount(OsuUser, eq(OsuUser.restricted, false));
+      expect(count).toBe(2);
+    });
   });
 
-  describe.skip('setSimilarityThreshold', () => {
-    // TODO
+  describe('setSimilarityThreshold', () => {
+    afterAll(async () => {
+      await setSimilarityThreshold(0.3);
+    });
+
+    test('Set threshold: Use default', async () => {
+      await setSimilarityThreshold();
+      const threshold = await db.execute(sql`show pg_trgm.similarity_threshold;`).then((rows) => Object.values(rows[0])[0]);
+      expect(threshold).toBe('0.1');
+    });
+
+    test('Set threshold: Provide value', async () => {
+      await setSimilarityThreshold(0.7);
+      const threshold = await db.execute(sql`show pg_trgm.similarity_threshold;`).then((rows) => Object.values(rows[0])[0]);
+      expect(threshold).toBe('0.7');
+    });
   });
 
   describe.skip('getUserStaffHistory', () => {

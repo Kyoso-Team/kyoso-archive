@@ -16,7 +16,7 @@ import type { Assets } from '$lib/types';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, cookies, route, setHeaders }) => {
-  const params = await parseSearchParams('api', url, {
+  const params = parseSearchParams('api', url, {
     tournament_id: positiveIntSchema,
     file_id: fileIdSchema,
     public: v.optional(boolStringSchema),

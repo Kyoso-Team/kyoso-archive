@@ -3,16 +3,26 @@ import { env } from '$lib/server/env';
 import { catcher, error } from '$lib/server/error';
 import type { ErrorInside } from '$lib/types';
 
-export async function parseSearchParams<T extends Record<string, v.GenericSchema>>(
+export function parseSearchParams<T extends Record<string, v.GenericSchema>>(
   inside: ErrorInside,
   url: URL,
   schemas: T
-): Promise<{ [K in keyof T]: v.InferOutput<T[K]> }> {
+): { [K in keyof T]: v.InferOutput<T[K]> } {
   const data: Record<string, any> = {};
 
   for (const key in schemas) {
     const value = url.searchParams.get(key) || undefined;
-    const parsed = v.safeParse(schemas[key], !isNaN(Number(value)) ? Number(value) : value);
+    let coerced: any = value;
+
+    if (coerced?.match(/^\d+$/)) {
+      coerced = Number(coerced);
+    } else if (coerced === 'true') {
+      coerced = true;
+    } else if (coerced === 'false') {
+      coerced = false;
+    }
+
+    const parsed = v.safeParse(schemas[key], coerced);
 
     if (!parsed.success) {
       const issue = (v.flatten(parsed.issues).root || [])[0];
@@ -79,12 +89,14 @@ export function validateCronSecret(inside: ErrorInside, request: Request) {
   const header = request.headers.get('authorization');
 
   if (!header) {
-    error(inside, 'unauthorized', 'Authorization header is undefined');
+    error(inside, 'bad_request', 'Authorization header is undefined');
   }
 
-  const authorization = header.split(' ')[1];
+  const authorization = header.split(' ');
 
-  if (authorization[0] !== 'Cron' || authorization !== env.CRON_SECRET) {
+  if (authorization[0] !== 'Cron' || authorization[1] !== env.CRON_SECRET) {
     error(inside, 'bad_request', 'Invalid authorization header');
   }
+
+  return 'success';
 }

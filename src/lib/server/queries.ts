@@ -91,8 +91,8 @@ export async function getCount(table: AnyPgTable, where?: SQL) {
     .then(([{ count }]) => count);
 }
 
-export async function setSimilarityThreshold() {
-  return await db.execute(sql`set pg_trgm.similarity_threshold = 0.1`);
+export async function setSimilarityThreshold(value: number = 0.1) {
+  return await db.execute(sql`set pg_trgm.similarity_threshold = ${sql.raw(value.toString())};`);
 }
 
 /**
