@@ -1,31 +1,31 @@
 import { describe, test } from 'bun:test';
 
 describe('Server checks', () => {
-  test.skip('partialHasValues', () => {
+  test.todo('partialHasValues', () => {
     // TODO
   });
 
-  test.skip('userIsOwner', () => {
+  test.todo('userIsOwner', () => {
     // TODO
   });
 
-  test.skip('userIsAdmin', () => {
+  test.todo('userIsAdmin', () => {
     // TODO
   });
 
-  test.skip('userIsApprovedHost', () => {
+  test.todo('userIsApprovedHost', () => {
     // TODO
   });
 
-  test.skip('staffHasPermissions', () => {
+  test.todo('staffHasPermissions', () => {
     // TODO
   });
 
-  test.skip('tournamentNotDeleted', () => {
+  test.todo('tournamentNotDeleted', () => {
     // TODO
   });
 
-  test.skip('tournamentNotConcluded', () => {
+  test.todo('tournamentNotConcluded', () => {
     // TODO
   });
 });

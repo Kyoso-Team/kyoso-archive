@@ -1,15 +1,15 @@
 import { describe } from 'bun:test';
 
 describe('Auth helper functions', () => {
-  describe.skip('upsertDiscordUser', () => {
+  describe.todo('upsertDiscordUser', () => {
     // TODO
   });
 
-  describe.skip('upsertOsuUser', () => {
+  describe.todo('upsertOsuUser', () => {
     // TODO
   });
 
-  describe.skip('createSession', () => {
+  describe.todo('createSession', () => {
     // TODO
   });
 });

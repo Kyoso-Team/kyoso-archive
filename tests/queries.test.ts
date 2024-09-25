@@ -3,7 +3,6 @@ import { eq, sql } from 'drizzle-orm';
 import { Country, OsuUser } from '$db';
 import { getCount, recordExists, setSimilarityThreshold, truncateTables } from '$lib/server/queries';
 import { db } from '$lib/server/services';
-import { afterAll } from 'bun:test';
 
 describe('Abstracted SQL/Drizzle queries', () => {
   describe('recordExists', () => {
@@ -79,7 +78,7 @@ describe('Abstracted SQL/Drizzle queries', () => {
   });
 
   describe('setSimilarityThreshold', () => {
-    afterAll(async () => {
+    beforeEach(async () => {
       await setSimilarityThreshold(0.3);
     });
 
@@ -96,11 +95,11 @@ describe('Abstracted SQL/Drizzle queries', () => {
     });
   });
 
-  describe.skip('getUserStaffHistory', () => {
+  describe.todo('getUserStaffHistory', () => {
     // TODO
   });
 
-  describe.skip('getUserPlayerHistory', () => {
+  describe.todo('getUserPlayerHistory', () => {
     // TODO
   });
 });

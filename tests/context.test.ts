@@ -1,15 +1,15 @@
 import { describe } from 'bun:test';
 
 describe('API and tRPC Context helper functions', () => {
-  describe.skip('getSession', () => {
+  describe.todo('getSession', () => {
     // TODO
   });
 
-  describe.skip('getStaffMember', () => {
+  describe.todo('getStaffMember', () => {
     // TODO
   });
 
-  describe.skip('getTournament', () => {
+  describe.todo('getTournament', () => {
     // TODO
   });
 });

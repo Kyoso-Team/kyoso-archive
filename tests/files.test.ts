@@ -1,7 +1,7 @@
 import { describe } from 'bun:test';
 
 describe('File manipulation functions', () => {
-  describe.skip('transformFile', () => {
+  describe.todo('transformFile', () => {
     // TODO
   });
 });

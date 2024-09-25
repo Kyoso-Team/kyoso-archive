@@ -10,19 +10,19 @@ describe('Formatting functions', () => {
     expect([a, b, c]).toEqual(['100', '3,902,901', '2,500.12']);
   });
 
-  test.skip('formatDate', () => {
+  test.todo('formatDate', () => {
     // TODO
   });
 
-  test.skip('formatTime', () => {
+  test.todo('formatTime', () => {
     // TODO
   });
 
-  test.skip('formatDigits', () => {
+  test.todo('formatDigits', () => {
     // TODO
   });
 
-  test.skip('fillDateDigits', () => {});
+  test.todo('fillDateDigits', () => {});
 
-  test.skip('dateToHtmlInput', () => {});
+  test.todo('dateToHtmlInput', () => {});
 });

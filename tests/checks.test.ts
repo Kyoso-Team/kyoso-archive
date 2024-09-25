@@ -1,43 +1,43 @@
 import { describe } from 'bun:test';
 
 describe('Checks', () => {
-  describe.skip('tournamentChecks', () => {
+  describe.todo('tournamentChecks', () => {
     // TODO
   });
 
-  describe.skip('tournamentDatesChecks', () => {
+  describe.todo('tournamentDatesChecks', () => {
     // TODO
   });
 
-  describe.skip('tournamentOtherDatesChecks', () => {
+  describe.todo('tournamentOtherDatesChecks', () => {
     // TODO
   });
 
-  describe.skip('tournamentOtherDateChecks', () => {
+  describe.todo('tournamentOtherDateChecks', () => {
     // TODO
   });
 
-  describe.skip('tournamentLinksChecks', () => {
+  describe.todo('tournamentLinksChecks', () => {
     // TODO
   });
 
-  describe.skip('tournamentLinkChecks', () => {
+  describe.todo('tournamentLinkChecks', () => {
     // TODO
   });
 
-  describe.skip('tournamentModMultipliersChecks', () => {
+  describe.todo('tournamentModMultipliersChecks', () => {
     // TODO
   });
 
-  describe.skip('tournamentModMultiplierChecks', () => {
+  describe.todo('tournamentModMultiplierChecks', () => {
     // TODO
   });
 
-  describe.skip('userFormFieldsChecks', () => {
+  describe.todo('userFormFieldsChecks', () => {
     // TODO
   });
 
-  describe.skip('userFormFieldChecks', () => {
+  describe.todo('userFormFieldChecks', () => {
     // TODO
   });
 });
