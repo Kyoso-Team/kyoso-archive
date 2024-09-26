@@ -165,7 +165,7 @@
   <li class="crumb-separator" aria-hidden>&rsaquo;</li>
   <li class="crumb">Assets</li>
 </ol>
-<main class="main flex justify-center items-center h-full">
+<main class="main justify-center items-center h-full">
   <div class="flex gap-4 max-2sm:flex-col flex-wrap justify-center h-max max-w-5xl">
     <Asset
       label="Logo"

@@ -23,10 +23,10 @@
 </script>
 
 <SEO page={$page} title="Admin" description="Admin dashboard" noIndex />
-<main class="main flex justify-center">
-  <div class="w-full max-w-5xl">
+<main class="main justify-center">
+  <div class="page-content">
     <h1>Admin Panel</h1>
-    <div class="line-b mt-4 mb-8" />
+    <div class="line-b" />
     <div class="grid sm:w-[calc(100%-1rem)] sm:grid-cols-[50%_50%] gap-4">
       {#each links as { label, href, icon }}
         <a

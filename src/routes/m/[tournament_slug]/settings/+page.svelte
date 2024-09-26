@@ -635,8 +635,8 @@
   <li class="crumb-separator" aria-hidden>&rsaquo;</li>
   <li class="crumb">Settings</li>
 </ol>
-<main class="main flex justify-center">
-  <div class="w-full max-w-5xl">
+<main class="main justify-center">
+  <div class="page-content">
     <section>
       <h2>General Settings</h2>
       <div class="mt-4 w-full card p-4 flex flex-col gap-4">
@@ -789,7 +789,7 @@
         onReset={resetGeneralSettings}
       />
     </section>
-    <div class="line-b my-8" />
+    <div class="line-b" />
     <section>
       <h2>Dates</h2>
       <div class="mt-4 w-full card p-4 flex flex-col gap-4">
@@ -879,7 +879,7 @@
         onAdd={onCreateOtherDate}
       />
     </section>
-    <div class="line-b my-8" />
+    <div class="line-b" />
     <section>
       <h2>Links</h2>
       <span class="text-warning-500 mt-2 block"
@@ -920,7 +920,7 @@
         onAdd={onCreateLink}
       />
     </section>
-    <div class="line-b my-8" />
+    <div class="line-b" />
     <section>
       <h2>Referee Settings</h2>
       <div class="mt-4 w-full card p-4 flex flex-col gap-4">
@@ -1019,7 +1019,7 @@
         onReset={resetRefereeSettings}
       />
     </section>
-    <div class="line-b my-8" />
+    <div class="line-b" />
     <section>
       <h2>Mod Multipliers</h2>
       <span class="text-warning-500 mt-2 block"

@@ -30,4 +30,4 @@
   <li class="crumb-separator" aria-hidden>&rsaquo;</li>
   <li class="crumb">Rules</li>
 </ol>
-<main class="main flex justify-center items-center h-full"></main>
+<main class="main justify-center items-center h-full"></main>

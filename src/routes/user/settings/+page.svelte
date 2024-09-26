@@ -141,10 +141,10 @@
     </Modal>
   </Backdrop>
 {/if}
-<main class="main flex justify-center">
-  <div class="w-full max-w-5xl">
+<main class="main justify-center">
+  <div class="page-content">
     <h1>User Settings</h1>
-    <div class="line-b mt-4 mb-8" />
+    <div class="line-b" />
     <section>
       <h2>Linked Accounts</h2>
       <p class="mt-2">The accounts linked to your Kyoso profile.</p>
@@ -176,7 +176,7 @@
         </div>
       </div>
     </section>
-    <div class="line-b my-8" />
+    <div class="line-b" />
     <section>
       <h2>API Key</h2>
       <p class="mt-2 mb-4">
@@ -227,7 +227,7 @@
         </button>
       {/if}
     </section>
-    <div class="line-b my-8" />
+    <div class="line-b" />
     <section>
       <h2>Privacy</h2>
       <div class="card mt-4 grid w-full md:grid-cols-[50%_50%] gap-4 p-4">
@@ -254,7 +254,7 @@
         onReset={resetPrivacySettings}
       />
     </section>
-    <div class="line-b my-8" />
+    <div class="line-b" />
     <section>
       <h2>Sessions</h2>
       <p class="text-surface-600-300-token text-sm mt-2">Some details may be inaccurate.</p>

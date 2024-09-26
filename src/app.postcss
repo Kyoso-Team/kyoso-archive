@@ -26,15 +26,15 @@ h3 {
 }
 
 h1:not(.m-title) {
-  @apply text-3xl font-medium leading-10;
+  @apply text-3xl font-semibold leading-10;
 }
 
 h2 {
-  @apply text-2xl font-medium leading-8;
+  @apply text-2xl font-semibold leading-8;
 }
 
 h3 {
-  @apply text-xl font-medium leading-7;
+  @apply text-xl font-semibold leading-7;
 }
 
 strong {
@@ -74,10 +74,6 @@ strong {
   font-family: 'VioletSans Regular';
 }
 
-.main {
-  @apply p-4 sm:p-8 md:p-12;
-}
-
 .modal {
   @apply card p-8 m-auto shadow-md relative;
 }
@@ -108,40 +104,4 @@ strong {
 
 .form .title {
   @apply inline-block font-medium text-2xl;
-}
-
-.line {
-  @apply border-surface-300 dark:border-surface-700;
-}
-
-.line-t {
-  @apply border-t line;
-}
-
-.line-r {
-  @apply border-r line;
-}
-
-.line-b {
-  @apply border-b line;
-}
-
-.line-l {
-  @apply border-l line;
-}
-
-.variant-soft-indigo {
-  @apply variant-soft dark:text-indigo-200 text-indigo-700 dark:bg-indigo-500/20 bg-indigo-400/20;
-}
-
-.variant-soft-blue {
-  @apply variant-soft dark:text-blue-200 text-blue-700 dark:bg-blue-500/20 bg-blue-400/20;
-}
-
-.variant-soft-teal {
-  @apply variant-soft dark:text-teal-200 text-teal-700 dark:bg-teal-500/20 bg-teal-400/20;
-}
-
-.variant-soft-red {
-  @apply variant-soft dark:text-red-200 text-red-700 dark:bg-red-500/20 bg-red-400/20;
 }

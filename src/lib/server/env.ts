@@ -4,7 +4,7 @@ import { serverEnvSchema } from '$lib/validation';
 
 const serverEnv = {
   ...clientEnv,
-  NODE_ENV: process.env.NODE_ENV === 'test' ? 'development' : 'production',
+  NODE_ENV: process.env.NODE_ENV === 'test' ? 'development' : process.env.NODE_ENV,
   TEST_ENV:
     process.env.NODE_ENV === 'test'
       ? 'automatic'

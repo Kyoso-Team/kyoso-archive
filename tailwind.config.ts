@@ -2,6 +2,7 @@ import { join } from 'path';
 import { skeleton } from '@skeletonlabs/tw-plugin';
 import forms from '@tailwindcss/forms';
 import { theme } from './src/theme';
+import { customStyles } from './src/tailwind.utils';
 import type { Config } from 'tailwindcss';
 
 export default {
@@ -20,5 +21,5 @@ export default {
       }
     }
   },
-  plugins: [forms, skeleton({ themes: { custom: [theme] } })]
+  plugins: [forms, skeleton({ themes: { custom: [theme] } }), customStyles]
 } satisfies Config;

@@ -256,10 +256,10 @@
     <LookedUpUser {ctx} />
   </Backdrop>
 {/if}
-<main class="main flex justify-center">
-  <div class="w-full max-w-5xl">
+<main class="main justify-center">
+  <div class="page-content">
     <h1>Manage Users</h1>
-    <div class="line-b mt-4 mb-8" />
+    <div class="line-b" />
     <h2>Users</h2>
     <p class="my-4">
       There {data.counts.total === 1 ? 'is 1 user' : `are ${formatNumber(data.counts.total)} users`}
@@ -297,7 +297,7 @@
       </div>
     </div>
     {#each userTypes as { description, nonFoundDescription, type, typeLabel, users: userList }}
-      <div class="line-b my-8" />
+      <div class="line-b" />
       <h2>{typeLabel}</h2>
       {#if userList.length === 0}
         <p class="mt-2">{nonFoundDescription}</p>

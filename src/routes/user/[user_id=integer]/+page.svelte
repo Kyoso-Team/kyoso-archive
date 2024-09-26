@@ -237,10 +237,10 @@
     <RevokeBanForm banId={data.user.activeBan?.id || 0} bind:show={showRevokeBanForm} />
   </Backdrop>
 {/if}
-<main class="main flex justify-center">
-  <div class="w-full max-w-5xl">
+<main class="main justify-center">
+  <div class="page-content">
     <h1>User Profile</h1>
-    <div class="line-b mt-4 mb-8" />
+    <div class="line-b" />
     <section>
       <div class="card p-4 flex flex-col gap-4">
         <div class="flex gap-4">
@@ -367,7 +367,7 @@
         {/if}
       </div>
     </section>
-    <div class="line-b my-8" />
+    <div class="line-b" />
     <section>
       <h2>Bans</h2>
       <div class="card p-4 flex flex-col gap-4 mt-4">
