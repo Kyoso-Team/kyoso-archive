@@ -103,18 +103,20 @@
         ? `${session.browser.name} ${session.browser.version}`
         : 'Unknown browser'})
     </span>
-    <span class="text-surface-600-300-token text-xs">
+    <span class="text-sidenote">
       {session.ipMetadata.city}, {session.ipMetadata.region}, {session.ipMetadata.country}
     </span>
   </div>
-  <div class="flex gap-2 xs:justify-end mt-4 xs:mt-0 w-full">
-    <button class="btn-icon variant-filled" on:click={toggleShowMore}>
-      <Info size={20} />
-    </button>
-    {#if !current}
-      <button class="btn-icon variant-filled-error" on:click={toggleEndSessionPrompt}>
-        <X size={20} />
+  <div class="flex xs:justify-end items-center mt-4 xs:mt-0 w-full">
+    <div class="flex gap-2 h-max">
+      <button class="btn-icon variant-filled" on:click={toggleShowMore}>
+        <Info size={20} />
       </button>
-    {/if}
+      {#if !current}
+        <button class="btn-icon variant-filled-error" on:click={toggleEndSessionPrompt}>
+          <X size={20} />
+        </button>
+      {/if}
+    </div>
   </div>
 </div>

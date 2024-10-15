@@ -12,7 +12,7 @@
   } from '$lib/form/common';
   import { createForm, loading, toast } from '$lib/stores';
 
-  export let show: boolean;
+  export let hide: () => void;
   const mainForm = createForm(baseTournamentFormSchemas);
   const teamForm = createForm(baseTeamSettingsFormSchemas);
   const rankRangeForm = createForm(rankRangeFormSchemas);
@@ -29,8 +29,7 @@
     const err = tournamentChecks({ teamSettings, rankRange });
 
     if (err) {
-      toast.error(err);
-      return;
+      return toast.error(err);
     }
 
     loading.set(true);
@@ -56,19 +55,12 @@
       .catch(toast.errorCatcher);
 
     if (typeof tournament === 'string') {
-      loading.set(false);
-      toast.error(tournament);
-      return;
+      return toast.error(tournament);
     }
 
-    await goto(`/m/${tournament.urlSlug}`);
-    show = false;
-    loading.set(false);
+    hide();
     toast.success('Created tournament succcessfully');
-  }
-
-  function cancel() {
-    show = false;
+    await goto(`/m/${tournament.urlSlug}`);
   }
 
   $: isTeamBased = ['teams', 'draft'].includes($mainForm.value.type as any);
@@ -119,6 +111,6 @@
         (!isOpenRank ? $rankRangeForm.canSubmit : true)
       )}>Submit</button
     >
-    <button type="button" class="btn variant-filled" on:click={cancel}>Cancel</button>
+    <button type="button" class="btn variant-filled" on:click={hide}>Cancel</button>
   </svelte:fragment>
 </Form>

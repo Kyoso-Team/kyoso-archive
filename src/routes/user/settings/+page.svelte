@@ -6,17 +6,17 @@
   import { page } from '$app/stores';
   import { trpc } from '$lib/clients';
   import { Checkbox } from '$lib/components/form';
-  import { FormHandler, SEO } from '$lib/components/general';
+  import { SEO, Warning } from '$lib/components/general';
   import { Discord, Osu } from '$lib/components/icons';
   import { Backdrop, Modal } from '$lib/components/layout';
   import * as f from '$lib/form/validation';
-  import { createForm, loading, toast } from '$lib/stores';
+  import { createForm, createToggle, loading, toast } from '$lib/stores';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
-  let showChangeDiscordPrompt = false;
-  let showGenerateApiKeyPrompt = false;
-  let viewApiKey = false;
+  const showChangeDiscordPrompt = createToggle(false);
+  const showGenerateApiKeyPrompt = createToggle(false);
+  const showApiKey = createToggle(false);
   const privacyForm = createForm(
     {
       publicDiscord: f.boolean(),
@@ -25,18 +25,7 @@
     },
     privacyFormInitialValues()
   );
-
-  function toggleChangeDiscordPrompt() {
-    showChangeDiscordPrompt = !showChangeDiscordPrompt;
-  }
-
-  function toggleGenerateApiKeyPrompt() {
-    showGenerateApiKeyPrompt = !showGenerateApiKeyPrompt;
-  }
-
-  function toggleApiKeyVisibility() {
-    viewApiKey = !viewApiKey;
-  }
+  const labels = privacyForm.labels;
 
   async function copyApiKey() {
     await navigator.clipboard.writeText(data.user.apiKey || '');
@@ -48,24 +37,18 @@
     await trpc($page).users.resetApiKey.mutate().catch(toast.errorCatcher);
 
     await invalidate('reload:user_settings');
-    showGenerateApiKeyPrompt = false;
-    loading.set(false);
-
+    showGenerateApiKeyPrompt.set(false);
     toast.success('Generated new API key successfully');
   }
 
   function privacyFormInitialValues() {
-    return {
-      publicDiscord: data.user.settings.publicDiscord,
-      publicStaffHistory: data.user.settings.publicStaffHistory,
-      publicPlayerHistory: data.user.settings.publicPlayerHistory
-    };
+    return data.user.settings;
   }
 
   async function updatePrivacySettings() {
+    loading.set(true);
     const { publicDiscord, publicPlayerHistory, publicStaffHistory } =
       privacyForm.getFinalValue($privacyForm);
-    loading.set(true);
 
     await trpc($page)
       .users.updateSelf.mutate({
@@ -78,7 +61,6 @@
       .catch(toast.errorCatcher);
 
     await invalidate('reload:user_settings');
-    loading.set(false);
     privacyForm.overrideInitialValues(privacyFormInitialValues());
     toast.success('Updated privacy settings successfully');
   }
@@ -97,14 +79,12 @@
 
     data.activeSessions = data.activeSessions.filter((session) => session.id !== sessionId);
     data = Object.assign({}, data);
-
-    loading.set(false);
     toast.success('Session deleted successfully');
   }
 </script>
 
 <SEO page={$page} title="User Settings" description="Update your user settings" noIndex />
-{#if showChangeDiscordPrompt}
+{#if $showChangeDiscordPrompt}
   <Backdrop>
     <Modal>
       <span class="title">Change Discord Account</span>
@@ -115,12 +95,12 @@
           href={`/api/auth/change_discord?redirect_uri=${encodeURI($page.url.toString())}`}
           >Change Discord</a
         >
-        <button class="btn variant-filled" on:click={toggleChangeDiscordPrompt}>Cancel</button>
+        <button class="btn variant-filled" on:click={showChangeDiscordPrompt.false$}>Cancel</button>
       </div>
     </Modal>
   </Backdrop>
 {/if}
-{#if showGenerateApiKeyPrompt}
+{#if $showGenerateApiKeyPrompt}
   <Backdrop>
     <Modal>
       {#if data.user.apiKey}
@@ -136,7 +116,7 @@
       {/if}
       <div class="actions">
         <button class="btn variant-filled-primary" on:click={generateApiKey}>Generate</button>
-        <button class="btn variant-filled" on:click={toggleGenerateApiKeyPrompt}>Cancel</button>
+        <button class="btn variant-filled" on:click={showGenerateApiKeyPrompt.false$}>Cancel</button>
       </div>
     </Modal>
   </Backdrop>
@@ -147,9 +127,9 @@
     <div class="line-b" />
     <section>
       <h2>Linked Accounts</h2>
-      <p class="mt-2">The accounts linked to your Kyoso profile.</p>
-      <div class="gap-4 mt-4 grid 2md:w-[calc(100%-1rem)] 2md:grid-cols-[50%_50%]">
-        <div class="card p-4 w-full flex items-center relative">
+      <p>The accounts linked to your Kyoso profile.</p>
+      <div class="gap-2 grid 2md:w-[calc(100%-1rem)] 2md:grid-cols-[50%_50%]">
+        <div class="card flex items-center relative">
           <div class="mr-4">
             <Osu w={48} h={48} class="fill-black dark:fill-white" />
           </div>
@@ -158,7 +138,7 @@
             <span class="text-xs xs:text-sm"><strong>User ID:</strong> {data.session.osu.id}</span>
           </div>
         </div>
-        <div class="card p-4 w-full flex items-center relative">
+        <div class="card flex items-center relative">
           <div class="mr-4">
             <Discord w={48} h={48} class="fill-black dark:fill-white" />
           </div>
@@ -169,7 +149,7 @@
             >
           </div>
           <div class="absolute top-0 right-4 h-full flex items-center">
-            <button class="btn-icon variant-filled" on:click={toggleChangeDiscordPrompt}>
+            <button class="btn-icon variant-filled" on:click={showChangeDiscordPrompt.toggle}>
               <Pencil size={20} />
             </button>
           </div>
@@ -179,18 +159,18 @@
     <div class="line-b" />
     <section>
       <h2>API Key</h2>
-      <p class="mt-2 mb-4">
+      <p>
         <!-- TODO: Link anchor to docs-->
         This key allows you to make requests to the <a href="/" class="link">Kyoso API</a>.
         {#if data.user.apiKey}
-          <span class="text-error-500">DO NOT SHARE THIS KEY WITH ANYONE.</span>
+          <strong class="text-error-500">DO NOT SHARE THIS KEY WITH ANYONE.</strong>
         {:else}
           <span>Start by creating your first key.</span>
         {/if}
       </p>
       {#if data.user.apiKey}
-        <div class="p-4 card flex max-2sm:flex-col gap-4 relative">
-          {#if viewApiKey}
+        <div class="card flex max-2sm:flex-col relative">
+          {#if $showApiKey}
             <input
               type="text"
               class="input w-full md:w-80"
@@ -206,8 +186,8 @@
             />
           {/if}
           <div class="flex gap-2 md:absolute md:top-0 md:right-4 h-full items-center">
-            <button class="btn-icon variant-filled" on:click={toggleApiKeyVisibility}>
-              {#if viewApiKey}
+            <button class="btn-icon variant-filled" on:click={showApiKey.toggle}>
+              {#if $showApiKey}
                 <EyeOff size={20} />
               {:else}
                 <Eye size={20} />
@@ -216,49 +196,71 @@
             <button class="btn-icon variant-filled" on:click={copyApiKey}>
               <Copy size={20} />
             </button>
-            <button class="btn-icon variant-filled-primary" on:click={toggleGenerateApiKeyPrompt}>
+            <button class="btn-icon variant-filled-primary" on:click={showGenerateApiKeyPrompt.true$}>
               <RotateCcw size={20} />
             </button>
           </div>
         </div>
       {:else}
-        <button class="btn variant-filled-primary" on:click={toggleGenerateApiKeyPrompt}>
-          Generate Key
-        </button>
+        <div>
+          <button class="btn variant-filled-primary" on:click={showGenerateApiKeyPrompt.true$}>
+            Generate Key
+          </button>
+        </div>
       {/if}
     </section>
     <div class="line-b" />
     <section>
       <h2>Privacy</h2>
-      <div class="card mt-4 grid w-full md:grid-cols-[50%_50%] gap-4 p-4">
+      <p>Control the visibility and obtainability of certain details about your profile.</p>
+      <div class="card flex flex-col">
         <Checkbox
           form={privacyForm}
-          label={privacyForm.labels.publicDiscord}
-          legend="Make your Discord username public on your profile?"
-        />
+          label={labels.publicDiscord}
+          legend="Public Discord username?"
+        >
+          If enabled, everyone will be able to see your Discord username on your profile; otherwise, only you, website admins and tournament hosts and admins will be able to see it.
+        </Checkbox>
         <Checkbox
           form={privacyForm}
-          label={privacyForm.labels.publicPlayerHistory}
-          legend="Make your playing history public?"
-        />
+          label={labels.publicPlayerHistory}
+          legend="Public player history?"
+        >
+          If enabled, everyone will be able to see your player history on your profile; otherwise, only you will be able to see it.
+        </Checkbox>
         <Checkbox
           form={privacyForm}
-          label={privacyForm.labels.publicStaffHistory}
-          legend="Make your staffing history public?"
-        />
+          label={labels.publicStaffHistory}
+          legend="Public staff history?"
+        >
+          If enabled, everyone will be able to see your player history on your profile; otherwise, only you will be able to see it.
+        </Checkbox>
       </div>
-      <FormHandler
-        hasUpdated={$privacyForm.hasUpdated}
-        onUpdate={updatePrivacySettings}
-        disableUpdateBtn={!($privacyForm.hasUpdated && $privacyForm.canSubmit)}
-        onReset={resetPrivacySettings}
-      />
+      <div class="mt-4 relative">
+        <div class="flex w-full gap-2">
+          <button class="btn variant-filled-primary" disabled={!($privacyForm.hasUpdated && $privacyForm.canSubmit)} on:click={updatePrivacySettings}
+            >Update</button
+          >
+          <button
+            class="btn variant-filled hidden 2md:block"
+            disabled={!$privacyForm.hasUpdated}
+            on:click={resetPrivacySettings}
+          >
+            Reset
+          </button>
+        </div>
+        <div class="absolute -top-[9px] right-0">
+          <Warning show={$privacyForm.hasUpdated}>
+            You have unsaved changes.
+          </Warning>
+        </div>
+      </div>
     </section>
     <div class="line-b" />
     <section>
       <h2>Sessions</h2>
-      <p class="text-surface-600-300-token text-sm mt-2">Some details may be inaccurate.</p>
-      <div class="mt-4 flex flex-col gap-2">
+      <p>A list of sessions that are currently active. Some details about them may be inaccurate.</p>
+      <div class="flex flex-col gap-2">
         {#each data.activeSessions as session}
           <div transition:slide|global={{ duration: 150 }}>
             <Session {session} {deleteSession} current={data.session.sessionId === session.id} />

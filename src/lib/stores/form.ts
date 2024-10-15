@@ -108,6 +108,7 @@ export function createForm<
 
   function reset() {
     form.update(({ defaults }) => {
+      const { value } = formInit(formSchema, defaults);
       const newForm = {
         value,
         defaults,

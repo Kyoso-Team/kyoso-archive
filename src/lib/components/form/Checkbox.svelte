@@ -32,12 +32,7 @@
       <NotAllowed inputLabel={label} tooltipLabel={notAllowedMsg} />
     {/if}
   </div>
-  {#if $$slots.default}
-    <p class="inline-block my-2 text-sm text-surface-600-300-token">
-      <slot />
-    </p>
-  {/if}
-  <div class="flex items-center gap-2 !mt-0">
+  <div class="grid grid-cols-[min-content_1fr] items-center gap-x-2 !mt-0">
     <input
       type="checkbox"
       class="checkbox disabled:opacity-50 disabled:cursor-not-allowed duration-150"
@@ -45,6 +40,12 @@
       bind:checked={value}
     />
     <legend>{legend}</legend>
+    <div />
+    {#if $$slots.default}
+      <p class="inline-block text-sidenote">
+        <slot />
+      </p>
+    {/if}
   </div>
   {#if $$slots.preview}
     <span class="block text-xs text-primary-500">

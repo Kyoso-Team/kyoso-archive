@@ -7,22 +7,19 @@
   import { Backdrop } from '$lib/components/layout';
   import { popup } from '$lib/popup';
   import { tooltip } from '$lib/utils';
+  import { createToggle } from '$lib/stores';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
-  let showForm = false;
+  const showForm = createToggle(false);
   const tooltips = {
     notApprovedHost: 'tooltip-not-approved-host'
   };
-
-  function toggleShowForm() {
-    showForm = !showForm;
-  }
 </script>
 
-{#if showForm}
+{#if $showForm}
   <Backdrop>
-    <CreateTournamentForm bind:show={showForm} />
+    <CreateTournamentForm bind:hide={showForm.false$} />
   </Backdrop>
 {/if}
 <SEO page={$page} title="Dashboard" description="User dashboard" noIndex />
@@ -63,7 +60,7 @@
   <div class="w-full line-t p-4">
     <button
       class="btn variant-filled-primary w-full [&>*]:pointer-events-none"
-      on:click={toggleShowForm}
+      on:click={showForm.true$}
       use:popup={tooltip(tooltips.notApprovedHost)}
       disabled={!data.session.approvedHost}>Create Tournament</button
     >

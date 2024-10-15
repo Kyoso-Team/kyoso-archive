@@ -199,8 +199,8 @@ export async function createSession(
     .insert(Session)
     .values({
       userId,
-      ipAddress,
       userAgent,
+      ipAddress: env.NODE_ENV === 'production' ? ipAddress : '127.0.0.1',
       ipMetadata: {
         city: ipMeta.city,
         region: ipMeta.region,

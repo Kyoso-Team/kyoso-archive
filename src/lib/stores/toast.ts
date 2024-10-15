@@ -91,10 +91,12 @@ export function createToast() {
   }
 
   function success(message: string) {
+    loading.set(false);
     add({ message, type: 'success' });
   }
 
   function error(message: string) {
+    loading.set(false);
     add({ message, type: 'error' });
   }
 
