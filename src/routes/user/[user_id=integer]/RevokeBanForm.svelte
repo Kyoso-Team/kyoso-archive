@@ -6,7 +6,7 @@
   import * as f from '$lib/form/validation';
   import { createForm, loading, toast } from '$lib/stores';
 
-  export let show: boolean;
+  export let hide: () => void;
   export let banId: number;
   const form = createForm({
     revokeReason: f.pipe(f.string(), f.minStrLength(1))
@@ -24,14 +24,9 @@
       })
       .catch(toast.errorCatcher);
 
-    show = false;
-    loading.set(false);
-    toast.success('Revoked ban succcessfully');
+    hide();
     await invalidate('reload:user');
-  }
-
-  function cancel() {
-    show = false;
+    toast.success('Revoked ban succcessfully');
   }
 </script>
 
@@ -46,6 +41,6 @@
     <button type="submit" class="btn variant-filled-primary" disabled={!$form.canSubmit}
       >Submit</button
     >
-    <button type="button" class="btn variant-filled" on:click={cancel}>Cancel</button>
+    <button type="button" class="btn variant-filled" on:click={hide}>Cancel</button>
   </svelte:fragment>
 </Form>

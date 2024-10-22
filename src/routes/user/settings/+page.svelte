@@ -6,7 +6,7 @@
   import { page } from '$app/stores';
   import { trpc } from '$lib/clients';
   import { Checkbox } from '$lib/components/form';
-  import { SEO, Warning } from '$lib/components/general';
+  import { SEO, Note } from '$lib/components/general';
   import { Discord, Osu } from '$lib/components/icons';
   import { Backdrop, Modal } from '$lib/components/layout';
   import * as f from '$lib/form/validation';
@@ -250,9 +250,9 @@
           </button>
         </div>
         <div class="absolute -top-[9px] right-0">
-          <Warning show={$privacyForm.hasUpdated}>
+          <Note type="warning" show={$privacyForm.hasUpdated}>
             You have unsaved changes.
-          </Warning>
+          </Note>
         </div>
       </div>
     </section>

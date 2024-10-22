@@ -7,59 +7,27 @@
   import { invalidate } from '$app/navigation';
   import { page } from '$app/stores';
   import { trpc } from '$lib/clients';
-  import { SEO, Tooltip } from '$lib/components/general';
+  import { SEO, Tooltip, Note } from '$lib/components/general';
   import { Discord, OsuCatch, OsuMania, OsuStandard, OsuTaiko } from '$lib/components/icons';
   import { Backdrop, Modal } from '$lib/components/layout';
   import { formatDate, formatNumber } from '$lib/format';
   import { popup } from '$lib/popup';
-  import { loading, toast } from '$lib/stores';
+  import { createToggle, loading, toast } from '$lib/stores';
   import { tooltip } from '$lib/utils';
-  import type { SvelteComponent } from 'svelte';
   import type { TRPCRouterOutputs } from '$lib/types';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
-  let showBanUserModal = false;
-  let showRevokeBanModal = false;
-  let showBanUserForm = false;
-  let showRevokeBanForm = false;
   let procedure:
     | keyof Pick<
         TRPCRouterOutputs['users'],
         'makeAdmin' | 'removeAdmin' | 'makeApprovedHost' | 'removeApprovedHost'
       >
     | undefined;
-  let kyosoBadges: {
-    label: string;
-    description: string;
-    tooltipName: string;
-    variant: string;
-    show: boolean;
-  }[] = [];
-  let rankings: {
-    label: string;
-    tooltipName: string;
-    rank: number | null;
-    icon: typeof SvelteComponent<any>;
-  }[] = [];
-
-  function viewAsAdmin(
-    user: typeof data.user
-  ): user is Extract<typeof data.user, { viewAsAdmin: true }> {
-    return user.viewAsAdmin;
-  }
-
-  function viewAsCurrent(
-    user: typeof data.user
-  ): user is Extract<typeof data.user, { isCurrent: true }> {
-    return user.isCurrent;
-  }
-
-  function viewAsPublicDiscord(
-    user: typeof data.user
-  ): user is Extract<typeof data.user, { settings: { publicDiscord: true } }> {
-    return user.settings.publicDiscord;
-  }
+  const showBanUserModal = createToggle(false);
+  const showRevokeBanModal = createToggle(false);
+  const showBanUserForm = createToggle(false);
+  const showRevokeBanForm = createToggle(false);
 
   async function updateUser() {
     if (!procedure) return;
@@ -73,7 +41,6 @@
 
     await invalidate('reload:user');
     procedure = undefined;
-    loading.set(false);
     toast.success('Updated user successfully');
   }
 
@@ -97,22 +64,14 @@
     procedure = undefined;
   }
 
-  function toggleShowBanUserModal() {
-    showBanUserModal = !showBanUserModal;
-  }
-
-  function toggleShowRevokeBanModal() {
-    showRevokeBanModal = !showRevokeBanModal;
-  }
-
   function toggleShowBanUserForm() {
-    showBanUserForm = !showBanUserForm;
-    showBanUserModal = false;
+    showBanUserForm.toggle();
+    showBanUserModal.false$();
   }
 
   function toggleShowRevokeBanForm() {
-    showRevokeBanForm = !showRevokeBanForm;
-    showRevokeBanModal = false;
+    showRevokeBanForm.toggle();
+    showRevokeBanModal.false$();
   }
 
   $: kyosoBadges = [
@@ -197,7 +156,7 @@
     </Modal>
   </Backdrop>
 {/if}
-{#if showBanUserModal}
+{#if $showBanUserModal}
   <Backdrop>
     <Modal>
       <span class="title">Ban User</span>
@@ -207,12 +166,12 @@
       </p>
       <div class="actions">
         <button class="btn variant-filled-error" on:click={toggleShowBanUserForm}>Next</button>
-        <button class="btn variant-filled" on:click={toggleShowBanUserModal}>Cancel</button>
+        <button class="btn variant-filled" on:click={showBanUserModal.false$}>Cancel</button>
       </div>
     </Modal>
   </Backdrop>
 {/if}
-{#if showRevokeBanModal}
+{#if $showRevokeBanModal}
   <Backdrop>
     <Modal>
       <span class="title">Revoke Ban</span>
@@ -222,19 +181,19 @@
       </p>
       <div class="actions">
         <button class="btn variant-filled-error" on:click={toggleShowRevokeBanForm}>Next</button>
-        <button class="btn variant-filled" on:click={toggleShowBanUserModal}>Cancel</button>
+        <button class="btn variant-filled" on:click={showBanUserModal.false$}>Cancel</button>
       </div>
     </Modal>
   </Backdrop>
 {/if}
-{#if showBanUserForm}
+{#if $showBanUserForm}
   <Backdrop>
-    <BanUserForm issuedToUserId={data.user.id} bind:show={showBanUserForm} />
+    <BanUserForm issuedToUserId={data.user.id} hide={showBanUserForm.false$} />
   </Backdrop>
 {/if}
-{#if showRevokeBanForm}
+{#if $showRevokeBanForm}
   <Backdrop>
-    <RevokeBanForm banId={data.user.activeBan?.id || 0} bind:show={showRevokeBanForm} />
+    <RevokeBanForm banId={data.user.activeBan?.id || 0} hide={showRevokeBanForm.false$} />
   </Backdrop>
 {/if}
 <main class="main justify-center">
@@ -242,10 +201,10 @@
     <h1>User Profile</h1>
     <div class="line-b" />
     <section>
-      <div class="card p-4 flex flex-col gap-4">
+      <div class="card flex flex-col gap-2">
         <div class="flex gap-4">
           <div>
-            <div class="card bg-surface-200-700-token overflow-hidden w-max">
+            <div class="card !p-0 bg-surface-200-700-token overflow-hidden w-max">
               <img
                 src={buildUrl.userAvatar(data.user.osu.osuUserId)}
                 alt="user-pfp"
@@ -267,10 +226,10 @@
                 <KyosoBadges {kyosoBadges} />
               </div>
             </div>
-            {#if viewAsAdmin(data.user) || viewAsCurrent(data.user) || viewAsPublicDiscord(data.user)}
+            {#if data.user.viewAsAdmin || data.user.isCurrent || data.user.settings.publicDiscord}
               <div class="flex gap-1 items-center text-sm">
                 <Discord w={16} h={16} class="fill-surface-600 dark:fill-surface-300" />
-                <span class="block text-surface-600-300-token">{data.user.discord.username}</span>
+                <span class="block text-surface-600-300-token">{data.user.discord?.username}</span>
               </div>
             {/if}
             <div class="flex gap-1 md:gap-2 mt-1 items-center flex-wrap">
@@ -313,59 +272,54 @@
             {/each}
           </div>
         {/if}
-        <div class="line-b" />
-        <div class="grid 2sm:grid-cols-2 2md:grid-cols-4 gap-2">
-          {#if data.user.osu.restricted}
-            <div class="card variant-soft-error 2md:col-span-4 p-2 font-medium text-center">
-              This user is restricted on osu!
-            </div>
-          {/if}
-          {#each rankings as { label, tooltipName, rank, icon }}
-            <button
-              class="card bg-surface-200-700-token p-4 text-lg w-full cursor-default flex gap-2 items-center [&>*]:pointer-events-none"
-              use:popup={tooltip(tooltipName)}
-            >
-              <svelte:component this={icon} size={32} />
-              {rank ? `#${formatNumber(rank)}` : '-'}
-            </button>
-            <Tooltip target={tooltipName} {label} />
-          {/each}
-        </div>
-        <div class="line-b" />
         <div class="flex gap-2 flex-wrap">
           <span class="block badge variant-soft-surface"
             >Joined on {formatDate(data.user.registeredAt, 'full')}</span
           >
-          {#if viewAsAdmin(data.user)}
+          {#if data.user.viewAsAdmin && data.user.updatedApiDataAt}
             <span class="block badge variant-soft-surface"
               >Updated API data on {formatDate(data.user.updatedApiDataAt, 'full')}</span
             >
           {/if}
         </div>
-        {#if !data.user.owner && (data.isSessionUserOwner || data.session?.admin) && !data.user.activeBan}
-          <div class="line-b" />
-          <div class="flex gap-2 flex-wrap">
-            {#if data.isSessionUserOwner}
-              {#if data.user.admin}
-                <button class="btn variant-filled-error" on:click={removeUserAdmin}
-                  >Remove Admin</button
-                >
-              {:else}
-                <button class="btn variant-filled" on:click={makeUserAdmin}>Make Admin</button>
-              {/if}
-            {/if}
-            {#if data.user.approvedHost}
-              <button class="btn variant-filled-error" on:click={removeUserApprovedHost}
-                >Remove Approved Host</button
+      </div>
+      <div class="grid 2sm:grid-cols-2 2md:grid-cols-4 gap-2 mt-2">
+        {#each rankings as { label, tooltipName, rank, icon }}
+          <button
+            class="card text-lg w-full cursor-default flex gap-2 items-center [&>*]:pointer-events-none"
+            use:popup={tooltip(tooltipName)}
+          >
+            <svelte:component this={icon} size={32} />
+            {rank ? `#${formatNumber(rank)}` : '-'}
+          </button>
+          <Tooltip target={tooltipName} {label} />
+        {/each}
+      </div>
+      <Note type="error" show={data.user.osu.restricted}>
+        This user is restricted on osu!
+      </Note>
+      {#if !data.user.owner && (data.isSessionUserOwner || data.session?.admin) && !data.user.activeBan}
+        <div class="flex gap-2 flex-wrap">
+          {#if data.isSessionUserOwner}
+            {#if data.user.admin}
+              <button class="btn variant-filled-error" on:click={removeUserAdmin}
+                >Remove Admin</button
               >
             {:else}
-              <button class="btn variant-filled" on:click={makeUserApprovedHost}
-                >Make Approved Host</button
-              >
+              <button class="btn variant-filled" on:click={makeUserAdmin}>Make Admin</button>
             {/if}
-          </div>
-        {/if}
-      </div>
+          {/if}
+          {#if data.user.approvedHost}
+            <button class="btn variant-filled-error" on:click={removeUserApprovedHost}
+              >Remove Approved Host</button
+            >
+          {:else}
+            <button class="btn variant-filled" on:click={makeUserApprovedHost}
+              >Make Approved Host</button
+            >
+          {/if}
+        </div>
+      {/if}
     </section>
     <div class="line-b" />
     <section>
@@ -378,7 +332,7 @@
             <span class="text-lg font-medium block">Current Ban</span>
             <Ban ban={data.user.activeBan} showUsers={data.user.viewAsAdmin} />
             <div>
-              <button class="btn variant-filled-error" on:click={toggleShowRevokeBanModal}
+              <button class="btn variant-filled-error" on:click={showRevokeBanModal.true$}
                 >Revoke Ban</button
               >
             </div>
@@ -392,7 +346,7 @@
         {/if}
         {#if data.user.viewAsAdmin && !data.user.activeBan}
           <div>
-            <button class="btn variant-filled-error" on:click={toggleShowBanUserModal}
+            <button class="btn variant-filled-error" on:click={showBanUserModal.true$}
               >Ban User</button
             >
           </div>

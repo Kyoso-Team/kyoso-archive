@@ -19,7 +19,7 @@
 
 {#if $showForm}
   <Backdrop>
-    <CreateTournamentForm bind:hide={showForm.false$} />
+    <CreateTournamentForm hide={showForm.false$} />
   </Backdrop>
 {/if}
 <SEO page={$page} title="Dashboard" description="User dashboard" noIndex />

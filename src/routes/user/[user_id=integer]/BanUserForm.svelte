@@ -6,7 +6,7 @@
   import * as f from '$lib/form/validation';
   import { createForm, loading, toast } from '$lib/stores';
 
-  export let show: boolean;
+  export let hide: () => void;
   export let issuedToUserId: number;
   const mainForm = createForm({
     banReason: f.pipe(f.string(), f.minStrLength(1)),
@@ -34,13 +34,8 @@
       .catch(toast.errorCatcher);
 
     await invalidate('reload:user');
-    show = false;
-    loading.set(false);
+    hide();
     toast.success('Banned user succcessfully');
-  }
-
-  function cancel() {
-    show = false;
   }
 
   $: isPermanent = $mainForm.value.permanent;
@@ -68,6 +63,6 @@
       disabled={!($mainForm.canSubmit && (!isPermanent ? $timeForm.canSubmit : true))}
       >Submit</button
     >
-    <button type="button" class="btn variant-filled" on:click={cancel}>Cancel</button>
+    <button type="button" class="btn variant-filled" on:click={hide}>Cancel</button>
   </svelte:fragment>
 </Form>
