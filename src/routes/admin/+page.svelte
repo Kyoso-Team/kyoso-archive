@@ -1,9 +1,11 @@
 <script lang="ts">
-  import { Trophy, User } from 'lucide-svelte';
+  import { Trophy, User, TestTube2 } from 'lucide-svelte';
   import { page } from '$app/stores';
   import { SEO } from '$lib/components/general';
   import type { SvelteComponent } from 'svelte';
+  import type { PageServerData } from './$types';
 
+  export let data: PageServerData;
   const links: {
     label: string;
     href: string;
@@ -18,8 +20,13 @@
       label: 'Manage Tournaments',
       href: 'tournaments',
       icon: Trophy
-    }
-  ];
+    },
+    !data.isProduction ? {
+      label: 'Manage Testers',
+      href: 'testers',
+      icon: TestTube2
+    } : null
+  ].filter((link) => !!link);
 </script>
 
 <SEO page={$page} title="Admin" description="Admin dashboard" noIndex />
