@@ -1,6 +1,7 @@
 import { and, count, desc, eq, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import {
+  Ban,
   Country,
   DiscordUser,
   Notification,
@@ -223,4 +224,15 @@ export async function getUserPlayerHistory(userId: number, { offset, limit }: Pa
     .orderBy(desc(TournamentDates.publishedAt))
     .offset(offset)
     .limit(limit);
+}
+
+export async function isUserBanned(userId: number) {
+  const { id } = await db
+    .select(pick(Ban, ['id']))
+    .from(Ban)
+    .where(eq(Ban.issuedToUserId, userId))
+    .limit(1)
+    .then((rows) => rows[0]);
+
+  return !!id;
 }

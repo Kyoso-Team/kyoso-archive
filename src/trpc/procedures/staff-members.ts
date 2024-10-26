@@ -1,20 +1,30 @@
-import * as v from 'valibot';
-import { trpc, db } from '$lib/server/services';
-import { wrap } from '@typeschema/valibot';
-import { nonEmptyStringSchema, positiveIntSchema } from '$lib/validation';
-import { checks } from '$lib/server/checks';
-import { getSession, getStaffMember, getTournament, isUserBanned } from '$lib/server/context';
-import { Ban, Invite, InviteWithRole, OsuUser, StaffMember, StaffRole, User } from '$db';
-import { and, asc, eq, inArray, isNull, notExists, or, type SQL, sql } from 'drizzle-orm';
-import { pick, trpcUnknownError } from '$lib/server/utils';
-import { future, trgmSearch } from '$lib/server/sql';
-import { rateLimitMiddleware } from '$trpc/middleware';
 import { TRPCError } from '@trpc/server';
+import { and, asc, eq, inArray, isNotNull, isNull, notExists, or, sql } from 'drizzle-orm';
+import * as v from 'valibot';
+import {
+  Ban,
+  Invite,
+  InviteWithRole,
+  OsuUser,
+  StaffMember,
+  StaffMemberRole,
+  StaffRole,
+  User
+} from '$db';
+import { checks } from '$lib/server/checks';
+import { getSession, getStaffMember, getTournament } from '$lib/server/context';
+import { isUserBanned } from '$lib/server/queries';
+import { db, trpc } from '$lib/server/services';
+import { future, past, trgmSearch } from '$lib/server/sql';
+import { pick, trpcUnknownError } from '$lib/server/utils';
+import { nonEmptyStringSchema, positiveIntSchema } from '$lib/validation';
+import { rateLimitMiddleware } from '$trpc/middleware';
 import { DEFAULT_ROLES } from '$trpc/procedures/staff-roles';
+import type { SQL } from 'drizzle-orm';
 
 const searchUsers = trpc.procedure
   .input(
-    wrap(
+    v.parser(
       v.object({
         query: nonEmptyStringSchema,
         tournamentId: positiveIntSchema,
@@ -124,7 +134,7 @@ const searchUsers = trpc.procedure
 const sendJoinStaffInvite = trpc.procedure
   .use(rateLimitMiddleware)
   .input(
-    wrap(
+    v.parser(
       v.object({
         toUserId: positiveIntSchema,
         tournamentId: positiveIntSchema,
@@ -224,7 +234,7 @@ const sendJoinStaffInvite = trpc.procedure
 
 const sendDebuggerInvite = trpc.procedure
   .input(
-    wrap(
+    v.parser(
       v.object({
         toUserId: positiveIntSchema,
         tournamentId: positiveIntSchema
@@ -284,8 +294,96 @@ const sendDebuggerInvite = trpc.procedure
     });
   });
 
+const acceptJoinStaffInvite = trpc.procedure
+  .input(
+    v.parser(
+      v.object({
+        inviteId: positiveIntSchema
+      })
+    )
+  )
+  .mutation(async ({ input, ctx }) => {
+    const { inviteId } = input;
+
+    const session = getSession('trpc', ctx.cookies, true);
+
+    const invite = await db
+      .select(pick(Invite, ['id', 'tournamentId']))
+      .from(Invite)
+      .where(
+        and(
+          eq(Invite.id, inviteId),
+          eq(Invite.toUserId, session.userId),
+          eq(Invite.status, 'pending'),
+          isNotNull(Invite.tournamentId)
+        )
+      )
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!invite) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Invite not found'
+      });
+    }
+
+    if (!invite.tournamentId) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Invite does not contain tournament ID'
+      });
+    }
+
+    const { tournamentId } = invite;
+
+    const staffMember = await getStaffMember('trpc', session, tournamentId, true);
+
+    const staffRoleIds = await db
+      .select(pick(InviteWithRole, ['staffRoleId']))
+      .from(InviteWithRole)
+      .where(eq(InviteWithRole.inviteId, inviteId))
+      .then((rows) => rows.map((row) => row.staffRoleId));
+
+    const staffMemberRoles = staffRoleIds.map<typeof StaffMemberRole.$inferInsert>(
+      (staffRoleId) => {
+        return {
+          staffRoleId,
+          staffMemberId: staffMember.id
+        };
+      }
+    );
+
+    await db.transaction(async (tx) => {
+      await tx
+        .insert(StaffMember)
+        .values({
+          userId: session.userId,
+          tournamentId
+        })
+        .onConflictDoUpdate({
+          set: {
+            deletedAt: null,
+            joinedStaffAt: sql`now()`
+          },
+          target: [StaffMember.userId, StaffMember.tournamentId],
+          targetWhere: and(isNotNull(StaffMember.deletedAt), past(StaffMember.deletedAt))
+        });
+
+      await tx.insert(StaffMemberRole).values(staffMemberRoles);
+
+      await tx
+        .update(Invite)
+        .set({
+          status: 'accepted'
+        })
+        .where(eq(Invite.id, inviteId));
+    });
+  });
+
 export const staffMembersRouter = trpc.router({
   searchUsers,
   sendJoinStaffInvite,
-  sendDebuggerInvite
+  sendDebuggerInvite,
+  acceptJoinStaffInvite
 });
