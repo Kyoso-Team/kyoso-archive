@@ -1,4 +1,5 @@
 import { trpc } from '$lib/server/services';
+import { staffMembersRouter } from '$trpc/procedures/staff-members';
 import {
   formsRouter,
   notificationsRouter,
@@ -14,5 +15,6 @@ export const router = trpc.router({
   notifications: notificationsRouter,
   staffRoles: staffRolesRouter,
   forms: formsRouter,
+  staffMembers: staffMembersRouter,
   ...rootProcedures
 });

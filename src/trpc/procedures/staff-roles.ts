@@ -12,7 +12,7 @@ import { arraysHaveSameElements } from '$lib/utils';
 import { positiveIntSchema } from '$lib/validation';
 import { rateLimitMiddleware } from '$trpc/middleware';
 
-const DEFAULT_ROLES = ['Host', 'Debugger'];
+export const DEFAULT_ROLES = ['Host', 'Debugger'];
 
 const DISALLOWED_PROPERTIES = ['name', 'permissions'];
 
