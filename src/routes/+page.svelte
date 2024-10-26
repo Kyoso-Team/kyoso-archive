@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { SEO } from '$components/general';
+  import { SEO } from '$lib/components/general';
 </script>
 
 <SEO

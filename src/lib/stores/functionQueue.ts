@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { MaybePromise } from '@sveltejs/kit';
+import type { MaybePromise } from '$lib/types';
 
 export function createFunctionQueue() {
   const { subscribe, set } = writable<

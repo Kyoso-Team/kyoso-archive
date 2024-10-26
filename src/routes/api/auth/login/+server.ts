@@ -1,11 +1,11 @@
-import env from '$lib/server/env';
-import { buildUrl } from 'osu-web.js';
 import { error, redirect } from '@sveltejs/kit';
-import { getSession } from '$lib/server/helpers/api';
+import { buildUrl } from 'osu-web.js';
+import { getSession } from '$lib/server/context';
+import { env } from '$lib/server/env';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ url, cookies }) => {
-  const session = getSession(cookies);
+  const session = getSession('api', cookies);
   const redirectUri = url.searchParams.get('redirect_uri') || undefined;
   const dontAskConsent = url.searchParams.get('dont_ask_consent') === 'true';
 
@@ -26,5 +26,5 @@ export const GET = (async ({ url, cookies }) => {
     redirectUri
   );
 
-  redirect(302, osuAuthUrl);
+  redirect(302, `${osuAuthUrl}&prompt=consent`);
 }) satisfies RequestHandler;

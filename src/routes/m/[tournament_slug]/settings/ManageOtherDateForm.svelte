@@ -1,18 +1,16 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
-  import { Form, Text, Select, DateOnly, DateTime, Section } from '$components/form';
-  import { createForm } from '$stores';
-  import { keys, sortByKey, toastError } from '$lib/utils';
+  import { tournamentOtherDateChecks } from '$lib/checks';
+  import { DateOnly, DateTime, Form, Section, Select, Text } from '$lib/components/form';
   import { maxPossibleDate, oldestDatePossible } from '$lib/constants';
-  import { tournamentOtherDateChecks } from '$lib/helpers';
-  import { getToastStore } from '@skeletonlabs/skeleton';
+  import * as f from '$lib/form/validation';
+  import { createForm, toast } from '$lib/stores';
+  import { keys, sortByKey } from '$lib/utils';
   import type { TournamentDates } from '$db';
 
   export let show: boolean;
   export let otherDatesHaveUpdated: boolean;
   export let otherDates: (typeof TournamentDates.$inferSelect)['other'];
   export let editIndex: number | undefined = undefined;
-  const toast = getToastStore();
   const updating = editIndex !== undefined ? otherDates[editIndex] : undefined;
   const typeOptions: Record<'single' | 'range', string> = {
     single: 'Single date',
@@ -24,11 +22,13 @@
   };
   const mainForm = createForm(
     {
-      label: f.string([f.minStrLength(2), f.maxStrLength(35)]),
+      label: f.pipe(f.string(), f.minStrLength(2), f.maxStrLength(35)),
       type: f.union(keys(typeOptions)),
       display: f.union(keys(displayOptions)),
-      fromDate: f.date([f.minDate(oldestDatePossible), f.maxDate(maxPossibleDate)]),
-      toDate: f.optional(f.date([f.minDate(oldestDatePossible), f.maxDate(maxPossibleDate)]))
+      fromDate: f.pipe(f.date(), f.minDate(oldestDatePossible), f.maxDate(maxPossibleDate)),
+      toDate: f.optional(
+        f.pipe(f.date(), f.minDate(oldestDatePossible), f.maxDate(maxPossibleDate))
+      )
     },
     updating && {
       display: updating.onlyDate ? 'date' : 'datetime',
@@ -53,7 +53,7 @@
     const err = tournamentOtherDateChecks(otherDates, newDate);
 
     if (err) {
-      toastError(toast, err);
+      toast.error(err);
       return;
     }
 

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Discord } from '$components/icons';
-  import { X, Search } from 'lucide-svelte';
+  import { Search, X } from 'lucide-svelte';
   import { buildUrl } from 'osu-web.js';
   import { scale } from 'svelte/transition';
-  import type createContextStore from './store';
+  import { Discord } from '$lib/components/icons';
   import type { PageServerData } from './$types';
+  import type createContextStore from './store';
 
   export let user: PageServerData['users'][number];
   export let type: 'admin' | 'host' | 'banned' | 'owner';

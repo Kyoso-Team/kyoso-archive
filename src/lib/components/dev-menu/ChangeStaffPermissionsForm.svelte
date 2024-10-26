@@ -1,24 +1,23 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
-  import { SelectMultiple, Form } from '$components/form';
-  import { createForm, loading } from '$stores';
-  import { displayError, keys, toastSuccess } from '$lib/utils';
   import { invalidateAll } from '$app/navigation';
-  import { staffPermissionsOptions } from '$lib/constants';
-  import type { ToastStore } from '@skeletonlabs/skeleton';
-  import type { InferEnum } from '$types';
+  import { Form, SelectMultiple } from '$lib/components/form';
+  import { staffPermissionsOptions } from '$lib/form/common';
+  import * as f from '$lib/form/validation';
+  import { createForm, loading, toast } from '$lib/stores';
+  import { keys } from '$lib/utils';
   import type { StaffPermission } from '$db';
+  import type { InferEnum } from '$lib/types';
 
   export let show: boolean;
   export let tournament: { id: number };
   export let staffMember: { permissions: InferEnum<typeof StaffPermission>[] };
-  export let toast: ToastStore;
   const mainForm = createForm(
     {
-      permissions: f.array(f.union(keys(staffPermissionsOptions)), [
+      permissions: f.pipe(
+        f.array(f.union(keys(staffPermissionsOptions))),
         f.minArrayLength(0),
         f.maxArrayLength(Object.keys(staffPermissionsOptions).length)
-      ])
+      )
     },
     {
       permissions: staffMember.permissions
@@ -29,29 +28,23 @@
   async function submit() {
     const { permissions } = mainForm.getFinalValue($mainForm);
 
-    let resp!: Response;
     loading.set(true);
-
-    try {
-      resp = await fetch('/api/dev/change_staff_permissions', {
-        method: 'PATCH',
-        body: JSON.stringify({
-          permissions,
-          tournamentId: tournament.id
-        })
-      });
-    } catch (err) {
-      displayError(toast, err);
-    }
+    const resp = await fetch('/api/dev/change_staff_permissions', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        permissions,
+        tournamentId: tournament.id
+      })
+    }).catch(toast.errorCatcher);
 
     if (!resp.ok) {
-      displayError(toast, await resp.json());
+      toast.error(await resp.text());
     }
 
     await invalidateAll();
     show = false;
     loading.set(false);
-    toastSuccess(toast, 'Changed staff permissions succcessfully');
+    toast.success('Changed staff permissions succcessfully');
   }
 
   function cancel() {

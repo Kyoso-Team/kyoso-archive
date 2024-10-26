@@ -1,70 +1,33 @@
-import * as v from 'valibot';
-import {
-  NODE_ENV,
-  JWT_SECRET,
-  OSU_CLIENT_SECRET,
-  DISCORD_CLIENT_SECRET,
-  DISCORD_BOT_TOKEN,
-  BUNNY_HOSTNAME,
-  BUNNY_USERNAME,
-  BUNNY_PASSWORD,
-  OWNER,
-  DATABASE_URL,
-  TESTERS,
-  ENV,
-  IPINFO_ACCESS_TOKEN,
-  UPSTASH_REDIS_REST_URL,
-  UPSTASH_REDIS_REST_TOKEN,
-  CRON_SECRET
-} from '$env/static/private';
-import { clientEnvSchema, clientEnv, nonEmptyStringSchema, parseEnv } from '../env';
-
-const serverEnvSchema = v.object({
-  ...clientEnvSchema.entries,
-  /** Preferrably, use `ENV` instead. This is mainly for Vite, but it does have its use cases */
-  NODE_ENV: v.union(
-    [v.literal('production'), v.literal('development')],
-    'be equal to "production" or "development"'
-  ),
-  ENV: v.union(
-    [v.literal('production'), v.literal('testing'), v.literal('development')],
-    'be equal to "production", "testing" or "development"'
-  ),
-  JWT_SECRET: nonEmptyStringSchema,
-  CRON_SECRET: nonEmptyStringSchema,
-  OSU_CLIENT_SECRET: nonEmptyStringSchema,
-  DISCORD_CLIENT_SECRET: nonEmptyStringSchema,
-  DISCORD_BOT_TOKEN: nonEmptyStringSchema,
-  BUNNY_HOSTNAME: nonEmptyStringSchema,
-  BUNNY_USERNAME: nonEmptyStringSchema,
-  BUNNY_PASSWORD: nonEmptyStringSchema,
-  IPINFO_ACCESS_TOKEN: nonEmptyStringSchema,
-  DATABASE_URL: nonEmptyStringSchema,
-  OWNER: v.number('be a number', [v.integer('be an integer')]),
-  TESTERS: v.array(v.number('be a number', [v.integer('be an integer')]), 'be an array'),
-  UPSTASH_REDIS_REST_URL: nonEmptyStringSchema,
-  UPSTASH_REDIS_REST_TOKEN: nonEmptyStringSchema
-});
+import 'dotenv/config';
+import { clientEnv, parseEnv } from '$lib/env';
+import { serverEnvSchema } from '$lib/validation';
 
 const serverEnv = {
   ...clientEnv,
-  NODE_ENV,
-  ENV,
-  JWT_SECRET,
-  CRON_SECRET,
-  OSU_CLIENT_SECRET,
-  DISCORD_CLIENT_SECRET,
-  DISCORD_BOT_TOKEN,
-  BUNNY_HOSTNAME,
-  BUNNY_USERNAME,
-  BUNNY_PASSWORD,
-  IPINFO_ACCESS_TOKEN,
-  DATABASE_URL,
-  OWNER: Number(OWNER),
-  TESTERS: (JSON.parse(TESTERS || '[]') as string[]).map((id) => Number(id)),
-  UPSTASH_REDIS_REST_URL,
-  UPSTASH_REDIS_REST_TOKEN
+  NODE_ENV: process.env.NODE_ENV === 'test' ? 'development' : 'production',
+  TEST_ENV:
+    process.env.NODE_ENV === 'test'
+      ? 'automatic'
+      : process.env.TEST_ENV === 'undefined'
+        ? undefined
+        : 'manual',
+  JWT_SECRET: process.env.JWT_SECRET,
+  CRON_SECRET: process.env.CRON_SECRET,
+  OSU_CLIENT_SECRET: process.env.OSU_CLIENT_SECRET,
+  DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
+  DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
+  IPINFO_ACCESS_TOKEN: process.env.IPINFO_ACCESS_TOKEN,
+  DATABASE_URL: process.env.DATABASE_URL,
+  TEST_DATABASE_URL: process.env.TEST_DATABASE_URL,
+  OWNER: Number(process.env.OWNER),
+  TESTERS: (JSON.parse(process.env.TESTERS || '[]') as string[]).map((id) => Number(id)),
+  UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+  UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+  S3_FORCE_PATH_STYLE: process.env.S3_FORCE_PATH_STYLE === 'true',
+  S3_ENDPOINT: process.env.S3_ENDPOINT,
+  S3_REGION: process.env.S3_REGION,
+  S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
+  S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY
 };
 
-const env = parseEnv(serverEnvSchema, serverEnv);
-export default env;
+export const env = parseEnv(serverEnvSchema, serverEnv);

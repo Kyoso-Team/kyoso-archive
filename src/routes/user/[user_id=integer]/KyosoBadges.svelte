@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Tooltip } from '$components/general';
+  import { Tooltip } from '$lib/components/general';
   import { popup } from '$lib/popup';
   import { tooltip } from '$lib/utils';
 

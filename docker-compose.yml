@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: kyoso-dev-postgres
+    environment:
+      POSTGRES_USER: kyoso
+      POSTGRES_PASSWORD: kyoso
+      POSTGRES_DB: kyoso_dev
+    command: >
+      sh -c '
+        docker-entrypoint.sh postgres &
+        until pg_isready --username "kyoso" --dbname "postgres"; do sleep 1; done;
+        if [ ! -f /var/lib/postgresql/data/.test_db_initialized ]; then
+          psql -v ON_ERROR_STOP=1 --username "kyoso" --dbname "postgres" -c "CREATE DATABASE \"kyoso_test\";"
+          touch /var/lib/postgresql/data/.test_db_initialized;
+        fi;
+        wait
+      '
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '3010:5432'
+
+  minio:
+    image: minio/minio
+    container_name: kyoso-dev-minio
+    environment:
+      MINIO_ROOT_USER: kyoso
+      MINIO_ROOT_PASSWORD: kyoso123
+    command: server /data --address :9000 --console-address :9001
+    volumes:
+      - minio_data:/data
+    ports:
+      - '3011:9000'
+      - '3012:9001'
+
+  redis:
+    image: redis:7
+    container_name: kyoso-dev-redis
+    command: redis-server --appendonly yes --maxmemory 128mb --databases 2
+    ports:
+      - '3013:6379'
+    volumes:
+      - redis_data:/data
+
+  serverless-redis-http:
+    image: hiett/serverless-redis-http:latest
+    container_name: kyoso-dev-serverless-redis-http
+    environment:
+      SRH_MODE: env
+      SRH_TOKEN: kyoso
+      SRH_CONNECTION_STRING: redis://kyoso-dev-redis:6379
+    ports:
+      - '3014:80'
+
+volumes:
+  postgres_data:
+  minio_data:
+  redis_data:

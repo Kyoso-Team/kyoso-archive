@@ -1,8 +1,8 @@
 <script lang="ts">
+  import { User } from 'lucide-svelte';
+  import { Tooltip } from '$lib/components/general';
   import { popup } from '$lib/popup';
   import { tooltip } from '$lib/utils';
-  import { User } from 'lucide-svelte';
-  import { Tooltip } from '$components/general';
 
   export let inputLabel: string;
   export let tooltipLabel: string;

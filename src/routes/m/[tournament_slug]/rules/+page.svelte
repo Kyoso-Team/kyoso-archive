@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { SEO } from '$components/general';
-  import { page } from '$app/stores';
   import { portal } from 'svelte-portal';
+  import { page } from '$app/stores';
+  import { SEO } from '$lib/components/general';
   // import { Backdrop, Modal, UploadImgModal } from '$components/layout';
   // import { createUploadClient } from '$lib/upload';
   // import { getToastStore } from '@skeletonlabs/skeleton';
   // import { invalidate } from '$app/navigation';
-  // import { toastSuccess } from '$lib/utils';
   // import { loading } from '$stores';
   import type { PageServerData } from './$types';
 

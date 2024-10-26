@@ -1,15 +1,13 @@
 <script lang="ts">
   import Asset from './Asset.svelte';
-  import { SEO } from '$components/general';
-  import { page } from '$app/stores';
   import { portal } from 'svelte-portal';
-  import { Backdrop, Modal, UploadImgModal } from '$components/layout';
-  import { createUploadClient } from '$lib/upload';
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import { invalidate } from '$app/navigation';
-  import { toastSuccess } from '$lib/utils';
-  import { loading } from '$stores';
-  import type { Assets } from '$types';
+  import { page } from '$app/stores';
+  import { createUploadClient } from '$lib/clients';
+  import { SEO } from '$lib/components/general';
+  import { Backdrop, Modal, UploadImgModal } from '$lib/components/layout';
+  import { loading, toast } from '$lib/stores';
+  import type { Assets } from '$lib/types';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
@@ -19,13 +17,8 @@
   let showDeleteBannerPrompt = false;
   let logoSrc: string | undefined;
   let bannerSrc: string | undefined;
-  const toast = getToastStore();
-  const logoUpload = createUploadClient<Assets['tournamentLogo']>(
-    toast,
-    '/api/assets/tournament_logo'
-  );
+  const logoUpload = createUploadClient<Assets['tournamentLogo']>('/api/assets/tournament_logo');
   const bannerUpload = createUploadClient<Assets['tournamentBanner']>(
-    toast,
     '/api/assets/tournament_banner'
   );
 
@@ -53,10 +46,9 @@
     });
 
     await invalidate('reload:manage_assets');
-    loading.set(false);
-
     toggleShowUploadLogoModal();
-    toastSuccess(toast, 'Uploaded logo successfully');
+    loading.set(false);
+    toast.success('Uploaded logo successfully');
   }
 
   async function uploadBanner(file: File) {
@@ -67,10 +59,9 @@
     });
 
     await invalidate('reload:manage_assets');
-    loading.set(false);
-
     toggleShowUploadBannerModal();
-    toastSuccess(toast, 'Uploaded banner successfully');
+    loading.set(false);
+    toast.success('Uploaded banner successfully');
   }
 
   async function deleteLogo() {
@@ -83,7 +74,7 @@
     loading.set(false);
 
     toggleShowDeleteLogoPrompt();
-    toastSuccess(toast, 'Deleted logo successfully');
+    toast.success('Deleted logo successfully');
   }
 
   async function deleteBanner() {
@@ -96,7 +87,7 @@
     loading.set(false);
 
     toggleShowDeleteBannerPrompt();
-    toastSuccess(toast, 'Deleted banner successfully');
+    toast.success('Deleted banner successfully');
   }
 
   $: logoSrc = data.tournament.logoMetadata

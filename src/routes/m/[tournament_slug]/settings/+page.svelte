@@ -1,41 +1,32 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
-  import OtherDate from './OtherDate.svelte';
   import Link from './Link.svelte';
-  import ModMultiplier from './ModMultiplier.svelte';
-  import ManageOtherDateForm from './ManageOtherDateForm.svelte';
   import ManageLinkForm from './ManageLinkForm.svelte';
   import ManageModMultiplierForm from './ManageModMultiplierForm.svelte';
-  import { page } from '$app/stores';
-  import { portal } from 'svelte-portal';
-  import { SEO, FormHandler } from '$components/general';
-  import { Checkbox, Number, Select, Text, DateTime } from '$components/form';
-  import { getToastStore } from '@skeletonlabs/skeleton';
-  import { goto, invalidate } from '$app/navigation';
-  import {
-    displayError,
-    formatDate,
-    formatTime,
-    isDateFuture,
-    isDatePast,
-    keys,
-    toastError,
-    toastSuccess
-  } from '$lib/utils';
-  import { createForm, createFunctionQueue, loading } from '$stores';
+  import ManageOtherDateForm from './ManageOtherDateForm.svelte';
+  import ModMultiplier from './ModMultiplier.svelte';
+  import OtherDate from './OtherDate.svelte';
   import { dragHandleZone } from 'svelte-dnd-action';
-  import { trpc } from '$lib/trpc';
-  import { Modal, Backdrop } from '$components/layout';
-  import { tournamentChecks, tournamentDatesChecks } from '$lib/helpers';
+  import { portal } from 'svelte-portal';
   import { flip } from 'svelte/animate';
   import { slide } from 'svelte/transition';
+  import { goto, invalidate } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { tournamentChecks, tournamentDatesChecks } from '$lib/checks';
+  import { trpc } from '$lib/clients';
+  import { Checkbox, DateTime, Number, Select, Text } from '$lib/components/form';
+  import { FormHandler, SEO } from '$lib/components/general';
+  import { Backdrop, Modal } from '$lib/components/layout';
   import {
+    baseTeamSettingsFormSchemas,
     baseTournamentFormSchemas,
     rankRangeFormSchemas,
-    baseTeamSettingsFormSchemas,
     tournamentTypeOptions
-  } from '$lib/constants';
-  import type { RefereeSettings, TRPCRouter } from '$types';
+  } from '$lib/form/common';
+  import * as f from '$lib/form/validation';
+  import { formatDate, formatTime } from '$lib/format';
+  import { createForm, createFunctionQueue, loading, toast } from '$lib/stores';
+  import { isDateFuture, isDatePast, keys } from '$lib/utils';
+  import type { RefereeSettings, TRPCRouterInputs, TRPCRouterOutputs } from '$lib/types';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
@@ -61,7 +52,6 @@
   let updatingModMultiplierIndex: number | undefined;
   const now = new Date().getTime();
   const aYear = 31_556_952_000; // A year in MS
-  const toast = getToastStore();
   const fnQueue = createFunctionQueue();
   const orderTypeOptions: Record<'linear' | 'snake', string> = {
     linear: 'Linear (ABABAB)',
@@ -93,19 +83,19 @@
   const rankRangeForm = createForm(rankRangeFormSchemas, rankRangeInitialValues());
   const bwsForm = createForm(
     {
-      x: f.number([f.notValue(0), f.minValue(-10), f.maxValue(10)]),
-      y: f.number([f.notValue(0), f.minValue(-10), f.maxValue(10)]),
-      z: f.number([f.notValue(0), f.minValue(-10), f.maxValue(10)])
+      x: f.pipe(f.number(), f.notValue(0), f.minValue(-10), f.maxValue(10)),
+      y: f.pipe(f.number(), f.notValue(0), f.minValue(-10), f.maxValue(10)),
+      z: f.pipe(f.number(), f.notValue(0), f.minValue(-10), f.maxValue(10))
     },
     bwsInitialValues()
   );
   const refereeSettingsForm = createForm(
     {
-      pickTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
-      banTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
-      protectTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
-      readyTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
-      startTimerLength: f.number([f.integer(), f.minValue(1), f.maxValue(600)]),
+      pickTimerLength: f.pipe(f.number(), f.integer(), f.minValue(1), f.maxValue(600)),
+      banTimerLength: f.pipe(f.number(), f.integer(), f.minValue(1), f.maxValue(600)),
+      protectTimerLength: f.pipe(f.number(), f.integer(), f.minValue(1), f.maxValue(600)),
+      readyTimerLength: f.pipe(f.number(), f.integer(), f.minValue(1), f.maxValue(600)),
+      startTimerLength: f.pipe(f.number(), f.integer(), f.minValue(1), f.maxValue(600)),
       allowDoubleBan: f.boolean(),
       allowDoublePick: f.boolean(),
       allowDoubleProtect: f.boolean(),
@@ -120,19 +110,23 @@
   );
   const datesForm = createForm(
     {
-      publishedAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])),
-      concludesAt: f.optional(f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])),
+      publishedAt: f.optional(
+        f.pipe(f.date(), f.minDate(new Date(now)), f.maxDate(new Date(now + aYear)))
+      ),
+      concludesAt: f.optional(
+        f.pipe(f.date(), f.minDate(new Date(now)), f.maxDate(new Date(now + aYear)))
+      ),
       playerRegsOpenAt: f.optional(
-        f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])
+        f.pipe(f.date(), f.minDate(new Date(now)), f.maxDate(new Date(now + aYear)))
       ),
       playerRegsCloseAt: f.optional(
-        f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])
+        f.pipe(f.date(), f.minDate(new Date(now)), f.maxDate(new Date(now + aYear)))
       ),
       staffRegsOpenAt: f.optional(
-        f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])
+        f.pipe(f.date(), f.minDate(new Date(now)), f.maxDate(new Date(now + aYear)))
       ),
       staffRegsCloseAt: f.optional(
-        f.date([f.minDate(new Date(now)), f.maxDate(new Date(now + aYear))])
+        f.pipe(f.date(), f.minDate(new Date(now)), f.maxDate(new Date(now + aYear)))
       )
     },
     datesInitialValues()
@@ -238,33 +232,33 @@
 
   async function updateTournament<T extends 'updateTournament' | 'updateTournamentDates'>(
     procedure: T,
-    input: TRPCRouter<true>['tournaments'][T]['data'],
+    input: TRPCRouterInputs['tournaments'][T]['data'],
     successMsg: string
   ) {
     let tournament!:
-      | TRPCRouter['tournaments']['updateTournament']
-      | TRPCRouter['tournaments']['updateTournamentDates'];
+      | TRPCRouterOutputs['tournaments']['updateTournament']
+      | TRPCRouterOutputs['tournaments']['updateTournamentDates'];
     loading.set(true);
 
-    try {
-      if (procedure === 'updateTournament') {
-        tournament = await trpc($page).tournaments.updateTournament.mutate({
+    if (procedure === 'updateTournament') {
+      tournament = await trpc($page)
+        .tournaments.updateTournament.mutate({
           tournamentId: data.tournament.id,
           data: input
-        });
-      } else {
-        tournament = await trpc($page).tournaments.updateTournamentDates.mutate({
+        })
+        .catch(toast.errorCatcher);
+    } else {
+      tournament = await trpc($page)
+        .tournaments.updateTournamentDates.mutate({
           tournamentId: data.tournament.id,
           data: input
-        });
-      }
-    } catch (err) {
-      displayError(toast, err);
+        })
+        .catch(toast.errorCatcher);
     }
 
     if (typeof tournament === 'string') {
       loading.set(false);
-      toastError(toast, tournament);
+      toast.error(tournament);
       return;
     }
 
@@ -277,7 +271,7 @@
     t = data.tournament;
     overrideInitialValues();
     loading.set(false);
-    toastSuccess(toast, successMsg);
+    toast.success(successMsg);
   }
 
   function resetGeneralSettings() {
@@ -318,7 +312,7 @@
     const err = tournamentChecks({ teamSettings, rankRange });
 
     if (err) {
-      toastError(toast, err);
+      toast.error(err);
       return;
     }
 
@@ -419,7 +413,7 @@
     const err = tournamentDatesChecks(dates, dates);
 
     if (err) {
-      toastError(toast, err);
+      toast.error(err);
       return;
     }
 

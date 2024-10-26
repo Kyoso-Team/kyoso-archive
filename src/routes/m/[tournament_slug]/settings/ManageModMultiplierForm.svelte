@@ -1,19 +1,17 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
-  import { Form, Number, SelectMultiple, Section } from '$components/form';
-  import { createForm } from '$stores';
-  import { keys, toastError } from '$lib/utils';
-  import { modMultiplierChecks } from '$lib/helpers';
-  import { getToastStore } from '@skeletonlabs/skeleton';
-  import type { ModMultiplier } from '$types';
+  import { tournamentModMultiplierChecks } from '$lib/checks';
+  import { Form, Number, Section, SelectMultiple } from '$lib/components/form';
+  import * as f from '$lib/form/validation';
+  import { createForm, toast } from '$lib/stores';
+  import { keys } from '$lib/utils';
   import type { Tournament } from '$db';
+  import type { ModMultiplier } from '$lib/types';
 
   export let show: boolean;
   export let modMultipliersHaveUpdated: boolean;
   export let modMultipliers: (typeof Tournament.$inferSelect)['modMultipliers'];
   export let editIndex: number | undefined = undefined;
   let disabledMods: Partial<Record<ModMultiplier['mods'][number], boolean>> = {};
-  const toast = getToastStore();
   const updating = editIndex !== undefined ? modMultipliers[editIndex] : undefined;
   const modsOptions: Record<ModMultiplier['mods'][number], string> = {
     bl: 'Blinds (BL)',
@@ -26,8 +24,8 @@
   };
   const mainForm = createForm(
     {
-      mods: f.array(f.union(keys(modsOptions)), [f.minArrayLength(1), f.maxArrayLength(5)]),
-      multiplier: f.number([f.minValue(-5), f.maxValue(5)])
+      mods: f.pipe(f.array(f.union(keys(modsOptions))), f.minArrayLength(1), f.maxArrayLength(5)),
+      multiplier: f.pipe(f.number(), f.minValue(-5), f.maxValue(5))
     },
     updating && {
       mods: updating.mods,
@@ -39,7 +37,7 @@
   );
   const failModForm = createForm(
     {
-      ifFailed: f.number([f.minValue(-5), f.maxValue(5)])
+      ifFailed: f.pipe(f.number(), f.minValue(-5), f.maxValue(5))
     },
     updating && typeof updating.multiplier !== 'number'
       ? {
@@ -76,10 +74,10 @@
     }
 
     newModMultiplier.mods = newModMultiplier.mods.sort((a, b) => a.localeCompare(b));
-    const err = modMultiplierChecks(modMultipliers, newModMultiplier);
+    const err = tournamentModMultiplierChecks(modMultipliers, newModMultiplier);
 
     if (err) {
-      toastError(toast, err);
+      toast.error(err);
       return;
     }
 

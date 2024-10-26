@@ -1,6 +1,6 @@
 // Source: https://github.com/skeletonlabs/skeleton/blob/master/packages/skeleton/src/lib/utilities/Popup/popup.ts
-import { get } from 'svelte/store';
 import { storePopup } from '@skeletonlabs/skeleton';
+import { get } from 'svelte/store';
 import type { PopupSettings } from '$lib/types';
 
 export function popup(triggerNode: HTMLElement, args: PopupSettings) {
@@ -165,7 +165,11 @@ export function popup(triggerNode: HTMLElement, args: PopupSettings) {
 
   // Event Handlers
   function toggle(): void {
-    popupState.open === false ? open() : close();
+    if (!popupState.open) {
+      open();
+    } else {
+      close();
+    }
   }
   function onWindowClick(event: any): void {
     // Return if the popup is not yet open

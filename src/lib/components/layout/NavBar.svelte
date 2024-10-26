@@ -1,11 +1,11 @@
 <script lang="ts">
   import UserMenu from './UserMenu.svelte';
+  import { Menu } from 'lucide-svelte';
   import { AppBar, Avatar, popup } from '@skeletonlabs/skeleton';
   import { buildUrl } from 'osu-web.js';
   import { page } from '$app/stores';
-  import { KyosoHybrid } from '$components/icons';
-  import { Menu } from 'lucide-svelte';
-  import type { AuthSession } from '$types';
+  import { KyosoHybrid } from '$lib/components/icons';
+  import type { AuthSession } from '$lib/types';
 
   export let session: AuthSession | undefined;
   const navLinks = [
@@ -24,7 +24,7 @@
   ];
 </script>
 
-<AppBar padding="py-3 px-6 line-b">
+<AppBar padding="py-2 px-4 line-b">
   <svelte:fragment slot="lead">
     <nav class="flex items-center gap-2">
       <a href="/" class="mr-4 duration-150 hover:opacity-75">

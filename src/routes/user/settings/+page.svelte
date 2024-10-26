@@ -1,18 +1,16 @@
 <script lang="ts">
-  import * as f from '$lib/form-validation';
   import Session from './Session.svelte';
-  import { Checkbox } from '$components/form';
-  import { SEO, FormHandler } from '$components/general';
-  import { Backdrop, Modal } from '$components/layout';
-  import { Osu, Discord } from '$components/icons';
-  import { trpc } from '$lib/trpc';
-  import { page } from '$app/stores';
-  import { createForm, loading } from '$stores';
-  import { getToastStore } from '@skeletonlabs/skeleton';
-  import { Copy, Eye, EyeOff, RotateCcw, Pencil } from 'lucide-svelte';
-  import { displayError, toastSuccess } from '$lib/utils';
+  import { Copy, Eye, EyeOff, Pencil, RotateCcw } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
   import { invalidate } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { trpc } from '$lib/clients';
+  import { Checkbox } from '$lib/components/form';
+  import { FormHandler, SEO } from '$lib/components/general';
+  import { Discord, Osu } from '$lib/components/icons';
+  import { Backdrop, Modal } from '$lib/components/layout';
+  import * as f from '$lib/form/validation';
+  import { createForm, loading, toast } from '$lib/stores';
   import type { PageServerData } from './$types';
 
   export let data: PageServerData;
@@ -27,7 +25,6 @@
     },
     privacyFormInitialValues()
   );
-  const toast = getToastStore();
 
   function toggleChangeDiscordPrompt() {
     showChangeDiscordPrompt = !showChangeDiscordPrompt;
@@ -43,23 +40,18 @@
 
   async function copyApiKey() {
     await navigator.clipboard.writeText(data.user.apiKey || '');
-    toastSuccess(toast, 'API key copied to clipboard');
+    toast.success('API key copied to clipboard');
   }
 
   async function generateApiKey() {
     loading.set(true);
-
-    try {
-      await trpc($page).users.resetApiKey.mutate();
-    } catch (err) {
-      displayError(toast, err);
-    }
+    await trpc($page).users.resetApiKey.mutate().catch(toast.errorCatcher);
 
     await invalidate('reload:user_settings');
+    showGenerateApiKeyPrompt = false;
     loading.set(false);
 
-    showGenerateApiKeyPrompt = false;
-    toastSuccess(toast, 'Generated new API key successfully');
+    toast.success('Generated new API key successfully');
   }
 
   function privacyFormInitialValues() {
@@ -75,22 +67,20 @@
       privacyForm.getFinalValue($privacyForm);
     loading.set(true);
 
-    try {
-      await trpc($page).users.updateSelf.mutate({
+    await trpc($page)
+      .users.updateSelf.mutate({
         settings: {
           publicDiscord,
           publicPlayerHistory,
           publicStaffHistory
         }
-      });
-    } catch (err) {
-      displayError(toast, err);
-    }
+      })
+      .catch(toast.errorCatcher);
 
     await invalidate('reload:user_settings');
     loading.set(false);
     privacyForm.overrideInitialValues(privacyFormInitialValues());
-    toastSuccess(toast, 'Updated privacy settings successfully');
+    toast.success('Updated privacy settings successfully');
   }
 
   async function resetPrivacySettings() {
@@ -99,20 +89,17 @@
 
   async function deleteSession(sessionId: number) {
     loading.set(true);
-
-    try {
-      await trpc($page).users.expireSession.mutate({
+    await trpc($page)
+      .users.expireSession.mutate({
         sessionId
-      });
-    } catch (err) {
-      displayError(toast, err);
-    }
+      })
+      .catch(toast.errorCatcher);
 
     data.activeSessions = data.activeSessions.filter((session) => session.id !== sessionId);
     data = Object.assign({}, data);
 
     loading.set(false);
-    toastSuccess(toast, 'Session deleted successfully');
+    toast.success('Session deleted successfully');
   }
 </script>
 

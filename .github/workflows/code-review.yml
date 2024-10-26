@@ -12,8 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: 'development'
-      ENV: 'development'
+      TEST_ENV: 'undefined'
       DATABASE_URL: 'postgresql://example:example@localhost:5432/example'
+      TEST_DATABASE_URL: 'postgresql://example:example@localhost:5432/example-test'
       JWT_SECRET: 'secret'
       CRON_SECRET: 'secret'
       OWNER: '1'
@@ -27,30 +28,24 @@ jobs:
       PUBLIC_DISCORD_MAIN_REDIRECT_URI: 'http://localhost:5173/api/auth/callback/discord'
       PUBLIC_DISCORD_CHANGE_ACCOUNT_REDIRECT_URI: 'http://localhost:5173/api/auth/callback/discord/change'
       DISCORD_BOT_TOKEN: 'token'
-      BUNNY_HOSTNAME: 'example.bunnycdn.com'
-      BUNNY_USERNAME: 'username'
-      BUNNY_PASSWORD: 'password'
       IPINFO_ACCESS_TOKEN: 'token'
       UPSTASH_REDIS_REST_URL: 'example.upstash.io'
       UPSTASH_REDIS_REST_TOKEN: 'token'
+      S3_FORCE_PATH_STYLE: 'true'
+      S3_ENDPOINT: 'example.amazonaws.com'
+      S3_REGION: 'us-east-1'
+      S3_ACCESS_KEY_ID: 'key'
+      S3_SECRET_ACCESS_KEY: 'secret'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          version: 8
-      - name: Install Node JS
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          registry-url: https://registry.npmjs.org
-          cache: 'pnpm'
+          bun-version: latest
       - name: Install Dependencies
-        run: pnpm install
-      - name: Build
-        run: pnpm build
-      - name: Lint
-        run: pnpm lint
+        run: bun install --frozen-lockfile
       - name: Svelte Check
-        run: pnpm check
+        run: bun check
+      - name: Lint
+        run: bun lint

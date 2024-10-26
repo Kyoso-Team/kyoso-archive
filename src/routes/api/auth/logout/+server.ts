@@ -1,24 +1,22 @@
 import { redirect } from '@sveltejs/kit';
-import { apiError } from '$lib/server/utils';
-import { Session, db } from '$db';
 import { eq } from 'drizzle-orm';
-import { getSession } from '$lib/server/helpers/api';
+import { Session } from '$db';
+import { getSession } from '$lib/server/context';
+import { catcher } from '$lib/server/error';
+import { db } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 
-export const GET = (async ({ url, cookies, route }) => {
-  const session = getSession(cookies, true);
+export const GET = (async ({ url, cookies }) => {
+  const session = getSession('trpc', cookies, true);
   const redirectUri = url.searchParams.get('redirect_uri') || undefined;
 
-  try {
-    await db
-      .update(Session)
-      .set({
-        expired: true
-      })
-      .where(eq(Session.id, session.sessionId));
-  } catch (err) {
-    throw await apiError(err, 'Expiring the session', route);
-  }
+  await db
+    .update(Session)
+    .set({
+      expired: true
+    })
+    .where(eq(Session.id, session.sessionId))
+    .catch(catcher('api', 'Expiring the session'));
 
   cookies.delete('session', {
     path: '/'

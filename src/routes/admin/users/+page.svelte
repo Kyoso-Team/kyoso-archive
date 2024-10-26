@@ -1,23 +1,21 @@
 <script lang="ts">
   // NOTE: Page needs to be slightly reworked after this PR gets merged: https://github.com/sveltejs/kit/pull/11810
-  import User from './User.svelte';
   import BanUserForm from './BanUserForm.svelte';
-  import RevokeBanForm from './RevokeBanForm.svelte';
   import LookedUpUser from './LookedUpUser.svelte';
-  import createContextStore from './store';
-  import { SEO } from '$components/general';
-  import { Backdrop, Modal } from '$components/layout';
-  import { page } from '$app/stores';
-  import { displayError, formatNumber, toastError, toastSuccess } from '$lib/utils';
-  import { getToastStore } from '@skeletonlabs/skeleton';
-  import { onDestroy, onMount } from 'svelte';
-  import { loading } from '$stores';
-  import { trpc } from '$lib/trpc';
-  import { invalidate } from '$app/navigation';
-  import { browser } from '$app/environment';
+  import RevokeBanForm from './RevokeBanForm.svelte';
+  import User from './User.svelte';
   import { Search } from 'lucide-svelte';
+  import { onDestroy, onMount } from 'svelte';
+  import { browser } from '$app/environment';
+  import { invalidate } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { trpc } from '$lib/clients';
+  import { SEO } from '$lib/components/general';
+  import { Backdrop, Modal } from '$lib/components/layout';
+  import { formatNumber } from '$lib/format';
+  import { loading, toast } from '$lib/stores';
+  import createContextStore from './store';
   import type { PageServerData } from './$types';
-  import type { TRPCRouter } from '$types';
 
   export let data: PageServerData;
   let users: Record<'admins' | 'banned' | 'hosts' | 'owners', PageServerData['users']> = {
@@ -35,8 +33,7 @@
   }[] = [];
   let search: string | undefined;
   let searchBy = 'username';
-  const toast = getToastStore();
-  const ctx = createContextStore(toast, data.ownerId, data.isCurrentUserTheOwner);
+  const ctx = createContextStore(data.ownerId, data.isCurrentUserTheOwner);
 
   onMount(() => {
     if (!browser) return;
@@ -62,22 +59,20 @@
   async function changeAdminStatus(userId: number, admin: boolean) {
     loading.set(true);
 
-    try {
-      await trpc($page).users.updateUser.mutate({
+    await trpc($page)
+      .users.updateUser.mutate({
         userId,
         data: {
           admin
         }
-      });
-    } catch (err) {
-      displayError(toast, err);
-    }
+      })
+      .catch(toast.errorCatcher);
 
     await invalidate($page.url.pathname);
     loading.set(false);
 
     ctx.toggleShowChangeAdminStatusPrompt();
-    toastSuccess(toast, `${admin ? 'Granted' : 'Removed'} admin successfully`);
+    toast.success(`${admin ? 'Granted' : 'Removed'} admin successfully`);
 
     if ($page.state.adminUsersPage?.lookedUpUser) {
       await ctx.lookupUser($page.state.adminUsersPage.lookedUpUser.id);
@@ -87,22 +82,20 @@
   async function changeHostStatus(userId: number, approvedHost: boolean) {
     loading.set(true);
 
-    try {
-      await trpc($page).users.updateUser.mutate({
+    await trpc($page)
+      .users.updateUser.mutate({
         userId,
         data: {
           approvedHost
         }
-      });
-    } catch (err) {
-      displayError(toast, err);
-    }
+      })
+      .catch(toast.errorCatcher);
 
     await invalidate($page.url.pathname);
     loading.set(false);
 
     ctx.toggleShowChangeHostStatusPrompt();
-    toastSuccess(toast, `${approvedHost ? 'Approved' : 'Disapproved'} host successfully`);
+    toast.success(`${approvedHost ? 'Approved' : 'Disapproved'} host successfully`);
 
     if ($page.state.adminUsersPage?.lookedUpUser) {
       await ctx.lookupUser($page.state.adminUsersPage.lookedUpUser.id);
@@ -117,22 +110,17 @@
   async function onSearch() {
     if (!search) return;
 
-    let user: TRPCRouter['users']['searchUser'];
     loading.set(true);
-
-    try {
-      user = await trpc($page).users.searchUser.query({
+    const user = await trpc($page)
+      .users.searchUser.query({
         search,
         searchBy
-      });
-    } catch (err) {
-      displayError(toast, err);
-    }
-
+      })
+      .catch(toast.errorCatcher);
     loading.set(false);
 
     if (!user) {
-      toastError(toast, 'User not found');
+      toast.error('User not found');
       return;
     }
 

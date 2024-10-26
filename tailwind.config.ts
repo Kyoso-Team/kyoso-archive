@@ -1,6 +1,6 @@
-import forms from '@tailwindcss/forms';
 import { join } from 'path';
 import { skeleton } from '@skeletonlabs/tw-plugin';
+import forms from '@tailwindcss/forms';
 import { theme } from './src/theme';
 import type { Config } from 'tailwindcss';
 

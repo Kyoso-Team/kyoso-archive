@@ -1,11 +1,10 @@
-import env from '$lib/server/env';
-import jwt from 'jsonwebtoken';
-import postgres from 'postgres';
 import { error } from '@sveltejs/kit';
-import { isOsuJSError } from 'osu-web.js';
 import { TRPCError } from '@trpc/server';
+import jwt from 'jsonwebtoken';
 import { customAlphabet } from 'nanoid';
-import { SQL, gt, lte, sql } from 'drizzle-orm';
+import postgres from 'postgres';
+import { env } from '$lib/server/env';
+import { logError } from './error';
 import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
 
 export function signJWT<T>(data: T) {
@@ -35,32 +34,6 @@ export function generateFileId() {
   const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
   return customAlphabet(alphabet, 8)();
 }
-
-// function mapUrlParams(params: URLSearchParams, prefix: string, allStrings?: boolean) {
-//   let obj: Record<string, unknown> = {};
-
-//   params.forEach((value, key) => {
-//     if (!key.startsWith(prefix)) return;
-//     let k = key.startsWith(prefix) ? key.replace(prefix, '') : key;
-
-//     if (allStrings) {
-//       obj[k] = value;
-//       return;
-//     }
-
-//     if (!isNaN(Number(value)) && value !== '') {
-//       obj[k] = Number(value);
-//     } else if (value === 'true') {
-//       obj[k] = true;
-//     } else if (value === 'false') {
-//       obj[k] = false;
-//     } else if (value !== '') {
-//       obj[k] = value;
-//     }
-//   });
-
-//   return obj;
-// }
 
 /**
  * Parses the URL's search parameters for searching and filtering purposes based on the provided Zod schemas
@@ -95,16 +68,6 @@ export function generateFileId() {
 // }
 
 /**
- * Paginate data in database queries
- */
-export function paginate(page: number, elementsPerPage: number = 30) {
-  return {
-    offset: elementsPerPage * (page - 1),
-    limit: elementsPerPage
-  };
-}
-
-/**
  * Maps the table's columns in a select clause to avoid writing verbose objects.
  * Example:
  *
@@ -137,47 +100,13 @@ export function pick<
   return Object.fromEntries(map) as Pick<T, F>;
 }
 
-export async function logError(err: unknown, when: string, from: string | null) {
-  let message = 'Unknown error';
-  let osuJSResp: Response | undefined;
-  let query: string | undefined;
-  let queryParams: any[] | undefined;
-
-  if (isOsuJSError(err)) {
-    message = err.message;
-
-    if (err.type === 'unexpected_response') {
-      osuJSResp = err.response();
-    }
-  } else if (err instanceof postgres.PostgresError) {
-    message = err.message;
-    query = err.query;
-    queryParams = err.parameters;
-  }
-
-  message = `${message}. Error thrown when: ${when}`;
-  console.error(`${new Date().toUTCString()} - ${from} - ${message}`);
-
-  if (message.includes('Unknown error')) {
-    console.log(err);
-  }
-
-  if (osuJSResp) {
-    const data = await osuJSResp.text();
-    console.log(`${osuJSResp.status} response from osu.js: ${data}`);
-  }
-
-  if (query && queryParams) {
-    console.log(`Database query: ${query}`);
-    console.log(`Query parameters: ${JSON.stringify(queryParams)}`);
-  }
-}
-
+/** @deprecated */
 export async function apiError(err: unknown, when: string, route: { id: string | null }) {
   await logError(err, when, route.id);
   error(500, `Internal server error. Error thrown when: ${when}`);
 }
 
+/** @deprecated */
 export function trpcUnknownError(err: unknown, when: string) {
   return new TRPCError({
     code: 'INTERNAL_SERVER_ERROR',
@@ -202,33 +131,4 @@ export function catchUniqueConstraintError$(
       }
     }
   };
-}
-
-export function future(column: AnyPgColumn | SQL) {
-  return gt(column as any, sql`now()`);
-}
-
-export function past(column: AnyPgColumn | SQL) {
-  return lte(column as any, sql`now()`);
-}
-
-export function isDatePast(date: Date | number | null) {
-  if (!date) return false;
-  return new Date(date).getTime() <= new Date().getTime();
-}
-
-export function isDateFuture(date: Date | number | null) {
-  if (!date) return false;
-  return new Date(date).getTime() > new Date().getTime();
-}
-
-export function trgmSearch(searchStr: string, columns: [AnyPgColumn, ...AnyPgColumn[]]) {
-  const q = sql`${searchStr} % (lower(${columns[0]})`;
-
-  for (const col in columns.slice(1)) {
-    q.append(sql` || ' ' || lower(${col})`);
-  }
-
-  q.append(sql`)`);
-  return q;
 }
