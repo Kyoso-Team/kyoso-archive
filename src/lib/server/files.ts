@@ -37,13 +37,16 @@ export async function transformFile(config: {
   return await Promise.all(
     resizes.map(async ({ width, height, quality, name }) => {
       const buffer = await file.arrayBuffer();
-      const newBuffer = await sharp(buffer).resize({ width, height }).webp({ quality }).toBuffer();
+      const newBuffer = await sharp(buffer).resize({ width, height }).jpeg({ quality }).toBuffer();
 
-      const newFile = new File([new Blob([newBuffer]) as any], name, {
-        lastModified: new Date().getTime()
-      });
-
-      return newFile;
+      return {
+        meta: {
+          name: name,
+          lastModified: new Date().getTime(),
+          type: 'image/webp'
+        },
+        buffer: newBuffer
+      };
     })
   );
 }

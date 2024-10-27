@@ -15,8 +15,6 @@
   let showUploadBannerModal = false;
   let showDeleteLogoPrompt = false;
   let showDeleteBannerPrompt = false;
-  let logoSrc: string | undefined;
-  let bannerSrc: string | undefined;
   const logoUpload = createUploadClient<Assets['tournamentLogo']>('/api/assets/tournament_logo');
   const bannerUpload = createUploadClient<Assets['tournamentBanner']>(
     '/api/assets/tournament_banner'
@@ -89,13 +87,6 @@
     toggleShowDeleteBannerPrompt();
     toast.success('Deleted banner successfully');
   }
-
-  $: logoSrc = data.tournament.logoMetadata
-    ? `${$page.url.origin}/api/assets/tournament_logo?tournament_id=${data.tournament.id}&file_id=${data.tournament.logoMetadata.fileId}&size=full`
-    : undefined;
-  $: bannerSrc = data.tournament.bannerMetadata
-    ? `${$page.url.origin}/api/assets/tournament_banner?tournament_id=${data.tournament.id}&file_id=${data.tournament.bannerMetadata.fileId}&size=full`
-    : undefined;
 </script>
 
 <SEO
@@ -132,7 +123,7 @@
   <Backdrop>
     <UploadImgModal
       imgAspectRatio="1/1"
-      currentSrc={logoSrc}
+      currentSrc={data.tournament.logoSrc}
       onUpload={uploadLogo}
       onCancel={toggleShowUploadLogoModal}
     >
@@ -147,7 +138,7 @@
   <Backdrop>
     <UploadImgModal
       imgAspectRatio="21/9"
-      currentSrc={bannerSrc}
+      currentSrc={data.tournament.bannerSrc}
       onUpload={uploadBanner}
       onCancel={toggleShowUploadBannerModal}
     >
@@ -170,14 +161,14 @@
     <Asset
       label="Logo"
       imgAspectRatio="1/1"
-      src={logoSrc}
+      src={data.tournament.logoSrc}
       onUpload={toggleShowUploadLogoModal}
       onDelete={toggleShowDeleteLogoPrompt}
     />
     <Asset
       label="Banner"
       imgAspectRatio="21/9"
-      src={bannerSrc}
+      src={data.tournament.bannerSrc}
       onUpload={toggleShowUploadBannerModal}
       onDelete={toggleShowDeleteBannerPrompt}
     />

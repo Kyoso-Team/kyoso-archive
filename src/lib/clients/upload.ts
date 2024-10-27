@@ -15,7 +15,9 @@ export function createUploadClient<T extends Asset<any, any>>(endpoint: string) 
     }).catch(toast.errorCatcher);
 
     if (!resp.ok) {
-      toast.error(await resp.text());
+      const respTxt = await resp.text();
+      toast.error(respTxt);
+      throw Error(respTxt);
     }
   }
 
@@ -32,7 +34,9 @@ export function createUploadClient<T extends Asset<any, any>>(endpoint: string) 
     }).catch(toast.errorCatcher);
 
     if (!resp.ok) {
-      toast.error(await resp.text());
+      const respTxt = await resp.text();
+      toast.error(respTxt);
+      throw Error(respTxt);
     }
   }
 

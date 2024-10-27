@@ -1,7 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { TRPCError } from '@trpc/server';
 import jwt from 'jsonwebtoken';
-import { customAlphabet } from 'nanoid';
 import postgres from 'postgres';
 import { env } from '$lib/server/env';
 import { logError } from './error';
@@ -28,11 +27,6 @@ export function verifyJWT<T>(token?: string) {
   } catch {
     return undefined;
   }
-}
-
-export function generateFileId() {
-  const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-  return customAlphabet(alphabet, 8)();
 }
 
 /**
